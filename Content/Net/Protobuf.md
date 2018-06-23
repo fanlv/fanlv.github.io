@@ -1,5 +1,28 @@
 # Protobuf 技术预研
 
+- [Protobuf 技术预研](#protobuf-技术预研)
+	- [一、背景](#一背景)
+	- [二、Protobuf说明](#二protobuf说明)
+		- [2.1 什么是Protobuf](#21-什么是protobuf)
+		- [2.2 Protobuf优点](#22-protobuf优点)
+		- [2.3 Protobuf缺点](#23-protobuf缺点)
+	- [三、Protobuf 相关框架](#三protobuf-相关框架)
+		- [3.1 gRPC框架](#31-grpc框架)
+		- [3.2 Thrift框架](#32-thrift框架)
+	- [四、Protobuf-HTTP抓包方案](#四protobuf-http抓包方案)
+	- [五、业界方案调研](#五业界方案调研)
+		- [5.1 Protobuf在Http中的使用(抓包分析)](#51-protobuf在http中的使用抓包分析)
+		- [5.2 gRPC 框架](#52-grpc-框架)
+		- [5.3 Thrift 框架](#53-thrift-框架)
+	- [六、测试Protobuf在Http中传输Demo](#六测试protobuf在http中传输demo)
+		- [6.1 proto文件编写](#61-proto文件编写)
+		- [6.2 proto文件转Objective-C Model](#62-proto文件转objective-c-model)
+		- [6.3 服务器项目配置和实现](#63-服务器项目配置和实现)
+		- [6.4 客户端项目配置和实现](#64-客户端项目配置和实现)
+		- [6.5 测试结果](#65-测试结果)
+	- [七、思考和讨论](#七思考和讨论)
+	- [参考文章](#参考文章)
+
 ## 一、背景
 现在客户端与服务器通讯主要通过Json来做数据交互，本次调研主要比较Protobuf项目中使用的优缺点，和可行性。
 
