@@ -1,5 +1,13 @@
 # iOS Cookie 存储相关技术
 
+- [iOS Cookie 存储相关技术](#ios-cookie-存储相关技术)
+	- [一、什么是Cookie](#一什么是cookie)
+	- [二、Cookie在Http中的传输方式](#二cookie在http中的传输方式)
+	- [三、Cookie的存放位置](#三cookie的存放位置)
+	- [四、如何操作Cookie](#四如何操作cookie)
+		- [4.1 iOS客户端设置Cookie](#41-ios客户端设置cookie)
+		- [4.2 服务器设置Cookie（Python-Flask）](#42-服务器设置cookiepython-flask)
+	- [存在的不足](#存在的不足)
 
 ## 一、什么是Cookie
 >  Cookie，有时也用其复数形式 Cookies，指某些网站为了辨别用户身份、进行 session 跟踪而储存在用户本地终端上的数据（通常经过加密）。定义于 RFC2109 和 2965 中的都已废弃，最新取代的规范是 RFC6265 [1]  。（可以叫做浏览器缓存）[来自百度百科](https://baike.baidu.com/item/cookie/1119?fr=aladdin)
