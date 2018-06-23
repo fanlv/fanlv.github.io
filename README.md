@@ -6,6 +6,8 @@
 
 * [微积分基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Calculus.md)
 
+* [概率论基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Probability.md)
+
 
 ## 二、网络相关
 
