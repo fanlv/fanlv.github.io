@@ -13,7 +13,15 @@
 * [概率论基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Probability.md)
 
 
-## 二、网络相关
+## 二、后台开发
+
+* [线程、进程、协程那些事] (https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/thread.md)
+
+* [ApiGate 架构设计-占坑]()
+
+* [Kite框架梳理-占坑]()
+
+## 三、网络相关
 
 * [Protobuf On HTTP 技术预研 ](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Net/Protobuf.md)
 
@@ -26,13 +34,7 @@
 * [Socket消息Mock平台分享 —— 占坑]()
 
 
-## 三、服务器开发
 
-* [线程、进程、协程那些事] (https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/thread.md)
-
-* [ApiGate 架构设计-占坑]()
-
-* [Kite框架梳理-占坑]()
 
 
 ## 四、客户端技术
