@@ -17,6 +17,8 @@
 
 * [线程、进程、协程那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/thread.md)
 
+* [跨域请求的几种解决方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/crsf.md)
+
 * [ApiGate 架构设计-占坑]()
 
 * [Kite框架梳理-占坑]()
