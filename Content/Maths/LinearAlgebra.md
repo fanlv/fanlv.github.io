@@ -12,6 +12,9 @@ https://www.cnblogs.com/Dumblidor/p/5751579.html
 
 ## 逆矩阵
 
+设A是数域上的一个n阶方阵，若在相同数域上存在另一个n阶矩阵B，使得： AB=BA=E。 则我们称B是A的逆矩阵，而A则被称为可逆矩阵。
+
+
 https://baike.baidu.com/item/%E9%80%86%E7%9F%A9%E9%98%B5/10481136?fr=aladdin
 
 
@@ -149,3 +152,20 @@ dimS+dimU=dim(S+U)+dim(S∩U).
 任何一个秩矩阵都能写成 A=uvT 的形式，其中 rankA=1,u,v 均为列向量。
 秩 1 矩阵的集合不是线性空间，因为对加法不封闭（两个秩 1 矩阵的和的秩可能为 2）。
 任何一个秩为 r 的矩阵都能写成 r 个秩 1 矩阵的和。
+
+
+
+## 图和网络
+
+## 关联矩阵
+
+假设一个电路图，4个结点，n=4，5条边，m=5，用矩阵来表示这些信息，这个矩阵叫做关联矩阵(Incidence Matrix)
+
+## 基尔霍夫电流定律
+
+## 欧拉公式
+
+相互无关(两回路之间无关)的回路数量#loops=边的数量#edges-列空间的秩#rank（等于n-1，结点的数量-1，1为A零空间的维）
+
+		#loops = #edges - (#nodes - 1)
+		#nodes - #edges + #loops = 1
