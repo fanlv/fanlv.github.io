@@ -1,7 +1,7 @@
 # iOS之GRPC调用服务器（附代码）
 
 ## 背景
-最近在用gRPC框架测试，想起去年调研Protocol Buffer在HTTP的时候传输，了解过这个框架，当时没深入。这次做gRPC服务器端，随便看下iOS这边如果可以调用。下面做了个简单的Demo，附上代码。
+最近在用gRPC框架测试，想起去年调研Protocol Buffer在HTTP的时候传输，了解过这个框架，当时没深入。这次做gRPC服务器端，随便看下iOS这边实现方式，附上测试代码。
 
 ## proto文件 
 	
@@ -107,7 +107,7 @@
 
 可以先去官网下一个Demo项目，地址：[grpc.io - objective-c](https://grpc.io/docs/tutorials/basic/objective-c.html#try-it-out)
 
-里面有三个demo，我这里借用的hellowrlod的demo路径`grpc/examples/objective-c/helloworld`。
+里面有三个demo，我这里借用的helloworld的demo，路径：`grpc/examples/objective-c/helloworld`。
 
 执行pod install，主要会用到下面几个库
 
