@@ -61,8 +61,24 @@ Content-Type is not allowed by Access-Control-Allow-Headers in preflight respons
 
 在代码层面，我们可以控制什么接口允许跨域，什么接口不允许跨域，这样对测试层面来说更灵活一些。
 
-	if !config.IsOnline() {
-		ginCtx.Header("Access-Control-Allow-Origin", "*")
-	} 
+	// 在正式跨域的请求前，浏览器会根据需要，发起一个“PreFlight”
+	//（也就是Option请求），用来让服务端返回允许的方法（如get、post），
+	// 被跨域访问的Origin（来源，或者域），还有是否需要Credentials(认证信息）
+	r.OPTIONS("/*allpath", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.String(http.StatusOK, "ok")
+	})
+
+
+	router.GET("/", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.String(http.StatusOK, "Hello World")
+	})
 
 比如上面我只在测试环境下允许所有的Apigate接口跨域。

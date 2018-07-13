@@ -169,3 +169,12 @@ dimS+dimU=dim(S+U)+dim(S∩U).
 
 		#loops = #edges - (#nodes - 1)
 		#nodes - #edges + #loops = 1
+
+
+
+## 正交向量
+判断两个向量X,Y是否正交，求乘积XTY是否等于0，即如果XTY=0，则X,Y正交。
+
+## 正交相关的概念与定理
+
+## A^T A的一些性质
