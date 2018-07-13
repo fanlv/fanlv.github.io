@@ -65,7 +65,8 @@ Content-Type is not allowed by Access-Control-Allow-Headers in preflight respons
 	//（也就是Option请求），用来让服务端返回允许的方法（如get、post），
 	// 被跨域访问的Origin（来源，或者域），还有是否需要Credentials(认证信息）
 	r.OPTIONS("/*allpath", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
+		origin := c.GetHeader("Origin")
+		c.Header("Access-Control-Allow-Origin", origin)
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		c.Header("Access-Control-Allow-Credentials", "true")
@@ -74,7 +75,8 @@ Content-Type is not allowed by Access-Control-Allow-Headers in preflight respons
 
 
 	router.GET("/", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
+		origin := c.GetHeader("Origin")
+		c.Header("Access-Control-Allow-Origin", origin)
 		c.Header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		c.Header("Access-Control-Allow-Credentials", "true")
