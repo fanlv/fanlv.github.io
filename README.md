@@ -4,6 +4,11 @@
 
 记录点滴，方便以后查阅
 
+## 零、基础知识
+
+* [同步IO和异步IO](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/IO.md)
+
+
 ## 一、数学基础
 
 * [统计学基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Statistics.md)
@@ -34,8 +39,6 @@
 * [TCP/UDP 局域网穿透原理 —— 占坑]()
 
 * [Socket消息Mock平台分享 —— 占坑]()
-
-
 
 
 
