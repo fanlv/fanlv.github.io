@@ -1,4 +1,4 @@
-# 同步IO和异步IO
+# 高并发服务器IO模型
 
 ## 什么是IO？
 
@@ -18,8 +18,7 @@
 
 ## IO的5种模型
 
-**5种模型可以分为同步IO和异步IO两大类，1~4为同步IO模型，5位异步IO模型
-**
+5种模型可以分为同步IO和异步IO两大类，1~4为同步IO模型，5位异步IO模型
 
 1. 阻塞IO模型 , 进程发起IO系统调用后，进程被阻塞，转到内核空间处理，整个IO处理完毕后返回进程。操作成功则进程获取到数据。资源不可用时，IO请求一直阻塞，直到反馈结果（有数据或超时）。
 > 典型应用：阻塞socket、Java BIO；
@@ -50,7 +49,7 @@
 
 
 3. IO复用模型，多个的进程的IO可以注册到一个复用器（select）上，然后用一个进程调用该select， select会监听所有注册进来的IO；如果select没有监听的IO在内核缓冲区都没有可读数据，select调用进程会被阻塞；而当任一IO在内核缓冲区中有可数据时，select调用就会返回；而后select调用进程可以自己或通知另外的进程（注册进程）来再次发起读取IO，读取内核中准备好的数据。
-> 典型应用：select、poll、epoll三种方案，nginx都可以选择使用这三个方案
+> 典型应用：select、poll、epoll三种方案，JAVA NIO
 > 特点：
 > 
 > 1. 专一进程解决多个进程IO的阻塞问题，性能好；Reactor模式;
@@ -88,12 +87,86 @@
 ![](./images/IOCompare.png)
 
 
+## Linux并发网络编程模型
+
+1. Apache模型，简称PPC（Process Per Connection）:为每个连接分配一个进程。主机分配给每个连接的时间和空间上代价较大，并且随着连接的增多，大量进程间切换开销也增长了。很难应对大量的客户并发连接。
+
+2. TPC模型（Thread Per Connection ）：每个连接一个线程。和PCC类似。
+
+3. select模型：I/O多路复用技术。
+	 * 每个连接对应一个描述。select模型受限于 FD_SETSIZE即进程最大打开的描述符数linux2.6.35为1024,实际上linux每个进程所能打开描数字的个数仅受限于内存大小，然而在设计select的系统调用时，却是参考FD_SETSIZE的值。可通过重新编译内核更改此值，但不能根治此问题，对于百万级的用户连接请求  即便增加相应 进程数， 仍显得杯水车薪呀。
+	 * select每次都会扫描一个文件描述符的集合，这个集合的大小是作为select第一个参数传入的值。但是每个进程所能打开文件描述符若是增加了 ，扫描的效率也将减小。
+	 * 内核到用户空间，采用内存复制传递文件描述上发生的信息。 
+
+4. poll 模型：I/O多路复用技术。poll模型将不会受限于FD_SETSIZE，因为内核所扫描的文件 描述符集合的大小是由用户指定的，即poll的第二个参数。但仍有扫描效率和内存拷贝问题。
+
+5. pselect模型：I/O多路复用技术。同select。
+
+6. epoll模型：
+	 * 无文件描述字大小限制仅与内存大小相关
+	 * epoll返回时已经明确的知道哪个socket fd发生了什么事件，不用像select那样再一个个比对。
+	 * 内核到用户空间采用共享内存方式，传递消息。
+
+
+## select()和poll()
+
+在linux 没有实现epoll事件驱动机制之前，我们一般选择用select或者poll等IO多路复用的方法来实现并发服务程序。在大数据、高并发、集群等一些名词唱得火热之年代，select和poll的用武之地越来越有限，风头已经被epoll占尽。
+
+
+> select的缺点：
+> 
+> 1. 单个进程能够监视的文件描述符的数量存在最大限制，通常是1024，当然可以更改数量，但由于select采用轮询的方式扫描文件描述符，文件描述符数量越多，性能越差；(在linux内核头文件中，有这样的定义：#define __FD_SETSIZE    1024)
+> 
+> 2. 内核 / 用户空间内存拷贝问题，select需要复制大量的句柄数据结构，产生巨大的开销；
+> 3. select返回的是含有整个句柄的数组，应用程序需要遍历整个数组才能发现哪些句柄发生了事件；
+> 4. select的触发方式是水平触发，应用程序如果没有完成对一个已经就绪的文件描述符进行IO操作，那么之后每次select调用还是会将这些文件描述符通知进程。
+> 
+> 相比select模型，poll使用链表保存文件描述符，因此没有了监视文件数量的限制，但其他三个缺点依然存在。
+> 
+> 拿select模型为例，假设我们的服务器需要支持100万的并发连接，则在__FD_SETSIZE 为1024的情况下，则我们至少需要开辟1k个进程才能实现100万的并发连接。除了进程间上下文切换的时间消耗外，从内核/用户空间大量的无脑内存拷贝、数组轮询等，是系统难以承受的。因此，基于select模型的服务器程序，要达到10万级别的并发访问，是一个很难完成的任务。
+
+
+
+## epoll
+
+> epoll是Linux内核为处理大批量文件描述符而作了改进的poll，是Linux下多路复用IO接口select/poll的增强版本，它能显著提高程序在大量并发连接中只有少量活跃的情况下的系统CPU利用率。另一点原因就是获取事件的时候，它无须遍历整个被侦听的描述符集，只要遍历那些被内核IO事件异步唤醒而加入Ready队列的描述符集合就行了。epoll除了提供select/poll那种IO事件的水平触发（Level Triggered）外，还提供了边缘触发（Edge Triggered），这就使得用户空间程序有可能缓存IO状态，减少epoll_wait/epoll_pwait的调用，提高应用程序效率。
+> 
+> epoll有两种工作方式
+> 
+> ET：Edge Triggered，边缘触发。仅当状态发生变化时才会通知，epoll_wait返回。换句话，就是对于一个事件，只通知一次。且只支持非阻塞的socket。
+> 
+> LT：Level Triggered，电平触发（默认工作方式）。类似select/poll,只要还有没有处理的事件就会一直通知，以LT方式调用epoll接口的时候，它就相当于一个速度比较快的poll.支持阻塞和不阻塞的socket。
+
+## kqueue
+> kqueue与epoll非常相似，最初是2000年Jonathan Lemon在FreeBSD系统上开发的一个高性能的事件通知接口。注册一批socket描述符到 kqueue 以后，当其中的描述符状态发生变化时，kqueue 将一次性通知应用程序哪些描述符可读、可写或出错了。
+
+## IOCP
+
+> IOCP全称I/O Completion Port，中文译为I/O完成端口。IOCP是一个异步I/O的API，它可以高效地将I/O事件通知给应用程序。一个套接字[socket]与一个完成端口关联了起来，然后就可继续进行正常的Winsock操作了。然而，当一个事件发生的时候，此完成端口就将被操作系统加入一个队列中。然后应用程序可以对核心层进行查询以得到此完成端口。
+
+> 诚然，Windows的IOCP非常出色，目前很少有支持asynchronous I/O的系统，但是由于其系统本身的局限性，大型服务器还是在UNIX下。而且正如上面所述，kqueue/epoll 与 IOCP相比，就是多了一层从内核copy数据到应用层的阻塞，从而不能算作asynchronous I/O类。但是，这层小小的阻塞无足轻重，kqueue与epoll已经做得很优秀了。
+
+
+## select、epoll、kqueue、IOCP对比
+> 只有IOCP是asynchronous I/O，其他机制或多或少都会有一点阻塞。
+> 
+> select低效是因为每次它都需要轮询。但低效也是相对的，视情况而定，也可通过良好的设计改善
+> 
+> epoll, kqueue、select是Reacor模式，IOCP是Proactor模式。
+> 
+> java nio包是select模型。。
 
 ## 参考资料
+
+
+[可扩展的事件复用技术：epoll和kqueue](https://www.cnblogs.com/moonz-wu/p/4740908.html)
+
+[IO模型及select、poll、epoll和kqueue的区别](https://www.cnblogs.com/linganxiong/p/5583415.html)
+
 
 [5种IO模型、阻塞IO和非阻塞IO、同步IO和异步IO
 ](https://blog.csdn.net/tjiyu/article/details/52959418)
 
-
+[深度理解select、poll和epoll](https://blog.csdn.net/davidsguo008/article/details/73556811)
 
 
