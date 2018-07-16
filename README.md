@@ -6,7 +6,7 @@
 
 ## 零、基础知识
 
-* [同步IO和异步IO](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/IO.md)
+* [高并发服务器IO模型](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/IO.md)
 
 * [线程、进程、协程那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/thread.md)
 
