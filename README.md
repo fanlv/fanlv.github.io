@@ -13,7 +13,7 @@
 * [二叉树、2-3树、红黑树](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/tree.md)
 
 
-## 一、数学基础
+## 一、Mathematics
 
 * [统计学基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Statistics.md)
 
@@ -22,7 +22,7 @@
 * [概率论基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Probability.md)
 
 
-## 二、后台开发
+## 二、Backend
 
 
 * [跨域请求的几种解决方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/crsf.md)
@@ -31,7 +31,7 @@
 
 * [Kite框架梳理-占坑]()
 
-## 三、网络相关
+## 三、Network
 
 * [Protobuf On HTTP 技术预研 ](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Net/Protobuf.md)
 
@@ -45,7 +45,7 @@
 
 
 
-## 四、客户端技术
+## 四、Frontend
 
 * [iOS之GRPC调用服务器](https://github.com/fanlv/fanlv.github.io/blob/master/Content/iOS/iOS-gRPC.md)
 
