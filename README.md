@@ -27,6 +27,10 @@
 
 * [跨域请求的几种解决方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/crsf.md)
 
+* [Go 执行Lua脚本和JS测试](https://github.com/fanlv/runJsAndrLuaInGo)
+
+
+
 * [ApiGate 架构设计-占坑]()
 
 * [Kite框架梳理-占坑]()
