@@ -31,6 +31,8 @@
 
 * [Go 执行Lua脚本和JS测试](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/distributed-id.md)
 
+* [服务发现之Consul](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/consul.md)
+
 
 * [ApiGate 架构设计-占坑]()
 
