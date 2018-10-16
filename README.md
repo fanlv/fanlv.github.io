@@ -33,6 +33,8 @@
 
 * [服务发现之Consul](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/consul.md)
 
+* [Golang 内存对齐问题](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/data-struct-alignment.md)
+
 
 * [ApiGate 架构设计-占坑]()
 
