@@ -1,4 +1,4 @@
-# MySql存储引擎MyISAM和InnoDB
+# MyISAM和InnoDB区别和应用场景
 
 ### 什么是MyISAM 和InnoDB
 > MyISAM是MySQL的默认数据库引擎（5.5版之前），由早期的ISAM所改良。虽然性能极佳，但却有一个缺点：不支持事务处理（transaction）。
