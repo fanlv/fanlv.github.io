@@ -37,6 +37,7 @@
 
 * [MyISAM和InnoDB区别和应用场景](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-engine.md)
 
+* [Mysql 锁详解](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-lock.md)
 
 
 
