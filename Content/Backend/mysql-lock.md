@@ -189,7 +189,7 @@ InnoDB实现了以下两种类型的行锁。
 如果一个事务请求的锁模式与当前的锁兼容，InnoDB就将请求的锁授予该事务；反之，如果两者不兼容，该事务就要等待锁释放。
 `意向锁是InnoDB自动加的`，不需用户干预。对于UPDATE、DELETE和INSERT语句，InnoDB会自动给涉及数据集加排他锁（X)；对于普通SELECT语句，InnoDB不会加任何锁；事务可以通过以下语句显示给记录集加共享锁或排他锁。
  
- * 共享锁（S）：SELECT * FROM table_name WHERE ... *dLOCK IN SHARE MODELOCK IN SHARE MODE**。
+ * 共享锁（S）：SELECT * FROM table_name WHERE ... **LOCK IN SHARE MODELOCK IN SHARE MODE**。
  * 排他锁（X)：SELECT * FROM table_name WHERE ... **FOR UPDATEFOR UPDATE**。
 
 用SELECT ... IN SHARE MODE获得共享锁，**主要用在需要数据依存关系时来确认某行记录是否存在**，并确保没有人对这个记录进行UPDATE或者DELETE操作。但是如果当前事务也需要对该记录进行更新操作，则很有可能造成死锁，对于锁定行记录后需要进行更新操作的应用，应该使用SELECT... FOR UPDATE方式获得排他锁。
