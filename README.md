@@ -12,6 +12,7 @@
  
 * [二叉树、2-3树、红黑树](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/tree.md)
 
+* [B-Tree、B+Tree、B*Tree](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/b_tree.md)
 
 ## 一、Mathematics
 
