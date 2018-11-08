@@ -14,6 +14,8 @@
 
 * [B-Tree、B+Tree、B*Tree](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/b_tree.md)
 
+* [内存管理、寻址方式那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/memory.md)
+
 ## 一、Mathematics
 
 * [统计学基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Statistics.md)
