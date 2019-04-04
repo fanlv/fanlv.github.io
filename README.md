@@ -16,6 +16,9 @@
 
 * [内存分页、寻址方式那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/memory.md)
 
+
+
+
 ## 一、Mathematics
 
 * [统计学基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Statistics.md)
@@ -42,7 +45,7 @@
 
 * [Mysql 锁详解](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-lock.md)
 
-
+* [Mysql 索引那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-index.md)
 
 * [ApiGate 架构设计-占坑]()
 
