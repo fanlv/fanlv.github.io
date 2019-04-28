@@ -75,14 +75,16 @@
 3) 主键索引，是一种特殊的唯一索引，一个表只能有一个主键，不允许有空值。
 
    一般是在建表的时候同时创建主键索引：
-   CREATE TABLE `table` (
-   `id` int(11) NOT NULL AUTO_INCREMENT ,
-   `title` char(255) NOT NULL ,
-   PRIMARY KEY (`id`)
-   );
+   
+	   CREATE TABLE `table` (
+	   `id` int(11) NOT NULL AUTO_INCREMENT ,
+	   `title` char(255) NOT NULL ,
+	   PRIMARY KEY (`id`)
+	   );
 
 4.  组合索引，指多个字段上创建的索引，只有在查询条件中使用了创建索引时的第一个字段，索引才会被使用。使用组合索引时遵循最左前缀集合
-    ALTER TABLE `table` ADD INDEX name_city_age (name,city,age);
+
+	    ALTER TABLE `table` ADD INDEX name_city_age (name,city,age);
 
 5.  全文索引，主要用来查找文本中的关键字，而不是直接与索引中的值相比较。fulltext 索引跟其它索引大不相同，它更像是一个搜索引擎，而不是简单的 where 语句的参数匹配。fulltext 索引配合 match against 操作使用，而不是一般的 where 语句加 like。它可以在 create table，alter table ，create index 使用，不过目前只有 char、varchar，text 列上可以创建全文索引。值得一提的是，在数据量较大时候，现将数据放入一个没有全局索引的表中，然后再用 CREATE index 创建 fulltext 索引，要比先为一张表建立 fulltext 然后再将数据写入的速度快很多。
 
