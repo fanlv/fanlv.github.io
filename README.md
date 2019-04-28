@@ -47,6 +47,11 @@
 
 * [Mysql 索引那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-index.md)
 
+* [Mysql 基础知识汇总](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-sum.md)
+
+
+
+
 * [ApiGate 架构设计-占坑]()
 
 * [Kite框架梳理-占坑]()
