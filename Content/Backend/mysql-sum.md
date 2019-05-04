@@ -65,6 +65,7 @@
         - [间隙锁](#%E9%97%B4%E9%9A%99%E9%94%81)
         - [临键锁](#%E4%B8%B4%E9%94%AE%E9%94%81)
       - [1.5.3.12. 小结](#15312-%E5%B0%8F%E7%BB%93)
+      - [1.5.4 InnoDB存储引擎MVCC实现原理](#154-innodb%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8Emvcc%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86)
   - [1.6 数据库Sharding](#16-%E6%95%B0%E6%8D%AE%E5%BA%93sharding)
     - [1.6.1 什么是Sharding？](#161-%E4%BB%80%E4%B9%88%E6%98%AFsharding)
     - [1.6.2 常见sharding方案](#162-%E5%B8%B8%E8%A7%81sharding%E6%96%B9%E6%A1%88)
@@ -760,6 +761,10 @@ MySQL通过BINLOG录执行成功的INSERT、UPDATE、DELETE等更新数据的SQL
 * 间隙锁锁定间隔，防止间隔中被其他事务插入；
 * 临键锁锁定索引记录+间隔，防止幻读；
 
+#### 1.5.4 InnoDB存储引擎MVCC实现原理
+
+[InnoDB存储引擎MVCC实现原理](https://liuzhengyang.github.io/2017/04/18/innodb-mvcc/)
+
 
 ## 1.6 数据库Sharding
 
@@ -776,7 +781,7 @@ Sharding的基本思想就要把一个数据库切分成多个部分放到不同
 #### 基于区间范围切分  
 
 将数据根据数值区间sharding到不同分片上，例如将uid在[1, 10000000]区间的数据放到shard1上，uid在[10000001, 20000000]区间的数据放到shard2上，以此类推...... 
-  ![](./images/1.png)
+![](./images/1.png)
 
 扩展方案
 
