@@ -1,4 +1,4 @@
-# Redis 基础数据类型 — 简单动态字符串（simple dynamic string）SDS
+# Redis 数据结构 — 简单动态字符串（simple dynamic string）SDS
 
 ## 什么是SDS
 字符串是Redis中最为常见的数据存储类型，其底层实现是简单动态字符串sds(simple dynamic string)，是可以修改的字符串。
