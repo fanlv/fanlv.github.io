@@ -47,6 +47,52 @@
 
 ![](./images/list.png)	
 
+* dup为节点复制函数
+* free为节点释放函数
+* match为节点比较函数
+通过这样的定义，adlist有了以下优点：
+* 双向：可以灵活的访问前置或者后置节点
+* list头指针和尾指针：可以方便的获取头尾节点或者从头尾遍历查找
+* len：使获取list由O(N)变为O(1)
+* 通过void实现多态：不同的实例化链表对象可以持有不同的值，其对应的3个操作函数也可以自定义，是不是有点interface的感觉！
+
+
+## 链表迭代器
+
+	typedef struct listIter {   // 列表迭代器
+	    listNode *next;
+	    int direction;  // 迭代器遍历方向
+	} listIter;
+
+其中direction用于标识迭代器的遍历方向：
+
+	#define AL_START_HEAD 0     // 从头遍历
+	#define AL_START_TAIL 1     // 从尾遍历
+
+通过定义listIter，redis 在需要遍历list时，不需要再复制各种tmp值，只需要调用listIter的遍历函数。 以listSearchKey为例：
+	
+	listNode *listSearchKey(list *list, void *key)  // list查找key
+	{
+	    listIter iter;
+	    listNode *node;
+	
+	    listRewind(list, &iter);    // 初始化迭代器
+	    while((node = listNext(&iter)) != NULL) {   // 迭代器遍历
+	        if (list->match) {  // 如果定义了match函数
+	            if (list->match(node->value, key)) {
+	                return node;
+	            }
+	        } else {    // 直接进行值比较
+	            if (key == node->value) {
+	                return node;
+	            }
+	        }
+	    }
+	    return NULL;
+	}
+	
+所有和遍历有关的行为都收敛到了listIter中，list就专注负责存储。
+
 
 
 ## 链表的特性
@@ -65,6 +111,8 @@
 [深入浅出Redis-redis底层数据结构（上）](https://www.cnblogs.com/jaycekon/p/6227442.html)
 
 [Redis-05Redis数据结构--链表( linked-list)](https://blog.csdn.net/yangshangwei/article/details/82792672)
+
+[redis源码解读(二):基础数据结构之ADLIST](http://czrzchao.com/redisSourceAdlist#adlist)
 
 
 
