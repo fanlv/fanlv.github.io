@@ -82,7 +82,7 @@
 
 
 
-![](./images/SDS_example.png)
+![](./images/sds_example.png)
 
 * len记录当前字节数组的长度（不包括\0），使得获取字符串长度的时间复杂度由O(N)变为了O(1)
 * alloc记录了当前字节数组总共分配的内存大小（不包括\0）
