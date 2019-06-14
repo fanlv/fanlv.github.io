@@ -63,6 +63,7 @@
 ## 参考
 
 [深入浅出Redis-redis底层数据结构（上）](https://www.cnblogs.com/jaycekon/p/6227442.html)
+
 [Redis-05Redis数据结构--链表( linked-list)](https://blog.csdn.net/yangshangwei/article/details/82792672)
 
 
