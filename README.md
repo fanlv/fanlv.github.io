@@ -49,9 +49,9 @@
 
 * [Mysql 基础知识汇总](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-sum.md)
 
-* [Redis 数据类型 — 简单动态字符串（simple dynamic string）SDS](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_sds.md)
+* [Redis 源码分析(一) ：SDS](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_sds.md)
 
-* [Redis 数据类型 —  链表 linked-list](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_list.md)
+* [Redis 源码分析(二) ：Linked List](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_list.md)
 
 
 

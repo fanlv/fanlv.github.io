@@ -1,4 +1,4 @@
-# Redis 数据结构 — 链表 linked-list
+# Redis 源码分析(二) ：Linked List
 
 ## 概述
 
