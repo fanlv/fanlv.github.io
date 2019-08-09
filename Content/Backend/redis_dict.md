@@ -1,4 +1,24 @@
-# Redis 源码分析(三) ：Dict
+  # Redis 源码分析(三) ：Dict
+
+- [一、什么是Dict](#%e4%b8%80%e4%bb%80%e4%b9%88%e6%98%afdict)
+- [二、Redis Dict数据结构](#%e4%ba%8credis-dict%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84)
+	- [hash算法](#hash%e7%ae%97%e6%b3%95)
+- [三、Dict的基本操作](#%e4%b8%89dict%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c)
+	- [创建Dict](#%e5%88%9b%e5%bb%badict)
+	- [新增 - dictAdd](#%e6%96%b0%e5%a2%9e---dictadd)
+	- [删除 - dictDelete](#%e5%88%a0%e9%99%a4---dictdelete)
+	- [修改 - dictReplace](#%e4%bf%ae%e6%94%b9---dictreplace)
+	- [查询 - dictFind](#%e6%9f%a5%e8%af%a2---dictfind)
+	- [Rehash](#rehash)
+		- [什么是Rehash](#%e4%bb%80%e4%b9%88%e6%98%afrehash)
+		- [什么时候会触发Rehash](#%e4%bb%80%e4%b9%88%e6%97%b6%e5%80%99%e4%bc%9a%e8%a7%a6%e5%8f%91rehash)
+		- [Rehash的过程](#rehash%e7%9a%84%e8%bf%87%e7%a8%8b)
+		- [Rehash的方式](#rehash%e7%9a%84%e6%96%b9%e5%bc%8f)
+		- [安全/非安全迭代器](#%e5%ae%89%e5%85%a8%e9%9d%9e%e5%ae%89%e5%85%a8%e8%bf%ad%e4%bb%a3%e5%99%a8)
+		- [dictIterator定义](#dictiterator%e5%ae%9a%e4%b9%89)
+		- [dictGetIterator:创建一个迭代器](#dictgetiterator%e5%88%9b%e5%bb%ba%e4%b8%80%e4%b8%aa%e8%bf%ad%e4%bb%a3%e5%99%a8)
+		- [dictNext:迭代一个dictEntry节点](#dictnext%e8%bf%ad%e4%bb%a3%e4%b8%80%e4%b8%aadictentry%e8%8a%82%e7%82%b9)
+- [参考资料](#%e5%8f%82%e8%80%83%e8%b5%84%e6%96%99)
 
 
 # 一、什么是Dict
