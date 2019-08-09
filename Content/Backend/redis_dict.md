@@ -269,7 +269,7 @@ redis内置3种hash算法
 
 
 
-# 修改 - dictReplace
+## 修改 - dictReplace
 
 
 	/* Add or Overwrite:
@@ -301,7 +301,7 @@ redis内置3种hash算法
 	}
 
 
-# 查询 - dictFind
+## 查询 - dictFind
 
 
 	dictEntry *dictFind(dict *d, const void *key)
