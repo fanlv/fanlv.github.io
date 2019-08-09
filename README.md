@@ -53,6 +53,7 @@
 
 * [Redis 源码分析(二) ：Linked List](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_list.md)
 
+* [Redis 源码分析(三) ：Dict](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_dict.md)
 
 
 
