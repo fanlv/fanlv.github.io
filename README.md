@@ -18,7 +18,6 @@
 
 
 
-
 ## 一、Mathematics
 
 * [统计学基础](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Maths/Statistics.md)
@@ -31,6 +30,30 @@
 ## 二、Backend
 
 
+## Data
+
+* [Mysql 锁详解](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-lock.md)
+
+* [Mysql 索引那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-index.md)
+
+* [Mysql 基础知识汇总](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-sum.md)
+
+* [MyISAM和InnoDB区别和应用场景](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-engine.md)
+
+
+
+## Cache
+
+* [Redis 源码分析(一) ：SDS](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_sds.md)
+
+* [Redis 源码分析(二) ：Linked List](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_list.md)
+
+* [Redis 源码分析(三) ：Dict](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_dict.md)
+
+* [Redis 源码分析(四) ：intset](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_intset.md)
+
+## Others
+
 * [跨域请求的几种解决方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/crsf.md)
 
 * [Go 执行Lua脚本和JS测试](https://github.com/fanlv/runJsAndrLuaInGo)
@@ -41,25 +64,9 @@
 
 * [Golang 内存对齐问题](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/data-struct-alignment.md)
 
-* [MyISAM和InnoDB区别和应用场景](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-engine.md)
+* [ApiGate 架构设计]()
 
-* [Mysql 锁详解](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-lock.md)
-
-* [Mysql 索引那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-index.md)
-
-* [Mysql 基础知识汇总](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-sum.md)
-
-* [Redis 源码分析(一) ：SDS](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_sds.md)
-
-* [Redis 源码分析(二) ：Linked List](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_list.md)
-
-* [Redis 源码分析(三) ：Dict](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_dict.md)
-
-
-
-* [ApiGate 架构设计-占坑]()
-
-* [Kite框架梳理-占坑]()
+* [Kite框架梳理]()
 
 ## 三、Network
 
