@@ -71,7 +71,7 @@
 
 ## 三、编码方式
 
-每个`entry`可以存储一个整数或一个字节数组。为了节省内存，redis 对不同类型，不同大小的数据采用了不同的编码方式，下面是不同数据类型的编码方式：
+`zlentry`中`len`字段配合`encoding`字段进行了编码, 尽量压缩字段长度, 减少内存使用. 如果实体内容被编码成整数, 则长度默认为1, 如果实体内容被编码为字符串, 则会根据不同长度进行不同编码.编码原则是第一个字节前两个bit位标识占用空间长度, 分别有以下几种, 后面紧跟着存储实际值.
 
 ### zlentry之prevrawlen编码
 
@@ -103,7 +103,6 @@
 
 ### 字符串编码
 
-`zlentry`中`len`字段配合`encoding`字段进行了编码, 尽量压缩字段长度, 减少内存使用. 如果实体内容被编码成整数, 则长度默认为1, 如果实体内容被编码为字符串, 则会根据不同长度进行不同编码.编码原则是第一个字节前两个bit位标识占用空间长度, 分别有以下几种, 后面紧跟着存储实际值.
 	
 	/*字符串编码标识使用了最高2bit位 */
 	#define ZIP_STR_06B (0 << 6)  //6bit
@@ -201,18 +200,18 @@
 
 整数节点的`encoding`的长度为8位，其中高2位用来区分整数节点和字符串节点（**高2位为11时是整数节点**），低6位用来区分整数节点的类型。
 
-值得注意的是 最后一种encoding是存储整数0~12的节点的encoding，它没有额外的data部分，encoding的高4位表示这个类型，低4位就是它的data。这种类型的节点的encoding大小介于ZIP_INT_24B与ZIP_INT_8B之间（1~13），但是为了表示整数0，取出低四位xxxx之后会将其-1作为实际的data值（0~12）。
+值得注意的是 最后一种encoding是存储整数`0~12`的节点的encoding，它没有额外的data部分，encoding的高4位表示这个类型，低4位就是它的data。这种类型的节点的encoding大小介于ZIP_INT_24B与ZIP_INT_8B之间（`1~13`），但是为了表示整数0，取出低四位xxxx之后会将其-1作为实际的data值（`0~12`）。
 
 	
 ### 编码总结
 
-不同于整数节点encoding永远是8位，字符串节点的encoding可以有8位、16位、40位三种长度
+不同于整数节点`encoding`永远是8位，字符串节点的encoding可以有8位、16位、40位三种长度
 
-相同encoding类型的整数节点 data长度是固定的，但是相同encoding类型的字符串节点，data长度取决于encoding后半部分的值。
+相同`encoding`类型的整数节点 `data`长度是固定的，但是相同`encoding`类型的字符串节点，`data`长度取决于`encoding`后半部分的值。
 
 ## 四、添加元素
 
-有了一个初始化后的ziplist，就可以往里添加数据了，以push函数为例对ziplist的插入过程做一个解析，顺便把ziplist的完整数据结构做一个整理：
+有了一个初始化后的`ziplist`，就可以往里添加数据了，以`push`函数为例对`ziplist`的插入过程做一个解析，顺便把`ziplist`的完整数据结构做一个整理：
 
 	unsigned char *ziplistPush(unsigned char *zl, unsigned char *s, unsigned int slen, int where) { // push
 	    unsigned char *p;
@@ -220,7 +219,7 @@
 	    return __ziplistInsert(zl,p,s,slen);
 	}
 
-push的方式分为头尾两种，主体还是要看__ziplistInsert函数：
+`push`的方式分为头尾两种，主体还是要看`__ziplistInsert`函数：
 	
 	unsigned char *__ziplistInsert(unsigned char *zl, unsigned char *p, unsigned char *s, unsigned int slen) {  // 插入
 	    size_t curlen = intrev32ifbe(ZIPLIST_BYTES(zl)), reqlen;
@@ -326,12 +325,12 @@ push的方式分为头尾两种，主体还是要看__ziplistInsert函数：
 7. 保存当前节点，分表保存`prevlen`、`encoding`、对应内容
 8. `ziplist`的`len`加1
 
-通过对push的梳理，ziplist的内存分布就很清晰了：
+通过对push的梳理，`ziplist`的内存分布就很清晰了：
 
 
 ![](./images/redis_zip_list_memory.png)
 
-通过连续的内存和上述编码方式，ziplist可以很方便的拿到头尾节点；由于每个节点都保存了前一个节点的长度，因此可以通过尾节点很方便的利用内存偏移进行遍历；相比链表或hash表大大压缩了内存；最主要这个数据结构的大部分场景都是pop或push，因此在查找和中间插入场景下的时间复杂度提升也是可以接受的。
+通过连续的内存和上述编码方式，`ziplist`可以很方便的拿到头尾节点；由于每个节点都保存了前一个节点的长度，因此可以通过尾节点很方便的利用内存偏移进行遍历；相比链表或hash表大大压缩了内存；最主要这个数据结构的大部分场景都是`pop`或`push`，因此在查找和中间插入场景下的时间复杂度提升也是可以接受的。
 
 
 ## 五、已知节点的位置，求data的值
@@ -456,7 +455,7 @@ push的方式分为头尾两种，主体还是要看__ziplistInsert函数：
 
 
 ## 七、删除元素
-删除元素主要通过ziplistDelete和ziplistDeleteRange来进行
+删除元素主要通过`ziplistDelete`和`ziplistDeleteRange`来进行
 
 	
 	/* 删除一个元素*/
@@ -557,7 +556,7 @@ push的方式分为头尾两种，主体还是要看__ziplistInsert函数：
 
 由于每个节点都保存着前一个节点的长度，并且redis出于节省内存的考量，针对254这个分界点上下将`prelen`的长度分别设为1和5字节。因此当我们插入一个节点时，后一个节点的`prelen`可能就需要进行扩展；那么如果后一个节点原本的长度为253呢？由于`prelen`的扩展，导致再后一个节点也需要进行扩展。在最极端情况下会将整个`ziplist`都进行更新。
 
-在push的代码中可以看到如果当前节点的prelen字段进行了扩展，会调用__ziplistCascadeUpdate进行连锁更新：
+在push的代码中可以看到如果当前节点的`prelen`字段进行了扩展，会调用`__ziplistCascadeUpdate`进行连锁更新：
 	
 	unsigned char *__ziplistCascadeUpdate(unsigned char *zl, unsigned char *p) {    // 连锁更新
 	    size_t curlen = intrev32ifbe(ZIPLIST_BYTES(zl)), rawlen, rawlensize;
@@ -618,7 +617,7 @@ push的方式分为头尾两种，主体还是要看__ziplistInsert函数：
 	    return zl;
 	}
 
-可以看到ziplist的连锁更新是一个一个节点进行校验，直到遍历完整个ziplist或遇到不需要更新的节点为止。
+可以看到`ziplist`的连锁更新是一个一个节点进行校验，直到遍历完整个`ziplist`或遇到不需要更新的节点为止。
 
 尽管连锁更新的复杂度较高，但它真正造成性能问题的几率是很低的。 
 
@@ -644,4 +643,4 @@ push的方式分为头尾两种，主体还是要看__ziplistInsert函数：
 
 [Redis之ziplist数据结构](https://www.cnblogs.com/ourroad/p/4896387.html)
 
-[Redis之ziplist数据结构](https://blog.csdn.net/qiangzhenyi1207/article/details/80353104)
+[redis源码之压缩列表ziplist](https://blog.csdn.net/qiangzhenyi1207/article/details/80353104)
