@@ -1,10 +1,10 @@
-  # Redis 源码分析(三) ：Dict
+  # Redis 源码分析(三) ：dict
 
-- [一、什么是Dict](#%e4%b8%80%e4%bb%80%e4%b9%88%e6%98%afdict)
-- [二、Redis Dict数据结构](#%e4%ba%8credis-dict%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84)
+- [一、什么是dict](#%e4%b8%80%e4%bb%80%e4%b9%88%e6%98%afdict)
+- [二、Redis dict数据结构](#%e4%ba%8credis-dict%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84)
 	- [hash算法](#hash%e7%ae%97%e6%b3%95)
-- [三、Dict的基本操作](#%e4%b8%89dict%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c)
-	- [创建Dict](#%e5%88%9b%e5%bb%badict)
+- [三、dict的基本操作](#%e4%b8%89dict%e7%9a%84%e5%9f%ba%e6%9c%ac%e6%93%8d%e4%bd%9c)
+	- [创建dict](#%e5%88%9b%e5%bb%badict)
 	- [新增 - dictAdd](#%e6%96%b0%e5%a2%9e---dictadd)
 	- [删除 - dictDelete](#%e5%88%a0%e9%99%a4---dictdelete)
 	- [修改 - dictReplace](#%e4%bf%ae%e6%94%b9---dictreplace)
@@ -21,12 +21,12 @@
 - [参考资料](#%e5%8f%82%e8%80%83%e8%b5%84%e6%96%99)
 
 
-# 一、什么是Dict
+# 一、什么是dict
 
-`dict` (dictionary 字典)，通常的存储结构是Key-Value形式的，通过Hash函数对`key`求Hash值来确定`Value`的位置，因此也叫Hash表，是一种用来解决算法中查找问题的数据结构，默认的算法复杂度接近O(1)，Redis本身也叫Remote Dictionary Server(远程字典服务器)，其实也就是一个大字典，它的`key`通常来说是String类型的，但是`Value`可以是 
+`dict` (dictionary 字典)，通常的存储结构是Key-Value形式的，通过Hash函数对`key`求Hash值来确定`Value`的位置，因此也叫Hash表，是一种用来解决算法中查找问题的数据结构，默认的算法复杂度接近O(1)，Redis本身也叫Remote dictionary Server(远程字典服务器)，其实也就是一个大字典，它的`key`通常来说是String类型的，但是`Value`可以是 
 `String`、`Set`、`ZSet`、`Hash`、`List`等不同的类型，下面我们看下dict的数据结构定义。
 
-# 二、Redis Dict数据结构
+# 二、Redis dict数据结构
 
 ![](./images/redis_dict.png)
 
@@ -104,9 +104,9 @@ redis内置2种hash算法
 		}
 
 
-# 三、Dict的基本操作
+# 三、dict的基本操作
 
-## 创建Dict
+## 创建dict
 
 	/* Reset a hash table already initialized with ht_init().
 	 * NOTE: This function should only be called by ht_destroy(). */
@@ -138,7 +138,7 @@ redis内置2种hash算法
 	    d->privdata = privDataPtr;
 	    d->rehashidx = -1;
 	    d->iterators = 0;
-	    return DICT_OK;
+	    return dict_OK;
 	}
 需要注意的是创建初始化一个dict时并没有为buckets分配空间，table是赋值为null的。只有在往dict里添加dictEntry节点时才会为buckets分配空间，真正意义上创建一张hash表。
 
@@ -162,9 +162,9 @@ redis内置2种hash算法
 	{
 	    dictEntry *entry = dictAddRaw(d,key,NULL);//只在buckets的某个索引里新建一个dictEntry并调整链表的位置,只设置key，不设置不设置val
 	
-	    if (!entry) return DICT_ERR;
+	    if (!entry) return dict_ERR;
 	    dictSetVal(d, entry, val);
-	    return DICT_OK;
+	    return dict_OK;
 	}
 	
 	
@@ -233,10 +233,10 @@ redis内置2种hash算法
         (d)->type->keyCompare((d)->privdata, key1, key2) : \
         (key1) == (key2))
         
-	/* Remove an element, returning DICT_OK on success or DICT_ERR if the
+	/* Remove an element, returning dict_OK on success or dict_ERR if the
 	 * element was not found. */
 	int dictDelete(dict *ht, const void *key) {
-	    return dictGenericDelete(ht,key,0) ? DICT_OK : DICT_ERR;
+	    return dictGenericDelete(ht,key,0) ? dict_OK : dict_ERR;
 	}
 	
 	/* Search and remove an element. This is an helper function for
@@ -368,7 +368,7 @@ redis内置2种hash算法
 	    if (existing) *existing = NULL;
 	
 	    /* Expand the hash table if needed */
-	    if (_dictExpandIfNeeded(d) == DICT_ERR)
+	    if (_dictExpandIfNeeded(d) == dict_ERR)
 	        return -1;
 	    for (table = 0; table <= 1; table++) {
 	        idx = hash & d->ht[table].sizemask;
@@ -391,10 +391,10 @@ redis内置2种hash算法
 	static int _dictExpandIfNeeded(dict *d)
 	{
 	    /* Incremental rehashing already in progress. Return. */
-	    if (dictIsRehashing(d)) return DICT_OK; //如果正在ReHash，那直接返回OK，其实也表明申请了空间不久。
+	    if (dictIsRehashing(d)) return dict_OK; //如果正在ReHash，那直接返回OK，其实也表明申请了空间不久。
 	
 	    /* If the hash table is empty expand it to the initial size. */
-	    if (d->ht[0].size == 0) return dictExpand(d, DICT_HT_INITIAL_SIZE);//如果 0 号哈希表的大小为0，表示还未创建，按照默认大小`DICT_HT_INITIAL_SIZE=4`去创建
+	    if (d->ht[0].size == 0) return dictExpand(d, dict_HT_INITIAL_SIZE);//如果 0 号哈希表的大小为0，表示还未创建，按照默认大小`dict_HT_INITIAL_SIZE=4`去创建
 	
 	    /* If we reached the 1:1 ratio, and we are allowed to resize the hash
 	     * table (global setting) or we should avoid it but the ratio between
@@ -407,7 +407,7 @@ redis内置2种hash算法
 	    {
 	        return dictExpand(d, d->ht[0].used*2);
 	    }
-	    return DICT_OK;
+	    return dict_OK;
 	}
 	
 	
@@ -421,13 +421,13 @@ redis内置2种hash算法
 	    /* the size is invalid if it is smaller than the number of
 	     * elements already inside the hash table */
 	    if (dictIsRehashing(d) || d->ht[0].used > size)
-	        return DICT_ERR;
+	        return dict_ERR;
 	
 	    dictht n; /* the new hash table */
 	    unsigned long realsize = _dictNextPower(size);////从4开始找大于等于size的最小2^n作为新的slot数量
 	
 	    /* Rehashing to the same table size is not useful. */
-	    if (realsize == d->ht[0].size) return DICT_ERR;
+	    if (realsize == d->ht[0].size) return dict_ERR;
 	
 	    /* Allocate the new hash table and initialize all pointers to NULL */
 	    n.size = realsize;
@@ -439,13 +439,13 @@ redis内置2种hash算法
 	     * we just set the first hash table so that it can accept keys. */
 	    if (d->ht[0].table == NULL) {//刚创建的dict
 	        d->ht[0] = n;//为d->ht[0]赋值
-	        return DICT_OK;
+	        return dict_OK;
 	    }
 	
 	    /* Prepare a second hash table for incremental rehashing */
 	    d->ht[1] = n;
 	    d->rehashidx = 0;//设置为0表示开始从0号bucket Rehash
-	    return DICT_OK;
+	    return dict_OK;
 	}
 	
 ### Rehash的过程
@@ -637,6 +637,6 @@ redis在第一次执行迭代时会用`dictht[0]`、`dictht[1]`的`used`、`size
 
 [Redis源码分析（dict）](https://blog.csdn.net/yangbodong22011/article/details/78467583)
 
-[redis源码解读(三):基础数据结构之dict](http://czrzchao.com/redisSourceDict)
+[redis源码解读(三):基础数据结构之dict](http://czrzchao.com/redisSourcedict)
 
 [Redis源码分析（dict）](https://blog.csdn.net/yangbodong22011/article/details/78467583)

@@ -44,11 +44,11 @@
 
 ## Cache
 
-* [Redis 源码分析(一) ：SDS](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_sds.md)
+* [Redis 源码分析(一) ：sds](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_sds.md)
 
-* [Redis 源码分析(二) ：Linked List](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_list.md)
+* [Redis 源码分析(二) ：ADList](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_list.md)
 
-* [Redis 源码分析(三) ：Dict](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_dict.md)
+* [Redis 源码分析(三) ：dict](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_dict.md)
 
 * [Redis 源码分析(四) ：intset](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_intset.md)
 
