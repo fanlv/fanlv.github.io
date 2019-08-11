@@ -54,6 +54,9 @@
 
 * [Redis 源码分析(五) ：ziplist](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_zip_list.md)
 
+* [Redis 源码分析(六) ：quciklist](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_quick_list.md)
+
+
 
 ## Others
 
