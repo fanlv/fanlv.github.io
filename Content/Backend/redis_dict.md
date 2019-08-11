@@ -1,4 +1,4 @@
-  # Redis 源码分析(三) ：dict
+# Redis 源码分析(三) ：dict
 
 - [一、什么是dict](#%e4%b8%80%e4%bb%80%e4%b9%88%e6%98%afdict)
 - [二、Redis dict数据结构](#%e4%ba%8credis-dict%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84)
