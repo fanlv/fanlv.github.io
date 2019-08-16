@@ -56,6 +56,7 @@
 
 * [Redis 源码分析(六) ：quciklist](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_quick_list.md)
 
+* [Redis 源码分析(七) ：skiplist](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_skip_list.md)
 
 
 ## Others
