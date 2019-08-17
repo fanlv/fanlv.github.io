@@ -58,6 +58,8 @@
 
 * [Redis 源码分析(七) ：skiplist](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_skip_list.md)
 
+* [Redis 高可用解决方案总结](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/redis_ha.md)
+
 
 ## Others
 
