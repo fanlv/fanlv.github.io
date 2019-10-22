@@ -263,8 +263,3 @@ delay ack是指收到包后不立即ack，而是等一小会（比如40毫秒）
 
 假如client要发送一个http请求给server，这个请求有1600个bytes，握手的MSS是1460，那么这1600个bytes就会分成2个TCP包，第一个包1460，剩下的140bytes放在第二个包。第一个包发出去后，server收到第一个包，因为delay ack所以没有回复ack，同时因为server没有收全这个HTTP请求，所以也没法回复HTTP response（server等一个完整的HTTP请求，或者40毫秒的delay时间）。client这边开启了Nagle算法（默认开启）第二个包比较小（140 < MSS),第一个包的ack还没有回来，那么第二个包就不发了，等！互相等！一直到Delay Ack的Delay时间到了！
 
-
-
-滑动窗口
-
-快重传
