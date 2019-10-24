@@ -193,76 +193,85 @@ redis 的跳跃表是一个双向的链表，并且在`zskiplist`结构体中保
 ### 跳跃表创建及插入
 
 跳跃表的创建就是一些基本的初始化操作，需要注意的是 redis 的跳跃表最大层数为 64，是为了能够足够支撑优化`2^64`个元素的查找。假设每个元素出现在上一层索引的概率为 0.5，每个元素出现在第 n 层的概率为`1/2^n`，所以当有`2^n`个元素时，需要 n 层索引保证查询时间复杂度为`O(logN)`。
-zskiplistNode *zslCreateNode(int level, double score, robj *obj) { // 跳跃表节点创建
-zskiplistNode *zn = zmalloc(sizeof(*zn)+level*sizeof(struct zskiplistLevel));
-zn->score = score;
-zn->obj = obj;
-return zn;
-}
-zskiplist *zslCreate(void) { // 跳跃表创建
-int j;
-zskiplist *zsl;
-zsl = zmalloc(sizeof(*zsl));
-zsl->level = 1;
-zsl->length = 0;
-zsl->header = zslCreateNode(ZSKIPLIST_MAXLEVEL,0,NULL); // 创建头结点
-for (j = 0; j < ZSKIPLIST_MAXLEVEL; j++) { // 初始化头结点
-zsl->header->level[j].forward = NULL;
-zsl->header->level[j].span = 0;
-}
-zsl->header->backward = NULL;
-zsl->tail = NULL;
-return zsl;
-}
+	
+	zskiplistNode *zslCreateNode(int level, double score, robj *obj) {  // 跳跃表节点创建
+	    zskiplistNode *zn = zmalloc(sizeof(*zn)+level*sizeof(struct zskiplistLevel));
+	    zn->score = score;
+	    zn->obj = obj;
+	    return zn;
+	}
+	
+	zskiplist *zslCreate(void) {    // 跳跃表创建
+	    int j;
+	    zskiplist *zsl;
+	
+	    zsl = zmalloc(sizeof(*zsl));
+	    zsl->level = 1;
+	    zsl->length = 0;
+	    zsl->header = zslCreateNode(ZSKIPLIST_MAXLEVEL,0,NULL); // 创建头结点
+	    for (j = 0; j < ZSKIPLIST_MAXLEVEL; j++) {  // 初始化头结点
+	        zsl->header->level[j].forward = NULL;
+	        zsl->header->level[j].span = 0;
+	    }
+	    zsl->header->backward = NULL;
+	    zsl->tail = NULL;
+	    return zsl;
+	}
 
 redis 的跳跃表出现在上层索引节点的概率为 0.25，在这样的概率下跳跃表的查询效率会略大于 O(logN)，但是索引的存储内存却能节省一半。
-zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) { // 跳跃表 zset 节点插入
-zskiplistNode *update[ZSKIPLIST_MAXLEVEL], _x;
-unsigned int rank[ZSKIPLIST_MAXLEVEL];
-int i, level;
-serverAssert(!isnan(score));
-x = zsl->header;
-for (i = zsl->level-1; i >= 0; i--) { // 获取带插入节点的位置
-/_ store rank that is crossed to reach the insert position _/
-rank[i] = i == (zsl->level-1) ? 0 : rank[i+1];
-while (x->level[i].forward &&
-(x->level[i].forward->score < score ||
-(x->level[i].forward->score == score &&
-compareStringObjects(x->level[i].forward->obj,obj) < 0))) { // 如果当前节点分支小于带插入节点
-rank[i] += x->level[i].span; // 记录各层 x 前一个节点的索引跨度
-x = x->level[i].forward; // 查找一下个节点
-}
-update[i] = x; // 记录各层 x 的前置节点
-}
-level = zslRandomLevel(); // 获取当前节点的 level
-if (level > zsl->level) { // 如果 level 大于当前 skiplist 的 level 将大于部分的 header 初始化
-for (i = zsl->level; i < level; i++) {
-rank[i] = 0;
-update[i] = zsl->header;
-update[i]->level[i].span = zsl->length;
-}
-zsl->level = level;
-}
-x = zslCreateNode(level,score,obj); // 创建新节点
-for (i = 0; i < level; i++) {
-x->level[i].forward = update[i]->level[i].forward; // 建立 x 节点索引
-update[i]->level[i].forward = x; // 将各层 x 的前置节点的后置节点置为 x
-/_ update span covered by update[i] as x is inserted here _/
-x->level[i].span = update[i]->level[i].span - (rank[0] - rank[i]); // 计算 x 节点各层索引跨度
-update[i]->level[i].span = (rank[0] - rank[i]) + 1; // 计算 x 前置节点的索引跨度
-}
-/_ increment span for untouched levels \*/
-for (i = level; i < zsl->level; i++) { // 如果 level 小于 zsl 的 level
-update[i]->level[i].span++; // 将 x 前置节点的索引跨度加一
-}
-x->backward = (update[0] == zsl->header) ? NULL : update[0]; // 设置 x 前置节点
-if (x->level[0].forward)
-x->level[0].forward->backward = x; // 设置 x 后面节点的前置节点
-else
-zsl->tail = x;
-zsl->length++; // length+1
-return x;
-}
+	
+	zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) { // 跳跃表zset节点插入
+	    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
+	    unsigned int rank[ZSKIPLIST_MAXLEVEL];
+	    int i, level;
+	
+	    serverAssert(!isnan(score));
+	    x = zsl->header;
+	    for (i = zsl->level-1; i >= 0; i--) {   // 获取带插入节点的位置
+	        /* store rank that is crossed to reach the insert position */
+	        rank[i] = i == (zsl->level-1) ? 0 : rank[i+1];
+	        while (x->level[i].forward &&
+	            (x->level[i].forward->score < score ||
+	                (x->level[i].forward->score == score &&
+	                compareStringObjects(x->level[i].forward->obj,obj) < 0))) { // 如果当前节点分支小于带插入节点
+	            rank[i] += x->level[i].span;    // 记录各层x前一个节点的索引跨度
+	            x = x->level[i].forward;    // 查找一下个节点
+	        }
+	        update[i] = x;  // 记录各层x的前置节点
+	    }
+	
+	    level = zslRandomLevel();   // 获取当前节点的level
+	    if (level > zsl->level) {   // 如果level大于当前skiplist的level 将大于部分的header初始化
+	        for (i = zsl->level; i < level; i++) {
+	            rank[i] = 0;
+	            update[i] = zsl->header;
+	            update[i]->level[i].span = zsl->length;
+	        }
+	        zsl->level = level;
+	    }
+	    x = zslCreateNode(level,score,obj); // 创建新节点
+	    for (i = 0; i < level; i++) {
+	        x->level[i].forward = update[i]->level[i].forward;  // 建立x节点索引
+	        update[i]->level[i].forward = x;    // 将各层x的前置节点的后置节点置为x
+	
+	        /* update span covered by update[i] as x is inserted here */
+	        x->level[i].span = update[i]->level[i].span - (rank[0] - rank[i]);  // 计算x节点各层索引跨度
+	        update[i]->level[i].span = (rank[0] - rank[i]) + 1; // 计算x前置节点的索引跨度
+	    }
+	
+	    /* increment span for untouched levels */
+	    for (i = level; i < zsl->level; i++) {  // 如果level小于zsl的level
+	        update[i]->level[i].span++; // 将x前置节点的索引跨度加一
+	    }
+	
+	    x->backward = (update[0] == zsl->header) ? NULL : update[0];    // 设置x前置节点
+	    if (x->level[0].forward)
+	        x->level[0].forward->backward = x;  // 设置x后面节点的前置节点
+	    else
+	        zsl->tail = x;
+	    zsl->length++;  // length+1
+	    return x;
+	}
 
 ### Redis 中 skiplist 实现的特殊性
 
