@@ -109,7 +109,7 @@
 
 ## 五、Arithmetic
 
-* [常用的排序算法](https://github.com/fanlv/fanlv.github.io/blob/master/Content/arithmetic/sort.md)
+* [常用的排序算法](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Arithmetic/sort.md)
 
 
 
