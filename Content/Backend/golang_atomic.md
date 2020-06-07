@@ -4,7 +4,8 @@
 ## 一、背景
 
 ### 1.1 一个CodeReview引发的思考
-一个同学在我们 `Golang` 项目里面用 `Double Check`（不清楚的同学可以去百度搜下Java中比较常见，Golang底层Sync库也有部分代码用到这种方式）的方式实现了一个单例。具体实现如下：
+
+一个同学在 `Golang` 项目里面用 `Double Check`（不清楚的同学可以去百度搜下Java中比较常见，Golang底层Sync库也有部分代码用到这种方式）的方式实现了一个单例。具体实现如下：
 	
 	var instance *UserInfo
 	
@@ -15,7 +16,7 @@
 			defer lock.Unlock()
 			if instance == nil {
 				a := &UserInfo{
-					Name: "fan",
+					Name: "Alice",
 				}
 				instance = a
 			}
@@ -30,23 +31,23 @@
 	WARNING: DATA RACE
 	Read at 0x00000120d9c0 by goroutine 8:
 	  main.getInstance()
-	      /Users/hh/go/src/github.com/hh/GolangDemo/GoTest/go_race2.go:42 +0x4f
+	      /Users/fl/go/src/github.com/fl/GolangDemo/GoTest/go_race2.go:42 +0x4f
 	  main.main.func1()
-	      /Users/hh/go/src/github.com/hh/GolangDemo/GoTest/go_race2.go:24 +0x44
+	      /Users/fl/go/src/github.com/fl/GolangDemo/GoTest/go_race2.go:24 +0x44
 	
 	Previous write at 0x00000120d9c0 by goroutine 7:
 	  main.getInstance()
-	      /Users/hh/go/src/github.com/hh/GolangDemo/GoTest/go_race2.go:49 +0x169
+	      /Users/fl/go/src/github.com/fl/GolangDemo/GoTest/go_race2.go:49 +0x169
 	  main.main.func1()
-	      /Users/hh/go/src/github.com/hh/GolangDemo/GoTest/go_race2.go:24 +0x44
+	      /Users/fl/go/src/github.com/fl/GolangDemo/GoTest/go_race2.go:24 +0x44
 	
 	Goroutine 8 (running) created at:
 	  main.main()
-	      /Users/hh/go/src/github.com/hh/GolangDemo/GoTest/go_race2.go:23 +0xab
+	      /Users/fl/go/src/github.com/fl/GolangDemo/GoTest/go_race2.go:23 +0xab
 	
 	Goroutine 7 (finished) created at:
 	  main.main()
-	      /Users/hh/go/src/github.com/hh/GolangDemo/GoTest/go_race2.go:23 +0xab
+	      /Users/fl/go/src/github.com/fl/GolangDemo/GoTest/go_race2.go:23 +0xab
 	==================
 
 
@@ -62,7 +63,16 @@
 
 直接翻译过来就是：`在程序运行中，内存模型描述了多线程如何通过内存的交互来共享数据`
 
-**`Memory Model` 其实是一个概念，表示在多线程场景下，如何保证数据同步的正确性。** 为什么多线程读取共享内存变量的时候会有`数据同步正确性`问题呢，这里主要涉及到`CPU乱序执行`，
+看下Golang官方文档的解释：[The Go Memory Model](https://golang.org/ref/mem)
+
+> The Go memory model specifies the conditions under which reads of a variable in one goroutine can be guaranteed to observe values produced by writes to the same variable in a different goroutine.
+
+翻译下就是：Go内存模型指定了一定的条件，在这种条件下，可以保证一个共享变量，在一个goroutine（线程）中写入，可以在另外一个线程被观察到。
+
+
+**`Memory Model` 其实是一个概念，表示在多线程场景下，如何保证数据同步的正确性。** 为什么多线程读取共享内存变量的时候会有`数据同步正确性`问题呢，这里主要涉及到**`CPU缓存一致性问题`**和**`CPU乱序执行的问题`**。
+
+
 
 各个语言对`Memory Model`实现方式各不相同，对其他语言感兴趣的同学可以去搜索下相关资料。
 
@@ -73,4 +83,79 @@
 [《C++ Concurrency in Action》第五章](https://book.douban.com/subject/27036085/) （大佬推荐的书，耐何精力有限，还没拜读）
 
 
-##
+## 二、CPU执行原理
+
+### 2.1 线程可见性
+
+我们先看一下测试的
+	
+	func main() {
+		running := true
+		go func() {
+			println("thread1 start")
+			count := 1
+			for running {
+				count++
+			}
+			println("thread1 end : count = ", count) //这个循环永远也不会结束,为什么？
+		}()
+		go func() {
+			println("start thread2")
+			for {
+				running = false
+			}
+		}()
+		time.Sleep(time.Hour)
+		return
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
