@@ -28,7 +28,7 @@
 			- [Atomic](#atomic)
 		- [3.2 Golang Happen Before 语义继承图](#32-golang-happen-before-语义继承图)
 		- [3.3 如何解决上面Golang Double Check的问题](#33-如何解决上面golang-double-check的问题)
-	- [四、CPU Cache 扩展](#四cpu-cache-扩展)
+	- [四、CPU Cache 扩展知识](#四cpu-cache-扩展知识)
 		- [4.1 CPU Cache 的产生背景](#41-cpu-cache-的产生背景)
 		- [4.2 CPU Cache 模型](#42-cpu-cache-模型)
 		- [4.3 什么是 Cache Line](#43-什么是-cache-line)
@@ -577,7 +577,7 @@ A进程进来的时候拿到锁，然后对`instance`进行赋值，这个时候
 
 再次用`go run -race go_race2.go` 检查发现已经没有警告了。
 
-## 四、CPU Cache 扩展
+## 四、CPU Cache 扩展知识
 
 ### 4.1 CPU Cache 的产生背景
 
