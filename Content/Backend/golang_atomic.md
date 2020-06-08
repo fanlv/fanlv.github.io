@@ -27,17 +27,17 @@
 			- [Lock](#lock)
 			- [Atomic](#atomic)
 		- [3.2 Golang Happen Before 语义继承图](#32-golang-happen-before-语义继承图)
-		- [3.3 如果解决上面Golang Double Check的问题](#33-如果解决上面golang-double-check的问题)
+		- [3.3 如何解决上面Golang Double Check的问题](#33-如何解决上面golang-double-check的问题)
 	- [四、CPU Cache 扩展](#四cpu-cache-扩展)
 		- [4.1 CPU Cache 的产生背景](#41-cpu-cache-的产生背景)
 		- [4.2 CPU Cache 模型](#42-cpu-cache-模型)
-		- [4.3 Cache Line](#43-cache-line)
+		- [4.3 什么是 Cache Line](#43-什么是-cache-line)
 		- [4.4 Flase Sharing 问题](#44-flase-sharing-问题)
 		- [4.5 如何解决False Sharding问题](#45-如何解决false-sharding问题)
 		- [4.6 CPU Cache 是如何存放数据的](#46-cpu-cache-是如何存放数据的)
 		- [4.7 CPU Cache 寻址过程](#47-cpu-cache-寻址过程)
-		- [4.8 CPU Cache根据寻址方式](#48-cpu-cache根据寻址方式)
-		- [4.9 Cache 的组织方式](#49-cache-的组织方式)
+		- [4.8 CPU Cache 三种寻址方式](#48-cpu-cache-三种寻址方式)
+		- [4.9 CPU Cache 的组织方式](#49-cpu-cache-的组织方式)
 			- [VIVT(Virtual Index Virtual Tag)](#vivtvirtual-index-virtual-tag)
 			- [VIPT(Virtual Index Physical Tag)](#viptvirtual-index-physical-tag)
 			- [PIPT(Physical Index Physical Tag)](#piptphysical-index-physical-tag)
@@ -593,7 +593,7 @@ A进程进来的时候拿到锁，然后对`instance`进行赋值，这个时候
 
 
 
-### 4.3 Cache Line
+### 4.3 什么是 Cache Line
 
 `Cache line` 是 `Cache` 和 `RAM` 交换数据的最小单位，通常为 `64 Byte`。当 CPU 把内存的数据载入 `Cache` 时，会把临近的共 `64 Byte` 的数据一同放入同一个`Cache line`，因为空间局部性：临近的数据在将来被访问的可能性大。
 
@@ -704,14 +704,14 @@ Cache Line Count = 32*1024 / 64 = 512个
 
 ![](./images/hit_cache3.jpg)
 
-### 4.8 CPU Cache根据寻址方式
+### 4.8 CPU Cache 三种寻址方式
 
 * 直接映射（`direct mapped cache`），相当于每个set只有1个`cache line`（E=1）。那么相隔2^(s+b)个单元的2个内存单元，会被映射到同一个`cache line`中。
 * 组关联（`set associative cache`），多个`set`，每个`set`多个`cache line`。一般每个`set`有`n`个`cache line`，就说`n-ways associative cache`。
 * 全相联（`fully associative cache`），相当于只有1个`set`，每个内存单元都能映射到任意的`cache line`。带有这样`cache`的处理器几乎没有。可以想见这种方式不适合大的缓存。想想看，如果4M 的大缓存　linesize为32Byte，采用全相联的话，就意味着4 * 1024 * 1024/32 = 128K 个line挨个比较，来确定是否命中，这是多要命的事情。
 
 
-### 4.9 Cache 的组织方式
+### 4.9 CPU Cache 的组织方式
 
 #### VIVT(Virtual Index Virtual Tag)
 
