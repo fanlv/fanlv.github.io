@@ -28,7 +28,7 @@
 			- [Atomic](#atomic)
 		- [3.2 Golang Happen Before 语义继承图](#32-golang-happen-before-语义继承图)
 		- [3.3 如果解决上面Golang Double Check的问题](#33-如果解决上面golang-double-check的问题)
-	- [参考](#参考)
+	- [参考资料](#参考资料)
 
 
 ## 一、背景
@@ -541,7 +541,7 @@ A进程进来的时候拿到锁，然后对`instance`进行赋值，这个时候
 
 知道了原因，我们可以直接用Atomic.Value来保证可见性和原子性就行了，改造代码如下：
 
-	var instance atomic.Value
+	var instance atomic.Value //Golang里面的Sync.map就是用atomic.Value 加Double Check来实现读写的
 	
 	func getInstance() (*UserInfo, error) {
 		if instance.Load() == nil {
@@ -560,7 +560,7 @@ A进程进来的时候拿到锁，然后对`instance`进行赋值，这个时候
 再次用`go run -race go_race2.go` 检查发现已经没有警告了。
 
 
-## 参考
+## 参考资料
 
 https://zhuanlan.zhihu.com/p/29108170
 
