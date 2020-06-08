@@ -1,4 +1,34 @@
+
 # Golang Memory Model
+
+- [Golang Memory Model](#golang-memory-model)
+	- [一、背景](#一背景)
+		- [1.1 一个 Code Review 引发的思考](#11-一个-code-review-引发的思考)
+		- [1.2 什么是 Memory Model](#12-什么是-memory-model)
+	- [二、CPU的高速缓存和流水线架构](#二cpu的高速缓存和流水线架构)
+		- [2.1 CPU 缓存一致性](#21-cpu-缓存一致性)
+			- [2.1.1 线程可见性问题](#211-线程可见性问题)
+			- [2.1.2 CPU 缓存一致性协议](#212-cpu-缓存一致性协议)
+			- [2.1.3 为什么有 MESI 协议还会有缓存一致性问题](#213-为什么有-mesi-协议还会有缓存一致性问题)
+	- [2.2 CPU 指令乱序执行](#22-cpu-指令乱序执行)
+		- [2.2.1 CPU 指令乱序执行 Demo](#221-cpu-指令乱序执行-demo)
+		- [2.2.2 为什么CPU会乱序执行](#222-为什么cpu会乱序执行)
+		- [2.2.3 什么是指令流水线](#223-什么是指令流水线)
+		- [2.3.4 CPU 乱序执行](#234-cpu-乱序执行)
+		- [2.3.5 分支预测](#235-分支预测)
+		- [2.3.5.1 分支预测 Demo](#2351-分支预测-demo)
+		- [2.3.6 如何解决CPU会乱序执行](#236-如何解决cpu会乱序执行)
+			- [2.3.6.1 内存屏障（英语：Memory barrier）](#2361-内存屏障英语memory-barrier)
+	- [三、 Golang 一致性原语](#三-golang-一致性原语)
+		- [3.1 什么是Happens Before](#31-什么是happens-before)
+			- [Init 函数](#init-函数)
+			- [Goroutine](#goroutine)
+			- [Channel](#channel)
+			- [Lock](#lock)
+			- [Atomic](#atomic)
+		- [3.2 Golang Happen Before 语义继承图](#32-golang-happen-before-语义继承图)
+		- [3.3 如果解决上面Golang Double Check的问题](#33-如果解决上面golang-double-check的问题)
+	- [参考](#参考)
 
 
 ## 一、背景
