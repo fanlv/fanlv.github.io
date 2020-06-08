@@ -18,7 +18,7 @@
 			- [2.3.5 分支预测](#235-分支预测)
 				- [2.3.5.1 分支预测 Demo](#2351-分支预测-demo)
 			- [2.3.6 如何解决CPU会乱序执行](#236-如何解决cpu会乱序执行)
-				- [2.3.6.1 内存屏障（Memory barrier）](#2361-内存屏障英语memory-barrier)
+				- [2.3.6.1 内存屏障（Memory barrier）](#2361-内存屏障memory-barrier)
 	- [三、 Golang 一致性原语](#三-golang-一致性原语)
 		- [3.1 什么是Happens Before](#31-什么是happens-before)
 			- [Init 函数](#init-函数)
@@ -28,9 +28,22 @@
 			- [Atomic](#atomic)
 		- [3.2 Golang Happen Before 语义继承图](#32-golang-happen-before-语义继承图)
 		- [3.3 如果解决上面Golang Double Check的问题](#33-如果解决上面golang-double-check的问题)
+	- [四、CPU Cache 扩展](#四cpu-cache-扩展)
+		- [4.1 CPU Cache 的产生背景](#41-cpu-cache-的产生背景)
+		- [4.2 CPU Cache 模型](#42-cpu-cache-模型)
+		- [4.3 Cache Line](#43-cache-line)
+		- [4.4 Flase Sharing 问题](#44-flase-sharing-问题)
+		- [4.5 如何解决False Sharding问题](#45-如何解决false-sharding问题)
+		- [4.6 CPU Cache 是如何存放数据的](#46-cpu-cache-是如何存放数据的)
+		- [4.7 CPU Cache 寻址过程](#47-cpu-cache-寻址过程)
+		- [4.8 CPU Cache根据寻址方式](#48-cpu-cache根据寻址方式)
+		- [4.9 Cache 的组织方式](#49-cache-的组织方式)
+			- [VIVT(Virtual Index Virtual Tag)](#vivtvirtual-index-virtual-tag)
+			- [VIPT(Virtual Index Physical Tag)](#viptvirtual-index-physical-tag)
+			- [PIPT(Physical Index Physical Tag)](#piptphysical-index-physical-tag)
+	- [总结](#总结)
 	- [参考资料](#参考资料)
-
-
+  
 ## 一、背景
 
 ### 1.1 一个 Code Review 引发的思考
