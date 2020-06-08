@@ -702,6 +702,14 @@ CacheLinePad 是`cpu`包下面定义的一个64字节的数组
 
 
 
+## 总结
+
+本文涉及到很多CPU底层实现逻辑，如果看完还是一头雾水可以选择无视。因为需要用到这些知识点的机会本就少之又少。正如 [The Go Memory Model](https://golang.org/ref/mem) 所言：
+
+	If you must read the rest of this document to understand the behavior of your program, you are being too clever.
+	
+	Don't be clever.
+
 ## 参考资料
 
 https://www.zhihu.com/question/24612442
@@ -723,6 +731,9 @@ http://cenalulu.github.io/linux/all-about-cpu-cache/
 https://mp.weixin.qq.com/s/viQp36FeMZSqUoFy3VrBNw
 
 https://blog.csdn.net/hx_op/article/details/89244618
+
+https://wweir.cc/post/%E6%8E%A2%E7%B4%A2-golang-%E4%B8%80%E8%87%B4%E6%80%A7%E5%8E%9F%E8%AF%AD
+
 
 
 
