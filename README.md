@@ -1,8 +1,5 @@
-# 记录点滴，从现在开始
+# 面向兴趣编程
 
-### ⭐️ 为什么要建这个仓库
-
-记录自己工作上遇到的一些问题和基于自己的理解整理网上一些优秀的资料，方便以后查询。
 
 ## Foundation
 
@@ -72,6 +69,10 @@
 * [服务发现之Consul](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/consul.md)
 
 * [Golang 内存对齐问题](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/data-struct-alignment.md)
+
+
+* [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
+
 
 * [ApiGate 架构设计]()
 
