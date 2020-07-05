@@ -559,20 +559,19 @@ A进程进来的时候拿到锁，然后对`instance`进行赋值，这个时候
 
 知道了原因，我们可以直接用Atomic.Value来保证可见性和原子性就行了，改造代码如下：
 
-	var instance atomic.Value //Golang里面的Sync.map就是用atomic.Value 加Double Check来实现读写的
-	
-	func getInstance() (*UserInfo, error) {
-		if instance.Load() == nil {
-			lock.Lock()
-			defer lock.Unlock()
-			if instance.Load() == nil {
-				instance.Store(&UserInfo{
-					Name: "fan",
-				})
-			}
-		}
-		return instance.Load().(*UserInfo), nil
-	}
+	var obj atomic.Value //Golang里面的Sync.map就是用atomic.Value 加Double Check来实现读写的
+
+    func getInstance() (*UserInfo, error) {
+        if obj.Load() == nil {
+            obj.Store(&UserInfo{
+                Name: "fan",
+            })
+        }
+        return obj.Load().(*UserInfo), nil
+    }
+
+
+PS：atomic已经可以保证可见性和原子性，所以我们不用在Double check了。
 
 
 再次用`go run -race go_race2.go` 检查发现已经没有警告了。
