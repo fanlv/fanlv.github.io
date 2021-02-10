@@ -73,6 +73,7 @@
 
 * [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
 
+* [Insert 死锁问题总结](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/insert_dead/insert_dead.md)
 
 * [ApiGate 架构设计]()
 
