@@ -456,4 +456,25 @@ Session1.2 等待 S 锁。
 | 4      |    ROLLBACK                                                        |                                                           插入成功|  |
 | 5      |                                                   |                                                            |        INSERT  INTO `message_entity`(`id`,`chat_id`) VALUES (10,10) 会被阻塞，因为(1 +∞）已经加上间隙锁    |
 
+### 如何避免
+
+1. 我们知道，发生上面死锁主要有两个原因，唯一索引冲突。
+2. 两个事务同时插入一个唯一索引冲突的数据，然后第一个事务Rollback。
+
+
+
+针对1，我们如果不指定主键id，或者放弃插入失败重试操作，能一定概率避免死锁。
+
+针对2，GORM作者金柱之前说过GORM有默认事务，会显示的为Create语句加上 begin、commit（主要是给hook功能用的，如果不需要hook可以关闭）。我们这里关闭显示事务能一定程度上降低死锁概率。
+
+
+
+![](./gorm.jpeg)
+
+
+	// 全局关闭默认事务
+	dbProxy, err := gorm.POpenWithConfig("bytedmysql", "XXXX_DSN", gorm.Config{
+	  SkipDefaultTransaction: true,
+	})
+
 
