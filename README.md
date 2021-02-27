@@ -26,6 +26,11 @@
 
 ## 二、Backend
 
+## Architecture
+
+* [Clean Architecture 读书笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/clean_architecture.md)
+
+
 
 ## Data
 
