@@ -32,7 +32,7 @@
 
 * [架构思想 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/architecture.md)
 
-* [领域驱动设计 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/architecture.md)
+* [领域驱动设计 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/ddd.md)
 
 
 
