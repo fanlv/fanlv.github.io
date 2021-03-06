@@ -41,7 +41,7 @@
 
 `intset`的内存是连续的，所有的数据增删改查操作都是在内存地址偏移的基础上进行的，并且整数的保存也是有序的，一个保存了5个`int16`的`intset`的内存示意图如下：
 
-![](./images/redis_intset.png)
+![](../images/redis_intset.png)
 
 由于`intset`是在内存上直接操作赋值，并且所存储的值都超过了一个字节，所以需要考虑大小端的问题：
 
@@ -317,7 +317,7 @@ redis 的所有存储方式都是小端存储，在`endianconv.h`中有一段大
 进行完扩展迁移之后把带插入的元素插入到头或尾即可。
 
 一个`INTSET_ENC_INT16`->`INTSET_ENC_INT32`的升级示例如下图：
-![](./images/redis_intset_2.png)
+![](../images/redis_intset_2.png)
 
 ## 总结
 

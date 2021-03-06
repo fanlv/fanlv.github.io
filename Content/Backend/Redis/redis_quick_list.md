@@ -84,7 +84,7 @@ C 语言支持位域的方式对结构体中的数据进行声明，也就是可
         unsigned int compress : 16;   // 压缩深度,由list-compress-depth给定
     } quicklist;
 
-![](./images/redis_quick_list.png)
+![](../images/redis_quick_list.png)
 
 由于`quicklist`结构包含了压缩表和链表，那么每个`quicklistNode`的大小就是一个需要仔细考量的点。如果单个`quicklistNode`存储的数据太多，就会影响插入效率；但是如果单个`quicklistNode`太小，就会变得跟链表一样造成空间浪费。
 `quicklist`通过`fill`对单个`quicklistNode`的大小进行限制：`fill`可以被赋值为正整数或负整数，full 的大小由`list-max-ziplist-size`给定。

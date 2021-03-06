@@ -51,9 +51,9 @@
 
 通过上面的源码，我们不难看出`ziplist`的头是由两个`unint32_t`和一个`unint16_t`组成。这3个数字分别保存是`ziplist`的内存占用、元素数量和最后一个元素的偏移量。除此之外，`ziplist`还包含一个结束标识，用常量255表示。整个`ziplist`描述内容占用了11个字节。初始化后的内存图如下：
 
-![](./images/redis_zip_list.jpg)
+![](../images/redis_zip_list.jpg)
 
-![](./images/redis_zip_list2.png)
+![](../images/redis_zip_list2.png)
 
 ### zlentry的内存布局
 
@@ -63,7 +63,7 @@
 * `encoding`: 当前节点的编码规则.
 * `data`: 当前节点的值，可以是数字或字符串
 
-![](./images/redis_zip_list_entity.jpg)
+![](../images/redis_zip_list_entity.jpg)
 
 * `entry`的前8位小于254，则这8位就表示上一个节点的长度
 * `entry`的前8位等于254，则意味着上一个节点的长度无法用8位表示，后面32位才是真实的prevlength。用254 不用255(11111111)作为分界是因为255是zlend的值，它用于判断ziplist是否到达尾部。
@@ -165,7 +165,7 @@
 	}
 由上面代码可以看字符串节点分为3类：
 
-![](./images/redis_zip_list_string_encode.jpg)
+![](../images/redis_zip_list_string_encode.jpg)
 
 * 当`data`小于63字节时(2^6)，节点存为上图的第一种类型，高2位为00，低6位表示data的长度。
 * 当`data`小于16383字节时(2^14)，节点存为上图的第二种类型，高2位为01，后续14位表示data的长度。
@@ -214,7 +214,7 @@
 
 由上面代码可以看出整数节点分为6类：
 	
-![](./images/redis_zip_list_int_encode.jpg)
+![](../images/redis_zip_list_int_encode.jpg)
 
 整数节点的`encoding`的长度为8位，其中高2位用来区分整数节点和字符串节点（**高2位为11时是整数节点**），低6位用来区分整数节点的类型。
 
@@ -346,7 +346,7 @@
 通过对push的梳理，`ziplist`的内存分布就很清晰了：
 
 
-![](./images/redis_zip_list_memory.png)
+![](../images/redis_zip_list_memory.png)
 
 通过连续的内存和上述编码方式，`ziplist`可以很方便的拿到头尾节点；由于每个节点都保存了前一个节点的长度，因此可以通过尾节点很方便的利用内存偏移进行遍历；相比链表或hash表大大压缩了内存；最主要这个数据结构的大部分场景都是`pop`或`push`，因此在查找和中间插入场景下的时间复杂度提升也是可以接受的。
 

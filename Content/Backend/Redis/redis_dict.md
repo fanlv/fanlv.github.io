@@ -28,7 +28,7 @@
 
 # 二、Redis dict数据结构
 
-![](./images/redis_dict.png)
+![](../images/redis_dict.png)
 
 从上图可以看出与`dict`相关的关键数据结构有三个，分别是：
 
@@ -145,7 +145,7 @@ redis内置2种hash算法
 执行dictCreate后会得到如下布局：
 
 
-![](./images/redis_dict_create.png)
+![](../images/redis_dict_create.png)
 
 
 ## 新增 - dictAdd
@@ -451,9 +451,9 @@ redis内置2种hash算法
 ### Rehash的过程
 
 假设一个dict已经有4个dictEntry节点(value分别为"a","b","c","d")，根据key的不同，存放在buckets的不同索引下。
-![](./images/redis_rehash_1.png)
+![](../images/redis_rehash_1.png)
 现在如果我们想添加一个dictEntry，由于d->ht[0].used >= d->ht[0].size (4>=4)，满足了扩充dictht[1]的条件，会执行dictExpand。根据扩充规则，dictht[1]的buckets会扩充到8个槽位。
-![](./images/redis_rehash_2.png)
+![](../images/redis_rehash_2.png)
 
 之后再将要添加的dictEntry加入到dictht[1]的buckets中的某个索引下，不过这个操作不属于dictExpand，不展开了。
 扩充之后的dict的成员变量rehashidx被赋值为0，此后每次CRUD都会执行一次被动rehash把dictht[0]的buckets中的一个链表迁移到dictht[1]中，直到迁移完毕。

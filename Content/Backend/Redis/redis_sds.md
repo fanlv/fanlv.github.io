@@ -82,7 +82,7 @@
 
 
 
-![](./images/sds_example.png)
+![](../images/sds_example.png)
 
 * len记录当前字节数组的长度（不包括\0），使得获取字符串长度的时间复杂度由O(N)变为了O(1)
 * alloc记录了当前字节数组总共分配的内存大小（不包括\0）
@@ -109,7 +109,7 @@
 
 
 
-![](./images/SDS.png)
+![](../images/SDS.png)
 
 
 ## SDS的两种存储形式
@@ -156,7 +156,7 @@ embstr 存储形式是这样一种存储形式，它将 RedisObject 对象头和
 
 如果总体超出了 64 字节，Redis 认为它是一个大字符串，不再使用 emdstr 形式存储，而该用 raw 形式。而64-19-结尾的\0，所以empstr只能容纳44字节。
 
-![](./images/embstr_raw.png)
+![](../images/embstr_raw.png)
 
 
 
@@ -364,7 +364,7 @@ SDS字符串分配策略：
 将A. :`HelloWroldA.:`进行`sdstrim(s,"Aa. :");`后，如下图所示： 
 
 
-![](./images/sdstrim.png)
+![](../images/sdstrim.png)
 
 可以看到内存空间并没有被释放，甚至空闲的空间都没有被置空。由于SDS是通过len值标识字符串长度，因此SDS完全不需要受限于c语言字符串的那一套\0结尾的字符串形式。在后续需要拼接扩展时，这部分空间也能够再次被利用起来，降低了内存重新分配的概率。
 
