@@ -48,6 +48,12 @@
 
 * [MyISAM和InnoDB区别和应用场景](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/mysql-engine.md)
 
+* [Insert 死锁问题总结](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/insert_dead/insert_dead.md)
+
+* [Mysql实战45讲 - Part1](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/insert_dead/mysql_actual_combat_part1.md)
+
+* [Mysql实战45讲 - Part2](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/insert_dead/mysql_actual_combat_part2.md)
+
 
 
 ## Cache
@@ -84,7 +90,6 @@
 
 * [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
 
-* [Insert 死锁问题总结](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/insert_dead/insert_dead.md)
 
 * [ApiGate 架构设计]()
 
