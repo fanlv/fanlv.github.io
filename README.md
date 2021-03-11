@@ -30,11 +30,14 @@
 
 * [Clean Architecture - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/clean_architecture.md)
 
+* [Clean Code - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/clean_code.md)
+
 * [架构思想 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/architecture.md)
 
 * [领域驱动设计 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/ddd.md)
 
 * [设计模式之美 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/ddd.md)
+
 
 
 
