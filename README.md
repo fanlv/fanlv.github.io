@@ -38,6 +38,8 @@
 
 * [设计模式之美 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/ddd.md)
 
+* [数据密集型应用系统设计 - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/data_intensive.md2)
+
 
 
 
