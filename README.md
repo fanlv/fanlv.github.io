@@ -55,9 +55,7 @@
 
 * [Insert 死锁问题总结](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/insert_dead/insert_dead.md)
 
-* [Mysql实战45讲 - Part1](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/mysql_actual_combat_part1.md)
-
-* [Mysql实战45讲 - Part2](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/mysql_actual_combat_part2.md)
+* [Mysql实战45讲](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/mysql_actual_combat_part1.md)
 
 
 
