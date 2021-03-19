@@ -108,6 +108,46 @@
 	- [适配器模式 （Adapter Design Pattern）](#适配器模式-adapter-design-pattern)
 		- [适配器模式应用场景总结](#适配器模式应用场景总结)
 	- [代理、桥接、装饰器、适配器 4 种设计模式的区别](#代理桥接装饰器适配器-4-种设计模式的区别)
+	- [门面模式（Facade Design Pattern）](#门面模式facade-design-pattern)
+	- [门面模式的应用场景举例](#门面模式的应用场景举例)
+		- [解决易用性问题](#解决易用性问题)
+		- [解决性能问题](#解决性能问题)
+		- [解决分布式事务问题](#解决分布式事务问题)
+	- [组合模式（Composite Design Pattern）](#组合模式composite-design-pattern)
+	- [享元模式（Flyweight Design Pattern）](#享元模式flyweight-design-pattern)
+	- [享元模式 vs 单例、缓存、对象池](#享元模式-vs-单例缓存对象池)
+		- [我们先来看享元模式跟单例的区别](#我们先来看享元模式跟单例的区别)
+		- [我们再来看享元模式跟缓存的区别](#我们再来看享元模式跟缓存的区别)
+		- [最后我们来看享元模式跟对象池的区别](#最后我们来看享元模式跟对象池的区别)
+- [设计模式与范式：行为型](#设计模式与范式行为型)
+	- [观察者模式（Observer Design Pattern）](#观察者模式observer-design-pattern)
+		- [观察者模式的应用场景](#观察者模式的应用场景)
+	- [模板模式](#模板模式)
+		- [模板模式作用一：复用](#模板模式作用一复用)
+		- [模板模式作用二：扩展](#模板模式作用二扩展)
+	- [回调（Callback）](#回调callback)
+	- [模板模式 VS 回调](#模板模式-vs-回调)
+	- [策略模式（Strategy Design Pattern）](#策略模式strategy-design-pattern)
+		- [策略的定义](#策略的定义)
+		- [策略的创建](#策略的创建)
+		- [策略的使用](#策略的使用)
+	- [职责链模式 （Chain Of Responsibility Design Pattern）](#职责链模式-chain-of-responsibility-design-pattern)
+	- [状态模式（）](#状态模式)
+		- [什么是有限状态机？](#什么是有限状态机)
+		- [状态机实现方式一：分支逻辑法](#状态机实现方式一分支逻辑法)
+		- [状态机实现方式二：查表法](#状态机实现方式二查表法)
+		- [状态机实现方式三：状态模式](#状态机实现方式三状态模式)
+	- [迭代器模式（Iterator Design Pattern）](#迭代器模式iterator-design-pattern)
+		- [迭代时候增删数据怎么办？](#迭代时候增删数据怎么办)
+		- [快照模式迭代器](#快照模式迭代器)
+	- [访问者模式(Visitor Pattern)](#访问者模式visitor-pattern)
+		- [Single Dispatch 和 Double Dispatch](#single-dispatch-和-double-dispatch)
+	- [备忘录模式（Memento Design Pattern）](#备忘录模式memento-design-pattern)
+	- [命令模式（Command Design Pattern）](#命令模式command-design-pattern)
+		- [命令模式 VS 策略模式](#命令模式-vs-策略模式)
+	- [解释器模式（Interpreter Design Pattern）](#解释器模式interpreter-design-pattern)
+	- [中介模式(Mediator Design Pattern)](#中介模式mediator-design-pattern)
+	- [中介模式 VS 观察者模式](#中介模式-vs-观察者模式)
 
 ## 前言
 
@@ -2678,4 +2718,6 @@ Java 支持多态特性，代码可以在运行时获得对象的实际类型（
 在观察者模式中，尽管一个参与者既可以是观察者，同时也可以是被观察者，但是，大部分情况下，交互关系往往都是单向的，一个参与者要么是观察者，要么是被观察者，不会兼具两种身份。也就是说，在观察者模式的应用场景中，参与者之间的交互关系比较有条理。
 
 而中介模式正好相反。只有当参与者之间的交互关系错综复杂，维护成本很高的时候，我们才考虑使用中介模式。毕竟，中介模式的应用会带来一定的副作用，前面也讲到，它有可能会产生大而复杂的上帝类。除此之外，如果一个参与者状态的改变，其他参与者执行的操作有一定先后顺序的要求，这个时候，中介模式就可以利用中介类，通过先后调用不同参与者的方法，来实现顺序的控制，而观察者模式是无法实现这样的顺序要求的。
+
+
 
