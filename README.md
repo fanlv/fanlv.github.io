@@ -93,6 +93,8 @@
 
 * [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
 
+* [ETCD 实战课](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/etcd.md)
+
 
 * [ApiGate 架构设计]()
 
