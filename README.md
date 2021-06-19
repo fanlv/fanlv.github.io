@@ -77,6 +77,9 @@
 
 * [Redis 高可用解决方案总结](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Redis/redis_ha.md)
 
+* [Redis核心技术与实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Redis/redis_geek.md)
+
+
 
 ## Others
 
