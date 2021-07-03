@@ -1,6 +1,12 @@
 # 面向兴趣编程
 
 
+## Linux
+
+* [Linux内核技术实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/linux_in_action.md)
+
+
+
 ## Foundation
 
 * [高并发服务器IO模型](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/IO.md)
