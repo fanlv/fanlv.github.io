@@ -1,13 +1,19 @@
 # 面向兴趣编程
 
+## 零
 
-## Linux
+### Other
+* [说透芯片](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Other/say_chip.md)
+
+
+### Linux
 
 * [Linux内核技术实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/linux_in_action.md)
 
+* [Linux性能优化实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/linux_optimize.md)
 
 
-## Foundation
+### Foundation
 
 * [高并发服务器IO模型](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/IO.md)
 
@@ -18,6 +24,25 @@
 * [B-Tree、B+Tree、B*Tree](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/b_tree.md)
 
 * [内存分页、寻址方式那些事](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/memory.md)
+
+
+* [跨域请求的几种解决方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/crsf.md)
+
+* [Go 执行Lua脚本和JS测试](https://github.com/fanlv/runJsAndrLuaInGo)
+
+* [分布式id几种生成方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/distributed-id.md)
+
+* [服务发现之Consul](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/consul.md)
+
+* [Golang 内存对齐问题](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/data-struct-alignment.md)
+
+
+* [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
+
+* [ETCD 实战课](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/etcd.md)
+
+
+* [ApiGate 架构设计]()
 
 
 
@@ -87,25 +112,6 @@
 
 
 
-## Others
-
-* [跨域请求的几种解决方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/crsf.md)
-
-* [Go 执行Lua脚本和JS测试](https://github.com/fanlv/runJsAndrLuaInGo)
-
-* [分布式id几种生成方案](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/distributed-id.md)
-
-* [服务发现之Consul](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/consul.md)
-
-* [Golang 内存对齐问题](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/data-struct-alignment.md)
-
-
-* [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
-
-* [ETCD 实战课](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/etcd.md)
-
-
-* [ApiGate 架构设计]()
 
 
 ## 三、Network
