@@ -422,32 +422,60 @@ Mutex是一个公平锁，有正常模式和饥饿模式两种状态。看下mut
 
 #### Atomic
 
+Golang中的Atomic主要保证了三件事，**原子性、可见性、有序性**。
+
+我们先看下[Go的源码里面Atomic](https://github.com/golang/go/blob/master/src/sync/atomic/doc.go) 的API，主要包括Swap、CAS、Add、Load、Store、Pointer几类，在[IA64 CPU](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/asm_amd64.s)上对应的汇编指令如下：
+
+* Swap : 主要是[XCHGQ](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/asm_amd64.s#L110)指令
+* CAS : 主要是 [LOCK CMPXCHGQ](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/asm_amd64.s#L22)指令
+* Add : 主要是 [LOCK XADDQ](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/asm_amd64.s#L99)指令
+* Load : 主要是 [MOVQ（Load64）](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/asm\_386.s#L202)指令
+* Store : 主要是 [XCHGQ](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/asm_amd64.s#L133)指令
+* Pointer : [主要当做64位int](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/asm_amd64.s#L50)，调用上述相关方法。
+
+**关于LOCK prefix和XCHG指令**在 [英特尔开发人员手册](https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-3a-part-1-manual.html) section 8.2.5中，我们找到了如下的解释：
+
+> For the Intel486 and Pentium processors, the LOCK# signal is always asserted on the bus during a LOCK operation, even if the area of memory being locked is cached in the processor.
+
+> For the P6 and more recent processor families, if the area of memory being locked during a LOCK operation is cached in the processor that is performing the LOCK operation as write-back memory and is completely contained in a cache line, the processor may not assert the LOCK# signal on the bus. Instead, it will modify the memory location internally and allow it’s cache coherency mechanism to ensure that the operation is carried out atomically. This operation is called “cache locking.” The cache coherency mechanism automatically prevents two or more processors that have cached the same area of memory from simultaneously modifying data in that area.
+
+> The I/O instructions, locking instructions, the LOCK prefix, and **serializing instructions force stronger orderingon the processor**.
+
+> Synchronization mechanisms in multiple-processor systems may depend upon a strong memory-ordering model. Here, a program can use a locking instruction such as the XCHG instruction or the LOCK prefix to ensure that a read-modify-write operation on memory is carried out atomically. Locking operations typically operate like I/O operations in that they wait for all previous instructions to complete and for all buffered writes to drain to memory (see Section 8.1.2, “Bus Locking”).
+
+**从描述中，我们了解到：LOCK prefix和XCHG 指令前缀提供了强一致性的内(缓)存读写保证，可以保证 LOCK 之后的指令在带 LOCK 前缀的指令执行之后才会执行。同时，我们在手册中还了解到，现代的 CPU 中的 LOCK 操作并不是简单锁 CPU 和主存之间的通讯总线， Intel 在 cache 层实现了这个 LOCK 操作，此因此我们也无需为 LOCK 的执行效率担忧。**
+
+PS：Java中的volatile关键字也是基于 Lock prefix 实现的。
+
+从上面可以看到Swap、CAS、Add、Store 都是基于LOCK prefix和XCHG指令实现的，他能保证缓存读写的强一致性。
+
+我们单独来看下Load指令，在[IA32](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/atomic\_386.go#L18)、[IA64](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/atomic_amd64.go#L17)、[Arm](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/atomic_arm64.s#L11)的CPU架构下就是对应MOV指令。我们写个简单demo验证下。测试代码如下：
+
+	var numB uint32
+	
 	func main() {
-		i := int64(2)
-		atomic.AddInt64(&i, 2)
+	   numB = 8
+	   fmt.Println(normalLoad())
+	   fmt.Println(atomicLoad())
+	}
+	
+	func normalLoad() uint32 {
+	   a := numB
+	   return a
+	}
+	
+	func atomicLoad() uint32 {
+	   a := atomic.LoadUint32(&numB)
+	   return a
 	}
 
-go tool compile -S -l -N main2.go
+我们go build -gcflags "-N -l" atomic.go 编译以后再objdump -d atomic导出对应的汇编代码。我们看到normalLoad()和atomicLoad() 对应的汇编代码是一样的，也印证了，我们上面说的atomic.Load方法在[IA64](https://github.com/golang/go/blob/master/src/runtime/internal/atomic/atomic_amd64.go#L17) 就是简单的MOV指令。
 
-	0x0037 00055 (main2.go:8)	MOVQ	$2, (AX)
-	0x003e 00062 (main2.go:9)	PCDATA	$0, $1
-	0x003e 00062 (main2.go:9)	PCDATA	$1, $0
-	0x003e 00062 (main2.go:9)	MOVQ	"".&i+16(SP), AX
-	0x0043 00067 (main2.go:9)	MOVL	$2, CX
-	0x0048 00072 (main2.go:9)	PCDATA	$0, $0
-	0x0048 00072 (main2.go:9)	LOCK
-	0x0049 00073 (main2.go:9)	XADDQ	CX, (AX)
-	0x004d 00077 (main2.go:10)	PCDATA	$0, $-2
+![](https://tech-proxy.bytedance.net/tos/images/1611654395949\_126f9692791d82df5abdc16e80833e51)
 
+再回来看，我们知道Golang的Atomic方法保证了三件事，原子性、可见性、有序性。
 
-用`go tool compile -S`导出汇编可以看出第9行代码`atomic.AddInt64`其实是一条带`Lock`前缀的`XADDQ`指令。让我们看一看 `LOCK` 的具体意义，在 英特尔开发人员手册 中，我们到了如下的解释：
-
-> The I/O instructions, locking instructions, the LOCK prefix, and serializing instructions force stronger orderingon the processor.
-> 
-> Memory mapped devices and other I/O devices on the bus are often sensitive to the order of writes to their I/O buffers. I/O instructions can be used to (the IN and OUT instructions) impose strong write ordering on suchaccesses as follows. Prior to executing an I/O instruction, the processor waits for all previous instructions in theprogram to complete and for all buffered writes to drain to memory. Only instruction fetch and page tables walkscan pass I/O instructions. Execution of subsequent instructions do not begin until the processor determines thatthe I/O instruction has been completed.
-
-**从描述中，我们了解到：`LOCK` 指令前缀提供了强一致性的内(缓)存读写保证，可以保证 `LOCK` 之后的指令在带 `LOCK` 前缀的指令执行之后才会执行。同时，我们在手册中还了解到，现代的 CPU 中的 `LOCK` 操作并不是简单锁 CPU 和主存之间的通讯总线， Intel 在 `cache` 层实现了这个 `LOCK` 操作，因此我们也无需为 `LOCK` 的执行效率担忧。**
-
+可见性和有序性Store方法保证了，Load方法使用MOV指令只要能保证原子性就行了。我们知道golang里面是内存对齐的，所以能保证MOV指令是原子的。
 
 更多可以参考[探索 Golang 一致性原语
 ](https://wweir.cc/post/%E6%8E%A2%E7%B4%A2-golang-%E4%B8%80%E8%87%B4%E6%80%A7%E5%8E%9F%E8%AF%AD/)
@@ -559,22 +587,30 @@ A进程进来的时候拿到锁，然后对`instance`进行赋值，这个时候
 
 知道了原因，我们可以直接用Atomic.Value来保证可见性和原子性就行了，改造代码如下：
 
-	var obj atomic.Value //Golang里面的Sync.map就是用atomic.Value 加Double Check来实现读写的
+	var flag uint32
+	
+	func getInstance() (*UserInfo, error) {
+	   if atomic.LoadUint32(&flag) != 1 {
+	      lock.Lock()
+	      defer lock.Unlock()
+	      if instance == nil {
+	         // 其他初始化错误，如果有错误可以直接返回
+	 	instance = &UserInfo{
+	            Age: 18,
+	         }
+	         atomic.StoreUint32(&flag, 1)
+	      }
+	   }
+	   return instance, nil
+	}
 
-    func getInstance() (*UserInfo, error) {
-        if obj.Load() == nil {
-            obj.Store(&UserInfo{
-                Name: "fan",
-            })
-        }
-        return obj.Load().(*UserInfo), nil
-    }
-
-
-PS：atomic已经可以保证可见性和原子性，所以我们不用在Double check了。
 
 
 再次用`go run -race go_race2.go` 检查发现已经没有警告了。
+
+这里，我们主要是通过atomic.store和lock来保证flag和instance的修改对其他线程可见。通过atomic.LoadUint32(&flag)和double check来保证instance只会初始化一次。
+
+
 
 ## 四、CPU Cache 扩展知识
 
