@@ -10,8 +10,11 @@
 
 * [Linux性能优化实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/linux_optimize.md)
 
-* [Linux性能优化实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/computer_organization.md)
+* [计算机组成原理](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/computer_organization.md)
 
+* [ETCD 实战课](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/etcd.md)
+
+* [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
 
 * [高并发服务器IO模型](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/IO.md)
 
@@ -33,11 +36,6 @@
 * [服务发现之Consul](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/consul.md)
 
 * [Golang 内存对齐问题](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/data-struct-alignment.md)
-
-
-* [Golang Memory Model](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/golang_atomic.md)
-
-* [ETCD 实战课](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/etcd.md)
 
 
 * [ApiGate 架构设计]()
