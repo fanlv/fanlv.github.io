@@ -2,18 +2,16 @@
 
 ## 零
 
-### Other
-* [说透芯片](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Other/say_chip.md)
-
-
-### Linux
-
-* [Linux内核技术实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/linux_in_action.md)
-
-* [Linux性能优化实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/linux_optimize.md)
-
-
 ### Foundation
+
+* [说透芯片](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/say_chip.md)
+
+* [Linux内核技术实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/linux_in_action.md)
+
+* [Linux性能优化实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/linux_optimize.md)
+
+* [Linux性能优化实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/computer_organization.md)
+
 
 * [高并发服务器IO模型](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/IO.md)
 
