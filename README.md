@@ -10,7 +10,7 @@
 
 * [Linux性能优化实战](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/linux_optimize.md)
 
-* [计算机组成原理](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Linux/computer_organization.md)
+* [计算机组成原理](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/computer_organization.md)
 
 * [ETCD 实战课](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/etcd.md)
 
