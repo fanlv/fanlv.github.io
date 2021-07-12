@@ -1,8 +1,6 @@
 # 面向兴趣编程
 
-## 零
-
-### Foundation
+## 零、Foundation
 
 * [说透芯片](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Foundation/say_chip.md)
 
@@ -53,7 +51,7 @@
 
 ## 二、Backend
 
-## Architecture
+### Architecture
 
 * [Clean Architecture - 笔记](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Architecture/clean_architecture.md)
 
@@ -70,7 +68,7 @@
 
 
 
-## Data
+### Data
 
 * [Mysql 锁详解](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Data/mysql-lock.md)
 
@@ -86,7 +84,7 @@
 
 
 
-## Cache
+### Cache
 
 * [Redis 源码分析(一) ：sds](https://github.com/fanlv/fanlv.github.io/blob/master/Content/Backend/Redis/redis_sds.md)
 
