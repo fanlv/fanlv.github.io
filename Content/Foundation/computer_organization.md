@@ -1728,6 +1728,8 @@ DMAC 最有价值的地方体现在，当我们要传输的数据特别大、速
 
 **kafka - sendfile**
 
+![image.png](https://upload-images.jianshu.io/upload_images/12321605-05c72910fc665a2e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
 ![image.png](https://upload-images.jianshu.io/upload_images/12321605-dd4fbd4a7de3e0b3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
