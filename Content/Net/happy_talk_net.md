@@ -1,3 +1,23 @@
+- [趣谈网络协议](#趣谈网络协议)
+	- [通信协议综述](#通信协议综述)
+		- [IP && MAC](#ip--mac)
+		- [预启动执行环境（PXE）](#预启动执行环境pxe)
+	- [物理层和数据链路层](#物理层和数据链路层)
+		- [基本介绍](#基本介绍)
+		- [STP 协议](#stp-协议)
+		- [ICMP 协议的格式](#icmp-协议的格式)
+		- [MAC 头和 IP 头的细节](#mac-头和-ip-头的细节)
+	- [传输层](#传输层)
+		- [TCP 和 UDP 有哪些区别？](#tcp-和-udp-有哪些区别)
+	- [其他](#其他)
+		- [HTTP](#http)
+		- [流媒体协议](#流媒体协议)
+		- [DNS && HTTPDNS](#dns--httpdns)
+		- [CDN](#cdn)
+		- [数据中心](#数据中心)
+		- [QoS](#qos)
+		- [容器网络](#容器网络)
+
 # 趣谈网络协议
 
 ## 通信协议综述
@@ -679,7 +699,7 @@ AdvertisedWindow 其实是 MaxRcvBuffer 减去 A。
 
 这种通知方式使得监听的 Socket 数据增加的时候，效率不会大幅度降低，能够同时监听的 Socket 的数目也非常的多了。上限就为系统定义的、进程打开的最大文件描述符个数。因而，epoll 被称为解决 C10K 问题的利器。
 
-## 应用层
+## 其他
 
 ### HTTP
 
@@ -693,6 +713,12 @@ AdvertisedWindow 其实是 MaxRcvBuffer 减去 A。
 
 
 ![image.png](https://upload-images.jianshu.io/upload_images/12321605-6ac3005fcdb0d7b8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+**HTTPS双向校验**
+
+![image.png](https://upload-images.jianshu.io/upload_images/12321605-8de2a11e67a10ced.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![image.png](https://upload-images.jianshu.io/upload_images/12321605-d922eb32037d9faa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 
 * 加密分对称加密和非对称加密。对称加密效率高，但是解决不了密钥传输问题；非对称加密可以解决这个问题，但是效率不高。
