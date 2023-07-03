@@ -1,0 +1,294 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Redis 高可用解决方案总结</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="一、主从复制什么是主从复制我们正常在项目中对redis进行应用，一般都不会是单点的。因为，单点的宕机即不可用，不能保证可用性。另外，单点redis读写指令都会打到同一个服务里面，也会影响性能。在通常的应用中，对redis的读操作远远多于写操作，所以，我们一般会选择“一主多从”的集群策略。
+
+
+主中的数据有两个副本（replication）即从redis1和从redis2，即使一台服务器宕机其它两台服务也可以继续提供服务。
+主中的数据和从上的数据保持实时同步，当主写入数据时通过主从复制机制会复制到两个从服务上。
+只有一个主redis，可以有多个从 redis。
+主从复制不会阻塞master，在同步数据时，master可以继续处理client请求。
+
+一个可以即是主又是从，如下图：
+
+主从复制过程一般当slav.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Redis 高可用解决方案总结</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="toc-text">一、主从复制</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="toc-text">什么是主从复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6%E8%BF%87%E7%A8%8B"><span class="toc-text">主从复制过程</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A2%9E%E9%87%8F%E5%A4%8D%E5%88%B6"><span class="toc-text">增量复制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%AD%E7%82%B9%E7%BB%AD%E4%BC%A0%EF%BC%88continue-replication%EF%BC%89"><span class="toc-text">断点续传（continue replication）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PSYNC-%E6%A0%B8%E5%BF%83%E5%8F%82%E6%95%B0"><span class="toc-text">PSYNC 核心参数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9"><span class="toc-text">优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Redis-%E5%93%A8%E5%85%B5-Redis-Sentinel"><span class="toc-text">二、Redis 哨兵 (Redis Sentinel)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%93%A8%E5%85%B5"><span class="toc-text">什么是哨兵</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E7%9A%84%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%E6%B5%81%E7%A8%8B"><span class="toc-text">基本的故障转移流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"><span class="toc-text">注意事项</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9-1"><span class="toc-text">优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Redis-%E9%9B%86%E7%BE%A4-%EF%BC%88Redis-Cluster%EF%BC%89"><span class="toc-text">三、Redis 集群 （Redis Cluster）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Redis-%E9%9B%86%E7%BE%A4"><span class="toc-text">什么是 Redis 集群</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E7%BE%A4%E7%9A%84%E6%A8%A1%E5%9E%8B"><span class="toc-text">集群的模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%84%E4%B8%AA%E8%8A%82%E7%82%B9%E4%B9%8B%E9%97%B4%E9%83%BD%E4%BC%A0%E9%80%92%E4%BA%86%E4%BB%80%E4%B9%88%E4%BF%A1%E6%81%AF"><span class="toc-text">各个节点之间都传递了什么信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hash-%E6%A7%BD-slot"><span class="toc-text">Hash 槽(slot)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E9%94%99"><span class="toc-text">容错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9-2"><span class="toc-text">优缺点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Redis-%E8%87%AA%E7%A0%94%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84"><span class="toc-text">四、Redis 自研高可用架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Redis-%E4%BB%A3%E7%90%86%E4%B8%AD%E9%97%B4%E4%BB%B6"><span class="toc-text">五、Redis 代理中间件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Codis"><span class="toc-text">Codis</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Codis"><span class="toc-text">什么是 Codis</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Codis-%E5%88%86%E7%89%87%E5%8E%9F%E7%90%86"><span class="toc-text">Codis 分片原理</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Codis-%E4%B9%8B%E9%97%B4%E7%9A%84%E6%A7%BD%E4%BD%8D%E5%90%8C%E6%AD%A5"><span class="toc-text">Codis 之间的槽位同步</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Codis-%E4%B8%AD%E7%9A%84%E6%89%A9%E5%AE%B9"><span class="toc-text">Codis 中的扩容</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E5%8A%A8%E5%9D%87%E8%A1%A1%E7%AD%96%E7%95%A5"><span class="toc-text">自动均衡策略</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Codis-%E7%9A%84%E7%89%BA%E7%89%B2"><span class="toc-text">Codis 的牺牲</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#MGET-%E7%9A%84%E8%BF%87%E7%A8%8B"><span class="toc-text">MGET 的过程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Codis-%E9%9B%86%E7%BE%A4%E6%80%BB%E7%BB%93"><span class="toc-text">Codis 集群总结</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Twemproxy-%E4%BB%A3%E7%90%86"><span class="toc-text">Twemproxy 代理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF-Twemproxy"><span class="toc-text">什么是 Twemproxy</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Twemproxy-%E7%89%B9%E6%80%A7"><span class="toc-text">Twemproxy 特性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-text">参考文章</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Redis"><i class="tag post-item-tag">Redis</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Redis 高可用解决方案总结</h1><time class="has-text-grey" datetime="2019-08-17T13:06:17.000Z">2019-08-17</time><article class="mt-2 post-content"><h2 id="一、主从复制"><a href="#一、主从复制" class="headerlink" title="一、主从复制"></a>一、主从复制</h2><h3 id="什么是主从复制"><a href="#什么是主从复制" class="headerlink" title="什么是主从复制"></a>什么是主从复制</h3><p>我们正常在项目中对<code>redis</code>进行应用，一般都不会是单点的。因为，单点的宕机即不可用，不能保证可用性。另外，单点<code>redis</code>读写指令都会打到同一个服务里面，也会影响性能。在通常的应用中，对<code>redis</code>的读操作远远多于写操作，所以，我们一般会选择“一主多从”的集群策略。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d40150a311ac6baf.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_ha.jpg"></p>
+<ul>
+<li>主中的数据有两个副本（<code>replication</code>）即从<code>redis1</code>和从<code>redis2</code>，即使一台服务器宕机其它两台服务也可以继续提供服务。</li>
+<li>主中的数据和从上的数据保持实时同步，当主写入数据时通过主从复制机制会复制到两个从服务上。</li>
+<li>只有一个主<code>redis</code>，可以有多个从 <code>redis</code>。</li>
+<li>主从复制不会阻塞<code>master</code>，在同步数据时，<code>master</code>可以继续处理<code>client</code>请求。</li>
+</ul>
+<p>一个可以即是主又是从，如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e9183477493b1ea0.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_ha2.jpg"></p>
+<h3 id="主从复制过程"><a href="#主从复制过程" class="headerlink" title="主从复制过程"></a>主从复制过程</h3><p>一般当<code>slave</code>第一次启动连接<code>master</code>，或者“被认为是第一次连接”，是主从采用全量复制。全量复制的执行流程如下：</p>
+<ol start="0">
+<li><code>slave redis</code>启动. 会从<code>redis.conf</code>中读取<code>master ip</code>和<code>host</code>。</li>
+<li>定时任务每秒检查是否有新的<code>mater</code>需要连接，如果发现就与<code>master</code>建立<code>socket</code>连接。</li>
+<li><code>slave</code>发送<code>ping</code>指令到<code>mater</code>。</li>
+<li>如果<code>mater</code>配置<code>require pass</code>，<code>slave</code>需要发送认证给<code>master</code>。</li>
+<li><code>Salve</code>会发送<code>sync</code>命令到<code>Master</code>。</li>
+<li><code>Master</code>启动一个后台进程，将<code>Redis</code>中的数据快照<code>rdb</code>保存到文件中。</li>
+<li>启动后台进程的同时，<code>Master</code>会将保存数据快照期间接收到的写命令缓存起来。</li>
+<li><code>Master</code>完成写文件操作后，将<code>rdb</code>发送给<code>Salve</code>。</li>
+<li><code>Salve</code>将<code>rdb</code>保存到磁盘上，然后加载<code>rdb</code>到<code>redis</code>内存中。</li>
+<li>当<code>Salve</code>完成数据快照的恢复后，<code>aster</code>将这期间收集的写命令发送给<code>Salve</code>端。</li>
+<li>后续<code>Master</code>收集到的写命令都会通过之前建立的连接. 增量发送给<code>salve</code>端。</li>
+</ol>
+<p>调用流程图如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-015172e80a36cbf8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_ha3.png"></p>
+<h4 id="增量复制"><a href="#增量复制" class="headerlink" title="增量复制"></a>增量复制</h4><p>当<code>slave</code>节点与<code>master</code>全量同步后，<code>master</code>节点上数据再次发生更新，就会触发增量复制。</p>
+<p>当我们在 <code>master</code> 服务器增减数据的时候，就会触发 <code>replicationFeedSalves()</code>函数，接下来在 <code>Master</code> 服务器上调用的每一个命令都会使用<code>replicationFeedSlaves()</code> 函数来同步到<code>Slave</code>服务器。当然，在执行此函数之前<code>master</code>服务器会判断用户执行的命令是否有数据更新，如果有数据更新并且<code>slave</code>服务器不为空，才会执行此函数，函数主要的工作就是把用户执行的命令发送到所有的 <code>slave</code>服务器，让<code>slave</code>服务器执行。<br>流程如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-afa5a277af081522.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_ha5.png"></p>
+<h4 id="断点续传（continue-replication）"><a href="#断点续传（continue-replication）" class="headerlink" title="断点续传（continue replication）"></a>断点续传（continue replication）</h4><p>断点续传或者说是断点恢复复制，也就是说 slave 因为某种原因与<code>master</code>断开连接了一段时间，然后又与<code>master</code>发生重连。<code>redis2.8</code>以后对于这种场景进行了优化，开始加入了<code>PSYNC</code>同步策略。这种策略性能一定是大于全量复制的。</p>
+<ol>
+<li>从服务器向主服务器发送<code>PSYNC</code>命令，携带主服务器的<code>runid</code>和复制偏移量；</li>
+<li>主服务器验证<code>runid</code>和自身<code>runid</code>是否一致，如不一致，则进行全量复制；</li>
+<li>主服务器验证复制偏移量是否在积压缓冲区内，如不在，则进行全量复制；</li>
+<li>如都验证通过，则主服务器将保持在积压区内的偏移量后的所有数据发送给从服务器，主从服务器再次回到一致状态。</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5e4cccf724c0171d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_ha6.png"></p>
+<h4 id="PSYNC-核心参数"><a href="#PSYNC-核心参数" class="headerlink" title="PSYNC 核心参数"></a>PSYNC 核心参数</h4><p>介绍一下，断点续传的几个核心参数，<code>offset</code>、<code>backlog</code>、<code>runid</code>。这三个参数在 PSYNC 中起到了至关重要的作用，下面我们来一一介绍一下。</p>
+<ul>
+<li><p><code>offet</code>复制偏移量 , <code>offset</code>是用来记录<code>master</code>和<code>lslave</code>某个时段的数据版本状态的，<code>slave</code>每秒会向<code>master</code>上报<code>offset</code>，<code>master</code>保存下来，当触发 PSYNC 时再拿来和<code>master</code>的<code>offset</code>数据作对比。说白了，它就是记录数据在某一时刻的快照，用来对比 master 和 slave 数据差异用的。</p>
+</li>
+<li><p><code>backlog</code>积压缓冲区</p>
+<ol>
+<li>这个也是一个非常核心的参数，它默认大小为<code>1mb</code>，复制积压缓冲区是由<code>Master</code>维护的一个固定长度的<code>FIFO</code>队列，它的作用是缓存已经传播出去的命令。当<code>Master</code>进行命令传播时，不仅将命令发送给所有<code>Slave</code>，还会将命令写入到复制积压缓冲区里面。</li>
+<li>全量复制的时候，<code>master</code>的数据更新（读写操作，主动过期删除等）会临时存放在<code>backlog</code>中待全量复制完成后增量发到slave，必须为此保留足够的空间。</li>
+<li>断点续传时，<code>backlog</code>会存下<code>slave</code>断开连接后，<code>master</code>变更的数据。当然由于它大小有限制，而且先进先出特性，所以达到缓冲大小后会弹出老数据。这样，就可以把它作为一个衡量执行<code>sync</code>还是<code>psync</code>的一个标准<code>（backlog = offset : 部分同步，backlog &lt; offset 执行全量同步）</code>。一般为了避免，大规模全量复制，我们都会给一个恰当的值，根据公式<code>second*write_size_per_second</code>来估算：其中<code>second</code>为从服务器断线后重新连接上主服务器所需的平均时间（以秒计算）；而<code>write_size_per_second</code>则是主服务器平均每秒产生的写命令数据量（协议格式的写命令的长度总和）；</li>
+</ol>
+</li>
+<li><p>master run id, <code>master</code>唯一标示，<code>slave</code>连接<code>master</code>时会传<code>runid</code>，<code>master</code>每次重启<code>runid</code>都发生变化，当<code>slave</code>发现<code>master</code>的<code>runid</code>变化时都会触发全量复制流程。</p>
+</li>
+</ul>
+<h3 id="优缺点"><a href="#优缺点" class="headerlink" title="优缺点"></a>优缺点</h3><p>优点：</p>
+<ol>
+<li>高可靠性：一方面，采用双机主备架构，能够在主库出现故障时自动进行主备切换，从库提升为主库提供服务，保证服务平稳运行；另一方面，开启数据持久化功能和配置合理的备份策略，能有效的解决数据误操作和数据异常丢失的问题；</li>
+<li>读写分离策略：从节点可以扩展主库节点的读能力，有效应对大并发量的读操作。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>故障恢复复杂，如果没有<code>RedisHA</code>系统（需要开发），当主库节点出现故障时，需要手动将一个从节点晋升为主节点，同时需要通知业务方变更配置，并且需要让其它从库节点去复制新主库节点，整个过程需要人为干预，比较繁琐；</li>
+<li>主库的写能力受到单机的限制，可以考虑分片；</li>
+<li>主库的存储能力受到单机的限制，可以考虑<code>Pika</code>；</li>
+<li>原生复制的弊端在早期的版本中也会比较突出，如：<code>Redis</code>复制中断后，<code>Slave</code>会发起<code>psync</code>，此时如果同步不成功，则会进行全量同步，主库执行全量备份的同时可能会造成毫秒或秒级的卡顿；又由于<code>COW</code>机制，导致极端情况下的主库内存溢出，程序异常退出或宕机；主库节点生成备份文件导致服务器磁盘<code>IO</code>和<code>CPU</code>（压缩）资源消耗；发送数<code>GB</code>大小的备份文件导致服务器出口带宽暴增，阻塞请求，建议升级到最新版本。</li>
+</ol>
+<h2 id="二、Redis-哨兵-Redis-Sentinel"><a href="#二、Redis-哨兵-Redis-Sentinel" class="headerlink" title="二、Redis 哨兵 (Redis Sentinel)"></a>二、Redis 哨兵 (Redis Sentinel)</h2><h3 id="什么是哨兵"><a href="#什么是哨兵" class="headerlink" title="什么是哨兵"></a>什么是哨兵</h3><p><code>Redis Sentinel</code> 是一个分布式架构，其中包含若干个 <code>Sentinel</code> 节点和 <code>Redis</code> 数据节点，每个 <code>Sentinel</code> 节点会对数据节点和其余 <code>Sentinel</code> 节点进行监控，当它发现节点不可达时，会对节点做下线标识。如果被标识的是主节点，它还会和其他 <code>Sentinel</code> 节点进行“协商”，当大多数 <code>Sentinel</code> 节点都认为主节点不可达时，它们会选举出一个 <code>Sentinel</code> 节点来完成自动故障转移的工作，同时会将这个变化实时通知给 <code>Redis</code> 应用方。整个过程完全是自动的，不需要人工来介入，所以这套方案很有效地解决了 <code>Redis</code> 的高可用问题。</p>
+<p>Redis 2.8 版开始正式提供名为<code>Sentinel</code>的主从切换方案，<code>Sentinel</code>用于管理多个<code>Redis</code>服务器实例，主要负责三个方面的任务：</p>
+<ol>
+<li>监控（<code>Monitoring</code>）： <code>Sentinel</code> 会不断地检查你的主服务器和从服务器是否运作正常。</li>
+<li>提醒（<code>Notification</code>）： 当被监控的某个 <code>Redis</code> 服务器出现问题时， <code>Sentinel</code> 可以通过 <code>API</code> 向管理员或者其他应用程序发送通知。</li>
+<li>自动故障迁移（<code>Automatic failover</code>）： 当一个主服务器不能正常工作时， <code>Sentinel</code> 会开始一次自动故障迁移操作， 它会将失效主服务器的其中一个从服务器升级为新的主服务器， 并让失效主服务器的其他从服务器改为复制新的主服务器； 当客户端试图连接失效的主服务器时， 集群也会向客户端返回新主服务器的地址， 使得集群可以使用新主服务器代替失效服务器。</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-771ecf18a316edfa.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sentinel1.jpg"></p>
+<p>哨兵(<code>sentinel</code>)&nbsp; 是一个分布式系统,你可以在一个架构中运行多个哨兵(<code>sentinel</code>)&nbsp; 进程,这些进程使用流言协议(<code>gossip protocols</code>)来接收关于<code>Master</code>是否下线的信息,并使用投票协议(<code>agreement protocols</code>)来决定是否执行自动故障迁移,以及选择哪个<code>Slave</code>作为新的<code>Master</code>.</p>
+<p>每个哨兵(<code>sentinel</code>)&nbsp; 会向其它哨兵(<code>sentinel</code>)、<code>master</code>、<code>slave</code>定时发送消息,以确认对方是否”活”着,如果发现对方在指定时间(可配置)内未回应,则暂时认为对方已挂(所谓的”主观认为宕机” <code>Subjective Down</code>,简称<code>sdown</code>).</p>
+<p>若“哨兵群”中的多数<code>sentinel</code>,都报告某一<code>master</code>没响应,系统才认为该<code>master</code>“彻底死亡”(即:客观上的真正<code>down</code>机,<code>Objective Down</code>,简称<code>odown</code>),通过一定的<code>vote</code>算法,从剩下的<code>slave</code>节点中,选一台提升为<code>master</code>,然后自动修改相关配置.</p>
+<p>虽然哨兵(<code>sentinel</code>)&nbsp; 释出为一个单独的可执行文件 &nbsp;<code>redis-sentinel</code>&nbsp;,但实际上它只是一个运行在特殊模式下的 &nbsp;<code>Redis</code>&nbsp; 服务器，你可以在启动一个普通 &nbsp;<code>Redis</code>&nbsp; 服务器时通过给定 &nbsp;<code>--sentinel</code>&nbsp; 选项来启动哨兵(<code>sentinel</code>).</p>
+<h3 id="基本的故障转移流程"><a href="#基本的故障转移流程" class="headerlink" title="基本的故障转移流程"></a>基本的故障转移流程</h3><ol>
+<li><p>主节点出现故障，此时两个从节点与主节点失去连接，主从复制失败。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-cc3816b327b408ef.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sentinel2.jpg"></p>
+</li>
+<li><p>每个 <code>Sentinel</code> 节点通过定期监控发现主节点出现了故障<br><img src="https://upload-images.jianshu.io/upload_images/12321605-40e38f9e7962d445.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sentinel3.jpg"></p>
+</li>
+<li><p>多个 <code>Sentinel</code> 节点对主节点的故障达成一致会选举出其中一个节点作为领导者负责故障转移。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-0715f5b0582e6727.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sentinel4.jpg"></p>
+</li>
+<li><p><code>Sentinel</code> 领导者节点执行了故障转移，整个过程基本是跟我们手动调整一致的，只不过是自动化完成的。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-e3d93d05e45854fc.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sentinel5.jpg"></p>
+</li>
+<li><p>故障转移后整个 <code>Redis Sentinel</code> 的结构,重新选举了新的主节点。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-a897e6d46c2719d3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sentinel6.jpg"></p>
+</li>
+</ol>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><ol>
+<li><p><code>Sentinel</code> 节点不应该部署在一台物理“机器”上。<br>这里特意强调物理机是因为一台物理机做成了若干虚拟机或者现今比较流行的容器，它们虽然有不同的 <code>IP</code> 地址，但实际上它们都是同一台物理机，同一台物理机意味着如果这台机器有什么硬件故障，所有的虚拟机都会受到影响，为了实现 <code>Sentinel</code> 节点集合真正的高可用，请勿将 <code>Sentinel</code> 节点部署在同一台物理机器上。</p>
+</li>
+<li><p>部署至少三个且奇数个的 <code>Sentinel</code> 节点。</p>
+</li>
+<li><p>个以上是通过增加 <code>Sentinel</code> 节点的个数提高对于故障判定的准确性，因为领导者选举需要至少一半加 1 个节点，奇数个节点可以在满足该条件的基础上节省一个节点。</p>
+</li>
+</ol>
+<h3 id="优缺点-1"><a href="#优缺点-1" class="headerlink" title="优缺点"></a>优缺点</h3><p>优点：</p>
+<ol>
+<li><code>Redis Sentinel</code>集群部署简单；</li>
+<li>能够解决<code>Redis</code>主从模式下的高可用切换问题；</li>
+<li>很方便实现<code>Redis</code>数据节点的线形扩展，轻松突破<code>Redis</code>自身单线程瓶颈，可极大满足<code>Redis</code>大容量或高性能的业务需求；</li>
+<li>可以实现一套<code>Sentinel</code>监控一组<code>Redis</code>数据节点或多组数据节点。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>部署相对<code>Redis</code>主从模式要复杂一些，原理理解更繁琐；</li>
+<li>资源浪费，<code>Redis</code>数据节点中<code>slave</code>节点作为备份节点不提供服务；</li>
+<li><code>Redis Sentinel</code>主要是针对<code>Redis</code>数据节点中的主节点的高可用切换，对<code>Redis</code>的数据节点做失败判定分为主观下线和客观下线两种，对于<code>Redis</code>的从节点有对节点做主观下线操作，并不执行故障转移。</li>
+<li>不能解决读写分离问题，实现起来相对复杂。</li>
+</ol>
+<h2 id="三、Redis-集群-（Redis-Cluster）"><a href="#三、Redis-集群-（Redis-Cluster）" class="headerlink" title="三、Redis 集群 （Redis Cluster）"></a>三、Redis 集群 （Redis Cluster）</h2><h3 id="什么是-Redis-集群"><a href="#什么是-Redis-集群" class="headerlink" title="什么是 Redis 集群"></a>什么是 Redis 集群</h3><p><code>Redis</code> 集群是一个分布式（<code>distributed</code>）、容错（<code>fault-tolerant</code>）的 <code>Redis</code> 实现， 集群可以使用的功能是普通单机 <code>Redis</code> 所能使用的功能的一个子集（<code>subset</code>）。</p>
+<p><code>Redis</code> 集群中不存在中心（<code>central</code>）节点或者代理（<code>proxy</code>）节点， 集群的其中一个主要设计目标是达到线性可扩展性（<code>linear scalability</code>）。</p>
+<p><code>Redis</code> 集群提供了一种运行 <code>Redis</code> 的方式，其中数据在多个 <code>Redis</code> 节点间自动分区。<code>Redis</code> 集群还在分区期间提供一定程度的可用性，即在实际情况下能够在某些节点发生故障或无法通信时继续运行。但是，如果发生较大故障（例如，大多数主站不可用时），集群会停止运行。</p>
+<h3 id="集群的模型"><a href="#集群的模型" class="headerlink" title="集群的模型"></a>集群的模型</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-5c73401d2a284189.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_cluster1.png"></p>
+<ol>
+<li>所有的节点通过服务通道直接相连，各个节点之间通过二进制协议优化传输的速度和带宽。</li>
+<li>客户端与节点之间通过 ascii 协议进行通信</li>
+<li>客户端与节点直连，不需要中间 Proxy 层。客户端不需要连接集群所有节点，连接集群中任何一个可用节点即可。</li>
+<li>尽管这些节点彼此相连，功能相同，但是仍然分为两种节点：master 和 slave。</li>
+</ol>
+<h3 id="各个节点之间都传递了什么信息"><a href="#各个节点之间都传递了什么信息" class="headerlink" title="各个节点之间都传递了什么信息"></a>各个节点之间都传递了什么信息</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-a94db6b07f492f8c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_cluster2.png"></p>
+<p>通过上面的图我们可以知道各个节点之间通过 PING-PONG 机制通信，下面是一段关于 PING-PONG 机制的会话”内容”。</p>
+<pre><code>节点M：PING，嘿，朋友你好吗？我是 XYZ 哈希槽的 master ，配置信息是 FF89X1JK。
+
+节点N：PONG，我很好朋友，我也是 XYZ 哈希槽的 master ，配置信息是 FF89X1JK。
+
+节点M：我这里有一些关于我最近收到的其他节点的信息 ，A 节点回复了我的 PING 消息，我认为 A 节点是正常的。B 没有回应我的消息，我猜它现在可能出问题了，但是我需要一些 ACK(Acknowledgement) 消息来确认。
+
+节点N：我也想给你分享一些关于其它节点的信息，C 和 D 节点在指定的时间内回应了我， 我认为它们都是正常的，但是 B 也没有回应我，我觉得它现在可能已经挂掉了。
+</code></pre>
+<p>每个节点会向集群中的其他节点发送节点状态信息，如果某个节点挂掉停止了服务，那么会执行投票容错机制，关于这个机制，会在下面讲到。</p>
+<h3 id="Hash-槽-slot"><a href="#Hash-槽-slot" class="headerlink" title="Hash 槽(slot)"></a>Hash 槽(slot)</h3><p>Redis 集群不使用一致的散列，而是一种不同的分片形式，其中每个键在概念上都是我们称之为散列槽的一部分，目的是使数据均匀的存储在诸多节点中。这点类似于 HashMap 中的桶(bucket)。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-95ffb2dd63839402.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_cluster3.png"></p>
+<p>Redis 集群中有 16384 个散列槽，为了计算给定密钥的散列槽，Redis 对 key 采用 CRC16 算法，以下是负责将键映射到槽的算法：</p>
+<pre><code>slot = crc16(key) mod NUMER_SLOTS
+</code></pre>
+<p>例如，你可能有 3 个节点，其中一个集群：</p>
+<p>节点 A 包含从 0 到 5500 的散列槽。<br>节点 B 包含从 5501 到 11000 的散列槽。<br>节点 C 包含 从 11001 到 16383 的散列槽。<br>Hash 槽可以轻松地添加和删除集群中的节点。例如，如果我想添加一个新节点 D，我需要将节点 A，B，C 中的一些散列槽移动到 D。同样，如果我想从节点 A 中删除节点 A，可以只移动由 A 服务的散列槽到 B 和 C。当节点 A 为空时，可以将它从群集中彻底删除。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2b9fe948264b0e40.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_cluster4.png"></p>
+<ol>
+<li><p>对象保存到 Redis 之前先经过 CRC16 哈希到一个指定的 Node 上，例如 Object4 最终 Hash 到了 Node1 上。</p>
+</li>
+<li><p>每个 Node 被平均分配了一个 Slot 段，对应着 0-16384，Slot 不能重复也不能缺失，否则会导致对象重复存储或无法存储。</p>
+</li>
+<li><p>Node 之间也互相监听，一旦有 Node 退出或者加入，会按照 Slot 为单位做数据的迁移。例如 Node1 如果掉线了，0-5640 这些 Slot 将会平均分摊到 Node2 和 Node3 上,由于 Node2 和 Node3 本身维护的 Slot 还会在自己身上不会被重新分配，所以迁移过程中不会影响到 5641-16384Slot 段的使用。</p>
+</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0a10c4294c3c4761.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_cluster5.png"></p>
+<p>想扩展并发读就添加 Slaver，想扩展并发写就添加 Master，想扩容也就是添加 Master，任何一个 Slaver 或者几个 Master 挂了都不会是灾难性的故障。</p>
+<p>简单总结下哈希 Slot 的优缺点：</p>
+<p>缺点：每个 Node 承担着互相监听、高并发数据写入、高并发数据读出，工作任务繁重</p>
+<p>优点：将 Redis 的写操作分摊到了多个节点上，提高写的并发能力，扩容简单。</p>
+<h3 id="容错"><a href="#容错" class="headerlink" title="容错"></a>容错</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-c41dbad3d2a4360c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_cluster6.png"></p>
+<ul>
+<li>集群中的节点不断的 <code>PING</code> 其他的节点，当一个节点向另一个节点发送 <code>PING</code> 命令， 但是目标节点未能在给定的时限内回复， 那么发送命令的节点会将目标节点标记为 <code>PFAIL</code>(<code>possible failure</code>，可能已失效)。</li>
+<li>当节点接收到其他节点发来的信息时， 它会记下那些被其他节点标记为失效的节点。 这被称为失效报告（<code>failure report</code>）。</li>
+<li>如果节点已经将某个节点标记为 <code>PFAIL</code> ， 并且根据节点所收到的失效报告显式， 集群中的大部分其他主节点也认为那个节点进入了失效状态， 那么节点会将那个失效节点的状态标记为 <code>FAIL</code> 。</li>
+<li>一旦某个节点被标记为 <code>FAIL</code> ， 关于这个节点已失效的信息就会被广播到整个集群， 所有接收到这条信息的节点都会将失效节点标记为 <code>FAIL</code> 。</li>
+</ul>
+<p>简单来说， 一个节点要将另一个节点标记为失效， 必须先询问其他节点的意见， 并且得到大部分主节点的同意才行。</p>
+<ul>
+<li>如果被标记为 <code>FAIL</code> 的是从节点， 那么当这个节点重新上线时， <code>FAIL</code> 标记就会被移除。 一个从节点是否处于 <code>FAIL</code> 状态， 决定了这个从节点在有需要时能否被提升为主节点。</li>
+<li>如果一个主节点被打上 <code>FAIL</code> 标记之后， 经过了节点超时时限的四倍时间， 再加上十秒钟之后， 针对这个主节点的槽的故障转移操作仍未完成， 并且这个主节点已经重新上线的话， 那么移除对这个节点的 <code>FAIL</code> 标记。在不符合上面的条件后，一旦某个主节点进入 <code>FAIL</code> 状态， 如果这个主节点有一个或多个从节点存在， 那么其中一个从节点会被升级为新的主节点， 而其他从节点则会开始对这个新的主节点进行复制。</li>
+</ul>
+<h3 id="优缺点-2"><a href="#优缺点-2" class="headerlink" title="优缺点"></a>优缺点</h3><p>优点：</p>
+<ol>
+<li>无中心架构；</li>
+<li>数据按照<code>slot</code>存储分布在多个节点，节点间数据共享，可动态调整数据分布；</li>
+<li>可扩展性：可线性扩展到 1000 多个节点，节点可动态添加或删除；</li>
+<li>高可用性：部分节点不可用时，集群仍可用。通过增加<code>Slave</code>做<code>standby</code>数据副本，能够实现故障自动<code>failover</code>，节点之间通过<code>gossip</code>协议交换状态信息，用投票机制完成<code>Slave</code>到<code>Master</code>的角色提升；</li>
+<li>降低运维成本，提高系统的扩展性和可用性。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li><code>Client</code>实现复杂，驱动要求实现<code>Smart Client</code>，缓存<code>slots mapping</code>信息并及时更新，提高了开发难度，客户端的不成熟影响业务的稳定性。目前仅<code>JedisCluster</code>相对成熟，异常处理部分还不完善，比如常见的<code>“max redirect exception”</code>。</li>
+<li>节点会因为某些原因发生阻塞（阻塞时间大于<code>clutser-node-timeout</code>），被判断下线，这种<code>failover</code>是没有必要的。</li>
+<li>数据通过异步复制，不保证数据的强一致性。</li>
+<li>多个业务使用同一套集群时，无法根据统计区分冷热数据，资源隔离性较差，容易出现相互影响的情况。</li>
+<li><code>Slave</code>在集群中充当“冷备”，不能缓解读压力，当然可以通过<code>SDK</code>的合理设计来提高<code>Slave</code>资源的利用率。</li>
+<li><code>Key</code>批量操作限制，如使用<code>mset</code>、<code>mget</code>目前只支持具有相同<code>slot</code>值的<code>Key</code>执行批量操作。对于映射为不同<code>slot</code>值的<code>Key</code>由于<code>Keys</code>不支持跨<code>slot</code>查询，所以执行<code>mset</code>、<code>mget</code>、<code>sunion</code>等操作支持不友好。</li>
+<li><code>Key</code>事务操作支持有限，只支持多<code>key</code>在同一节点上的事务操作，当多个<code>Key</code>分布于不同的节点上时无法使用事务功能。</li>
+<li><code>Key</code>作为数据分区的最小粒度，不能将一个很大的键值对象如<code>hash</code>、<code>list</code>等映射到不同的节点。</li>
+<li>不支持多数据库空间，单机下的<code>redis</code>可以支持到 16 个数据库，集群模式下只能使用 1 个数据库空间，即 db 0。</li>
+<li>复制结构只支持一层，从节点只能复制主节点，不支持嵌套树状复制结构。</li>
+<li>避免产生<code>hot-key</code>，导致主库节点成为系统的短板。</li>
+<li>避免产生<code>big-key</code>，导致网卡撑爆、慢查询等。</li>
+<li>重试时间应该大于<code>cluster-node-time</code>时间。</li>
+<li><code>Redis Cluster</code>不建议使用<code>pipeline</code>和<code>multi-keys</code>操作，减少<code>max redirect</code>产生的场景。</li>
+</ol>
+<h2 id="四、Redis-自研高可用架构"><a href="#四、Redis-自研高可用架构" class="headerlink" title="四、Redis 自研高可用架构"></a>四、Redis 自研高可用架构</h2><p>Redis 自研的高可用解决方案，主要体现在配置中心、故障探测和 failover 的处理机制上，通常需要根据企业业务的实际线上环境来定制化。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b82013e6da242531.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_custome1.png"></p>
+<p>优点：</p>
+<ul>
+<li>高可靠性、高可用性；</li>
+<li>自主可控性高；</li>
+<li>贴切业务实际需求，可缩性好，兼容性好。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>实现复杂，开发成本高；</li>
+<li>需要建立配套的周边设施，如监控，域名服务，存储元数据信息的数据库等；</li>
+<li>维护成本高。</li>
+</ul>
+<h2 id="五、Redis-代理中间件"><a href="#五、Redis-代理中间件" class="headerlink" title="五、Redis 代理中间件"></a>五、Redis 代理中间件</h2><h3 id="Codis"><a href="#Codis" class="headerlink" title="Codis"></a>Codis</h3><h4 id="什么是-Codis"><a href="#什么是-Codis" class="headerlink" title="什么是 Codis"></a>什么是 Codis</h4><p><code>Codis</code> 是一个代理中间件，用的是 <code>GO</code> 语言开发的，如下图，<code>Codis</code> 在系统的位置是这样的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7742a644c16a2db6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_codis0.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a778dd9930066ecf.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="codis1.jpg"></p>
+<p><code>Codis</code>分为四个部分，分别是<code>Codis Proxy</code> (<code>codis-proxy</code>)、<code>Codis Dashboard</code> (<code>codis-config</code>)、<code>Codis Redis</code> (<code>codis-server</code>)和<code>ZooKeeper/Etcd</code>.<br><code>Codis</code>就是起着一个中间代理的作用，能够把所有的<code>Redis</code>实例当成一个来使用，在客户端操作着<code>SDK</code>的时候和操作<code>Redis</code>的时候是一样的，没有差别。<br>因为<code>Codis</code>是一个无状态的，所以可以增加多个<code>Codis</code>来提升<code>QPS</code>,同时也可以起着容灾的作用。</p>
+<h4 id="Codis-分片原理"><a href="#Codis-分片原理" class="headerlink" title="Codis 分片原理"></a>Codis 分片原理</h4><p>在<code>Codis</code>中，<code>Codis</code>会把所有的<code>key</code>分成 1024 个槽，这 1024 个槽对应着的就是<code>Redis</code>的集群，这个在<code>Codis</code>中是会在内存中维护着这 1024 个槽与<code>Redis</code>实例的映射关系。这个槽是可以配置，可以设置成 2048 或者是 4096 个。看你的<code>Redis</code>的节点数量有多少，偏多的话，可以设置槽多一些。<br><code>Codis</code>中<code>key</code>的分配算法，先是把<code>key</code>进行<code>CRC32</code> 后，得到一个 32 位的数字，然后再<code>hash%1024</code>后得到一个余数，这个值就是这个<code>key</code>对应着的槽，这槽后面对应着的就是<code>redis</code>的实例。(可以思考一下，为什么 Codis 很多命令行不支持，例如 KEYS 操作)</p>
+<blockquote>
+<p><code>CRC32</code>:<code>CRC</code>本身是“冗余校验码”的意思，<code>CRC32</code>则表示会产生一个<code>32bit</code>（8 位十六进制数）的校验值。由于<code>CRC32</code>产生校验值时源数据块的每一个<code>bit</code>（位）都参与了计算，所以数据块中即使只有一位发生了变化，也会得到不同的<code>CRC32</code>值。</p>
+</blockquote>
+<pre><code>Codis中Key的算法代码如下
+//Codis中Key的算法
+hash = crc32(command.key)
+slot_index = hash % 1024
+redis = slots[slot_index].redis
+redis.do(command)
+</code></pre>
+<h4 id="Codis-之间的槽位同步"><a href="#Codis-之间的槽位同步" class="headerlink" title="Codis 之间的槽位同步"></a>Codis 之间的槽位同步</h4><blockquote>
+<p>思考一个问题：如果这个 Codis 节点只在自己的内存里面维护着槽位与实例的关系,那么它的槽位信息怎么在多个实例间同步呢？</p>
+</blockquote>
+<p>Codis 把这个工作交给了 ZooKeeper 来管理，当 Codis 的 Codis Dashbord 改变槽位的信息的时候，其他的 Codis 节点会监听到 ZooKeeper 的槽位变化，会及时同步过来。如图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c2088ea1947ad811.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="codis2.jpg"></p>
+<h4 id="Codis-中的扩容"><a href="#Codis-中的扩容" class="headerlink" title="Codis 中的扩容"></a>Codis 中的扩容</h4><blockquote>
+<p>思考一个问题：在 Codis 中增加了 Redis 节点后,槽位的信息怎么变化，原来的 key 怎么迁移和分配？如果在扩容的时候，这个时候有新的 key 进来，Codis 的处理策略是怎么样的？</p>
+</blockquote>
+<p>因为<code>Codis</code>是一个代理中间件，所以这个当需要扩容<code>Redis</code>实例的时候，可以直接增加<code>redis</code>节点。在槽位分配的时候，可以手动指定<code>Codis Dashbord</code>来为新增的节点来分配特定的槽位。</p>
+<p>在<code>Codis</code>中实现了自定义的扫描指令<code>SLOTSSCAN</code>，可以扫描指定的<code>slot</code>下的所有的<code>key</code>，将这些<code>key</code>迁移到新的<code>Redis</code>的节点中(话外语：这个是<code>Codis</code>定制化的其中一个好处)。</p>
+<p>首先，在迁移的时候，会在原来的<code>Redis</code>节点和新的<code>Redis</code>里都保存着迁移的槽位信息，在迁移的过程中，如果有<code>key</code>打进将要迁移或者正在迁移的旧槽位的时候，这个时候<code>Codis</code>的处理机制是，先是将这个<code>key</code>强制迁移到新的<code>Redis</code>节点中，然后再告诉<code>Codis</code>,下次如果有新的<code>key</code>的打在这个槽位中的话，那么转发到新的节点。代码策略如下：</p>
+<pre><code>slot_index = crc32(command.key) % 1024
+if slot_index in migrating_slots:
+    do_migrate_key(command.key)  # 强制执行迁移
+    redis = slots[slot_index].new_redis
+else:
+    redis = slots[slot_index].redis
+redis.do(command)
+</code></pre>
+<h4 id="自动均衡策略"><a href="#自动均衡策略" class="headerlink" title="自动均衡策略"></a>自动均衡策略</h4><p>面对着上面讲的迁移策略，如果有成千上万个节点新增进来，都需要我们手动去迁移吗？那岂不是得累死啊。当然，<code>Codis</code>也是考虑到了这一点，所以提供了自动均衡策略。自动均衡策略是这样的，<code>Codis</code> 会在机器空闲的时候，观察<code>Redis</code>中的实例对应着的<code>slot</code>数，如果不平衡的话就会自动进行迁移。</p>
+<h4 id="Codis-的牺牲"><a href="#Codis-的牺牲" class="headerlink" title="Codis 的牺牲"></a>Codis 的牺牲</h4><p>因为<code>Codis</code>在<code>Redis</code>的基础上的改造，所以在<code>Codis</code>上是不支持事务的，同时也会有一些命令行不支持，在官方的文档上有(<code>Codis</code>不支持的命令)<br>官方的建议是单个集合的总容量不要超过 1M,否则在迁移的时候会有卡顿感。在<code>Codis</code>中，增加了<code>proxy</code>来当中转层，所以在网络开销上，是会比单个的<code>Redis</code>节点的性能有所下降的，所以这部分会有些的性能消耗。可以增加<code>proxy</code>的数量来避免掉这块的性能损耗。</p>
+<h4 id="MGET-的过程"><a href="#MGET-的过程" class="headerlink" title="MGET 的过程"></a>MGET 的过程</h4><blockquote>
+<p>思考一个问题：如果熟悉 Redis 中的 MGET、MSET 和 MSETNX 命令的话，就会知道这三个命令都是原子性的命令。但是，为什么 Codis 支持 MGET 和 MSET,却不支持 MSETNX 命令呢？</p>
+</blockquote>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a0862d85c6170458.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="codis3.jpg"></p>
+<p>原因如下:</p>
+<p>在<code>Codis</code>中的<code>MGET</code>命令的原理是这样的，先是在<code>Redis</code>中的各个实例里获取到符合的<code>key</code>，然后再汇总到<code>Codis</code>中，如果是<code>MSETNX</code>的话，因为<code>key</code>可能存在在多个<code>Redis</code>的实例中，如果某个实例的设值成功，而另一个实例的设值不成功，从本质上讲这是不成功的，但是分布在多个实例中的<code>Redis</code>是没有回滚机制的，所以会产生脏数据，所以 MSETNX 就是不能支持了。</p>
+<h4 id="Codis-集群总结"><a href="#Codis-集群总结" class="headerlink" title="Codis 集群总结"></a>Codis 集群总结</h4><ul>
+<li><code>Codis</code>是一个代理中间件，通过内存保存着槽位和实例节点之间的映射关系,槽位间的信息同步交给<code>ZooKeeper</code>来管理。</li>
+<li>不支持事务和官方的某些命令，原因就是分布多个的<code>Redis</code>实例没有回滚机制和<code>WAL</code>,所以是不支持的.</li>
+</ul>
+<h3 id="Twemproxy-代理"><a href="#Twemproxy-代理" class="headerlink" title="Twemproxy 代理"></a>Twemproxy 代理</h3><h4 id="什么是-Twemproxy"><a href="#什么是-Twemproxy" class="headerlink" title="什么是 Twemproxy"></a>什么是 Twemproxy</h4><p>Twemproxy 也叫 nutcraker。是 Twtter 开源的一个 Redis 和 Memcache 代理服务器，主要用于管理 Redis 和 Memcached 集群，减少与 Cache 服务器直接连接的数量。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b33bfe6e772aefb5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_twemproxy1.png"></p>
+<p>基于 twemproxy 的高可用架构图</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-da2fbbbc086ebc77.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_twemproxy2.png"></p>
+<h3 id="Twemproxy-特性"><a href="#Twemproxy-特性" class="headerlink" title="Twemproxy 特性"></a>Twemproxy 特性</h3><ul>
+<li>轻量级、速度快</li>
+<li>保持长连接</li>
+<li>减少了直接与缓存服务器连接的连接数量</li>
+<li>使用 pipelining 处理请求和响应</li>
+<li>支持代理到多台服务器上</li>
+<li>同时支持多个服务器池</li>
+<li>自动分片数据到多个服务器上</li>
+<li>实现完整的 memcached 的 ASCII 和再分配协议</li>
+<li>通过 yaml 文件配置服务器池</li>
+<li>支持多个哈希模式，包括一致性哈希和分布</li>
+<li>能够配置删除故障节点</li>
+<li>可以通过端口监控状态</li>
+<li>支持 linux, *bsd,os x 和 solaris</li>
+</ul>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="http://blog.itpub.net/31545684/viewspace-2213629/">Redis 主从复制看这篇就够了</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/zb6340430/article/details/80914681">（一）redis 主从原理及流程——主从复制</a></p>
+<p><a target="_blank" rel="noopener" href="https://yq.aliyun.com/articles/626532">这可能是目前最全的 Redis 高可用技术解决方案总结</a></p>
+<p><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000018278099?utm_source=tag-newest">Redis 哨兵机制</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/itcats_cn/article/details/82428716">redis 如何实现高可用【主从复制、哨兵机制】</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/codejas/article/details/79854953">理解 Redis 集群</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/yejingtao703/article/details/78484151">三张图秒懂 Redis 集群设计原理</a></p>
+<p><a target="_blank" rel="noopener" href="https://juejin.im/post/5c132b076fb9a04a08218eef">为什么大厂都喜欢用 Codis 来管理分布式集群？</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2020/01/16/sort/" title="常用的排序算法"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 常用的排序算法</span></a><a class="button is-default" href="/2019/08/17/reids-source-code-7/" title="Redis 源码分析(七) ：skiplist"><span class="has-text-weight-semibold">下一页: Redis 源码分析(七) ：skiplist</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

@@ -1,0 +1,314 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>MySQL 自增列 Duplicate Error 问题分析</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="一、背景最近我们在做线上的数据迁移测试（可以理解就是把A数据中心的数据迁移到B数据中心，A和B数据中心的MySQL是同构的，迁移过程中，A、B的MySQL都有正常的业务数据写入。每次我们触发迁移的时候，就有业务方反馈他们写入数据的时候就会有Error 1062: Duplicate entry 'xxx' for key 'PRIMARY'这样的错误。业务方同学还反馈他们写数据的时候并没有指定ID，所以他们对这样的报错比较困惑，具体他们的数据写入的伪代码如下：
+type Data struct {
+    ID           int64     `gorm:&quot;primaryKey;column:id&quot;`
+    PageID       string    `gorm:&quot;column:page_id`.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">MySQL 自增列 Duplicate Error 问题分析</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF"><span class="toc-text">一、背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Auto-Incr-%E8%83%8C%E6%99%AF%E7%9F%A5%E8%AF%86"><span class="toc-text">二、Auto-Incr 背景知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-MySQL%E6%8F%92%E5%85%A5%E8%AF%AD%E5%8F%A5%E7%9A%84%E5%87%A0%E7%A7%8D%E7%B1%BB%E5%9E%8B"><span class="toc-text">2.1 MySQL插入语句的几种类型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-AUTO-INCREMENT-%E9%94%81%E6%A8%A1%E5%BC%8F"><span class="toc-text">2.2 AUTO_INCREMENT 锁模式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#0%EF%BC%9A%E4%BC%A0%E7%BB%9F%E6%A8%A1%E5%BC%8F%EF%BC%88traditional%EF%BC%89"><span class="toc-text">0：传统模式（traditional）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%9A%E8%BF%9E%E7%BB%AD%E6%A8%A1%E5%BC%8F%EF%BC%88consecutive%EF%BC%89"><span class="toc-text">1：连续模式（consecutive）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%9A%E4%BA%A4%E9%94%99%E6%A8%A1%E5%BC%8F%EF%BC%88interleaved%EF%BC%89"><span class="toc-text">2：交错模式（interleaved）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-text">其他</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E7%9B%B8%E5%85%B3%E9%85%8D%E7%BD%AE"><span class="toc-text">生产环境相关配置</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81Insert-%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-text">三、Insert 流程源码分析</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-Insert-%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-text">3.1 Insert 执行过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-innodb-%E6%95%B0%E6%8D%AE%E6%8F%92%E5%85%A5%E6%B5%81%E7%A8%8B"><span class="toc-text">3.2 innodb 数据插入流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%A2%9EID%E7%9A%84%E7%9B%B8%E5%85%B3%E5%A4%84%E7%90%86%E8%BF%87%E7%A8%8B"><span class="toc-text">自增ID的相关处理过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%94%AF%E4%B8%80%E7%B4%A2%E5%BC%95%E5%86%B2%E7%AA%81%E6%A3%80%E6%9F%A5%E8%BF%87%E7%A8%8B"><span class="toc-text">唯一索引冲突检查过程</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">四、总结</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">参考资料</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">MySQL 自增列 Duplicate Error 问题分析</h1><time class="has-text-grey" datetime="2022-05-25T04:30:56.000Z">2022-05-25</time><article class="mt-2 post-content"><h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><p>最近我们在做线上的数据迁移测试（可以理解就是把<code>A</code>数据中心的数据迁移到<code>B</code>数据中心，<code>A</code>和<code>B</code>数据中心的<code>MySQL</code>是同构的，迁移过程中，<code>A</code>、<code>B</code>的<code>MySQL</code>都有正常的业务数据写入。每次我们触发迁移的时候，就有业务方反馈他们写入数据的时候就会有<code>Error 1062: Duplicate entry 'xxx' for key 'PRIMARY'</code>这样的错误。业务方同学还反馈他们写数据的时候并没有指定<code>ID</code>，所以他们对这样的报错比较困惑，具体他们的数据写入的伪代码如下：</p>
+<pre><code>type Data struct {
+    ID           int64     `gorm:"primaryKey;column:id"`
+    PageID       string    `gorm:"column:page_id`
+    CreateTime   time.Time `gorm:"column:create_time"`
+    ModifiedTime time.Time `gorm:"column:modified_time"`
+}
+
+data := &amp;Data{
+                PageID:       uuid.NewString(),
+                CreateTime:   now,
+                ModifiedTime: now,
+            }
+
+err := db.Create(data).Error
+if err != nil {
+    return err
+}
+</code></pre>
+<p>再交代一下其他的背景。</p>
+<ol>
+<li>业务上这个表的写入的<code>TPS</code>相对比较高，迁移的数据量也比较大。</li>
+<li>我们做数据迁移的时候，从<code>A</code>数据中心迁移到<code>B</code>数据中心的时候，会抹掉<code>数据</code>中的<code>ID</code>数据，然后用一个中心的发号器<code>IDGenerator</code>生成一个新的<code>ID</code>，然后再插入这个数据。</li>
+</ol>
+<p>由于，每次都是在数据迁移的时候，报这个<code>PK Duplicate Error</code>的错误，基本肯定是我们做数据迁移导致的。引出几个问题：</p>
+<ol>
+<li><code>生成自增ID</code>实现方式？并发生成<code>ID</code>会不会冲突？</li>
+<li><code>生成自增ID</code>加锁机制粒度，锁的释放机制是啥？</li>
+<li><code>生成自增ID</code>和<code>唯一索引冲突检查</code>流程是怎么样的？</li>
+</ol>
+<p>其实已知的问题上看，基本猜想出，具体出现问题的场景如下：</p>
+<table>
+<thead>
+<tr>
+<th align="center">TimeLine</th>
+<th align="center">Session 1</th>
+<th align="center">Session 2</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">时刻1</td>
+<td align="center">生成自增ID</td>
+<td align="center">用IDgen生成ID</td>
+</tr>
+<tr>
+<td align="center">时刻2</td>
+<td align="center"></td>
+<td align="center">唯一索引冲突检查（Pass）</td>
+</tr>
+<tr>
+<td align="center">时刻3</td>
+<td align="center"></td>
+<td align="center">写入成功</td>
+</tr>
+<tr>
+<td align="center">时刻4</td>
+<td align="center">唯一索引冲突检查（报错Duplicate Error）</td>
+<td align="center"></td>
+</tr>
+</tbody></table>
+<p>结论我们知道，但是<code>MySQL</code>的<code>Insert</code>流程到底是如何做的，我并不清楚，问了一圈身边的朋友，好像大家对<code>Insert</code>过程这些细节都不太了解，所以决定自己简单撸下源码验证一下上面的结论。</p>
+<h1 id="二、Auto-Incr-背景知识"><a href="#二、Auto-Incr-背景知识" class="headerlink" title="二、Auto-Incr 背景知识"></a>二、Auto-Incr 背景知识</h1><p><code>MySQL</code>的<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-auto-increment-handling.html#innodb-auto-increment-lock-modes">《AUTO_INCREMENT Handling in InnoDB》</a> 这篇官方文档，其实把<code>AUTO_INCREMENT</code>相关特性都介绍很清楚了，我们做个简单总结。</p>
+<ol>
+<li><code>InnoDB</code>提供了一种可配置的锁定机制，可以显着提高向具有<code>AUTO_INCREMENT</code>列的表添加行的<code>SQL</code>语句的可伸缩性和性能。</li>
+<li>定义为<code>AUTO_INCREMENT</code>的列，必须是索引的第一列或者是唯一列，因为需要使用<code>SELECT MAX(ai_col)</code>查找以获得最大值列值。不这样定义，<code>Create Table</code>的时候会报<code>1075 - Incorrect table definition; there can be only one auto column and it must be defined as a key</code>错误。</li>
+<li><code>AUTO_INCREMENT</code>的列，可以只定义为普通索引，不一定要是<code>PRIMARY KEY</code>或者<code>UNIQUE</code>，但是为了保证<code>AUTO_INCREMENT</code>的唯一性，建议定义为<code>PK</code>或者<code>UNIQUE</code></li>
+</ol>
+<h2 id="2-1-MySQL插入语句的几种类型"><a href="#2-1-MySQL插入语句的几种类型" class="headerlink" title="2.1 MySQL插入语句的几种类型"></a>2.1 MySQL插入语句的几种类型</h2><p>在介绍<code>AUTO_INCREMENT</code>的锁模式之前，先介绍下，<code>MySQL</code>插入的几种类型：</p>
+<ul>
+<li><p><code>Simple inserts</code>，可以预先确定要插入的行数（当语句被初始处理时）的语句。 这包括没有嵌套子查询的单行和多行<code>INSERT</code>和<code>REPLACE</code>语句。如下：</p>
+<pre><code>  INSERT INTO t1 (c2) VALUES ('xxx');
+  
+</code></pre>
+</li>
+<li><p><code>Bulk inserts</code>，事先不知道要插入的行数（和所需自动递增值的数量）的语句。 这包括<code>INSERT ... SELECT</code>，<code>REPLACE ... SELECT</code>和<code>LOAD DATA</code>语句，但不包括纯<code>INSERT</code>。 <code>InnoDB</code>在处理每行时一次为<code>AUTO_INCREMENT</code>列分配一个新值。</p>
+<pre><code>  INSERT INTO t1 (c2) SELECT 1000 rows from another table ...
+</code></pre>
+</li>
+<li><p><code>Mixed-mode inserts</code>，这些是<code>Simple inserts</code>语句但是指定一些（但不是全部）新行的自动递增值。 示例如下，其中<code>c1</code>是表<code>t1</code>的<code>AUTO_INCREMENT</code>列： </p>
+<pre><code>  INSERT INTO t1 (c1,c2) VALUES (1,'a'), (NULL,'b'), (5,'c'), (NULL,'d');
+  
+</code></pre>
+<p>  另一种类型的<code>Mixed-mode inserts</code>是<code>INSERT ... ON DUPLICATE KEY UPDATE</code>，其在最坏的情况下实际上是<code>INSERT</code>语句随后又跟了一个<code>UPDATE</code>，其中<code>AUTO_INCREMENT</code>列的分配值不一定会在<code>UPDATE</code>阶段使用。</p>
+</li>
+<li><p><code>INSERT-like</code> ，以上所有插入语句的统称。</p>
+</li>
+</ul>
+<h2 id="2-2-AUTO-INCREMENT-锁模式"><a href="#2-2-AUTO-INCREMENT-锁模式" class="headerlink" title="2.2 AUTO_INCREMENT 锁模式"></a>2.2 AUTO_INCREMENT 锁模式</h2><p><code>MySQL</code>可以通过设置<code>innodb_autoinc_lock_mode</code> 变量来配置<code>AUTO_INCREMENT</code>列的锁模式，分别可以设置为<code>0</code>、<code>1</code>、<code>2</code> 三种模式。</p>
+<h3 id="0：传统模式（traditional）"><a href="#0：传统模式（traditional）" class="headerlink" title="0：传统模式（traditional）"></a>0：传统模式（traditional）</h3><ol>
+<li>传统的锁定模式提供了与引入<code>innodb_autoinc_lock_mode</code>变量之前相同的行为。由于语义上可能存在差异，提供传统锁定模式选项是为了向后兼容、性能测试和解决“混合模式插入”问题。</li>
+<li>在这一模式下，所有的<code>insert</code>语句(<code>insert like</code>) 都要在语句开始的时候得到一个表级的<code>auto_inc</code>锁，在语句结束的时候才释放这把锁，注意呀，这里说的是语句级而不是事务级的，一个事务可能包涵有一个或多个语句。</li>
+<li>它能保证值分配的可预见性，与连续性，可重复性，这个也就保证了<code>insert</code>语句在复制到<code>slave</code>的时候还能生成和<code>master</code>那边一样的值(它保证了基于语句复制的安全)。</li>
+<li>由于在这种模式下<code>auto_inc</code>锁一直要保持到语句的结束，所以这个就影响到了并发的插入。</li>
+</ol>
+<h3 id="1：连续模式（consecutive）"><a href="#1：连续模式（consecutive）" class="headerlink" title="1：连续模式（consecutive）"></a>1：连续模式（consecutive）</h3><ol>
+<li>在这种模式下，对于<code>simple insert</code>语句，<code>MySQL</code>会在语句执行的初始阶段将一条语句需要的所有自增值会一次性分配出来，并且通过设置一个互斥量来保证自增序列的一致性，一旦自增值生成完毕，这个互斥量会立即释放，不需要等到语句执行结束。所以，在<code>consecutive</code>模式，多事务并发执行<code>simple insert</code>这类语句时， 相对<code>traditional</code>模式，性能会有比较大的提升。</li>
+<li>由于一开始就为语句分配了所有需要的自增值，那么对于像<code>Mixed-mode insert</code>这类语句，就有可能多分配了一些值给它，从而导致自增序列出现<code>空隙</code>。而<code>traditional</code>模式因为每一次只会为一条记录分配自增值，所以不会有这种问题。</li>
+<li>另外，对于Bulk inserts语句，依然会采取AUTO-INC锁。所以，如果有一条Bulk inserts语句正在执行的话，Simple inserts也必须等到该语句执行完毕才能继续执行。</li>
+</ol>
+<h3 id="2：交错模式（interleaved）"><a href="#2：交错模式（interleaved）" class="headerlink" title="2：交错模式（interleaved）"></a>2：交错模式（interleaved）</h3><p>在这种模式下，对于所有的<code>insert-like</code>语句，都不会存在表级别的<code>AUTO-INC</code>锁，意味着同一张表上的多个语句并发时阻塞会大幅减少，这时的效率最高。但是会引入一个新的问题：当<code>binlog_format</code>为<code>statement</code>时，这时的复制没法保证安全，因为批量的<code>insert</code>，比如<code>insert ..select..</code>语句在这个情况下，也可以立马获取到一大批的自增<code>ID</code>值，不必锁整个表，<code>slave</code>在回放这个<code>SQL</code>时必然会产生错乱（<code>binlog</code>使用<code>row</code>格式没有这个问题）。</p>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><ul>
+<li><p>自增值的生成后是不能回滚的，所以自增值生成后，事务回滚了，那么那些已经生成的自增值就丢失了，从而使自增列的数据出现空隙。</p>
+</li>
+<li><p>正常情况下，自增列是不存在<code>0</code>这个值的。所以，如果插入语句中对自增列设置的值为<code>0</code>或者<code>null</code>，就会自动应用自增序列。那么，如果想在自增列中插入为<code>0</code>这个值，怎么办呢？可以通过将<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_auto_value_on_zero">SQL Mode</a>设置为<code>NO_AUTO_VALUE_ON_ZERO</code>即可。</p>
+</li>
+<li><p>在<code>MySQL 5.7</code>以及更早之前，自增序列的计数器(<code>auto-increment counter</code>)是保存在内存中的。<code>auto-increment counter</code>在每次<code>MySQL</code>重新启动后通过类似下面的这种语句进行初始化：</p>
+<pre><code>  SELECT MAX(AUTO_INC_COLUMN) FROM table_name FOR UPDATE
+</code></pre>
+</li>
+<li><p>而从<code>MySQL 8</code>开始，<code>auto-increment counter</code>被存储在了<code>redo log</code>中，并且每次变化都会刷新到<code>redo log</code>中。另外，我们可以通过<code>ALTER TABLE … AUTO_INCREMENT = N</code>来主动修改<code>auto-increment counter</code>。</p>
+</li>
+</ul>
+<h3 id="生产环境相关配置"><a href="#生产环境相关配置" class="headerlink" title="生产环境相关配置"></a>生产环境相关配置</h3><p>我们生产环境配置是<code>innodb_autoinc_lock_mode = 2</code>，<code>binlog_format = ROW</code></p>
+<pre><code>mysql&gt; show variables like 'innodb_autoinc_lock_mode';
++--------------------------+-------+
+| Variable_name            | Value |
++--------------------------+-------+
+| innodb_autoinc_lock_mode | 2     |
++--------------------------+-------+
+1 row in set (0.07 sec)
+
+mysql&gt; show variables like 'binlog_format';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| binlog_format | ROW   |
++---------------+-------+
+1 row in set (0.36 sec)
+</code></pre>
+<h1 id="三、Insert-流程源码分析"><a href="#三、Insert-流程源码分析" class="headerlink" title="三、Insert 流程源码分析"></a>三、Insert 流程源码分析</h1><h2 id="3-1-Insert-执行过程"><a href="#3-1-Insert-执行过程" class="headerlink" title="3.1 Insert 执行过程"></a>3.1 Insert 执行过程</h2><p><a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/sql/sql_parse.cc#L5438"><code>mysql_parse</code></a> -&gt; <a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/sql/sql_parse.cc#L2456"><code>mysql_execute_command</code></a> -&gt; <a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/sql/sql_insert.cc#L3176"><code>Sql_cmd_insert::execute</code></a> -&gt; <a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/sql/sql_insert.cc#L428"><code>Sql_cmd_insert::mysql_insert</code></a> -&gt; <a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/sql/sql_insert.cc#L1512"><code>write_record</code></a> -&gt; <a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/sql/handler.cc#L8153"><code>handler::ha_write_row</code></a> -&gt; <a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/storage/innobase/handler/ha_innodb.cc#L7506"><code>ha_innobase::write_row</code></a></p>
+<p>这里我们主要关注<code>innodb</code>层的数据写入函数<a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/storage/innobase/handler/ha_innodb.cc#L7506"><code>ha_innobase::write_row</code></a> 相关的代码就好了，<code>生成自增ID</code>和<code>唯一索引冲突检查</code>都是在这个函数里面完成的。</p>
+<h2 id="3-2-innodb-数据插入流程"><a href="#3-2-innodb-数据插入流程" class="headerlink" title="3.2 innodb 数据插入流程"></a>3.2 innodb 数据插入流程</h2><p>通过<a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/storage/innobase/handler/ha_innodb.cc#L7506"><code>ha_innobase::write_row</code></a> 代码我们可以知道，在<code>innodb</code>层写入数据主要分为<code>7</code>步：</p>
+<pre><code>1. Validation checks before we commence write_row operation.
+2. Intermediate commit if original operation involves ALTER table with algorithm = copy. Intermediate commit ease pressure on recovery if server crashes while ALTER is active.
+3. Handling of Auto-Increment Columns.
+4. Prepare INSERT graph that will be executed for actual INSERT (This is a one time operation)
+5. Execute insert graph that will result in actual insert.
+6. Handling of errors related to auto-increment. 
+7. Cleanup and exit. 
+</code></pre>
+<p>我们主要关注，自增列相关的<code>步骤三</code>和<code>步骤六</code>，数据写入的<code>步骤五</code>。</p>
+<h3 id="自增ID的相关处理过程"><a href="#自增ID的相关处理过程" class="headerlink" title="自增ID的相关处理过程"></a>自增ID的相关处理过程</h3><p><a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/storage/innobase/handler/ha_innodb.cc#L7631">先看第三步代码：Handling of Auto-Increment Columns</a>，主要的函数栈如下：</p>
+<pre><code>-&gt;ha_innobase::write_row
+    -&gt;handler::update_auto_increment // 调用 update_auto_increment 函数更新auto increment的值
+        -&gt;ha_innobase::get_auto_increment // 获取 dict_tabel中的当前 auto increment 值，并根据全局参数更新下一个 auto increment 的值到数据字典中
+            -&gt;ha_innobase::innobase_get_autoinc // 读取 autoinc 值
+                -&gt;ha_innobase::innobase_lock_autoinc
+                   -&gt;dict_table_autoinc_lock(m_prebuilt-&gt;table); // lock_mode = 2 的时候
+                -&gt;dict_table_autoinc_unlock(m_prebuilt-&gt;table); // 解锁
+        -&gt;set_next_insert_id // 多行插入的时候设置下一个插入的id值
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/storage/innobase/handler/ha_innodb.cc#L7387">三种模式对应的加锁源码</a>：</p>
+<pre><code>static const long AUTOINC_OLD_STYLE_LOCKING = 0;
+static const long AUTOINC_NEW_STYLE_LOCKING = 1;
+static const long AUTOINC_NO_LOCKING = 2;
+
+
+dberr_t
+ha_innobase::innobase_lock_autoinc(void)
+/*====================================*/
+{
+    DBUG_ENTER("ha_innobase::innobase_lock_autoinc");
+    dberr_t        error = DB_SUCCESS;
+    long        lock_mode = innobase_autoinc_lock_mode;
+
+    ut_ad(!srv_read_only_mode
+          || dict_table_is_intrinsic(m_prebuilt-&gt;table));
+
+    if (dict_table_is_intrinsic(m_prebuilt-&gt;table)) {
+        /* Intrinsic table are not shared accorss connection
+        so there is no need to AUTOINC lock the table. */
+        lock_mode = AUTOINC_NO_LOCKING;
+    }
+
+    switch (lock_mode) {
+    case AUTOINC_NO_LOCKING: // lock_mode = 2
+        /* Acquire only the AUTOINC mutex. */
+        dict_table_autoinc_lock(m_prebuilt-&gt;table);
+        break;
+
+    case AUTOINC_NEW_STYLE_LOCKING:
+        /* For simple (single/multi) row INSERTs, we fallback to the
+        old style only if another transaction has already acquired
+        the AUTOINC lock on behalf of a LOAD FILE or INSERT ... SELECT
+        etc. type of statement. */
+        if (thd_sql_command(m_user_thd) == SQLCOM_INSERT
+            || thd_sql_command(m_user_thd) == SQLCOM_REPLACE) {
+
+            dict_table_t*    ib_table = m_prebuilt-&gt;table;
+
+            /* Acquire the AUTOINC mutex. */
+            dict_table_autoinc_lock(ib_table);
+
+            /* We need to check that another transaction isn't
+            already holding the AUTOINC lock on the table. */
+            if (ib_table-&gt;n_waiting_or_granted_auto_inc_locks) {
+                /* Release the mutex to avoid deadlocks. */
+                dict_table_autoinc_unlock(ib_table);
+            } else {
+                break;
+            }
+        }
+        /* Fall through to old style locking. */
+
+    case AUTOINC_OLD_STYLE_LOCKING:
+        DBUG_EXECUTE_IF("die_if_autoinc_old_lock_style_used",
+                ut_ad(0););
+        error = row_lock_table_autoinc_for_mysql(m_prebuilt);
+
+        if (error == DB_SUCCESS) {
+
+            /* Acquire the AUTOINC mutex. */
+            dict_table_autoinc_lock(m_prebuilt-&gt;table);
+        }
+        break;
+
+    default:
+        ut_error;
+    }
+
+    DBUG_RETURN(error);
+}
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://github.com/mysql/mysql-server/blob/5.7/storage/innobase/handler/ha_innodb.cc#L7719">步骤六：插入成功以后，还需要更新 autoinc 值</a></p>
+<pre><code>            if (auto_inc &gt;= m_prebuilt-&gt;autoinc_last_value) {
+set_max_autoinc:
+                /* This should filter out the negative
+                values set explicitly by the user. */
+                if (auto_inc &lt;= col_max_value) {
+                    ut_a(m_prebuilt-&gt;autoinc_increment &gt; 0);
+
+                    ulonglong    offset;
+                    ulonglong    increment;
+                    dberr_t        err;
+
+                    offset = m_prebuilt-&gt;autoinc_offset;
+                    increment = m_prebuilt-&gt;autoinc_increment;
+
+                    auto_inc = innobase_next_autoinc(
+                        auto_inc,
+                        1, increment, offset,
+                        col_max_value);
+
+                    err = innobase_set_max_autoinc(
+                        auto_inc);
+
+                    if (err != DB_SUCCESS) {
+                        error = err;
+                    }
+                }
+            }
+</code></pre>
+<h3 id="唯一索引冲突检查过程"><a href="#唯一索引冲突检查过程" class="headerlink" title="唯一索引冲突检查过程"></a>唯一索引冲突检查过程</h3><pre><code>  |-Sql_cmd_insert_values::execute_inner() // Insert one or more rows from a VALUES list into a table
+    |-write_record
+      |-handler::ha_write_row() // 调用存储引擎的接口
+        |-ha_innobase::write_row()
+          |-row_insert_for_mysql
+            |-row_insert_for_mysql_using_ins_graph
+              |-trx_start_if_not_started_xa
+                |-trx_start_low // 激活事务，事务状态由 not_active 变为 active
+              |-row_get_prebuilt_insert_row // Gets pointer to a prebuilt dtuple used in insertions
+              |-row_mysql_convert_row_to_innobase // 记录格式从MySQL转换成InnoDB, 不同数据类型处理方式不同，比如整形server端是小端存储，innodb是大端存储
+              |-row_ins_step
+                |-trx_write_trx_id(node-&gt;trx_id_buf, trx-&gt;id)
+                |-lock_table // 给表加IX锁
+                |-row_ins // 插入记录
+                  |-while (node-&gt;index != NULL)
+                    |-row_ins_index_entry_step // 向索引中插入记录,把 innobase format field 的值赋给对应的index entry field
+                      |-row_ins_index_entry_set_vals // 根据该索引以及原记录，将组成索引的列的值组成一个记录
+                      |-dtuple_check_typed // 检查组成的记录的有效性
+                      |-row_ins_index_entry // 插入索引项
+                        |-row_ins_clust_index_entry // 插入聚集索引
+                          |-row_ins_clust_index_entry_low // 先尝试乐观插入，修改叶子节点 BTR_MODIFY_LEAF
+                            |-mtr_t::mtr_t()
+                            |-mtr_t::start()
+                            |-btr_pcur_t::open()
+                              |-btr_cur_search_to_nth_level // 将cursor移动到索引上待插入的位置
+                                |-buf_page_get_gen //取得本层页面，首次为根页面
+                                |-page_cur_search_with_match_bytes // 在本层页面进行游标定位
+                            |-row_ins_duplicate_error_in_clust // 判断插入项是否存在唯一键冲突
+                              |-row_ins_set_shared_rec_lock // 对cursor 对应的已有记录加S锁（可能会等待）保证记录上的操作，包括：Insert/Update/Delete 已经提交或者回滚
+                                |-lock_clust_rec_read_check_and_lock // 判断cursor对应的记录上是否存在隐式锁, 若存在，则将隐式锁转化为显示锁
+                                  |-lock_rec_convert_impl_to_expl // 隐式锁转换
+                                  |-lock_rec_lock //如果上面的隐式锁转化成功，此处加S锁将会等待，直到活跃事务释放锁。
+                              |-row_ins_dupl_err_with_rec // S锁加锁完成之后，可以再次做判断，最终决定是否存在唯一键冲突, 
+                                // 1. 判断insert记录与cursor对应的记录取值是否相同, 
+                                // 2. 二级唯一键值锁引，可以存在多个 NULL 值, 
+                                // 3. 最后判断记录的delete flag状态，判断记录是否被删除提交
+                                |-return !rec_get_deleted_flag();
+                            |-btr_cur_optimistic_insert // 乐观插入
+                            |-btr_cur_pessimistic_insert // 乐观插入失败则进行悲观插入
+                            |-mtr_t::commit() mtr_commit //Commit a mini-transaction.
+                            |-btr_pcur_t::close()
+</code></pre>
+<h1 id="四、总结"><a href="#四、总结" class="headerlink" title="四、总结"></a>四、总结</h1><ol>
+<li><code>innodb_autoinc_lock_mode=2</code>的时候，<code>MySQL</code>是申请到<code>ID</code>以后就会释放锁。并发生成自增<code>ID</code>不会冲突。</li>
+<li><code>MySQL</code>是先生成<code>ID</code>，再去做插入前的<code>唯一索引冲突检查</code>。如果一部分<code>Client</code>用<code>MySQL</code>自增<code>ID</code>，一部分<code>Client</code>用自己生成的<code>ID</code>，是有可能导致自增<code>ID</code>的<code>Client</code>报<code>PK Duplicate Error</code>的。</li>
+</ol>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><p><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-auto-increment-handling.html#innodb-auto-increment-lock-modes">AUTO_INCREMENT Handling in InnoDB</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/scientificCommunity/article/details/122846585">Mysql之AUTO_INCREMENT浅析</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bookstack.cn/read/aliyun-rds-core/ea7a43cf992eca56.md">MySQL · 内核分析 · InnoDB主键约束和唯一约束的实现分析</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2022/06/02/golang-pprof-mem/" title="一次线上内存使用率异常问题排查"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 一次线上内存使用率异常问题排查</span></a><a class="button is-default" href="/2022/05/20/go-for-range/" title="Go for-range 的奇技淫巧"><span class="has-text-weight-semibold">下一页: Go for-range 的奇技淫巧</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

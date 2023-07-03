@@ -1,0 +1,273 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《架构实战案例解析》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="摘录与 《架构实战案例解析》
+
+
+
+架构的本质物理学中有个很著名的“熵增定律”：一个封闭系统，都是从有序到无序，也就是它的熵（即混乱程度）会不断地增加，最终系统会彻底变得无序。
+一方面，随着业务需求的增加，我们会往系统里不停地添加业务功能；另一方面，随着访问量的不断增加，我们会不断通过技术手段来加强系统非业务性功能。如果事先不做良好的设计，随着时间的推进，整个系统野蛮生长，就会逐渐碎片化，越来越无序，最终被推倒重来。
+不过，自然界中的生物可以通过和外界交互，主动进行新陈代谢，制造“负熵”，也就是降低混乱程度，来保证自身的有序性，继续生存。比如，植物通过光合作用，把光能、二氧化碳和水合成有机物，以此滋养自己，延续生命。对于软件系统，我们也可以主动地调整系统各个部分的关系，保证系统整体的有序性，来更好地适应不断.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《架构实战案例解析》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E7%9A%84%E6%9C%AC%E8%B4%A8"><span class="toc-text">架构的本质</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text">架构的分类</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A5%BD%E7%9A%84%E6%9E%B6%E6%9E%84%EF%BC%9F"><span class="toc-text">什么是好的架构？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%A5%BD%E7%9A%84%E6%9E%B6%E6%9E%84%E5%B8%88%EF%BC%9F"><span class="toc-text">什么是好的架构师？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E6%9E%B6%E6%9E%84"><span class="toc-text">业务架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%A7%E5%93%81%E7%BB%8F%E7%90%86%E8%81%8C%E8%B4%A3"><span class="toc-text">产品经理职责</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%9A%E5%8A%A1%E6%9E%B6%E6%9E%84%E5%B8%88%E7%9A%84%E8%81%8C%E8%B4%A3"><span class="toc-text">业务架构师的职责</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E7%9B%AE%E6%A0%87"><span class="toc-text">架构目标</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%AF%E6%89%A9%E5%B1%95%E6%9E%B6%E6%9E%84"><span class="toc-text">可扩展架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%9E%84%E6%88%90%EF%BC%9A%E6%A8%A1%E5%9D%97-%E5%85%B3%E7%B3%BB"><span class="toc-text">系统的构成：模块 + 关系</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%A9%E5%B1%95%E6%80%A7%E7%9A%84%E6%9C%AC%E8%B4%A8"><span class="toc-text">扩展性的本质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%93%E9%80%A0%E5%8F%AF%E6%89%A9%E5%B1%95%E7%9A%84%E6%A8%A1%E5%9D%97%E4%BD%93%E7%B3%BB%EF%BC%9A%E6%A8%A1%E5%9D%97%E6%8B%86%E5%88%86"><span class="toc-text">打造可扩展的模块体系：模块拆分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E7%94%A8%E5%8C%96%E6%95%B4%E5%90%88"><span class="toc-text">通用化整合</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B3%E5%8F%B0%E5%8C%96%E6%95%B4%E5%90%88"><span class="toc-text">平台化整合</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E4%BF%A1%E6%81%AF"><span class="toc-text">其他信息</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E5%A4%8D%E7%94%A8"><span class="toc-text">技术复用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%9C%8D%E5%8A%A1%E8%BE%B9%E7%95%8C%E5%88%92%E5%88%86"><span class="toc-text">基础服务边界划分</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BE%AE%E6%9C%8D%E5%8A%A1%E6%94%B9%E9%80%A0"><span class="toc-text">微服务改造</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%8A%80%E6%9C%AF%E6%9E%B6%E6%9E%84"><span class="toc-text">技术架构</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9E%B6%E6%9E%84"><span class="toc-text">高可用架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%91%E6%8E%A7"><span class="toc-text">监控</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E6%80%A7%E8%83%BD%E5%92%8C%E5%8F%AF%E4%BC%B8%E7%BC%A9%E6%9E%B6%E6%9E%84"><span class="toc-text">高性能和可伸缩架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E5%8E%9F%E5%88%99%E6%B1%87%E6%80%BB"><span class="toc-text">架构原则汇总</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E8%90%BD%E5%9C%B0%E8%BF%87%E7%A8%8B"><span class="toc-text">架构落地过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E5%B8%88%E7%9F%A5%E8%AF%86%E7%BB%93%E6%9E%84"><span class="toc-text">架构师知识结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E5%B8%88%E6%88%90%E9%95%BF%E8%B7%AF%E5%BE%84"><span class="toc-text">架构师成长路径</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《架构实战案例解析》</h1><time class="has-text-grey" datetime="2023-03-11T12:03:15.000Z">2023-03-11</time><article class="mt-2 post-content"><p>摘录与 <a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/200825">《架构实战案例解析》</a></p>
+<input type="hidden" name="hidden" id="hidden_id1" value="fanlv_blog_hidden_recenet_list">
+<input type="hidden" name="hidden" id="hidden_id2" value="fanlv_blog_hidden_list">
+
+<h1 id="架构的本质"><a href="#架构的本质" class="headerlink" title="架构的本质"></a>架构的本质</h1><p>物理学中有个很著名的“熵增定律”：一个封闭系统，都是从有序到无序，也就是它的熵（即混乱程度）会不断地增加，最终系统会彻底变得无序。</p>
+<p>一方面，随着业务需求的增加，我们会往系统里不停地添加业务功能；另一方面，随着访问量的不断增加，我们会不断通过技术手段来加强系统非业务性功能。如果事先不做良好的设计，随着时间的推进，整个系统野蛮生长，就会逐渐碎片化，越来越无序，最终被推倒重来。</p>
+<p>不过，自然界中的生物可以通过和外界交互，主动进行新陈代谢，制造“负熵”，也就是降低混乱程度，来保证自身的有序性，继续生存。比如，植物通过光合作用，把光能、二氧化碳和水合成有机物，以此滋养自己，延续生命。对于软件系统，我们也可以主动地调整系统各个部分的关系，保证系统整体的有序性，来更好地适应不断增长的业务和技术变化。这种系统内部关系的调整就是通过架构实现的，所以，架构的本质就是：</p>
+<p><strong>通过合理的内部编排，保证系统高度有序，能够不断扩展，满足业务和技术的变化。</strong></p>
+<p>这里包含两层意思，我们具体展开说下：</p>
+<ul>
+<li><p><strong>首先，架构的出发点是业务和技术在不断复杂化，引起系统混乱，需要通过架构来保证有序。</strong></p>
+</li>
+<li><p><strong>其次，架构实现从无序到有序，是通过合理的内部编排实现的，基本的手段，就是“分”与“合”，先把系统打散，然后将它们重新组合，形成更合理的关系。</strong></p>
+<ul>
+<li>具体地说，<strong>“分”就是把系统拆分为各个子系统、模块、组件</strong>。拆分的时候，首先要解决每个部分的定位问题，然后根据定位，划分彼此的边界，最后实现合理的拆分，我们比较熟悉的微服务架构，就是一种典型的拆分做法。</li>
+<li><strong>“合”就是基于业务流程和技术手段，把各个组件有机整合在一起</strong>。比如说在微服务架构中，拆分为具体微服务后，我们需要对这些服务进行归类和分层，有些属于底层基础服务，有些属于上层聚合服务，还要尽可能地实现服务的平台化，比如我们最近说的中台，这些都是合的思想体现。</li>
+</ul>
+</li>
+</ul>
+<p><strong>通过合理的“分”与“合”，系统不是回到了原点，而是把原先铁板一块的系统变成一个富有弹性的结构化系统。这样，系统的复杂性有效地分解了，系统的有序度大幅度地提升了。</strong></p>
+<h2 id="架构的分类"><a href="#架构的分类" class="headerlink" title="架构的分类"></a>架构的分类</h2><p>按照不同的角度，架构可以有很多分类，但一般来说，<strong>主要分为业务架构、应用架构和技术架构。</strong></p>
+<ul>
+<li>简单来说，<strong>业务架构</strong>就是讲清楚核心业务的处理过程，定义各个业务模块的相互关系，它从概念层面帮助我们理解系统面临哪些问题以及如何处理；</li>
+<li>而<strong>应用架构</strong>就是讲清楚系统内部是怎么组织的，有哪些应用，相互间是怎么调用的，它从逻辑层面帮助我们理解系统内部是如何分工与协作的。</li>
+<li><strong>技术架构</strong>就是讲清楚系统由哪些硬件、操作系统和中间件组成，它们是如何和我们开发的应用一起配合，应对各种异常情况，保持系统的稳定可用。所以，技术架构从物理层面帮助我们理解系统是如何构造的，以及如何解决稳定性的问题。</li>
+</ul>
+<p>还有一个数据架构。</p>
+<p>最后，我想强调一下：<strong>系统是人的系统，架构首先是为人服务的</strong>。因此，<strong>业务概念清晰、应用分工合理、人好理解</strong>是第一位的。然后，我们再考虑技术选型的问题，保证系统非功能性目标的实现。所以做架构设计时，一般是先<strong>考虑业务架构，再应用架构，最后是技术架构</strong>。</p>
+<h2 id="什么是好的架构？"><a href="#什么是好的架构？" class="headerlink" title="什么是好的架构？"></a>什么是好的架构？</h2><p><strong>业务复杂性</strong></p>
+<p>系统首先要满足当前的业务需求，在此基础上，还要满足将来的业务需求，因此系统要能不断地扩展变化，包括调整现有功能，以及增加新功能。</p>
+<p>而且，系统的功能变化不能影响现有业务，不要一修改，就牵一发动全身，到处出问题。因此，在架构设计上，要做到系统的柔性可扩展，能够根据业务变化做灵活的调整。</p>
+<p>此外，市场不等人，上新业务要快，之前花了半年上了个业务，这回再上个类似的新业务，需要短时间就能落地。因此，架构设计上，还要做到系统功能的可重用，这样才能通过快速复用，实现业务敏捷和创新。</p>
+<p><strong>技术复杂性</strong></p>
+<p>一个复杂系统是由很多部分组成的，如应用程序、服务器、数据库、网络、中间件等，都可能会出问题。那怎么在出问题时，能够快速恢复系统或者让备用系统顶上去呢？</p>
+<p><strong>因此，一个好的架构设计既要满足业务的可扩展、可复用；也要满足系统的高可用、高性能和可伸缩，并尽量采用低成本的方式落地。所以，对架构设计来说，技术和业务两手都要抓，两手都要硬。</strong></p>
+<h2 id="什么是好的架构师？"><a href="#什么是好的架构师？" class="headerlink" title="什么是好的架构师？"></a>什么是好的架构师？</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-9e19cece28b056ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol>
+<li>架构师必定是一个出色的程序员，写的一手好代码。</li>
+<li>架构师要有技术的<strong>广度</strong>（多领域知识）和<strong>深度</strong>（技术前瞻）。</li>
+<li>架构师还需要有思维的高度，<strong>具备抽象思维能力</strong>。抽象思维是架构师最重要的能力，架构师要善于把<strong>实物概念化</strong>并归类。比如，面对一个大型的 <code>B2C</code> 网站，能够迅速抽象为采购 -&gt; 运营 -&gt; 前台搜索 -&gt; 下单 -&gt; 履单这几大模块，对系统分而治之。</li>
+<li>架构师还需要有思维的深度，能够透过问题看本质。透过问题看本质是由事物的表象到实质，往深层次挖掘。比如，看到一段 <code>Java</code> 代码，知道它在 <code>JVM</code>（<code>Java Virtual Machine</code>，<code>Java</code> 虚拟机）中如何执行；一个跨网络调用，知道数据是如何通过各种介质（比如网卡端口）到达目标位置。透过问题看本质，可以使架构师能够敏锐地发现底层的真实情况，以端到端闭环的方式去思考问题，能够识别系统的短板并解决它。</li>
+</ol>
+<h1 id="业务架构"><a href="#业务架构" class="headerlink" title="业务架构"></a>业务架构</h1><h2 id="产品经理职责"><a href="#产品经理职责" class="headerlink" title="产品经理职责"></a>产品经理职责</h2><p>产品经理的工作，大量零散的原始需求经过梳理和关联，变成一系列有序的业务流程，以及流程里面的业务步骤（业务步骤也称之为业务节点），然后产品经理把这一系列的业务流程和业务节点以用户界面的方式定义出来，总的来说，产品经理定义了系统的外表。</p>
+<h2 id="业务架构师的职责"><a href="#业务架构师的职责" class="headerlink" title="业务架构师的职责"></a>业务架构师的职责</h2><p>先把所有的业务流程拆散，这样得到了一堆业务节点；然后把业务节点进行归类，相关的业务节点放在同一个系统模块里。判断节点是否相关，主要看它们是否属于同一个业务领域，比如一个订单查询的节点，和订单创建的节点，它们都属于订单域，那么这些节点都可以归属到同一个订单模块里。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-29ca2df116aa4451.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>如果按照业务流程来拆分系统模块，那么，有多少业务流程，就有多少个系统模块，这个对应关系比较直接，但实现起来很困难。</li>
+<li>如果按照业务域来拆分，有多少业务领域，就有多个系统模块，流程中的业务节点按照业务域的不同，可以划分到不同的系统模块。</li>
+</ul>
+<p>所以，<strong>对业务架构师来说，TA 的工作，就是把业务流程和节点打散，按照业务域的维度来划分系统模块，并定义这些模块之间的关系，最终形成一个高度结构化的模块体系</strong>。这样，开发人员既容易理解业务，又方便落地系统。</p>
+<p>产品经理和业务架构师的工作既有区别又有联系，简单地说，<strong>产品经理定义了系统的外观，满足了用户；业务架构师在此基础上，进一步定义了系统的内部模块结构，满足了开发人员</strong>。</p>
+<h2 id="架构目标"><a href="#架构目标" class="headerlink" title="架构目标"></a>架构目标</h2><ol>
+<li>业务的可扩展，业务需求是不断变化的，不断创新是业务的内在要求。而对于系统来说，它的要求却是相对稳定，尽量避免大的调整。<strong>业务的主题是变化和创新，系统的主题是稳定和可靠。</strong></li>
+<li>业务的可复用，对于类似的业务需求，如果原来做的工作可以大量复用的话，<strong>这是非常理想的结果，无论对于开发效率和开发质量的提升都很有帮助</strong>。<ul>
+<li><strong>首先，模块的职责定位要非常清晰</strong>。对于模块来说，在定位范围内的职责要全部涵盖到，而不在这个范围的职责全部不要。</li>
+<li><strong>其次，模块的数据模型和接口设计要保证通用</strong>。架构师需要归纳业务场景，通过抽象提炼，形成通用化的设计，以此来满足多个类似场景的需求。</li>
+<li><strong>最后，实现模块的高复用，还需要做好业务的层次划分</strong>。我们知道，越是底层的业务，它就相对更固定。举个例子，同样是订单业务域，对于底层订单的增删改查功能，不同类型的订单都是一样的，但对于上层的订单生命周期管理，外卖订单和堂食订单可能就不一样。</li>
+</ul>
+</li>
+</ol>
+<h1 id="可扩展架构"><a href="#可扩展架构" class="headerlink" title="可扩展架构"></a>可扩展架构</h1><h2 id="系统的构成：模块-关系"><a href="#系统的构成：模块-关系" class="headerlink" title="系统的构成：模块 + 关系"></a>系统的构成：模块 + 关系</h2><ul>
+<li>模块，首先要<strong>定位明确，概念完整</strong>。其次，模块还要<strong>自成体系，粒度适中</strong>。<ul>
+<li>模块的业务逻辑<strong>尽量围绕自身内部数据进行处理</strong>，对外部依赖越小，模块的封装性越好，稳定性也越强，不会随着外部模块的调整而调整。</li>
+<li>模块的粒度要保持适中，不能为了追求定位清晰，把粒度划分得很小，导致系统的碎片化。</li>
+</ul>
+</li>
+<li>依赖关系，要简化模块的依赖关系，我们就要同时简化依赖的方向和减少依赖的数量。<ul>
+<li>首先，我们希望模块之间的<strong>依赖是单向的，尽量避免相互调用</strong>，为什么单向更好呢？我们知道业务流程是有顺序的，如果模块依赖关系越直观地体现业务流程的顺序，越能帮助人理解，否则，我们会被双向的依赖箭头绕的晕头转向，很难通过模块之间的依赖关系还原实际业务的处理过程。</li>
+<li>接下来，我们看下模块的组织结构。我们知道，<strong>网状结构是一种松散的结构</strong>，节点之间的依赖关系比较复杂，一般用于表示非正式的关系，比如人群的社交关系；<strong>而层次结构是一种更有序的结构</strong>，一般用于表示正式的关系，比如公司内部的人员关系。在模块的组织结构设计上也是如此，我们要尽量<strong>把网状结构转化为层次结构</strong>，模块结构层次化是简化模块依赖关系的有力手段。</li>
+<li>另外，我们知道，层与层之间的依赖关系都是<strong>层与层之间自上而下的依赖</strong>，相对于多对多的网状依赖，层次依赖的方向更清晰，特别符合人的理解习惯。</li>
+</ul>
+</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-17a0fb7dbf75ff5d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<pre><code>表示层，对应前端的模块，如 App、小程序、公众号等，属于 View 层。
+
+应用层，对应和前端表示层直接关联的服务端，属于 Control 层。
+
+聚合服务层，如果系统业务比较复杂，经常需要单独的聚合服务层负责业务流程的编排组合，这个属于 Model 层的加强。
+
+基础服务层，代表最基础的业务模块管理，如订单、商品、用户等，属于实际的 Model 层。
+</code></pre>
+<h2 id="扩展性的本质"><a href="#扩展性的本质" class="headerlink" title="扩展性的本质"></a>扩展性的本质</h2><p>在文章开头，我们说因为业务总在变化，所以需要架构设计给系统提供良好的扩展性。</p>
+<p>只是表象，深层的原因是，一个新的需求进来，系统不只是为它增加一个新功能这么简单，系统的调整会引起一系列的连锁反应，从而大面积地影响系统的现有功能。架构设计时，如果模块划分的不好，一个<code>N</code>个模块的系统，它的复杂度就是 <code>N×N</code>（这个在上一讲介绍的支付宝一代架构中，体现得很明显）。如果再加一个新的模块，复杂度就变成 <code>(N+1)×(N+1)</code>，系统的复杂度随着<strong>功能的数量指数级地上升</strong>，这样一来，当系统的规模到一定程度，复杂度就会失控，导致系统彻底无序。</p>
+<p>所以，要支持系统的扩展，架构设计上必须能够控制系统的复杂度，面对新需求，<strong>要让系统复杂度做加法而不是乘法</strong>，从而保证系统的调整是<strong>局部化和最小化的</strong>，所以，业务架构扩展性的本质是：<strong>通过构建合理的模块体系，有效地控制系统复杂度，最小化业务变化引起的系统调整</strong>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9e6bce81c9275553.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="打造可扩展的模块体系：模块拆分"><a href="#打造可扩展的模块体系：模块拆分" class="headerlink" title="打造可扩展的模块体系：模块拆分"></a>打造可扩展的模块体系：模块拆分</h2><p><strong>水平方向拆分</strong></p>
+<p>水平拆分是指从上到下把系统分为多层，按照系统处理的先后顺序，把业务拆分为几个步骤。</p>
+<p>可以看到，通过水平拆分，可以使每一块职责都比较明确，功能内聚，每个模块管理自己内部的复杂性。同时，模块之间相互松耦合，一个模块的修改不影响另一个模块，比如地图搜索模块中改变了优先路径的推荐，不会影响运力调度模块中的人车匹配算法。</p>
+<p><strong>垂直方向拆分</strong></p>
+<p>垂直拆分指的是按照不同的业务线拆分，比如，将整个出行业务分为出租车业务、快车业务和顺风车业务，按照不同的业务场景，自上而下进行竖切，让每个业务都自成体系，形成自己的业务闭环。</p>
+<p><strong>一般做业务架构时，我们先考虑垂直拆分，从大方向上，把不同业务给区分清楚，然后再针对具体业务，按照业务处理流程进行水平拆分。</strong></p>
+<p><strong>通过模块通用化，模块的数量减少了，模块的定位更清晰，概念更完整，职责更聚焦。在实践中，当不同业务线对某个功能需求比较类似时，我们经常会使用这个手段。</strong></p>
+<h2 id="通用化整合"><a href="#通用化整合" class="headerlink" title="通用化整合"></a>通用化整合</h2><p>通用化指的是通过抽象设计，让一个模块具备通用的能力，能够替代多个类似功能的模块。</p>
+<p><strong>通过模块通用化，模块的数量减少了，模块的定位更清晰，概念更完整，职责更聚焦。在实践中，当不同业务线对某个功能需求比较类似时，我们经常会使用这个手段。</strong></p>
+<h2 id="平台化整合"><a href="#平台化整合" class="headerlink" title="平台化整合"></a>平台化整合</h2><p>平台化是把定位相同的模块组织在一起，以组团的方式对外提供服务。对于外部系统来说，我们可以把这些模块看成是一个整体，一起对业务场景提供全面的支撑。</p>
+<p><strong>业务平台化是模块依赖关系层次化的一个特例，只是它偏向于基础能力，在实践中，当业务线很多，业务规则很复杂时，我们经常把底层业务能力抽取出来，进行平台化处理。</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-23e68ac9a0f37236.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h1 id="其他信息"><a href="#其他信息" class="headerlink" title="其他信息"></a>其他信息</h1><ul>
+<li>单体架构中的模块只是在逻辑上独立，并没有在物理上严格分开，导致系统在落地时，模块的职责和边界划分比较随意，相应地，模块之间的依赖关系也比较模糊。所以，<strong>在单体架构中，模块结构是否合理，很大程度上依赖于开发者的个人水平。</strong></li>
+<li>分布式架构适用于业务相关性低、耦合少的业务系统。举个例子，企业内部的管理系统，分别服务于不同的职能部门，比如财务系统和 HR 系统，就比较适合按照分布式架构去落地。 但在电商场景下，业务都是围绕交易展开的，各个页面（应用）都需要和商品、用户、订单、库存打交道，对于这样业务相互依赖、应用之间需要紧密协作的场景，在系统架构方面，是否有更好的手段，可以更高效地集成这些应用呢？</li>
+<li>SOA 架构（Service Oriented Architecture）是一种面向服务的架构，它的发展经历了两个阶段：传统的 SOA 架构，它解决的是企业内部大量异构系统集成的问题；新的 SOA 架构，它解决的是系统重复建设的问题。SOA 架构给系统的扩展带来了一系列的好处：<ul>
+<li>首先，它通过服务化思想，提供更好的业务封装性，并通过标准技术，能更友好地对外输出业务能力；</li>
+<li>其次，SOA 服务不依附于某个具体应用，它可以独立地部署和扩展，这样避免了直接影响现有的系统；</li>
+<li>最后，服务通过封装通用的业务逻辑，可以供所有应用共享，解决了重复造轮子的问题。 </li>
+</ul>
+</li>
+</ul>
+<p>这就是一个传统的 SOA 架构，如下图所示：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8d48bdc40b0bc72d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>不过，虽然 SOA 服务化的思想很好，但在系统实现上比较重，落地比较困难。那有没有更轻量级的架构，使得系统各个部分更容易构建和相互协作呢？</p>
+<ul>
+<li>微服务概念的提出，一开始是用来和单体架构做区分的。我们知道，单体架构和分布式架构，实际上都是围绕一个大的业务线来构建应用，当业务变得复杂时，就无法做到模块边界和依赖关系的清晰划分，模块局部的调整往往会导致系统整体的调整，使得系统很难扩展。<ul>
+<li>而微服务围绕更小的业务单元构建独立的应用。因此，从一定程度上说，微服务叫做微应用，或者说微产品，更合适一点，你也可以认为微服务架构是拆分得更细的分布式架构。</li>
+<li> 另外，微服务强调围绕业务，进行清晰的业务和数据边界划分，并通过良好定义的接口输出业务能力，这和 SOA 架构里的服务有点类似。但两者不同的地方在于，<strong>微服务是去中心化的，不需要 SOA 架构中 ESB 的集中管理方式</strong>。</li>
+<li> 我们可以看到，微服务强调围绕端到端的小业务功能，通过组建跨职能的团队，来进行落地，这只是一种理想化的做法。所以，在实践中，<strong>我们往往弱化微服务的小应用定位，然后扩大化微服务小服务的定位，我们不再强调端到端的业务封装，而是可以有各种类型的微服务</strong>。</li>
+<li><strong>值得注意的是，我们需要对服务依赖关系进行有效的管理，打造一个有序的微服务体系</strong>。否则的话，东一个服务，西一个服务，这样会让系统变得碎片化，难以维护和扩展。</li>
+</ul>
+</li>
+<li><em>架构没有最好，只有最合适的。</em>*</li>
+</ul>
+<h2 id="技术复用"><a href="#技术复用" class="headerlink" title="技术复用"></a>技术复用</h2><ul>
+<li>代码级复用</li>
+<li>技术组件复用。这些组件有我们自己封装的，更多的是大量开源的中间件，比如 Redis、MQ、Dubbo 等；组件也包括各种开发框架，比如 Spring Cloud。这些基础组件技术复杂度很高，它们的存在，极大地简化了我们的开发工作。</li>
+<li>业务复用</li>
+</ul>
+<p><strong>值得注意的是，代码级复用和技术组件复用都属于工具层面，它们的好处是在很多地方都可以用，但和业务场景隔得有点远，不直接对应业务功能，因此复用的价值相对比较低。</strong></p>
+<p>总结：从<strong>技术复用到业务复用，越往上，复用程度越高，复用产生的价值也越大，但实现起来也越复杂，它能复用的场景就越有限</strong>。在实际工作中，技术层面上的复用相对比较简单，我们对这部分的认知也最多，而且由于开源的普及，现在有丰富的中间件让我们选择，我们可以基于它们，逐步构建适合自己的技术体系。</p>
+<p><strong>但如果我们能进一步打造业务中间件，并在这个基础上，形成业务平台，这样，我们就能实现更高的业务级复用，可以更高效地支持系统的快速落地。</strong></p>
+<p><strong>业务上的复用比纯粹的技术复用有更高的价值，我们要尽量往这个方向上靠。</strong></p>
+<h2 id="基础服务边界划分"><a href="#基础服务边界划分" class="headerlink" title="基础服务边界划分"></a>基础服务边界划分</h2><p>服务包含了<strong>业务数据和业务规则</strong>，并提供接口给外部访问，其中，接口是服务的对外视图，它封装了服务的业务数据和规则。</p>
+<ul>
+<li>首先，是服务的<strong>完整性原则</strong>，你在划分服务的边界时，需要确保服务内部数据的完整性。<ul>
+<li>举个例子，一个商品服务的数据模型，不仅要有商品基本信息，比如商品名称、价格、分类、图片、描述等；还需要包含商品的扩展信息，如商品的各种属性、商品标签等；最后还要包含各种复杂商品类型的定义，比如组合商品、套餐商品、多规格商品等。</li>
+<li>在实践中，有些服务只是存储基础数据，然后提供简单的增删改查功能，这样一来，服务只是一个简单的 DAO，变成了数据访问通道。这样的服务，它的价值就很有限，也容易被服务调用方质疑。因此，我们要尽可能在服务内部封装完整的业务规则，对外提供完整的业务语义，最大程度地简化服务的使用。</li>
+<li>所以，<strong>当你在划分服务边界时，要保证服务数据完整、功能全面</strong>，这样才能支撑一个完整的业务领域。</li>
+</ul>
+</li>
+<li>其次，是服务的<strong>一致性原则</strong><ul>
+<li>服务的数据和职责要一致，谁拥有信息，谁就负责提供相应的功能 .</li>
+<li>服务内部的业务逻辑要尽量依赖内部数据，而不是接口输入的数据，否则会造成数据和业务规则的脱节（一个在外面，一个在里面），如果服务对外部的依赖性很强，就无法提供稳定的能力了。</li>
+</ul>
+</li>
+<li>最后一个，是正交原则。既然是基础服务，它们就处于调用链的底层，服务之间不会有任何的调用关系，也就是说基础服务相互之间是正交的。比如说会员服务和商品服务，它们代表不同维度的基础业务域，彼此之间不会有调用关系。</li>
+</ul>
+<p>对于落地一个共享服务来说，<strong>服务边界的划分和功能的抽象设计是核心</strong>。服务边界确定了这个服务应该“做什么”，抽象设计确定了这个服务应该“怎么做”。</p>
+<h2 id="微服务改造"><a href="#微服务改造" class="headerlink" title="微服务改造"></a>微服务改造</h2><p>我们知道，商品是电商业务的核心，几乎所有的前后台系统都需要访问这个产品库，而这些系统的开发人员，早期的时候，只关心如何实现业务功能，对这些表的访问是怎么方便怎么来，有些 SQL 语句会对大量的表做 Join 关联。所以说，虽然系统是类似分布式的，但数据库是集中式的，如下图所示：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d6f5c3fb5e5b26dc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这样的方式，就给系统的维护带来了一系列的问题。</p>
+<ul>
+<li>从<strong>应用方面</strong>来说，各个系统功能重复建设，比如很多系统都会直接访问库存相关的表，类似的库存逻辑散布在很多地方；另外，如果修改了库存表的某个字段，这些系统同时会受影响，正所谓牵一发而动全身。</li>
+<li>从<strong>数据库方面</strong>来说，数据库的可用性是比较差的，如果某个系统有慢查询，它就很可能拖垮整个产品数据库，导致它不可用；还有，这么多系统同时访问产品库，数据库的连接数也经常不够用。</li>
+</ul>
+<p>准备阶段的第一步，就是圈表。产品数据库有 100 多张表，<strong>圈表</strong>就是用来确定库存微服务具体包含哪些表，<strong>也就是确定服务的数据模型</strong>。在确定了表以后，库存微服务就负责这些表的访问，当然，库存微服务也不会访问其它的表，而业务系统后续将通过库存微服务的接口，实现对这些表的访问。</p>
+<h1 id="技术架构"><a href="#技术架构" class="headerlink" title="技术架构"></a>技术架构</h1><h2 id="高可用架构"><a href="#高可用架构" class="headerlink" title="高可用架构"></a>高可用架构</h2><p><strong>系统有哪些故障点？</strong></p>
+<ol>
+<li>资源不可用，包括网络和服务器出故障，网络出故障表明节点连接不上，服务器出故障表明该节点本身不能正常工作。</li>
+<li>资源不足，常规的流量进来，节点能正常工作，但在高并发的情况下，节点无法正常工作，对外表现为响应超时。</li>
+<li>节点的功能有问题，这个主要体现在我们开发的代码上，比如它的内部业务逻辑有问题，或者是接口不兼容导致客户端调用出了问题；另外有些不够成熟的中间件，有时也会有功能性问题。</li>
+</ol>
+<p><strong>高可用策略和架构原则</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-aa7d53d80cc001fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>那么结合前面介绍的系统故障点和高可用的解决思路，我们在做架构设计时，就可以从 <strong>正面保障</strong> 和 <strong>减少损失</strong> 两个角度来考虑具体的应对手段。下面，我就来和你分享一下高可用的设计原则。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c6652e9e412de1c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>正面保障</strong></p>
+<ul>
+<li>第一个设计原则是冗余无单点。</li>
+<li>第二个设计原则是水平扩展。</li>
+</ul>
+<p><strong>减少损失</strong></p>
+<ul>
+<li>第三个原则是柔性事务。我们知道，系统的可用性经常会和数据的一致性相互矛盾。在 CAP 理论中，系统的可用性、一致性和网络容错性，三个最多只能保证两个，在分布式系统的情况下，我们只能在 C 和 A 中选一个<ul>
+<li>在很多业务场景中，<strong>系统的可用性比数据的实时一致性更重要</strong>，所以在实践中，我们更多地使用 <code>BASE</code> 理论来指导系统设计。在这里，我们努力实现系统的基本可用和数据的最终一致。 </li>
+<li>我们平时对单个数据库事务的 ACID 特性非常熟悉，因为这里不存在 P，所以 C 和 A 都能得到很好地保证，这是一种刚性事务。但在复杂的分布式场景下，基于 BASE 理论，我们通常只能实现部分的 C（软状态和最终一致）和部分的 A（基本可用），这是一种柔性事务。</li>
+</ul>
+</li>
+<li>第四个原则是系统可降级。<ul>
+<li>限流：让部分用户流量进入系统处理，其它流量直接抛弃。</li>
+<li>降级：系统抛弃部分不重要的功能，比如不发送短信通知，以此确保核心功能不受影响。</li>
+<li>熔断：我们不去调用出问题的服务，让系统绕开故障点，就像电路的保险丝一样，自己熔断，切断通路，避免系统资源大量被占用。比如，用户下单时，如果积分服务出现问题，我们就先不送积分，后续再补偿。</li>
+<li>功能禁用：针对具体的功能，我们设置好功能开关，让代码根据开关设置，灵活决定是否执行这部分逻辑。比如商品搜索，在系统繁忙时，我们可以选择不进行复杂的深度搜索。 </li>
+</ul>
+</li>
+</ul>
+<p><strong>做好监控</strong></p>
+<p>最后一个设计原则，是<strong>系统可监控</strong>。当我们在做功能开发的时候，经常会强调功能的可测试性，我们通过测试来验证这个功能是否符合预期，而系统可监控，就像业务功能可测试一样重要。通过监控，我们可以实时地了解系统的当前状态，这样很多时候，业务还没出问题，我们就可以提前干预，避免事故；而当系统出现问题时，我们也可以借助监控信息，快速地定位和解决问题。</p>
+<p><strong>处理事故有三板斧：重启、扩容、回滚。以快速止血和恢复业务为目标，然后再定位故障原因</strong></p>
+<h2 id="监控"><a href="#监控" class="headerlink" title="监控"></a>监控</h2><p><strong>监控的分类</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-017f66a79b6a2e36.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol>
+<li>用户体验监控：指的是从前端用户的访问速度出发，来监测系统的可用性，包括页面能否打开、关键接口的响应时间等等，用户体验监控一般结合前端的埋点来实现。</li>
+<li>业务监控：它是从业务结果的角度来看，比如说订单数、交易金额等等，业务监控也是最直观的，我们知道，如果业务数据没问题，系统整体也就没有问题。对于业务监控，我们一般是从数据库里定时拉取业务数据，然后以曲线的方式展示业务指标随着时间的变化过程。除了当前的曲线，一般还有同比和环比曲线。同比是和前一天的数据进行比较，环比是和一周前的数据进行比较，两方面结合起来，我们就能知道当前的业务指标有没有问题。</li>
+<li>应用监控：指的是对自己开发的代码进行监控，比如接口在一段时间内的调用次数、响应时间、出错次数等等。更深入一点的应用监控还包含了调用链监控，我们知道，一个外部请求的处理过程包含了很多环节，比如说网关、应用、服务、缓存和数据库，我们可以通过调用链监控把这些环节串起来，当系统有问题时，我们可以一步步地排查。有很多 APM 工具可以实现调用链监控，如 CAT、SkyWalking 等等。</li>
+<li>中间件监控：指的是对标准中间件进行监控，它是第三方开发的代码，比如数据库、缓存、Tomcat 等等，这些组件对应的是系统的 PaaS 层。这些中间件往往带有配套的监控系统，比如，RabbitMQ 就有自带的监控后台。</li>
+<li>基础平台监控：指的是对系统底层资源进行监控，如操作系统、硬件设备等等，这个层次的监控对应的是系统的 IaaS 层。Zabbix 就是典型的基础设施监控工具，它可以监控 CPU、内存和磁盘的使用情况。</li>
+</ol>
+<p><strong>如何打造一体化的监控系统？</strong></p>
+<ul>
+<li>节点信息采集</li>
+<li>接入监控系统</li>
+<li>前端信息展示</li>
+<li>库表设计</li>
+</ul>
+<h2 id="高性能和可伸缩架构"><a href="#高性能和可伸缩架构" class="headerlink" title="高性能和可伸缩架构"></a>高性能和可伸缩架构</h2><p><strong>常用的性能数据</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-34ca1aedb46b7409.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>你可以看到，内存的数据读取是 SSD 磁盘的 10 倍，SSD 磁盘又是普通磁盘的 10 倍，一个远程调用的网络耗时是机房内部调用的 1000 倍，一个分布式缓存访问相对于数据库访问，性能也有数十倍的提升。</p>
+<p><strong>高性能和可伸缩架构原则</strong></p>
+<ul>
+<li>可水平拆分和无状态，这意味着节点支持多实例部署，我们可以通过水平扩展，线性地提升节点的处理能力，保证良好的伸缩性以及低成本。</li>
+<li>短事务和柔性事务，短事务意味着资源锁定的时间短，系统能够更好地支持并发处理；柔性事务意味着系统只需要保证状态的最终一致，这样我们就有更多的灵活手段来支持系统的高性能，比如说通过异步消息等等。</li>
+<li>数据可缓存，缓存是系统性能优化的利器，如果数据能够缓存，我们就可以在内存里拿到数据，而不是通过磁盘 IO，这样可以大大减少数据库的压力，相对于数据库的成本，缓存的成本显然也更低。</li>
+<li>计算可并行，如果计算可并行，我们就可以通过增加机器节点，加快单次请求的速度，提高性能。Hadoop 对大数据的处理就是一个很好的例子。</li>
+<li>可异步处理，异步处理给系统的处理增加了弹性空间，我们可以利用更多的处理时间，来降低系统对资源的实时需求，在保证系统处理能力的同时，降低系统的成本。</li>
+<li>虚拟化和容器化，虚拟化和容器化是指对基础资源进行了抽象，这意味着我们不需要再依赖具体的硬件，对节点的移植和扩容也就更加方便。同时，虚拟化和容器化对系统的资源切分得更细，也就说明对资源的利用率更高，系统的成本也就更低。举个例子，我们可以为单个 Docker 容器分配 0.1 个 CPU，当容器的处理能力不足时，我们可以给它分配更多的 CPU，或者增加 Docker 容器的数量，从而实现系统的弹性扩容。</li>
+</ul>
+<h2 id="架构原则汇总"><a href="#架构原则汇总" class="headerlink" title="架构原则汇总"></a>架构原则汇总</h2><p>在技术架构篇，我针对系统的高可用、高性能、可伸缩和低成本，给你介绍了很多的架构设计原则，不同的原则对应着不同的目标，这里我把这些架构原则和目标汇总成一个表格，来帮助你更直观地了解它们。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-cc2b7fc5f8941a3a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>可回滚 / 可禁用</strong></p>
+<p>可回滚原则确保了系统可以向后兼容，当系统升级出现问题的时候，我们可以回滚到旧版本，保证系统始终可用。</p>
+<p>不过有些时候，系统回滚很困难。举个例子，如果数据库的新旧表结构差异很大，除了回滚代码，我们还要回滚数据库，这样操作起来往往需要很长时间，系统的可回滚性就比较差。所以在设计时，我们要尽量考虑数据库修改和代码的兼容性，并提前做好系统回滚的预案。</p>
+<p><strong>可禁用原则</strong>要求我们提供功能是否可用的配置，在系统出现故障时，我们能够快速下线相应的功能。比如说，新的商品推荐算法有问题，我们可以通过程序开关禁用这个功能。</p>
+<p><strong>使用成熟技术</strong></p>
+<p>作为开发人员，我们都很想尝试新技术，但我们知道，新的技术还没有经过充分的验证，它往往会存在很多隐藏的 Bug。</p>
+<p>所以，作为架构师，我们在做方案设计的时候，一方面，要从系统的稳定性出发，尽量选择成熟的技术，避免因为新技术的坑而导致系统可用性出现问题；另一方面，选择成熟的技术也意味着选择了团队熟悉的技术，这样学习成本低，落地快。</p>
+<p><strong>使用同质化硬件</strong></p>
+<p>我们在做硬件选型的时候，要尽量选择相同的硬件和相同的配置。</p>
+<p>比如说，对于服务器，我们选择同样的 CPU 和内存配置，以及同样的操作系统版本，这样我们更容易通过统一的自动化脚本，对节点进行配置，对系统做水平扩展时也会更加容易。</p>
+<h2 id="架构落地过程"><a href="#架构落地过程" class="headerlink" title="架构落地过程"></a>架构落地过程</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-8e79ce86632ed1fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>首先，架构师针对业务需求，分解相应功能到现有的各个系统，把系统的各个部分串起来，这个第一版的方案至少要能够在表面上解决当前的问题，这样就形成一个草根的方案。</li>
+<li>然后，架构师要进一步深入思考业务的本质，对现有的草根方案进行升华，比如说，通过抽象，让方案更加通用，可以解决多个类似的或潜在的业务需求，这样，草根的方案就变成了一个高大上的方案，这里很考验架构师的透过问题看本质和抽象总结的能力。</li>
+<li>接下来，基于现有的各项约束，比如时间、资金和人员技术能力等因素，架构师要对方案进行简化，把高大上的方案变成一个接地气的方案，以最小的代价实现最大的价值，这里很考验架构师的平衡取舍能力。</li>
+</ul>
+<h2 id="架构师知识结构"><a href="#架构师知识结构" class="headerlink" title="架构师知识结构"></a>架构师知识结构</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-04194dbb62b1e565.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>第一部分是开发相关的基本知识，比如数据结构和算法、具体的开发语言、常用的设计模式以及开发框架等等，这样你就具备了基本的开发能力。</li>
+<li>第二部分是各种中间件知识，常用的中间件包括数据库、缓存、消息系统、微服务框架等等，对于这些核心中间件，我们不但要了解具体的用法，还要深入理解它们的适用场景。这样你就能写出高效健壮的代码，能够独立承担一个子系统的开发。</li>
+<li>继续往下深入，你还要学习分布式系统相关的知识，包括底层网络和分布式通信技术，这样你就可以了解系统是怎么连接在一起的。除此之外，你还要了解一些周边的系统，比如大数据平台、运维监控系统、接入系统等等，这样，你就可以了解系统端到端的运行过程，从技术架构上保证系统的稳定可用。</li>
+</ul>
+<p>掌握了这些技术能力之后，你就可以逐渐往全面的架构师发展了。比如说，你可以结合业务，来设计应用体系，包括数据模型和服务设计；你可以了解各种应用架构模型，知道它们的优缺点和适用场景，能够定义一个良好的应用依赖关系。</p>
+<p>再往上，就是成为业务领域专家。在这个阶段，你已经知道如何通过业务拆分，实现业务之间的解耦；如何通过业务抽象，实现业务的扩展和重用。</p>
+<p>到最后，你已经对各种架构设计的目标和架构原则都非常了解了，知道面对一个具体的问题，大致都有哪些解决的手段；然后，经过大量的实践，你能够把技术架构、应用架构、业务架构融会贯通，并针对具体情况，对架构的各个目标做良好的平衡。当然，作为架构师，你还要和一系列的人员打交道，这时候就需要你培养更多的软技能，能把复杂的架构问题以简单的方式表达出来。</p>
+<h2 id="架构师成长路径"><a href="#架构师成长路径" class="headerlink" title="架构师成长路径"></a>架构师成长路径</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-08235bd81600eae7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>第一个阶段是初级开发阶段。</strong></p>
+<p>在这个阶段，你需要深入学习数据结构和算法，并且一定要深入掌握单体应用的分层架构，因为这是架构设计的基础。</p>
+<p>另外，对 JDK 的一些核心类，你不能仅仅停留在使用层面，而是要深入研读源代码，了解它的内部设计。这样你就知道如何开发一个高效的程序，如何进行各种代码级的调优。</p>
+<p><strong>第二个阶段是高级开发阶段。</strong></p>
+<p>首先，你需要非常了解设计模式，每个设计模式都可以看做是一个小型的架构设计，这里面有很好的设计原则和抽象思维，你在做系统设计时可以借鉴它们。</p>
+<p>然后，你需要非常了解核心的中间件，包括 DB、微服务框架、缓存和消息系统，要清楚地了解它们的适用场景（比如消息系统的削峰、解耦和异步），知道如何对它们进行调优，以及了解它们都有哪些常见的坑等等，核心中间件是我们做技术选型的基础。</p>
+<p>同时，你要深入掌握数据库设计和服务接口设计，了解它们的最佳设计实践，它们承载了系统核心的业务数据和业务逻辑。</p>
+<p><strong>第三个阶段是架构师阶段，成为技术专家。</strong></p>
+<p>首先，你需要深入了解网络通信，比如说网络分层和 HTTP/TCP 协议，还有各种常见的 RPC 通讯框架，了解它们的特性和适用场景，这样你在设计分布式系统时，就能够进行合理的技术选型。</p>
+<p>然后是了解底层系统，包括 JVM、操作系统和硬件原理，再往上延伸到系统的接入部分，了解常见的负载均衡特性和用法，这样你可以对整体的系统有个透彻的了解，把各个环节可以很好地衔接起来。这里，我特别建议你去读下 Java 和 JVM 的规格说明书，了解 Java 的底层设计。</p>
+<p>最后，你需要熟练掌握各种设计工具和方法论，比如领域驱动设计和 UML，了解常用的架构设计原则，这样你就能够结合业务，选择合适的应用架构和技术架构并进行落地。在这一阶段，对你总的要求就是能够从端到端的角度进行业务分析和系统设计。</p>
+<p><strong>第四阶段是大师阶段。</strong></p>
+<p>在这个阶段，你需要对架构的各个目标都非常了解，除了业务系统设计，你还要对运维和监控有深入的认知。同时，你需要了解业界的架构实践，跟踪技术的发展趋势，如果出来一项新技术，你可以比较准确地对它进行定位，把它纳入到自己的能力体系当中。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c2dde597d5b92617.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2023/04/02/quic-hello/" title="Quic 加密握手的过程"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: Quic 加密握手的过程</span></a><a class="button is-default" href="/2023/02/26/mastering-regular-expressions/" title="《精通正则表达式》"><span class="has-text-weight-semibold">下一页: 《精通正则表达式》</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

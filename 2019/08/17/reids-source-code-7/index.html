@@ -1,0 +1,285 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Redis 源码分析(七) ：skiplist</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="一、skiplist由来skiplist本质上也是一种查找结构，用于解决算法中的查找问题（Searching），即根据给定的key，快速查到它所在的位置（或者对应的value）。
+我们在《Redis内部数据结构详解》系列的第一篇中介绍dict的时候，曾经讨论过：一般查找问题的解法分为两个大类：一个是基于各种平衡树，一个是基于哈希表。但skiplist却比较特殊，它没法归属到这两大类里面。
+这种数据结构是由William Pugh发明的，最早出现于他在1990年发表的论文《Skip Lists: A Probabilistic Alternative to Balanced Trees》。对细节感兴趣的同学可以下载论文原文来阅读。
+skiplist，顾名思义，首先它是一个list。实际上，它是在有序链表的基础.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Redis 源码分析(七) ：skiplist</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81skiplist%E7%94%B1%E6%9D%A5"><span class="toc-text">一、skiplist由来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81skiplist%E6%80%A7%E8%83%BD%E5%92%8C%E5%AE%9E%E7%8E%B0%E9%80%BB%E8%BE%91"><span class="toc-text">二、skiplist性能和实现逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#skiplist%E7%94%9F%E6%88%90%E9%9A%8F%E6%9C%BA%E5%B1%82%E6%95%B0%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-text">skiplist生成随机层数的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skiplist%E7%9A%84%E7%AE%97%E6%B3%95%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90"><span class="toc-text">skiplist的算法性能分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#skiplist%E7%AE%97%E6%B3%95%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6"><span class="toc-text">skiplist算法时间复杂度</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81redis%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">三、redis的实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93%E5%AE%9A%E4%B9%89"><span class="toc-text">结构体定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%B3%E8%B7%83%E8%A1%A8%E5%88%9B%E5%BB%BA%E5%8F%8A%E6%8F%92%E5%85%A5"><span class="toc-text">跳跃表创建及插入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Redis%E4%B8%ADskiplist%E5%AE%9E%E7%8E%B0%E7%9A%84%E7%89%B9%E6%AE%8A%E6%80%A7"><span class="toc-text">Redis中skiplist实现的特殊性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Redis%E4%B8%AD%E7%9A%84sorted-set"><span class="toc-text">Redis中的sorted set</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81skiplist%E4%B8%8E%E5%B9%B3%E8%A1%A1%E6%A0%91%E3%80%81%E5%93%88%E5%B8%8C%E8%A1%A8%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-text">四、skiplist与平衡树、哈希表的比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Redis%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8skiplist%E8%80%8C%E4%B8%8D%E7%94%A8%E5%B9%B3%E8%A1%A1%E6%A0%91%EF%BC%9F"><span class="toc-text">五、Redis为什么用skiplist而不用平衡树？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E8%B5%84%E6%96%99"><span class="toc-text">参数资料</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Redis"><i class="tag post-item-tag">Redis</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Redis 源码分析(七) ：skiplist</h1><time class="has-text-grey" datetime="2019-08-16T16:44:40.000Z">2019-08-17</time><article class="mt-2 post-content"><h2 id="一、skiplist由来"><a href="#一、skiplist由来" class="headerlink" title="一、skiplist由来"></a>一、skiplist由来</h2><p><code>skiplist</code>本质上也是一种查找结构，用于解决算法中的查找问题（<code>Searching</code>），即根据给定的<code>key</code>，快速查到它所在的位置（或者对应的<code>value</code>）。</p>
+<p>我们在《Redis内部数据结构详解》系列的第一篇中介绍dict的时候，曾经讨论过：一般查找问题的解法分为两个大类：一个是基于各种平衡树，一个是基于哈希表。但<code>skiplist</code>却比较特殊，它没法归属到这两大类里面。</p>
+<p>这种数据结构是由<code>William Pugh</code>发明的，最早出现于他在1990年发表的论文《Skip Lists: A Probabilistic Alternative to Balanced Trees》。对细节感兴趣的同学可以下载论文原文来阅读。</p>
+<p><code>skiplist</code>，顾名思义，首先它是一个<code>list</code>。实际上，它是在有序链表的基础上发展起来的。</p>
+<p>我们先来看一个有序链表，如下图（最左侧的灰色节点表示一个空的头结点）：</p>
+<p>在这样一个链表中，如果我们要查找某个数据，那么需要从头开始逐个进行比较，直到找到包含数据的那个节点，或者找到第一个比给定数据大的节点为止（没找到）。也就是说，时间复杂度为<code>O(n)</code>。同样，当我们要插入新数据的时候，也要经历同样的查找过程，从而确定插入位置。</p>
+<p>假如我们每相邻两个节点增加一个指针，让指针指向下下个节点，如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b9c9c68ae7d6e4ab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="skip_list1.png"></p>
+<p>这样所有新增加的指针连成了一个新的链表，但它包含的节点个数只有原来的一半（上图中是7, 19, 26）。现在当我们想查找数据的时候，可以先沿着这个新链表进行查找。当碰到比待查数据大的节点时，再回到原来的链表中进行查找。比如，我们想查找23，查找的路径是沿着下图中标红的指针所指向的方向进行的：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d3697e471bbe55df.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="skip_list2.png"></p>
+<ul>
+<li>23首先和7比较，再和19比较，比它们都大，继续向后比较。</li>
+<li>但23和26比较的时候，比26要小，因此回到下面的链表（原链表），与22比较。</li>
+<li>23比22要大，沿下面的指针继续向后和26比较。23比26小，说明待查数据23在原链表中不存在，而且它的插入位置应该在22和26之间。</li>
+</ul>
+<p>在这个查找过程中，由于新增加的指针，我们不再需要与链表中每个节点逐个进行比较了。需要比较的节点数大概只有原来的一半。</p>
+<p>利用同样的方式，我们可以在上层新产生的链表上，继续为每相邻的两个节点增加一个指针，从而产生第三层链表。如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-68e86d7421386af3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="skip_list3.png"></p>
+<p><code>skiplist</code>正是受这种多层链表的想法的启发而设计出来的。实际上，按照上面生成链表的方式，上面每一层链表的节点个数，是下面一层的节点个数的一半，这样查找过程就非常类似于一个二分查找，使得查找的时间复杂度可以降低到<code>O(log n)</code>。</p>
+<p><strong>但是，这种方法在插入数据的时候有很大的问题。新插入一个节点之后，就会打乱上下相邻两层链表上节点个数严格的2:1的对应关系。如果要维持这种对应关系，就必须把新插入的节点后面的所有节点（也包括新插入的节点）重新进行调整，这会让时间复杂度重新蜕化成O(n)。删除数据也有同样的问题。</strong></p>
+<p><code>skiplist</code>为了避免这一问题，它不要求上下相邻两层链表之间的节点个数有严格的对应关系，而是为每个节点随机出一个层数<code>(level)</code>。比如，一个节点随机出的层数是3，那么就把它链入到第1层到第3层这三层链表中。为了表达清楚，下图展示了如何通过一步步的插入操作从而形成一个<code>skiplist</code>的过程：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-23e9cc403b8bb1bf.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="skip_list4.jpg"></p>
+<p>从上面<code>skiplist</code>的创建和插入过程可以看出，每一个节点的层数<code>（level）</code>是随机出来的，而且新插入一个节点不会影响其它节点的层数。因此，插入操作只需要修改插入节点前后的指针，而不需要对很多节点都进行调整。这就降低了插入操作的复杂度。实际上，这是<code>skiplist</code>的一个很重要的特性，这让它在插入性能上明显优于平衡树的方案。这在后面我们还会提到。</p>
+<p>根据上图中的<code>skiplist</code>结构，我们很容易理解这种数据结构的名字的由来。<code>skiplist</code>，翻译成中文，可以翻译成“跳表”或“跳跃表”，指的就是除了最下面第1层链表之外，它会产生若干层稀疏的链表，这些链表里面的指针故意跳过了一些节点（而且越高层的链表跳过的节点越多）。这就使得我们在查找数据的时候能够先在高层的链表中进行查找，然后逐层降低，最终降到第1层链表来精确地确定数据位置。在这个过程中，我们跳过了一些节点，从而也就加快了查找速度。</p>
+<h2 id="二、skiplist性能和实现逻辑"><a href="#二、skiplist性能和实现逻辑" class="headerlink" title="二、skiplist性能和实现逻辑"></a>二、skiplist性能和实现逻辑</h2><h3 id="skiplist生成随机层数的方法"><a href="#skiplist生成随机层数的方法" class="headerlink" title="skiplist生成随机层数的方法"></a>skiplist生成随机层数的方法</h3><pre><code>// redis 5.0.2的客户端代码，redis 3.2.x版本最大Level是32
+#define ZSKIPLIST_MAXLEVEL 64 /* Should be enough for 2^64 elements */
+#define ZSKIPLIST_P 0.25      /* Skiplist P = 1/4 */
+
+/* Returns a random level for the new skiplist node we are going to create.
+ * The return value of this function is between 1 and ZSKIPLIST_MAXLEVEL
+ * (both inclusive), with a powerlaw-alike distribution where higher
+ * levels are less likely to be returned. */
+int zslRandomLevel(void) {  // 跳跃表获取随机level值  越大的数出现的几率越小
+
+    int level = 1;
+    while ((random()&amp;0xFFFF) &lt; (ZSKIPLIST_P * 0xFFFF))  // 每往上提一层的概率为4分之一
+        level += 1;
+    return (level&lt;ZSKIPLIST_MAXLEVEL) ? level : ZSKIPLIST_MAXLEVEL;
+}
+</code></pre>
+<p>由上面的代码可以看出，Redis最大的层数是 64，<code>level</code>层数最小是 1 ，level+1的概率是<code>1/4</code>（比如level=2的概率是<code>1/4</code>，level=3的概率是<code>1/16</code>依次类推）</p>
+<h3 id="skiplist的算法性能分析"><a href="#skiplist的算法性能分析" class="headerlink" title="skiplist的算法性能分析"></a>skiplist的算法性能分析</h3><p>我们先来计算一下每个节点所包含的平均指针数目（概率期望）。节点包含的指针数目，相当于这个算法在空间上的额外开销<code>(overhead)</code>，可以用来度量空间复杂度。</p>
+<p>根据前面<code>zslRandomLevel</code>()代码，我们很容易看出，产生越高的节点层数，概率越低。定量的分析如下：</p>
+<ul>
+<li>节点层数至少为1。而大于1的节点层数，满足一个概率分布。</li>
+<li>节点层数恰好等于1的概率为1-p。</li>
+<li>节点层数大于等于2的概率为p，而节点层数恰好等于2的概率为p(1-p)。</li>
+<li>节点层数大于等于3的概率为p 2 ，而节点层数恰好等于3的概率为p 2 (1-p)。</li>
+<li>节点层数大于等于4的概率为p 3 ，而节点层数恰好等于4的概率为p 3 (1-p)。</li>
+<li>依次类推</li>
+</ul>
+<p>因此，一个节点的平均层数（也即包含的平均指针数目），计算如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1470ca1d5a138c3c.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="skip_list5.jpg"></p>
+<p>现在很容易计算出：</p>
+<ul>
+<li>当p=1/4时，每个节点所包含的平均指针数目为1.33（平衡树每个节点包含指针数是2）。这也是Redis里的skiplist实现在空间上的开销。</li>
+</ul>
+<h3 id="skiplist算法时间复杂度"><a href="#skiplist算法时间复杂度" class="headerlink" title="skiplist算法时间复杂度"></a>skiplist算法时间复杂度</h3><p>为了分析时间复杂度，我们计算一下<code>skiplist</code>的平均查找长度。查找长度指的是查找路径上跨越的跳数，而查找过程中的比较次数就等于查找长度加1。</p>
+<p>为了计算查找长度，这里我们需要利用一点小技巧。我们注意到，每个节点插入的时候，它的层数是由随机函数<code>zslRandomLevel()</code>计算出来的，而且随机的计算不依赖于其它节点，每次插入过程都是完全独立的。所以从统计上来说，一个<code>skiplist</code>结构的形成与节点的插入顺序无关。</p>
+<p>这样的话，为了计算查找长度，我们可以将查找过程倒过来看，从右下方第1层上最后到达的那个节点开始，沿着查找路径向左向上回溯，类似于爬楼梯的过程。我们假设当回溯到某个节点的时候，它才被插入，这虽然相当于改变了节点的插入顺序，但从统计上不影响整个<code>skiplist</code>的形成结构。</p>
+<p>现在假设我们从一个层数为<code>i</code>的节点<code>x</code>出发，需要向左向上攀爬<code>k</code>层。这时我们有两种可能：</p>
+<p>如果节点<code>x</code>有第<code>(i+1)</code>层指针，那么我们需要向上走。这种情况概率为<code>p</code>。</p>
+<p>如果节点<code>x</code>没有第<code>(i+1)</code>层指针，那么我们需要向左走。这种情况概率为<code>(1-p)</code>。</p>
+<p>这两种情形如下图所示：<br>[图片上传失败…(image-4eddd1-1565973809739)]</p>
+<p>用<code>C(k)</code>表示向上攀爬<code>k</code>个层级所需要走过的平均查找路径长度（概率期望），那么：</p>
+<pre><code>C(0)=0
+C(k)=(1-p)×(上图中情况b的查找长度) + p×(上图中情况c的查找长度)
+</code></pre>
+<p>代入，得到一个差分方程并化简：</p>
+<pre><code>C(k)=(1-p)(C(k)+1) + p(C(k-1)+1)
+C(k)=1/p+C(k-1)
+C(k)=k/p
+</code></pre>
+<p>这个结果的意思是，我们每爬升1个层级，需要在查找路径上走<code>1/p</code>步。而我们总共需要攀爬的层级数等于整个<code>skiplist</code>的总层数-1。</p>
+<p>那么接下来我们需要分析一下当<code>skiplist</code>中有<code>n</code>个节点的时候，它的总层数的概率均值是多少。这个问题直观上比较好理解。根据节点的层数随机算法，容易得出：</p>
+<ul>
+<li>第1层链表固定有<code>n</code>个节点；</li>
+<li>第2层链表平均有<code>n*p</code>个节点；</li>
+<li>第3层链表平均有<code>n*p 2</code>个节点；</li>
+<li>…</li>
+</ul>
+<p>所以，从第1层到最高层，各层链表的平均节点数是一个指数递减的等比数列。容易推算出，总层数的均值为<code>log 1/p n</code>，而最高层的平均节点数为<code>1/p</code>。</p>
+<p>综上，粗略来计算的话，平均查找长度约等于：</p>
+<pre><code>C(log 1/p n-1)=(log 1/p n-1)/p
+</code></pre>
+<p>即，平均时间复杂度为O(log n)。</p>
+<p>当然，这里的时间复杂度分析还是比较粗略的。比如，沿着查找路径向左向上回溯的时候，可能先到达左侧头结点，然后沿头结点一路向上；还可能先到达最高层的节点，然后沿着最高层链表一路向左。但这些细节不影响平均时间复杂度的最后结果。另外，这里给出的时间复杂度只是一个概率平均值，但实际上计算一个精细的概率分布也是有可能的。详情还请参见William Pugh的论文《Skip Lists: A Probabilistic Alternative to Balanced Trees》。</p>
+<h2 id="三、redis的实现"><a href="#三、redis的实现" class="headerlink" title="三、redis的实现"></a>三、redis的实现</h2><h3 id="结构体定义"><a href="#结构体定义" class="headerlink" title="结构体定义"></a>结构体定义</h3><pre><code>typedef struct zskiplistNode {  // 跳跃表节点
+    robj *obj;  // redis对象
+    double score;   // 分值
+    struct zskiplistNode *backward; // 后退指针
+    struct zskiplistLevel {
+        struct zskiplistNode *forward;  // 前进指针
+        unsigned int span;  // 跨度
+    } level[];
+} zskiplistNode;
+
+typedef struct zskiplist {
+    struct zskiplistNode *header, *tail;
+    unsigned long length;   // 跳跃表长度
+    int level;  // 目前跳跃表的最大层数节点
+} zskiplist;
+</code></pre>
+<p>redis 的跳跃表是一个双向的链表，并且在<code>zskiplist</code>结构体中保存了跳跃表的长度和头尾节点，方便从头查找或从尾部遍历。</p>
+<p><code>zskiplistNode</code>定义了<code>skiplist</code>的节点结构。</p>
+<ul>
+<li><code>obj</code>字段存放的是节点数据，它的类型是一个<code>string robj</code>。本来一个<code>string robj</code>可能存放的不是<code>sds</code>，而是<code>long</code>型，但<code>zadd</code>命令在将数据插入到<code>skiplist</code>里面之前先进行了解码，所以这里的<code>obj</code>字段里存储的一定是一个<code>sds</code>。这样做的目的应该是为了方便在查找的时候对数据进行字典序的比较，而且，<code>skiplist</code>里的数据部分是数字的可能性也比较小。</li>
+<li><code>score</code>字段是数据对应的分数。</li>
+<li><code>backward</code>字段是指向链表前一个节点的指针（前向指针）。节点只有1个前向指针，所以只有第1层链表是一个双向链表。</li>
+<li><code>level[]</code>存放指向各层链表后一个节点的指针（后向指针）。每层对应1个后向指针，用<code>forward</code>字段表示。另外，每个后向指针还对应了一个<code>span</code>值，它表示当前的指针跨越了多少个节点。<code>span</code>用于计算元素排名<code>(rank)</code>，这正是前面我们提到的Redis对于<code>skiplist</code>所做的一个扩展。需要注意的是，<code>level[]</code>是一个柔性数组<code>（flexible array member）</code>，因此它占用的内存不在<code>zskiplistNode</code>结构里面，而需要插入节点的时候单独为它分配。也正因为如此，<code>skiplist</code>的每个节点所包含的指针数目才是不固定的，我们前面分析过的结论——<code>skiplist</code>每个节点包含的指针数目平均为<code>1/(1-p)</code>——才能有意义。</li>
+</ul>
+<p><code>zskiplist</code>定义了真正的<code>skiplist</code>结构，它包含：</p>
+<ul>
+<li>头指针<code>header</code>和尾指针<code>tail</code>。</li>
+<li>链表长度<code>length</code>，即链表包含的节点总数。注意，新创建的<code>skiplist</code>包含一个空的头指针，这个头指针不包含在<code>length</code>计数中。</li>
+<li><code>level</code>表示<code>skiplist</code>的总层数，即所有节点层数的最大值。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-30c99c16bbca5335.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="skip_list8.jpg"></p>
+<p>注意：图中前向指针上面括号中的数字，表示对应的<code>span</code>的值。即当前指针跨越了多少个节点，这个计数不包括指针的起点节点，但包括指针的终点节点。</p>
+<p>假设我们在这个<code>skiplist</code>中查找<code>score=89.0</code>的元素（即Bob的成绩数据），在查找路径中，我们会跨域图中标红的指针，这些指针上面的<code>span</code>值累加起来，就得到了Bob的排名<code>(2+2+1)-1=4</code>（减1是因为rank值以0起始）。需要注意这里算的是从小到大的排名，而如果要算从大到小的排名，只需要用<code>skiplist</code>长度减去查找路径上的<code>span</code>累加值，即<code>6-(2+2+1)=1</code>。</p>
+<p>可见，在查找<code>skiplist</code>的过程中，通过累加<code>span</code>值的方式，我们就能很容易算出排名。相反，如果指定排名来查找数据（类似<code>zrange</code>和<code>zrevrange</code>那样），也可以不断累加<code>span</code>并时刻保持累加值不超过指定的排名，通过这种方式就能得到一条<code>O(log n)</code>的查找路径。</p>
+<h3 id="跳跃表创建及插入"><a href="#跳跃表创建及插入" class="headerlink" title="跳跃表创建及插入"></a>跳跃表创建及插入</h3><p>跳跃表的创建就是一些基本的初始化操作，需要注意的是 redis 的跳跃表最大层数为 64，是为了能够足够支撑优化<code>2^64</code>个元素的查找。假设每个元素出现在上一层索引的概率为0.5，每个元素出现在第n层的概率为<code>1/2^n</code>，所以当有<code>2^n</code>个元素时，需要n层索引保证查询时间复杂度为<code>O(logN)</code>。</p>
+<pre><code>zskiplistNode *zslCreateNode(int level, double score, robj *obj) {  // 跳跃表节点创建
+    zskiplistNode *zn = zmalloc(sizeof(*zn)+level*sizeof(struct zskiplistLevel));
+    zn-&gt;score = score;
+    zn-&gt;obj = obj;
+    return zn;
+}
+
+zskiplist *zslCreate(void) {    // 跳跃表创建
+    int j;
+    zskiplist *zsl;
+
+    zsl = zmalloc(sizeof(*zsl));
+    zsl-&gt;level = 1;
+    zsl-&gt;length = 0;
+    zsl-&gt;header = zslCreateNode(ZSKIPLIST_MAXLEVEL,0,NULL); // 创建头结点
+    for (j = 0; j &lt; ZSKIPLIST_MAXLEVEL; j++) {  // 初始化头结点
+        zsl-&gt;header-&gt;level[j].forward = NULL;
+        zsl-&gt;header-&gt;level[j].span = 0;
+    }
+    zsl-&gt;header-&gt;backward = NULL;
+    zsl-&gt;tail = NULL;
+    return zsl;
+}
+</code></pre>
+<p>redis 的跳跃表出现在上层索引节点的概率为0.25，在这样的概率下跳跃表的查询效率会略大于O(logN)，但是索引的存储内存却能节省一半。</p>
+<pre><code>zskiplistNode *zslInsert(zskiplist *zsl, double score, robj *obj) { // 跳跃表zset节点插入
+    zskiplistNode *update[ZSKIPLIST_MAXLEVEL], *x;
+    unsigned int rank[ZSKIPLIST_MAXLEVEL];
+    int i, level;
+
+    serverAssert(!isnan(score));
+    x = zsl-&gt;header;
+    for (i = zsl-&gt;level-1; i &gt;= 0; i--) {   // 获取带插入节点的位置
+        /* store rank that is crossed to reach the insert position */
+        rank[i] = i == (zsl-&gt;level-1) ? 0 : rank[i+1];
+        while (x-&gt;level[i].forward &amp;&amp;
+            (x-&gt;level[i].forward-&gt;score &lt; score ||
+                (x-&gt;level[i].forward-&gt;score == score &amp;&amp;
+                compareStringObjects(x-&gt;level[i].forward-&gt;obj,obj) &lt; 0))) { // 如果当前节点分支小于带插入节点
+            rank[i] += x-&gt;level[i].span;    // 记录各层x前一个节点的索引跨度
+            x = x-&gt;level[i].forward;    // 查找一下个节点
+        }
+        update[i] = x;  // 记录各层x的前置节点
+    }
+
+    level = zslRandomLevel();   // 获取当前节点的level
+    if (level &gt; zsl-&gt;level) {   // 如果level大于当前skiplist的level 将大于部分的header初始化
+        for (i = zsl-&gt;level; i &lt; level; i++) {
+            rank[i] = 0;
+            update[i] = zsl-&gt;header;
+            update[i]-&gt;level[i].span = zsl-&gt;length;
+        }
+        zsl-&gt;level = level;
+    }
+    x = zslCreateNode(level,score,obj); // 创建新节点
+    for (i = 0; i &lt; level; i++) {
+        x-&gt;level[i].forward = update[i]-&gt;level[i].forward;  // 建立x节点索引
+        update[i]-&gt;level[i].forward = x;    // 将各层x的前置节点的后置节点置为x
+
+        /* update span covered by update[i] as x is inserted here */
+        x-&gt;level[i].span = update[i]-&gt;level[i].span - (rank[0] - rank[i]);  // 计算x节点各层索引跨度
+        update[i]-&gt;level[i].span = (rank[0] - rank[i]) + 1; // 计算x前置节点的索引跨度
+    }
+
+    /* increment span for untouched levels */
+    for (i = level; i &lt; zsl-&gt;level; i++) {  // 如果level小于zsl的level
+        update[i]-&gt;level[i].span++; // 将x前置节点的索引跨度加一
+    }
+
+    x-&gt;backward = (update[0] == zsl-&gt;header) ? NULL : update[0];    // 设置x前置节点
+    if (x-&gt;level[0].forward)
+        x-&gt;level[0].forward-&gt;backward = x;  // 设置x后面节点的前置节点
+    else
+        zsl-&gt;tail = x;
+    zsl-&gt;length++;  // length+1
+    return x;
+}
+</code></pre>
+<h3 id="Redis中skiplist实现的特殊性"><a href="#Redis中skiplist实现的特殊性" class="headerlink" title="Redis中skiplist实现的特殊性"></a>Redis中skiplist实现的特殊性</h3><p>在Redis中，<code>skiplist</code>被用于实现暴露给外部的一个数据结构：<code>sorted set</code>。准确地说，<code>sorted set</code>底层不仅仅使用了<code>skiplist</code>，还使用了<code>ziplist</code>和<code>dict</code>。</p>
+<p>我们简单分析一下<code>sorted set</code>的几个查询命令：</p>
+<ul>
+<li><code>zrevrank</code>由数据查询它对应的排名，这在前面介绍的<code>skiplist</code>中并不支持。</li>
+<li><code>zscore</code>由数据查询它对应的分数，这也不是<code>skiplist</code>所支持的。</li>
+<li><code>zrevrange</code>根据一个排名范围，查询排名在这个范围内的数据。这在前面介绍的<code>skiplist</code>中也不支持。</li>
+<li><code>zrevrangebyscore</code>根据分数区间查询数据集合，是一个<code>skiplist</code>所支持的典型的范围查找（<code>score</code>相当于<code>key</code>）。</li>
+</ul>
+<p>实际上，Redis中<code>sorted set</code>的实现是这样的：</p>
+<ul>
+<li>当数据较少时，<code>sorted set</code>是由一个<code>ziplist</code>来实现的。</li>
+<li>当数据多的时候，<code>sorted set</code>是由一个<code>dict</code> + 一个<code>skiplist</code>来实现的。简单来讲，<code>dict</code>用来查询数据到分数的对应关系，而<code>skiplist</code>用来根据分数查询数据（可能是范围查找）。</li>
+</ul>
+<p>现在我们集中精力来看一下<code>sorted set</code>与<code>skiplist</code>的关系：</p>
+<ul>
+<li><code>zscore</code>的查询，不是由<code>skiplist</code>来提供的，而是由那个<code>dict</code>来提供的。</li>
+<li>为了支持排名<code>(rank)</code>，Redis里对<code>skiplist</code>做了扩展，使得根据排名能够快速查到数据，或者根据分数查到数据之后，也同时很容易获得排名。而且，根据排名的查找，时间复杂度也为<code>O(log n)</code>。</li>
+<li><code>zrevrange</code>的查询，是根据排名查数据，由扩展后的<code>skiplist</code>来提供。</li>
+<li><code>zrevrank</code>是先在<code>dict</code>中由数据查到分数，再拿分数到<code>skiplist</code>中去查找，查到后也同时获得了排名。</li>
+</ul>
+<p>前述的查询过程，也暗示了各个操作的时间复杂度：</p>
+<ul>
+<li><code>zscore</code>只用查询一个<code>dict</code>，所以时间复杂度为<code>O(1)</code></li>
+<li><code>zrevrank</code>, <code>zrevrange</code>, <code>zrevrangebyscore</code>由于要查询<code>skiplist</code>，所以<code>zrevrank</code>的时间复杂度为<code>O(log n)</code>，而<code>zrevrange</code>, <code>zrevrangebyscore</code>的时间复杂度为<code>O(log(n)+M)</code>，其中M是当前查询返回的元素个数。</li>
+</ul>
+<p>总结起来，Redis中的<code>skiplist</code>跟前面介绍的经典的<code>skiplist</code>相比，有如下不同：</p>
+<ul>
+<li>分数<code>(score)</code>允许重复，即<code>skiplist</code>的key允许重复。这在最开始介绍的经典<code>skiplist</code>中是不允许的。</li>
+<li>在比较时，不仅比较分数（相当于<code>skiplist</code>的<code>key</code>），还比较数据本身。在Redis的<code>skiplist</code>实现中，数据本身的内容唯一标识这份数据，而不是由key来唯一标识。另外，当多个元素分数相同的时候，还需要根据数据内容来进字典排序。</li>
+<li>第1层链表不是一个单向链表，而是一个双向链表。这是为了方便以倒序方式获取一个范围内的元素。</li>
+<li>在skiplist中可以很方便地计算出每个元素的排名(rank)。</li>
+</ul>
+<h3 id="Redis中的sorted-set"><a href="#Redis中的sorted-set" class="headerlink" title="Redis中的sorted set"></a>Redis中的sorted set</h3><p>我们前面提到过，Redis中的<code>sorted set</code>，是在<code>skiplist</code>, <code>dict</code>和<code>ziplist</code>基础上构建起来的:</p>
+<ul>
+<li>当数据较少时，<code>sorted set</code>是由一个<code>ziplist</code>来实现的。</li>
+<li>当数据多的时候，<code>sorted set</code>是由一个叫zset的数据结构来实现的，这个<code>zset</code>包含一个<code>dict</code> + 一个<code>skiplist</code>。dict用来查询数据到分数<code>(score)</code>的对应关系，而<code>skiplist</code>用来根据分数查询数据（可能是范围查找）。</li>
+</ul>
+<p>在这里我们先来讨论一下前一种情况——基于<code>ziplist</code>实现的<code>sorted set</code>。在本系列前面关于<code>ziplist</code>的文章里，我们介绍过，<code>ziplist</code>就是由很多数据项组成的一大块连续内存。由于<code>sorted set</code>的每一项元素都由数据和<code>score</code>组成，因此，当使用<code>zadd</code>命令插入一个(数据, <code>score</code>)对的时候，底层在相应的<code>ziplist</code>上就插入两个数据项：数据在前，<code>score</code>在后。</p>
+<p><code>ziplist</code>的主要优点是节省内存，但它上面的查找操作只能按顺序查找（可以正序也可以倒序）。因此，<code>sorted set</code>的各个查询操作，就是在<code>ziplist</code>上从前向后（或从后向前）一步步查找，每一步前进两个数据项，跨域一个(数据, <code>score</code>)对。</p>
+<p>随着数据的插入，<code>sorted set</code>底层的这个<code>ziplist</code>就可能会转成<code>zset</code>的实现（转换过程详见<code>t_zset.c</code>的<code>zsetConvert</code>）。</p>
+<pre><code>zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+</code></pre>
+<p>这个配置的意思是说，在如下两个条件之一满足的时候，<code>ziplist</code>会转成<code>zset</code>（具体的触发条件参见<code>t_zset.c</code>中的<code>zaddGenericCommand</code>相关代码）：</p>
+<ul>
+<li>当<code>sorted set</code>中的元素个数，即(数据, score)对的数目超过128的时候，也就是ziplist数据项超过256的时候。</li>
+<li>当<code>sorted set</code>中插入的任意一个数据的长度超过了64的时候。</li>
+</ul>
+<p>最后，<code>zset</code>结构的代码定义如下：</p>
+<pre><code>typedef struct zset { dict *dict; zskiplist *zsl; } zset; 
+</code></pre>
+<h2 id="四、skiplist与平衡树、哈希表的比较"><a href="#四、skiplist与平衡树、哈希表的比较" class="headerlink" title="四、skiplist与平衡树、哈希表的比较"></a>四、skiplist与平衡树、哈希表的比较</h2><ul>
+<li><code>skiplist</code>和各种平衡树（如<code>AVL</code>、红黑树等）的元素是有序排列的，而哈希表不是有序的。因此，在哈希表上只能做单个<code>key</code>的查找，不适宜做范围查找。所谓范围查找，指的是查找那些大小在指定的两个值之间的所有节点。</li>
+<li>在做范围查找的时候，平衡树比<code>skiplist</code>操作要复杂。在平衡树上，我们找到指定范围的小值之后，还需要以中序遍历的顺序继续寻找其它不超过大值的节点。如果不对平衡树进行一定的改造，这里的中序遍历并不容易实现。而在<code>skiplist</code>上进行范围查找就非常简单，只需要在找到小值之后，对第1层链表进行若干步的遍历就可以实现。</li>
+<li>平衡树的插入和删除操作可能引发子树的调整，逻辑复杂，而<code>skiplist</code>的插入和删除只需要修改相邻节点的指针，操作简单又快速。</li>
+<li>从内存占用上来说，<code>skiplist</code>比平衡树更灵活一些。一般来说，平衡树每个节点包含2个指针（分别指向左右子树），而skiplist每个节点包含的指针数目平均为<code>1/(1-p)</code>，具体取决于参数<code>p</code>的大小。如果像Redis里的实现一样，取<code>p=1/4</code>，那么平均每个节点包含1.33个指针，比平衡树更有优势。</li>
+<li>查找单个<code>key</code>，<code>skiplist</code>和平衡树的时间复杂度都为O(log n)，大体相当；而哈希表在保持较低的哈希值冲突概率的前提下，查找时间复杂度接近O(1)，性能更高一些。所以我们平常使用的各种<code>Map</code>或<code>dictionary</code>结构，大都是基于哈希表实现的。</li>
+<li>从算法实现难度上来比较，<code>skiplist</code>比平衡树要简单得多。</li>
+</ul>
+<h2 id="五、Redis为什么用skiplist而不用平衡树？"><a href="#五、Redis为什么用skiplist而不用平衡树？" class="headerlink" title="五、Redis为什么用skiplist而不用平衡树？"></a>五、Redis为什么用skiplist而不用平衡树？</h2><p>在前面我们对于<code>skiplist</code>和平衡树、哈希表的比较中，其实已经不难看出Redis里使用<code>skiplist</code>而不用平衡树的原因了。现在我们看看，对于这个问题，Redis的作者 <code>@antirez</code> 是怎么说的：</p>
+<p>There are a few reasons:</p>
+<ol>
+<li><p>They are not very memory intensive. It’s up to you basically. Changing parameters about the probability of a node to have a given number of levels will make then less memory intensive than btrees.</p>
+</li>
+<li><p>A sorted set is often target of many ZRANGE or ZREVRANGE operations, that is, traversing the skip list as a linked list. With this operation the cache locality of skip lists is at least as good as with other kind of balanced trees.</p>
+</li>
+<li><p>They are simpler to implement, debug, and so forth. For instance thanks to the skip list simplicity I received a patch (already in Redis master) with augmented skip lists implementing ZRANK in O(log(N)). It required little changes to the code.</p>
+</li>
+</ol>
+<p>这里从内存占用、对范围查找的支持和实现难易程度这三方面总结的原因，我们在前面其实也都涉及到了。</p>
+<h2 id="参数资料"><a href="#参数资料" class="headerlink" title="参数资料"></a>参数资料</h2><p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzA4NTg1MjM0Mg==&amp;mid=2657261425&amp;idx=1&amp;sn=d840079ea35875a8c8e02d9b3e44cf95&amp;scene=0#wechat_redirect">Redis为什么用跳表而不用平衡树？</a></p>
+<p><a target="_blank" rel="noopener" href="http://czrzchao.com/redisSourceSkiplist#skiplist">redis源码解读(七):基础数据结构之skiplist</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2019/08/17/redis-ha/" title="Redis 高可用解决方案总结"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: Redis 高可用解决方案总结</span></a><a class="button is-default" href="/2019/08/12/reids-source-code-6/" title="Redis 源码分析(六) ：quciklist"><span class="has-text-weight-semibold">下一页: Redis 源码分析(六) ：quciklist</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

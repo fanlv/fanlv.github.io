@@ -1,0 +1,191 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>MySQL DateTime和Timestamp时区问题</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+
+
+一、背景最近负责一个数据传输的项目，其中一个需求就是能把一个DB里面的数据拉出来 ，然后回放到另外一个同构的DB。两个DB的服务不在一个时区（其实这不是重点），可能配置不同。之前有过类似的项目，当时是基建的同事负责做数据同步，同步过去以后DateTime、Timestamp字段的时区信息都丢了。老板让我调研下问题根因，不要踩之前的坑。
+最早的时候看了下同事写的当时MySQL时区信息丢失的问题总结文档，文档里面当时把DateTime和Timestamp两个时区问题混为一起了，也没分析本质原因，导致我当时没看太明白，然后的武断的认为，之所以时区丢失了，是因为基础组件同步DateTime和Timestamp的时候同步的是字符串，比如2021-11-27 10:49:35.857969这种信息，我们传输的时候.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">MySQL DateTime和Timestamp时区问题</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF"><span class="toc-text">一、背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">二、基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-Unix%E6%97%B6%E9%97%B4%E6%88%B3%E8%83%BD%E7%A1%AE%E5%AE%9A%E5%94%AF%E4%B8%80%E6%97%B6%E5%88%BB"><span class="toc-text">2.1 Unix时间戳能确定唯一时刻</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-MySQL-DateTime-%E5%AD%98%E5%82%A8%E4%BF%A1%E6%81%AF%E4%B8%8D%E5%B8%A6%E6%97%B6%E5%8C%BA"><span class="toc-text">2.2 MySQL DateTime 存储信息不带时区</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-MySQL-Timestamp-%E5%92%8C-time-zone"><span class="toc-text">2.3 MySQL Timestamp 和 time_zone</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-SQL-%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E6%97%B6%E5%80%99%EF%BC%8CDataTime%E5%92%8CTimestamp%E9%83%BD%E6%98%AF%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%BC%A0%E8%BE%93"><span class="toc-text">2.3 SQL 数据传输时候，DataTime和Timestamp都是字符串传输</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="toc-text">三、问题分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Datetime-%E9%97%AE%E9%A2%98%E5%88%86%E6%9E%90"><span class="toc-text">3.1 Datetime 问题分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-Datetime-%E6%80%BB%E7%BB%93"><span class="toc-text">3.2 Datetime 总结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-Timestamp"><span class="toc-text">3.3 Timestamp</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-Timestamp-%E6%80%BB%E7%BB%93"><span class="toc-text">3.4 Timestamp 总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%95%B0%E6%8D%AE%E4%BC%A0%E8%BE%93%E7%9A%84%E6%97%B6%E5%80%99%E5%A6%82%E4%BD%95%E4%BF%9D%E8%AF%81%E6%95%B0%E6%8D%AE%E6%AD%A3%E7%A1%AE"><span class="toc-text">四、数据传输的时候如何保证数据正确</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%97%AE%E9%A2%98%E6%9C%AC%E8%B4%A8"><span class="toc-text">五、问题本质</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">MySQL DateTime和Timestamp时区问题</h1><time class="has-text-grey" datetime="2021-11-27T17:00:00.000Z">2021-11-28</time><article class="mt-2 post-content"><img alt="cover" src="https://upload-images.jianshu.io/upload_images/12321605-5a4f15ef8cd7c7b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><p>最近负责一个数据传输的项目，其中一个需求就是能把一个<code>DB</code>里面的数据拉出来 ，然后回放到另外一个同构的<code>DB</code>。两个<code>DB</code>的服务不在一个时区（其实这不是重点），可能配置不同。之前有过类似的项目，当时是基建的同事负责做数据同步，同步过去以后<code>DateTime</code>、<code>Timestamp</code>字段的时区信息都丢了。老板让我调研下问题根因，不要踩之前的坑。</p>
+<p>最早的时候看了下同事写的当时<code>MySQL</code>时区信息丢失的问题总结文档，文档里面当时把<code>DateTime</code>和<code>Timestamp</code>两个时区问题混为一起了，也没分析本质原因，导致我当时没看太明白，然后的武断的认为，之所以时区丢失了，是因为基础组件同步<code>DateTime</code>和<code>Timestamp</code>的时候同步的是字符串，比如<code>2021-11-27 10:49:35.857969</code>这种信息，我们传输的时候，只要转<code>UnixTime</code>然后传过去就行了（这个其实只是问题之一，其实还跟<code>time_zone</code>、<code>loc</code>配置相关，后面会说）。</p>
+<p>先说结论，如果你能保证<code>所有项目</code>连接<code>DB</code>的<code>DSN</code>配置的<code>loc</code>和<code>time_zone</code>（<code>time_zone</code>没有配置的话会用<code>MySQL</code>服务端的默认配置） 都是一样的，那不用看下去了。不管你数据在不同<code>DB</code>之间怎么传输，服务读取的<code>DB</code>的时区都是符合你的预期的。</p>
+<h2 id="二、基础知识"><a href="#二、基础知识" class="headerlink" title="二、基础知识"></a>二、基础知识</h2><h3 id="2-1-Unix时间戳能确定唯一时刻"><a href="#2-1-Unix时间戳能确定唯一时刻" class="headerlink" title="2.1 Unix时间戳能确定唯一时刻"></a>2.1 Unix时间戳能确定唯一时刻</h3><p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/UNIX%E6%97%B6%E9%97%B4">UNIX时间</a>，是UNIX或类UNIX系统使用的时间表示方式：从<code>UTC 1970年1月1日0时0分0秒</code>起至现在的总秒数<code>('1970-01-01 00:00:00' UTC)</code>。</p>
+<p>时间字符串<code>2021-11-27 02:06:50</code>是不能确定确定唯一时刻的（直白点说就是中国人说的<code>2021-11-27 02:06:50</code>和美国人说的<code>2021-11-27 02:06:50</code>不是同一时刻），简单说就是 <code>UnixTime</code> = <code>2021-11-27 02:06:50</code> + <code>time_zone</code>,<code>UnixTime</code> + <code>time_zone</code> 可以得到不同地区人看到的<code>time_string</code>。</p>
+<p>我们在数据传输和过程中，<strong>是希望这个唯一时刻保持不变，并不是希望时区保持不变</strong>。我发一条消息在中国时间是<code>2021-11-27 02:06:50</code>，在其他地方应该是显示其他地方的当地时间。</p>
+<pre><code>t := time.Unix(1637950010, 0) // 时刻唯一确定，可以打印这个时刻不同时区的时间串
+fmt.Println(t.UTC().String()) // 2021-11-26 18:06:50 +0000 UTC
+fmt.Println(t.String()) // 2021-11-27 02:06:50 +0800 CST
+
+now := time.Now()
+fmt.Println(now.UTC().String()) // 2021-11-27 18:06:50.981506 +0000 UTC
+fmt.Println(now.String()) // 2021-11-27 02:06:50.981506 +0800 CST m=+0.000326041
+</code></pre>
+<br>    
+    
+<h3 id="2-2-MySQL-DateTime-存储信息不带时区"><a href="#2-2-MySQL-DateTime-存储信息不带时区" class="headerlink" title="2.2 MySQL DateTime 存储信息不带时区"></a>2.2 MySQL DateTime 存储信息不带时区</h3><p>DataTime 表示范围 <code>'1000-01-01 00:00:00' to '9999-12-31 23:59:59'</code>。<code>5.6.4</code> 版本之前，<code>DateTime</code>占用<code>8</code>字节，<code>5.6.4</code>之后默认是<code>5</code>字节（到秒），如果要更高精度可以配置<code>Fractional Seconds Precision</code>， <code>fsp=1~2</code>占用<code>1</code>字节 ，<code>3~4</code>占用 <code>2</code>个字节，<code>5~6</code>占用<code>3</code>个字节， 如<code>DATETIME(6)</code> 精确到秒后<code>6</code>位，一共占用<code>8</code>字节。</p>
+<p>需要注意的是：不论是<code>5.6.4</code>之前，还是<code>5.6.4</code>之后<code>DateTime</code>字段里面都<strong>没有带时区信息，不能确定唯一时刻</strong>，更多可以看 <a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/internals/en/date-and-time-data-type-representation.html">MySQL官网文档</a>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-eeb9a0f6cded28da.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="datetime_type.jpg"></p>
+<br>
+
+<h3 id="2-3-MySQL-Timestamp-和-time-zone"><a href="#2-3-MySQL-Timestamp-和-time-zone" class="headerlink" title="2.3 MySQL Timestamp 和 time_zone"></a>2.3 MySQL Timestamp 和 time_zone</h3><blockquote>
+<p>Timestamp: A four-byte integer representing seconds UTC since the epoch (‘1970-01-01 00:00:00’ UTC)<br>The Timestamp data type is used for values that contain both date and time parts. Timestamp has a range of ‘1970-01-01 00:00:01’ UTC to ‘2038-01-19 03:14:07’ UTC.</p>
+</blockquote>
+<p><code>Timestamp</code>就是存的<code>Unix</code>时间戳，表示范围是<code>'1970-01-01 00:00:01' UTC to '2038-01-19 03:14:07'</code>，是不是<code>Timestamp</code>就没有时区问题？并不是。<a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/datetime.html">MySQL官方文档有如下一段话如下</a>：</p>
+<blockquote>
+<p>MySQL converts Timestamp values from the current time zone to UTC for storage, and back from UTC to the current time zone for retrieval. (This does not occur for other types such as DATETIME.) By default, the current time zone for each connection is the server’s time. The time zone can be set on a per-connection basis. As long as the time zone setting remains constant, you get back the same value you store. If you store a Timestamp value, and then change the time zone and retrieve the value, the retrieved value is different from the value you stored. This occurs because the same time zone was not used for conversion in both directions. The current time zone is available as the value of the time_zone system variable. For more information, see Section 5.1.15, “MySQL Server Time Zone Support”.</p>
+</blockquote>
+<p>简单说，每个<code>session</code>可以设置不同的<code>time_zone</code>，如果你设置<code>session</code>用的<code>time_zone</code>和读取<code>session</code>用的<code>time_zone</code>不一样，那你会得到错误/不同的值。说白了一个<code>Timestamp</code>字段，写入和读取的<code>session</code>必须一样。针对单个<code>DB</code>的场景，建议所有<code>session</code>的<code>dsn</code>都不配置<code>time_zone</code>。</p>
+<p><code>time_zone</code> 有三种设置方法</p>
+<pre><code>set time_zone = '+8:00'; // 设置当前 session 的 time_zone，立即生效
+set global time_zone = '+8:00'; // 设置MySQL全局默认配置，新的连接才生效
+
+dsn里面指定 time_zone='+8:00'
+user:pwd@tcp(host:port)/db?charset=utf8mb4&amp;parseTime=True&amp;loc=Asia%2FShanghai&amp;time_zone=%27%2B8%3A00%27
+</code></pre>
+<br>
+
+<h3 id="2-3-SQL-数据传输时候，DataTime和Timestamp都是字符串传输"><a href="#2-3-SQL-数据传输时候，DataTime和Timestamp都是字符串传输" class="headerlink" title="2.3 SQL 数据传输时候，DataTime和Timestamp都是字符串传输"></a>2.3 SQL 数据传输时候，DataTime和Timestamp都是字符串传输</h3><pre><code>DROP TABLE IF EXISTS `ts_test`;
+CREATE TABLE ts_test (
+    `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'pk',
+    `program_insert_time` varchar(100) COMMENT '代码里面获取的时间字符串，insert 语句用的',
+    `time_zone` INT COMMENT '插入的时候当前 session 的 time_zone 设置的是什么',
+    `loc` varchar(20) COMMENT '插入这个语句时候，dsn 的 loc',
+    `ts` Timestamp(6),
+     PRIMARY KEY (id)
+);
+</code></pre>
+<p>然后分别执行</p>
+<pre><code>INSERT INTO `dt_test` (`loc`,`program_insert_time`,`dt`) VALUES ('Asia/Shanghai','2021-11-27 14:08:07.3751 +0000 UTC','2021-11-27 14:08:07.3751')
+SELECT * FORM `dt_test`
+</code></pre>
+<p>wireshark 抓包可知SQL传输的时候，DataTime和Timestamp都是直接传输不带时区的字符串，如<code>2021-11-27 14:08:07.3751</code>这种。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-84ef5b79baf33dcc.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="insert_1.jpg"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4fc68b0212a26a53.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="insert_2.jpg"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-dc877ee3fc100caa.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="select_req.jpg"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b95c5bbf8a28a707.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="select_resp.jpg"></p>
+<br>
+
+
+<h2 id="三、问题分析"><a href="#三、问题分析" class="headerlink" title="三、问题分析"></a>三、问题分析</h2><h3 id="3-1-Datetime-问题分析"><a href="#3-1-Datetime-问题分析" class="headerlink" title="3.1 Datetime 问题分析"></a>3.1 Datetime 问题分析</h3><p>上面我们说过<code>SQL</code>请求和响应的<code>Data</code>里面<code>Datetime</code>和<code>Timestamp</code>字段都是用<strong>时间字符串</strong>，我们用<code>GORM</code>执行<code>SQL</code>的时候，我们传的对<code>Golang</code>的<code>time.Time</code>，这个<code>time</code>类型的时间是怎么最终转换成不带时区的时间字符串呢？翻了下<code>go-sql-driver</code><a target="_blank" rel="noopener" href="https://github.com/go-sql-driver/mysql/blob/master/packets.go#L1119">代码</a>，看到有下面这段逻辑。</p>
+<pre><code>case time.Time:
+    paramTypes[i+i] = byte(fieldTypeString)
+    paramTypes[i+i+1] = 0x00
+
+    var a [64]byte
+    var b = a[:0]
+
+    if v.IsZero() {
+        b = append(b, "0000-00-00"...)
+    } else {
+        b, err = appendDateTime(b, v.In(mc.cfg.Loc)) // v 就是我们传入的 time.Time 对象 
+        if err != nil {
+            return err
+        }
+    }
+</code></pre>
+<p>看下 <a target="_blank" rel="noopener" href="https://github.com/go-sql-driver/mysql/blob/6cf3092b0e12f6e197de3ed6aa2acfeac322a9bb/utils.go#L279">appendDateTime</a> 函数逻辑就是把<code>time.Time</code>转成<code>mc.cfg.Loc</code>时区的字符串。</p>
+<p>举例说明就是，我们插入一个<code>SQL</code>的时候，假设是代码里面 <code>time.Now()</code> 获取了一个时间对象，这个时间对象是有时区信息的（或者说是能确定唯一时刻的），时区是当前系统的时区。传到<code>go-sql-driver</code>里面去以后，<code>driver</code>需要把这个对象转成不带时区的字符串，具体要转成哪个时区的字符串，就是由<code>mc.cfg.Loc</code>决定的。我们再往上跟下看下<code>mc.cfg.Loc</code>是哪里传入的。找到如下代码，由代码可以知道，<code>loc</code>信息是我们配置<code>dns</code>连接串的时候传入的,<code>loc</code>不传的话，默认是<code>UTC 0</code>时间</p>
+<pre><code>https://github.com/go-sql-driver/mysql/blob/master/driver.go#L73
+// OpenConnector implements driver.DriverContext.
+func (d MySQLDriver) OpenConnector(dsn string) (driver.Connector, error) {
+    cfg, err := ParseDSN(dsn) // https://github.com/go-sql-driver/mysql/blob/6cf3092b0e12f6e197de3ed6aa2acfeac322a9bb/dsn.go#L291
+    if err != nil {
+        return nil, err
+    }
+    return &amp;connector{
+        cfg: cfg,
+    }, nil
+}
+
+// https://github.com/go-sql-driver/mysql/blob/6cf3092b0e12f6e197de3ed6aa2acfeac322a9bb/dsn.go#L68
+// NewConfig creates a new Config and sets default values.
+func NewConfig() *Config {
+    return &amp;Config{
+        Collation:            defaultCollation,
+        Loc:                  time.UTC, // loc 传的话，默认是UTC时间
+        MaxAllowedPacket:     defaultMaxAllowedPacket,
+        AllowNativePasswords: true,
+        CheckConnLiveness:    true,
+    }
+}
+
+
+// Connect implements driver.Connector interface.
+// Connect returns a connection to the database.
+func (c *connector) Connect(ctx context.Context) (driver.Conn, error) {
+    var err error
+
+    // New mysqlConn
+    mc := &amp;mysqlConn{
+        maxAllowedPacket: maxPacketSize,
+        maxWriteSize:     maxPacketSize - 1,
+        closech:          make(chan struct{}),
+        cfg:              c.cfg,
+    }
+    mc.parseTime = mc.cfg.ParseTime
+    
+</code></pre>
+<p>再来看查询的时候，时间字符串的转换问题，上面用<code>WireShark</code>抓包的时候，知道我们执行<code>Select</code>查询数据的时候，<code>MySQL</code>给我们返回的也是时间字符串。那客户端代码是如何转成<code>time.Time</code>对象的？我们知道<code>dsn</code>里面有个<code>parseTime</code>字段是来控制，从<code>parseTime</code>相关代码我们可以找到<a target="_blank" rel="noopener" href="https://github.com/go-sql-driver/mysql/blob/master/packets.go#L789">如下代码</a>。</p>
+<pre><code>if !mc.parseTime {
+    continue
+}
+
+// Parse time field
+switch rows.rs.columns[i].fieldType {
+case fieldTypeTimestamp,
+    fieldTypeDateTime,
+    fieldTypeDate,
+    fieldTypeNewDate:
+    if dest[i], err = parseDateTime(dest[i].([]byte), mc.cfg.Loc); err != nil {
+        return err
+    }
+}
+</code></pre>
+<p>看下 <a target="_blank" rel="noopener" href="https://github.com/go-sql-driver/mysql/blob/6cf3092b0e12f6e197de3ed6aa2acfeac322a9bb/utils.go#L109">parseDateTime</a> 函数，就是用<code>mc.cfg.Loc</code>加时间字符串转换成了<code>time.Time</code></p>
+<pre><code>func parseDateTime(b []byte, loc *time.Location) (time.Time, error) {
+    const base = "0000-00-00 00:00:00.000000"
+    switch len(b) {
+    case 10, 19, 21, 22, 23, 24, 25, 26: // up to "YYYY-MM-DD HH:MM:SS.MMMMMM"
+        if string(b) == base[:len(b)] {
+            return time.Time{}, nil
+        }
+</code></pre>
+<br>
+
+<h3 id="3-2-Datetime-总结"><a href="#3-2-Datetime-总结" class="headerlink" title="3.2 Datetime 总结"></a>3.2 Datetime 总结</h3><p><code>Datetime</code>在<code>MySQL</code>服务端保存的只是一个字符串，时区信息都是由连接串的<code>loc</code>字符串控制的。如果要想时区保证一致，写入和读取的<code>loc</code>必须保证一致。</p>
+<p>需要注意几点：</p>
+<ol>
+<li><code>loc</code>配置是给插入的时候用<code>time.Time</code>转时间字符串用的。如果你裸写插入<code>SQL</code>（RawSQL），<code>loc</code>怎么配置，都不会影响时间串，数据存的时间，就是你<code>Insert</code>语句里面拼接的时间串。</li>
+<li>如果们插入的是<code>time.Time</code> (能确定唯一时刻)对象，插入客户端所在的系统的时区信息对插入结果没影响，因为客户端是用<code>time.Time</code>+<code>loc</code>来得到时间字符串。</li>
+<li><code>loc</code> 没有配置的话，默认是<code>UTC0</code></li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e3243effcb8ed367.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="datetime.jpg"></p>
+<br>
+
+<h3 id="3-3-Timestamp"><a href="#3-3-Timestamp" class="headerlink" title="3.3 Timestamp"></a>3.3 Timestamp</h3><p><code>Timestamp</code>在<code>go-sql-driver</code>里面的处理流程跟<code>Datetime</code>一样，区别是是时间字符串到了服务端，服务端会用<code>time_zone</code>加字符串得到<code>UnixTime</code>然后保存（这部分只是个人猜想，并没有去找<code>MySQL</code>源码验证，<a href="./time_span.go">只是通过简单的代码测试</a>和官方文档来验证自己的想法），从结果上来看，读入和写入的<code>session</code>的<code>time_zone</code>必须保持一致读的数据才是对的。</p>
+<p><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/time-zone-support.html">time_zone 相关官方文档</a></p>
+<p><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/internals/en/date-and-time-data-type-representation.html">Timestamp 存的4字节UTC时间</a></p>
+<p><a target="_blank" rel="noopener" href="https://dev.mysql.com/doc/refman/8.0/en/datetime.html">Timestamp 和 time_zone 关系 第七段</a></p>
+<br>
+
+<h3 id="3-4-Timestamp-总结"><a href="#3-4-Timestamp-总结" class="headerlink" title="3.4 Timestamp 总结"></a>3.4 Timestamp 总结</h3><p>如果真的要存时间戳，建议用<code>bigint</code>存，这样不管数据怎么传输，不管<code>loc</code>、<code>time_zone</code> 怎么配置，都没有时区问题。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ffc61b32e15393f2.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Timestamp.jpg"></p>
+<br>
+
+<h2 id="四、数据传输的时候如何保证数据正确"><a href="#四、数据传输的时候如何保证数据正确" class="headerlink" title="四、数据传输的时候如何保证数据正确"></a>四、数据传输的时候如何保证数据正确</h2><p>知道了上面的基本信息以后，数据传输系统要做的事就很明确了。</p>
+<ol>
+<li>读取和写入的数据的时候，<code>loc</code>和<code>time_zone</code>配置跟业务方保持一致就行了。</li>
+<li><code>DTS</code>数据传输的时候，因为<code>binlog</code>字段都是字符串，需要把<code>时间字符串</code>+<code>loc</code>转成时间戳，然后发送到对端。</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ba0159fd7b4faf09.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="dts.png"></p>
+<h2 id="五、问题本质"><a href="#五、问题本质" class="headerlink" title="五、问题本质"></a>五、问题本质</h2><p><code>MySQL</code> 存储、写入读取传输时候都是时间字符。客户端发送和接收的时候需要用<code>loc</code>来标明这个字符串的时区信息，所以读取和写入的<code>loc</code>必须要保证是相同的，所以这个字符串才有相同的语义。</p>
+<p>如果所有业务方，都不设置<code>loc</code>，统一都是默认配置。时间戳，直接用<code>bigint</code>存那就没有任何时区问题。世界美好一点不好吗？何必自己给自己折腾一堆莫名其妙问题。</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2021/12/18/golang-complier-optimize/" title="Golang 编译器优化那些事"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: Golang 编译器优化那些事</span></a><a class="button is-default" href="/2021/09/21/hackers-and-painters/" title="《黑客与画家》"><span class="has-text-weight-semibold">下一页: 《黑客与画家》</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

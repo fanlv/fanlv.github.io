@@ -1,0 +1,668 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Linux内核虚拟地址空间</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+
+x86-32位虚拟地址空间就我们所知，Linux内核一般将处理器的虚拟地址空间划分为两个部分。底部比较大的部分用于用户进程，顶部则专用于内核。虽然（在两个用户进程之间的）上下文切换期间会改变下半部分，但虚拟地址空间的内核部分总是保持不变。
+
+
+Linux将虚拟地址空间划分为：0~3G为用户空间，3~4G为内核空间
+
+
+
+
+
+
+
+点我查看原图
+
+
+用户地址空间
+
+保留区 - 0x08048000位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况。
+它并不是一个单一的内存区域，而是对地址空间中受到操作系统保护而禁止用户进程访问的地址区域的总称。大多数操作系统中，极小的地址通常都是不允许访问的，如NULL。C语言将无效指针赋值为0也是出于这.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Linux内核虚拟地址空间</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#x86-32%E4%BD%8D%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">x86-32位虚拟地址空间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">用户地址空间</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%9D%E7%95%99%E5%8C%BA-0x08048000"><span class="toc-text">保留区 - 0x08048000</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E6%AE%B5-text"><span class="toc-text">代码段(text)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%AE%B5-Data"><span class="toc-text">数据段(Data)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#BSS%E6%AE%B5"><span class="toc-text">BSS段</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A0%86-heap"><span class="toc-text">堆(heap)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E5%AD%98%E6%98%A0%E5%B0%84%E6%AE%B5-mmap"><span class="toc-text">内存映射段(mmap)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%88-stack"><span class="toc-text">栈(stack)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">内核地址空间</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E6%98%A0%E5%B0%84%E5%8C%BA%EF%BC%88896M%EF%BC%89"><span class="toc-text">直接映射区（896M）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%AB%98%E7%AB%AF%E5%86%85%E5%AD%98-HIGH-MEMORY"><span class="toc-text">高端内存 - HIGH_MEMORY</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#VMALLOC-OFFSET"><span class="toc-text">VMALLOC_OFFSET</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#VMALLOC"><span class="toc-text">VMALLOC</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8C%81%E4%B9%85%E6%98%A0%E5%B0%84"><span class="toc-text">持久映射</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9B%BA%E5%AE%9A%E6%98%A0%E5%B0%84-%E4%B8%B4%E6%97%B6%E6%98%A0%E5%B0%84"><span class="toc-text">固定映射&#x2F;临时映射</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E5%86%85%E5%AD%98"><span class="toc-text">物理内存</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#0-1M"><span class="toc-text">0~1M</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#ZONE-DMA%E3%80%81ZONE-NORMAL%E3%80%81ZONE-HIGHMEM"><span class="toc-text">ZONE-DMA、ZONE_NORMAL、ZONE_HIGHMEM</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%B4%E6%97%B6%E5%86%85%E5%AD%98%E9%A1%B5%E8%A1%A8%E3%80%81%E5%86%85%E6%A0%B8%E9%95%9C%E5%83%8F"><span class="toc-text">临时内存页表、内核镜像</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#x86-64%E4%BD%8D%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text">x86-64位虚拟地址空间</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ZONE-DMA%E3%80%81ZONE-DMA32%E3%80%81ZONE-NORMAL"><span class="toc-text">ZONE_DMA、ZONE_DMA32、ZONE_NORMAL</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">其他基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A1%B5%E8%A1%A8%E6%8F%8F%E8%BF%B0%E7%AC%A6%EF%BC%88page-table-descriptor%EF%BC%89"><span class="toc-text">页表描述符（page table descriptor）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#system-map"><span class="toc-text">system.map</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#N-UMA-%E6%A8%A1%E5%9E%8B%E4%B8%AD%E7%9A%84%E5%86%85%E5%AD%98%E7%BB%84%E7%BB%87"><span class="toc-text">(N)UMA 模型中的内存组织</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E7%A7%8D%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B"><span class="toc-text">三种内存模型</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%EF%BC%9F"><span class="toc-text">什么是内存模型？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FLATMEM-flat-memory-model"><span class="toc-text">FLATMEM (flat memory model)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#DISCONTIGMEM-discontiguous-memory-model"><span class="toc-text">DISCONTIGMEM (discontiguous memory model)</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#SPARSEMEM-sparse-memory-model"><span class="toc-text">SPARSEMEM (sparse memory model)</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CPU%E5%AF%BB%E5%9D%80%E6%96%B9%E5%BC%8F"><span class="toc-text">CPU寻址方式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AE%9E%E6%A8%A1%E5%BC%8F"><span class="toc-text">实模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F"><span class="toc-text">保护模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#PAE-32%E4%BD%8D%E7%B3%BB%E7%BB%9F%E5%A6%82%E4%BD%95%E7%AA%81%E7%A0%B44G%E9%99%90%E5%88%B6%EF%BC%9F"><span class="toc-text">PAE - 32位系统如何突破4G限制？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Linux-%E5%A6%82%E4%BD%95%E4%BB%8E%E5%AE%9E%E6%A8%A1%E5%BC%8F%E5%88%87%E6%8D%A2%E5%88%B0%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F"><span class="toc-text">Linux 如何从实模式切换到保护模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%86%E9%A1%B5%E6%A8%A1%E5%BC%8F"><span class="toc-text">分页模式</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E8%A7%86%E8%A7%92"><span class="toc-text">内核视角</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E9%A1%B5%E8%A1%A8"><span class="toc-text">应用程序页表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E9%A1%B5%E8%A1%A8"><span class="toc-text">内核页表</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%A1%AC%E4%BB%B6%E8%A7%86%E8%A7%92"><span class="toc-text">硬件视角</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#CPU%E7%BF%BB%E8%AF%91%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E5%88%B0%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E8%BF%87%E7%A8%8B"><span class="toc-text">CPU翻译虚拟地址到物理地址过程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#CPU%E8%AF%BB%E5%8F%96%E6%95%B0%E6%8D%AE%E8%BF%87%E7%A8%8B"><span class="toc-text">CPU读取数据过程</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83"><span class="toc-text">参考</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Linux内核虚拟地址空间</h1><time class="has-text-grey" datetime="2021-07-25T13:16:01.000Z">2021-07-25</time><article class="mt-2 post-content"><br>
+
+<h2 id="x86-32位虚拟地址空间"><a href="#x86-32位虚拟地址空间" class="headerlink" title="x86-32位虚拟地址空间"></a>x86-32位虚拟地址空间</h2><p>就我们所知，<code>Linux</code>内核一般将处理器的虚拟地址空间划分为两个部分。底部比较大的部分用于用户进程，顶部则专用于内核。虽然（在两个用户进程之间的）上下文切换期间会改变下半部分，<strong>但虚拟地址空间的内核部分总是保持不变</strong>。</p>
+<br>
+
+<p><code>Linux</code>将虚拟地址空间划分为：<code>0~3G</code>为用户空间，<code>3~4G</code>为内核空间</p>
+<img alt="cover" src="https://upload-images.jianshu.io/upload_images/12321605-0ad11f9320e5eaf9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+<!-- ![Linux-Memory-X86-32](https://upload-images.jianshu.io/upload_images/12321605-b62889a2b3c2eb38.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240) -->
+
+
+<br>
+
+<p><a href="./Linux-Memory-X86-32.jpg">点我查看原图</a></p>
+<br>
+
+<h3 id="用户地址空间"><a href="#用户地址空间" class="headerlink" title="用户地址空间"></a>用户地址空间</h3><br>
+
+<h4 id="保留区-0x08048000"><a href="#保留区-0x08048000" class="headerlink" title="保留区 - 0x08048000"></a>保留区 - 0x08048000</h4><p>位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况。</p>
+<p>它并不是一个单一的内存区域，而是对地址空间中受到操作系统保护而禁止用户进程访问的地址区域的总称。大多数操作系统中，极小的地址通常都是不允许访问的，如<code>NULL</code>。<code>C语言</code>将无效指针赋值为0也是出于这种考虑，因为0地址上正常情况下不会存放有效的可访问数据。</p>
+<p>因为“历史原因”前面 <code>128.28125MB</code> 属于保留空间。</p>
+<p><a target="_blank" rel="noopener" href="https://www.quora.com/On-Linux-why-does-the-text-segment-start-at-0x08048000-What-is-stored-below-that-address">On Linux, why does the text segment start at 0x08048000? What is stored below that address?</a></p>
+<p><a target="_blank" rel="noopener" href="https://unix.stackexchange.com/questions/466389/where-are-the-kernel-stack-frames-for-c-run-time-startup-functions-and-fr">Where are “the kernel stack”, “Frames for C run-time startup functions”, and “Frame for main()” in the memory layout of a program?</a></p>
+<br>
+
+<h4 id="代码段-text"><a href="#代码段-text" class="headerlink" title="代码段(text)"></a>代码段(text)</h4><p>代码段也称正文段或文本段，通常用于存放程序执行代码(即<code>CPU</code>执行的机器指令)。一般<code>C语言</code>执行语句都编译成机器代码保存在代码段。通常代码段是可共享的，因此频繁执行的程序只需要在内存中拥有一份拷贝即可。代码段通常属于只读，以防止其他程序意外地修改其指令(对该段的写操作将导致段错误)。某些架构也允许代码段为可写，即允许修改程序。</p>
+<p>代码段指令根据程序设计流程依次执行，对于顺序指令，只会执行一次(每个进程)；若有反复，则需使用跳转指令；若进行递归，则需要借助栈来实现。</p>
+<p>代码段指令中包括操作码和操作对象(或对象地址引用)。若操作对象是立即数(具体数值)，将直接包含在代码中；若是局部数据，将在栈区分配空间，然后引用该数据地址；若位于<code>BSS</code>段和数据段，同样引用该数据地址。</p>
+<p>代码段最容易受优化措施影响。</p>
+<br>
+
+<h4 id="数据段-Data"><a href="#数据段-Data" class="headerlink" title="数据段(Data)"></a>数据段(Data)</h4><p>数据段通常用于存放程序中已初始化且初值不为<code>0</code>的全局变量和静态局部变量。数据段属于静态内存分配(静态存储区)，可读可写。</p>
+<p>数据段保存在目标文件中(在嵌入式系统里一般固化在镜像文件中)，其内容由程序初始化。例如，对于全局变量<code>int gVar = 10</code>，必须在目标文件数据段中保存<code>10</code>这个数据，然后在程序加载时复制到相应的内存。</p>
+<p>数据段与<code>BSS段</code>的区别如下： </p>
+<ul>
+<li><p><code>BSS段</code>不占用物理文件尺寸，但占用内存空间；数据段占用物理文件，也占用内存空间。对于大型数组如<code>int ar0[10000] = {1, 2, 3, ...}</code>和<code>int ar1[10000]</code>，<code>ar1</code>放在<code>BSS段</code>，只记录共有<code>10000*4</code>个字节需要初始化为<code>0</code>，而不是像<code>ar0</code>那样记录每个数据<code>1、2、3...</code>，此时<code>BSS</code>为目标文件所节省的磁盘空间相当可观。</p>
+</li>
+<li><p>当程序读取数据段的数据时，系统会出发缺页故障，从而分配相应的物理内存；当程序读取<code>BSS段</code>的数据时，内核会将其转到一个全零页面，不会发生缺页故障，也不会为其分配相应的物理内存。</p>
+</li>
+</ul>
+<p>运行时数据段和<code>BSS段</code>的整个区段通常称为数据区。某些资料中“数据段”指代数据段 + <code>BSS段</code> + 堆。</p>
+<br>
+
+<h4 id="BSS段"><a href="#BSS段" class="headerlink" title="BSS段"></a>BSS段</h4><p><code>BSS(Block Started by Symbol)</code>段中通常存放程序中以下符号：</p>
+<ul>
+<li>未初始化的全局变量和静态局部变量</li>
+<li>初始值为<code>0</code>的全局变量和静态局部变量(依赖于编译器实现)</li>
+<li>未定义且初值不为<code>0</code>的符号(该初值即<code>common block</code>的大小)</li>
+</ul>
+<p><code>C语言</code>中，未显式初始化的静态分配变量被初始化为<code>0</code>(算术类型)或空指针(指针类型)。由于程序加载时，<code>BSS</code>会被操作系统清零，所以未赋初值或初值为<code>0</code>的全局变量都在<code>BSS</code>中。<code>BSS段</code>仅为未初始化的静态分配变量预留位置，在目标文件中并不占据空间，这样可减少目标文件体积。但程序运行时需为变量分配内存空间，故目标文件必须记录所有未初始化的静态分配变量大小总和(通过<code>start_bss</code>和<code>end_bss</code>地址写入机器代码)。当加载器(<code>loader</code>)加载程序时，将为<code>BSS段</code>分配的内存初始化为0。在嵌入式软件中，进入<code>main()</code>函数之前<code>BSS段</code>被<code>C</code>运行时系统映射到初始化为全零的内存(效率较高)。</p>
+<p>注意，尽管均放置于<code>BSS段</code>，但初值为<code>0</code>的全局变量是强符号，而未初始化的全局变量是弱符号。若其他地方已定义同名的强符号(初值可能非 <code>0</code>)，则弱符号与之链接时不会引起重定义错误，但运行时的初值可能并非期望值(会被强符号覆盖)。因此，定义全局变量时，若只有本文件使用，则尽量使用<code>static</code>关键字修饰；否则需要为全局变量定义赋初值(哪怕<code>0</code>值)，保证该变量为强符号，以便链接时发现变量名冲突，而不是被未知值覆盖。</p>
+<p>某些编译器将未初始化的全局变量保存在<code>common段</code>，链接时再将其放入<code>BSS段</code>。在编译阶段可通过<code>-fno-common</code>选项来禁止将未初始化的全局变量放入<code>common段</code>。</p>
+<p>此外，由于目标文件不含<code>BSS段</code>，故程序烧入<code>存储器(Flash)</code>后<code>BSS段</code>地址空间内容未知。<code>U-Boot</code>启动过程中，将<code>U-Boot</code>的<code>Stage2</code>代码(通常位于<code>lib_xxxx/board.c</code>文件)搬迁(拷贝)到<code>SDRAM</code>空间后必须人为添加清零<code>BSS段</code>的代码，而不可依赖于<code>Stage2</code>代码中变量定义时赋<code>0</code>值。</p>
+<blockquote>
+<p>【扩展阅读】BSS历史</p>
+<p><code>BSS</code>(<code>Block Started by Symbol</code>，以符号开始的块)一词最初是UA-SAP汇编器(<code>United Aircraft Symbolic Assembly Program</code>)中的伪指令，用于为符号预留一块内存空间。该汇编器由美国联合航空公司于<code>20世纪50</code>年代中期为<code>IBM 704</code>大型机所开发。</p>
+<p>后来该词被作为关键字引入到了<code>IBM 709</code>和<code>7090/94</code>机型上的标准汇编器<code>FAP(Fortran Assembly Program)</code>，用于定义符号并且为该符号预留指定字数的未初始化空间块。</p>
+<p>在采用段式内存管理的架构中(如<code>Intel 80x86</code>系统)，<code>BSS段</code>通常指用来存放程序中未初始化全局变量的一块内存区域，该段变量只有名称和大小却没有值。程序开始时由系统初始化清零。</p>
+<p><code>BSS段</code>不包含数据，仅维护开始和结束地址，以便内存能在运行时被有效地清零。<code>BSS</code>所需的运行时空间由目标文件记录，但<code>BSS</code>并不占用目标文件内的实际空间，即<code>BSS节段</code>应用程序的二进制映象文件中并不存在。</p>
+</blockquote>
+<br>
+
+<h4 id="堆-heap"><a href="#堆-heap" class="headerlink" title="堆(heap)"></a>堆(heap)</h4><p>堆用于存放进程运行时动态分配的内存段，可动态扩张或缩减。堆中内容是匿名的，不能按名字直接访问，只能通过指针间接访问。当进程调用<code>malloc(C)/new(C++)</code>等函数分配内存时，新分配的内存动态添加到堆上(扩张)；当调用<code>free(C)/delete(C++)</code>等函数释放内存时，被释放的内存从堆中剔除(缩减) 。</p>
+<p>分配的堆内存是经过字节对齐的空间，以适合原子操作。堆管理器通过链表管理每个申请的内存，由于堆申请和释放是无序的，最终会产生内存碎片。堆内存一般由应用程序分配释放，回收的内存可供重新使用。若程序员不释放，程序结束时操作系统可能会自动回收。</p>
+<p>堆的末端由<code>break</code>指针标识，当堆管理器需要更多内存时，可通过系统调用<code>brk()</code>和<code>sbrk()</code>来移动<code>break</code>指针以扩张堆，一般由系统自动调用。</p>
+<p>使用堆时经常出现两种问题：</p>
+<ol>
+<li>释放或改写仍在使用的内存(“内存破坏”)；</li>
+<li>未释放不再使用的内存(“内存泄漏”)。当释放次数少于申请次数时，可能已造成内存泄漏。泄漏的内存往往比忘记释放的数据结构更大，因为所分配的内存通常会圆整为下个大于申请数量的2的幂次(如申请<code>212B</code>，会圆整为<code>256B</code>)。</li>
+</ol>
+<p>注意，堆不同于数据结构中的”堆”，其行为类似链表。</p>
+<blockquote>
+<p>【扩展阅读】栈和堆的区别</p>
+<p>①管理方式：栈由编译器自动管理；堆由程序员控制，使用方便，但易产生内存泄露。</p>
+<p>②生长方向：栈向低地址扩展(即”向下生长”)，是连续的内存区域；堆向高地址扩展(即”向上生长”)，是不连续的内存区域。这是由于系统用链表来存储空闲内存地址，自然不连续，而链表从低地址向高地址遍历。</p>
+<p>③空间大小：栈顶地址和栈的最大容量由系统预先规定(通常默认<code>2M</code>或<code>10M</code>)；堆的大小则受限于计算机系统中有效的虚拟内存，<code>32</code>位<code>Linux</code>系统中堆内存可达<code>2.9G</code>空间。</p>
+<p>④存储内容：栈在函数调用时，首先压入主调函数中下条指令(函数调用语句的下条可执行语句)的地址，然后是函数实参，然后是被调函数的局部变量。本次调用结束后，局部变量先出栈，然后是参数，最后栈顶指针指向最开始存的指令地址，程序由该点继续运行下条可执行语句。堆通常在头部用一个字节存放其大小，堆用于存储生存期与函数调用无关的数据，具体内容由程序员安排。</p>
+<p>⑤分配方式：栈可静态分配或动态分配。静态分配由编译器完成，如局部变量的分配。动态分配由<code>alloca</code>函数在栈上申请空间，用完后自动释放。堆只能动态分配且手工释放。</p>
+<p>⑥分配效率：栈由计算机底层提供支持：分配专门的寄存器存放栈地址，压栈出栈由专门的指令执行，因此效率较高。堆由函数库提供，机制复杂，效率比栈低得多。<code>Windows</code>系统中<code>VirtualAlloc</code>可直接在进程地址空间中分配一块内存，快速且灵活。</p>
+<p>⑦分配后系统响应：只要栈剩余空间大于所申请空间，系统将为程序提供内存，否则报告异常提示栈溢出。</p>
+<p>操作系统为堆维护一个记录空闲内存地址的链表。当系统收到程序的内存分配申请时，会遍历该链表寻找第一个空间大于所申请空间的堆结点，然后将该结点从空闲结点链表中删除，并将该结点空间分配给程序。若无足够大小的空间(可能由于内存碎片太多)，有可能调用系统功能去增加程序数据段的内存空间，以便有机会分到足够大小的内存，然后进行返回。，大多数系统会在该内存空间首地址处记录本次分配的内存大小，供后续的释放函数(如<code>free/delete</code>)正确释放本内存空间。</p>
+<p>此外，由于找到的堆结点大小不一定正好等于申请的大小，系统会自动将多余的部分重新放入空闲链表中。</p>
+<p>⑧碎片问题：栈不会存在碎片问题，因为栈是先进后出的队列，内存块弹出栈之前，在其上面的后进的栈内容已弹出。而频繁申请释放操作会造成堆内存空间的不连续，从而造成大量碎片，使程序效率降低。</p>
+<p>可见，堆容易造成内存碎片；由于没有专门的系统支持，效率很低；由于可能引发用户态和内核态切换，内存申请的代价更为昂贵。所以栈在程序中应用最广泛，函数调用也利用栈来完成，调用过程中的参数、返回地址、栈基指针和局部变量等都采用栈的方式存放。所以，建议尽量使用栈，仅在分配大量或大块内存空间时使用堆。</p>
+<p>使用栈和堆时应避免越界发生，否则可能程序崩溃或破坏程序堆、栈结构，产生意想不到的后果。</p>
+</blockquote>
+<br>
+
+<h4 id="内存映射段-mmap"><a href="#内存映射段-mmap" class="headerlink" title="内存映射段(mmap)"></a>内存映射段(mmap)</h4><p>此处，内核将硬盘文件的内容直接映射到内存, 任何应用程序都可通过<code>Linux</code>的<code>mmap()</code>系统调用或<code>Windows</code>的<code>CreateFileMapping()/MapViewOfFile()</code>请求这种映射。内存映射是一种方便高效的文件<code>I/O</code>方式， 因而被用于装载动态共享库。用户也可创建匿名内存映射，该映射没有对应的文件, 可用于存放程序数据。在<code>Linux</code>中，若通过<code>malloc()</code>请求一大块内存，<code>C运行库</code>将创建一个匿名内存映射，而不使用堆内存。”大块” 意味着比阈值 <code>MMAP_THRESHOLD</code>还大，缺省为<code>128KB</code>，可通过<code>mallopt()</code>调整。</p>
+<p><strong>PS:  内存映射端在Linux 2.6.7以前是向上增长的，在2.6.7之后改为向下增长</strong>。</p>
+<p>更多可以查看<code>《深入理解操作系统内核》4.2.1章节</code></p>
+<br>
+
+<h4 id="栈-stack"><a href="#栈-stack" class="headerlink" title="栈(stack)"></a>栈(stack)</h4><p>栈又称堆栈，由编译器自动分配释放，行为类似数据结构中的栈(先进后出)。堆栈主要有三个用途：</p>
+<ul>
+<li>为函数内部声明的非静态局部变量(<code>C语言</code>中称“自动变量”)提供存储空间。</li>
+<li>记录函数调用过程相关的维护性信息，称为栈帧(<code>Stack Frame</code>)或过程活动记录(<code>Procedure Activation Record</code>)。它包括函数返回地址，不适合装入寄存器的函数参数及一些寄存器值的保存。除递归调用外，堆栈并非必需。因为编译时可获知局部变量，参数和返回地址所需空间，并将其分配于BSS段。<br>临时存储区，用于暂存长算术表达式部分计算结果或<code>alloca()</code>函数分配的栈内内存。</li>
+<li>持续地重用栈空间有助于使活跃的栈内存保持在CPU缓存中，从而加速访问。进程中的每个线程都有属于自己的栈。向栈中不断压入数据时，若超出其容量就会耗尽栈对应的内存区域，从而触发一个页错误。此时若栈的大小低于堆栈最大值<code>RLIMIT_STACK</code>(通常是8M)，则栈会动态增长，程序继续运行。映射的栈区扩展到所需大小后，不再收缩。</li>
+</ul>
+<p><code>Linux</code>中<code>ulimit -s</code>命令可查看和设置堆栈最大值，当程序使用的堆栈超过该值时, 发生栈溢出(<code>Stack Overflow</code>)，程序收到一个段错误(<code>Segmentation Fault</code>)。注意，调高堆栈容量可能会增加内存开销和启动时间。</p>
+<p>堆栈既可向下增长(向内存低地址)也可向上增长, 这依赖于具体的实现。本文所述堆栈向下增长。</p>
+<p>堆栈的大小在运行时由内核动态调整。</p>
+<br>
+
+<h3 id="内核地址空间"><a href="#内核地址空间" class="headerlink" title="内核地址空间"></a>内核地址空间</h3><br>
+
+<h4 id="直接映射区（896M）"><a href="#直接映射区（896M）" class="headerlink" title="直接映射区（896M）"></a>直接映射区（896M）</h4><p>所谓的直接映射区，就是这一块空间是连续的，和物理内存是非常简单的映射关系，其实就是虚拟内存地址减去 <code>3G</code>，就得到物理内存的位置。</p>
+<pre><code>__pa(vaddr) 返回与虚拟地址 vaddr 相关的物理地址；
+__va(paddr) 则计算出对应于物理地址 paddr 的虚拟地址。
+
+// PAGE_OFFSET =&gt; 3G  0x0c0000000
+#define __va(x)      ((void *)((unsigned long)(x)+PAGE_OFFSET))
+#define __pa(x)    __phys_addr((unsigned long)(x))
+#define __phys_addr(x)    __phys_addr_nodebug(x)
+#define __phys_addr_nodebug(x)  ((x) - PAGE_OFFSET)
+</code></pre>
+<p>这 <code>896M</code> 还需要仔细分解。在系统启动的时候，物理内存的前 <code>1M</code> 已经被占用了，从 <code>1M</code> 开始加载内核代码段，然后就是内核的<code>全局变量</code>、<code>BSS</code> 等，也是 <code>ELF</code> 里面涵盖的。这样内核的代码段，全局变量，<code>BSS</code> 也就会被映射到 <code>3G</code> 后的虚拟地址空间里面。具体的物理内存布局可以查看。</p>
+<pre><code>cat /proc/iomem
+.....
+
+00100000-bffdbfff : System RAM
+  01000000-01a02fff : Kernel code
+  01a03000-021241bf : Kernel data
+  02573000-02611fff : Kernel bss
+  25000000-34ffffff : Crash kernel
+
+.....
+</code></pre>
+<p>在内核运行的过程中，如果碰到系统调用创建进程，会创建 <code>task_struct</code> 这样的实例，内核的进程管理代码会将实例创建在 <code>3G</code> 至 <code>3G+896M</code> 的虚拟空间中，当然也会被放在物理内存里面的前 <code>896M</code> 里面，相应的页表也会被创建。</p>
+<p>在内核运行的过程中，会涉及内核栈的分配，内核的进程管理的代码会将内核栈创建在 <code>3G</code> 至 <code>3G+896M</code> 的虚拟空间中，当然也就会被放在物理内存里面的前 <code>896M</code> 里面，相应的页表也会被创建。</p>
+<p><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/95715">进程空间管理</a></p>
+<br>
+
+<h4 id="高端内存-HIGH-MEMORY"><a href="#高端内存-HIGH-MEMORY" class="headerlink" title="高端内存 - HIGH_MEMORY"></a>高端内存 - HIGH_MEMORY</h4><p><code>x86-32</code>下特有的（<code>x64下没有这个东西</code>），因为内核虚拟空间只有<code>1G</code>无法管理全部的内存空间。</p>
+<p>当内核想访问高于<code>896MB</code>物理地址内存时，从<code>0xF8000000 ~ 0xFFFFFFFF</code>地址空间范围内找一段相应大小空闲的逻辑地址空间，借用一会。借用这段逻辑地址空间，建立映射到想访问的那段物理内存（即填充内核<code>PTE</code>页面表），临时用一会，用完后归还。这样别人也可以借用这段地址空间访问其他物理内存，实现了使用有限的地址空间，访问所有所有物理内存。如下图。</p>
+<p>从上面的描述，我们可以知道高端内存的最基本思想：借一段地址空间，建立临时地址映射，用完后释放，达到这段地址空间可以循环使用，访问所有物理内存。</p>
+<p>看到这里，不禁有人会问：万一有内核进程或模块一直占用某段逻辑地址空间不释放，怎么办？若真的出现的这种情况，则内核的高端内存地址空间越来越紧张，若都被占用不释放，则没有建立映射到物理内存都无法访问了。</p>
+<p><a target="_blank" rel="noopener" href="http://ilinuxkernel.com/?p=1013">Linux内核高端内存</a></p>
+<br>
+
+<h4 id="VMALLOC-OFFSET"><a href="#VMALLOC-OFFSET" class="headerlink" title="VMALLOC_OFFSET"></a>VMALLOC_OFFSET</h4><p>系统会在<code>low memory</code>和<code>VMALLOC</code>区域留8M，防止访问越界。因此假如理论上<code>vmalloc size</code>有<code>300M</code>，实际可用的也是只有<code>292M</code>。</p>
+<pre><code>include/asm-x86/pgtable_32.h 
+#define VMALLOC_OFFSET (8*1024*1024)
+</code></pre>
+<p>这个缺口可用作针对任何内核故障的保护措施。如果访问越界地址（即无意地访问物理上不存在的内存区），则访问失败并生成一个异常，报告该错误。如果<code>vmalloc</code>区域紧接着直接映射，那么访问将成功而不会注意到错误。在稳定运行的情况下，肯定不需要这个额外的保护措施，但它对开发尚未成熟的新内核特性是有用的。</p>
+<p><code>《深入理解Linux内核》3.4</code></p>
+<br>
+
+<h4 id="VMALLOC"><a href="#VMALLOC" class="headerlink" title="VMALLOC"></a>VMALLOC</h4><p>虚拟内存中连续、但物理内存中不连续的内存区，可以在<code>vmalloc</code>区域分配。该机制通常用于用户过程，内核自身会试图尽力避免非连续的物理地址。内核通常会成功，因为大部分大的内存块都在启动时分配给内核，那时内存的碎片尚不严重。但在已经运行了很长时间的系统上，在内核需要物理内存时，就可能出现可用空间不连续的情况。此类情况，主要出现在动态加载模块时。</p>
+<pre><code>include/asm-x86/pgtable_32.h 
+#define VMALLOC_START (((unsigned long) high_memory + \ 
+ 2*VMALLOC_OFFSET-1) &amp; ~(VMALLOC_OFFSET-1)) 
+#ifdef CONFIG_HIGHMEM 
+#define VMALLOC_END (PKMAP_BASE-2*PAGE_SIZE) 
+#else 
+#define VMALLOC_END (FIXADDR_START-2*PAGE_SIZE) 
+#endif
+</code></pre>
+<p><code>vmalloc</code>区域的起始地址，取决于在直接映射物理内存时，使用了多少虚拟地址空间内存（因此也依赖于上文的<code>high_memory</code>变量）。内核还考虑到下述事实，即两个区域之间有至少为<code>VMALLOC_OFFSET</code>的一个缺口，而且<code>vmalloc</code>区域从可被<code>VMALLOC_OFFSET</code>整除的地址开始。</p>
+<p><code>VMALLOC_START</code> 到 <code>VMALLOC_END</code> 之间称为内核动态映射空间，也即内核想像用户态进程一样 <code>malloc</code> 申请内存，在内核里面可以使用 <code>vmalloc</code>。假设物理内存里面，<code>896M</code> 到 <code>1.5G</code> 之间已经被用户态进程占用了，并且映射关系放在了进程的页表中，内核 <code>vmalloc</code> 的时候，只能从分配物理内存 <code>1.5G</code> 开始，就需要使用这一段的虚拟地址进行映射，映射关系放在专门给内核自己用的页表里面。</p>
+<p>使用<code>vmalloc</code>的最著名的实例是内核对模块的实现。因为模块可能在任何时候加载，如果模块数据比较多，那么无法保证有足够的连续内存可用，特别是在系统已经运行了比较长时间的情况下。如果能够用小块内存拼接出足够的内存，那么使用<code>vmalloc</code>可以规避该问题。</p>
+<p>内核中还有大约<code>400</code>处地方调用了<code>vmalloc</code>，特别是在设备和声音驱动程序中。</p>
+<p>因为用于<code>vmalloc</code>的内存页总是必须映射在内核地址空间中，因此使用<code>ZONE_HIGHMEM</code>内存域的页要优于其他内存域。这使得内核可以节省更宝贵的较低端内存域，而又不会带来额外的坏处。因此，<code>vmalloc</code>（连同其他映射函数在<code>3.5.8节</code>讨论）是内核出于自身的目的（并非因为用户空间应用程序）使用高端内存页的少数情形之一。</p>
+<p><code>《深入理解Linux内核》3.4</code></p>
+<p><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/95715">进程空间管理</a></p>
+<br>
+
+<h4 id="持久映射"><a href="#持久映射" class="headerlink" title="持久映射"></a>持久映射</h4><p>内核专门为此留出一块线性空间，从 <code>PKMAP_BASE</code> 到 <code>FIXADDR_START</code> ，用于映射高端内存。在 <code>2.6内核</code>上，这个地址范围是 <code>4G-8M</code> 到 <code>4G-4M</code> 之间。这个空间起叫”<code>内核永久映射空间</code>”或者”<code>永久内核映射空间</code>”。这个空间和其它空间使用同样的页目录表，对于内核来说，就是 <code>swapper_pg_dir</code>，对普通进程来说，通过 <code>CR3 寄存器</code>指向。通常情况下，这个空间是 <code>4M</code> 大小，因此仅仅需要一个页表即可，内核通过来 <code>pkmap_page_table</code> 寻找这个页表。通过 <code>kmap()</code>，可以把一个 <code>page</code> 映射到这个空间来。由于这个空间是 <code>4M</code>大小，最多能同时映射 <code>1024</code> 个 <code>page</code>。因此，对于不使用的的 <code>page</code>，及应该时从这个空间释放掉（也就是解除映射关系），通过 <code>kunmap() </code>，可以把一个 <code>page</code> 对应的线性地址从这个空间释放出来。</p>
+<pre><code> include/asm-x86/highmem.h 
+#define LAST_PKMAP 1024 
+#define PKMAP_BASE ( (FIXADDR_BOOT_START -PAGE_SIZE*(LAST_PKMAP + 1)) &amp; PMD_MASK )
+</code></pre>
+<p>如果需要将高端页帧长期映射（作为持久映射）到内核地址空间中，必须使用<code>kmap</code>函数。需要映射的页用指向<code>page</code>的指针指定，作为该函数的参数。该函数在有必要时创建一个映射（即，如果该页确实是高端页），并返回数据的地址。</p>
+<p>如果没有启用高端支持，该函数的任务就比较简单。在这种情况下，所有页都可以直接访问，因此只需要返回页的地址，无需显式创建一个映射。</p>
+<p>如果确实存在高端页，情况会比较复杂。类似于<code>vmalloc</code>，内核首先必须建立高端页和所映射到的地址之间的关联。还必须在虚拟地址空间中分配一个区域以映射页帧，最后，内核必须记录该虚拟区域的哪些部分在使用中，哪些仍然是空闲的。</p>
+<p><code>pkmap_count</code>（在<code>mm/highmem.c</code>定义）是一容量为<code>LAST_PKMAP</code>的整数数组，其中每个元素都对应于一个持久映射页。它实际上是被映射页的一个使用计数器，语义不太常见。该计数器计算了内核使用该页的次数加<code>1</code>。如果计数器值为<code>2</code>，则内核中只有一处使用该映射页。计数器值为<code>5</code>表示有<code>4</code>处使用。一般地说，计数器值为<code>n</code>代表内核中有<code>n-1</code>处使用该页。</p>
+<p>和通常的使用计数器一样，<code>0</code>意味着相关的页没有使用。计数器值<code>1</code>有特殊语义。这表示该位置关联的页已经映射，但由于<code>CPU</code>的<code>TLB</code>没有更新而无法使用，此时访问该页，或者失败，或者会访问到一个不正确的地址。</p>
+<p>内核利用下列数据结构，来建立物理内存页的page实例与其在虚似内存区中位置之间的关联：</p>
+<pre><code>mm/highmem.c 
+struct page_address_map { 
+ struct page *page; 
+ void *virtual; 
+ struct list_head list; 
+};
+</code></pre>
+<p>该结构用于建立<code>page→virtual</code>的映射（该结构由此得名）。<code>page</code>是一个指向全局<code>mem_map</code>数组中的<code>page</code>实例的指针，<code>virtual</code>指定了该页在内核虚拟地址空间中分配的位置。</p>
+<p>刚才描述的<code>kmap</code>函数不能用于中断处理程序，因为它可能进入睡眠状态。如果<code>pkmap</code>数组中没有空闲位置，该函数会进入睡眠状态，直至情形有所改善。因此内核提供了一个备选的映射函数，其执行是原子的，逻辑上称为<code>kmap_atomic</code>。该函数的一个主要优点是它比普通的<code>kmap</code>快速。但它不能用于可能进入睡眠的代码。因此，它对于很快就需要一个临时页的简短代码，是非常理想的。<code>kmap_atomic</code>的定义在<code>IA-32</code>、<code>PPC</code>、<code>Sparc32</code>上是特定于体系结构的，但这3种实现只有非常细微的差别。其原型是相同的。</p>
+<p><code>《深入理解Linux内核》3.5.8</code></p>
+<p><a target="_blank" rel="noopener" href="http://ilinuxkernel.com/?p=1013">Linux内核高端内存</a></p>
+ <br>
+
+<h4 id="固定映射-临时映射"><a href="#固定映射-临时映射" class="headerlink" title="固定映射/临时映射"></a>固定映射/临时映射</h4><p><code>FIXADDR_START</code> 到 <code>FIXADDR_TOP</code>(<code>0xFFFF F000</code>) 的空间，称为固定映射区域，主要用于满足特殊需求。</p>
+<p>这块空间具有如下特点：<br>（1）每个 <code>CPU</code> 占用一块空间<br>（2）在每个 <code>CPU</code> 占用的那块空间中，又分为多个小空间，每个小空间大小是 <code>1</code> 个 <code>page</code>，每个小空间用于一个目的，这些目的定义在 <code>kmap_types.h</code> 中的 <code>km_type</code> 中。</p>
+<p>当要进行一次固定映射的时候，需要指定映射的目的，根据映射目的，可以找到对应的小空间，然后把这个空间的地址作为映射地址。这意味着一次固定映射会导致以前的映射被覆盖。通过 <code>kmap_atomic()</code> 可实现固定映射。</p>
+<p>固定映射是与物理地址空间中的固定页关联的虚拟地址空间项，但具体关联的页帧可以自由选择。它与通过固定公式与物理内存关联的直接映射页相反，虚拟固定映射地址与物理内存位置之间的关联可以自行定义，关联建立后内核总是会注意到的。</p>
+<p>最后一个内存段由固定映射占据。这些地址指向物理内存中的随机位置。相对于内核空间起始处的线性映射，在该映射内部的虚拟地址和物理地址之间的关联不是预设的，而可以自由定义，但定义后不能改变。固定映射区域会一直延伸到虚拟地址空间顶端。</p>
+<pre><code>include/asm-x86/fixmap_32.h 
+#define __FIXADDR_TOP 0xfffff000 
+#define FIXADDR_TOP ((unsigned long)__FIXADDR_TOP) 
+#define __FIXADDR_SIZE (__end_of_permanent_fixed_addresses &lt;&lt; PAGE_SHIFT) 
+#define FIXADDR_START (FIXADDR_TOP -__FIXADDR_SIZE)
+</code></pre>
+<p>固定映射地址的优点在于，在编译时对此类地址的处理类似于常数，内核一启动即为其分配了物理地址。此类地址的解引用比普通指针要快速。内核会确保在上下文切换期间，对应于固定映射的页表项不会从TLB刷出，因此在访问固定映射的内存时，总是通过TLB高速缓存取得对应的物理地址。</p>
+<p>对每个固定映射地址都会创建一个常数，加入到<code>fixed_addresses</code>枚举值列表中。</p>
+<pre><code>include/asm-x86/fixmap_32.h 
+enum fixed_addresses { 
+ FIX_HOLE, 
+ FIX_VDSO, 
+ FIX_DBGP_BASE, 
+ FIX_EARLYCON_MEM_BASE, 
+#ifdef CONFIG_X86_LOCAL_APIC 
+ FIX_APIC_BASE, /* 本地CPU APIC信息，在SMP系统上需要 */ 
+#endif 
+... 
+#ifdef CONFIG_HIGHMEM 
+ FIX_KMAP_BEGIN, /* 保留的页表项，用于临时内核映射 */ 
+ FIX_KMAP_END = FIX_KMAP_BEGIN+(KM_TYPE_NR*NR_CPUS)-1, 
+#endif 
+... 
+ FIX_WP_TEST, 
+ __end_of_fixed_addresses 
+};
+</code></pre>
+<p>内核提供了<code>fix_to_virt</code>函数，用于计算固定映射常数的虚拟地址。</p>
+<pre><code>include/asm-x86/fixmap_32.h 
+static __always_inline unsigned long fix_to_virt(const unsigned int idx) 
+{ 
+ if (idx &gt;= __end_of_fixed_addresses) 
+ __this_fixmap_does_not_exist(); 
+ return __fix_to_virt(idx); 
+}
+</code></pre>
+<p>编译器优化机制会完全消除if语句，因为该函数定义为内联函数，而且其参数都是常数。这样的优化是有必要的，否则固定映射地址实际上并不优于普通指针。形式上的检查确保了所需的固定映射地址在有效区域中。<code>__end_of_fixed_adresses</code>是<code>fixed_addresses</code>的最后一个成员，定义了最大的可能数字。如果内核访问的是无效地址，则调用伪函数<code>__this_fixmap_does_not_exist</code>（没有定义）。在内核链接时，这会导致错误信息，表明由于存在未定义符号而无法生成映像文件。因此，此种内核故障在编译时即可检测，而不会在运行时出现。</p>
+<p>在引用有效的固定映射地址时，if语句中的比较总是会通过。由于比较的两个操作数都是常数，该条件判断语句实际上不会执行，在编译优化的过程中会直接消除。</p>
+<p><code>__fix_to_virt</code>定义为宏。由于<code>fix_to_virt</code>是内联函数，其实现代码会直接复制到查询固定映射地址的代码处。该宏定义如下：</p>
+<pre><code>include/asm-x86/fixmap_32.h 
+#define __fix_to_virt(x) (FIXADDR_TOP -((x) &lt;&lt; PAGE_SHIFT)) 
+</code></pre>
+<p>从顶部开始（不是按照常理从底部开始），内核回退n页，以确定第n个固定映射项的虚拟地址。这个计算同样也只使用了常数，编译器能够在编译时计算结果。根据上文提到的内存划分，地址空间中对应的虚拟地址尚未用于其他用途。固定映射虚拟地址与物理内存页之间的关联是由<code>set_fixmap(fixmap, page_nr)</code>和<code>set_fixmap_nocache</code>建立的（未讨论后者的实现）。这两个函数只是将页表中的对应项与物理内存中的一页关联起来。不同于<code>set_fixmap</code>，<code>set_fixmap_nocache</code>在必要情况下，会停用所涉及页帧的硬件高速缓存。</p>
+<p>在最后一个区域可以通过 <code>kmap_atomic</code> 实现临时内核映射。假设用户态的进程要映射一个文件到内存中，先要映射用户态进程空间的一段虚拟地址到物理内存，然后将文件内容写入这个物理内存供用户态进程访问。给用户态进程分配物理内存页可以通过 <code>alloc_pages()</code>，分配完毕后，按说将用户态进程虚拟地址和物理内存的映射关系放在用户态进程的页表中，就完事大吉了。这个时候，用户态进程可以通过用户态的虚拟地址，也即 <code>0</code> 至 <code>3G</code> 的部分，经过页表映射后访问物理内存，并不需要内核态的虚拟地址里面也划出一块来，映射到这个物理内存页。但是如果要把文件内容写入物理内存，这件事情要内核来干了，这就只好通过 <code>kmap_atomic</code> 做一个临时映射，写入物理内存完毕后，再 <code>kunmap_atomic</code> 来解映射即可。</p>
+<p><code>《深入理解Linux内核》3.5.8</code></p>
+<p><a target="_blank" rel="noopener" href="http://ilinuxkernel.com/?p=1013">Linux内核高端内存</a>、</p>
+<p><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/95715">进程空间管理</a></p>
+<br>
+
+
+<h3 id="物理内存"><a href="#物理内存" class="headerlink" title="物理内存"></a>物理内存</h3><br>
+
+
+<h4 id="0-1M"><a href="#0-1M" class="headerlink" title="0~1M"></a>0~1M</h4><p>前<code>4 KiB</code>是第一个页帧，一般会忽略，因为通常保留给<code>BIOS</code>使用。接下来的<code>640 KiB</code>原则上是可用的，但也不用于内核加载。其原因是，该区域之后紧邻的区域由系统保留，用于映射各种<code>ROM</code>（通常是<code>系统BIOS</code>和<code>显卡ROM</code>）。不可能向映射<code>ROM</code>的区域写入数据。但内核总是会装载到一个连续的内存区中，如果要从<code>4 KiB</code>处作为起始位置来装载内核映像，则要求内核必须小于<code>640 KiB</code>。</p>
+<p><code>《深入理解Linux内核》3.4.2</code></p>
+<br>
+
+<h4 id="ZONE-DMA、ZONE-NORMAL、ZONE-HIGHMEM"><a href="#ZONE-DMA、ZONE-NORMAL、ZONE-HIGHMEM" class="headerlink" title="ZONE-DMA、ZONE_NORMAL、ZONE_HIGHMEM"></a>ZONE-DMA、ZONE_NORMAL、ZONE_HIGHMEM</h4><p>在x86架构中内存有三种区域：<code>ZONE_DMA</code>，<code>ZONE_NORMAL</code>，<code>ZONE_HIGHMEM</code>，不同类型的区域适合不同需要。在32位系统中结构中，<code>1G</code>(内核空间)/<code>3G</code>(用户空间) 地址空间划分时，三种类型的区域如下:</p>
+<p><code>ZONE_DMA</code>              内存开始的<code>16MB</code></p>
+<p><code>ZONE_NORMAL</code>       <code>16MB</code>~`896MB`</p>
+<p><code>ZONE_HIGHMEM</code>     <code>896MB</code> ~ 结束</p>
+<ul>
+<li><p><code>ZONE-DMA</code> (<code>16M</code>)<br>  它是低内存的一块区域,这块区域由标准工业架构(<code>Industry Standard Architecture</code>)设备使用，适合<code>DMA</code>内存。这部分区域大小和CPU架构有关，在<code>x86架构</code>中，该部分区域大小 限制为<code>16MB</code>。</p>
+<p>  该区域的物理页面专门供<code>I/O</code>设备的<code>DMA</code>使用。之所以需要单独管理DMA的物理页面，是因为DMA使用物理地址访问内存，不经过<code>MMU</code>，并且需要连续的缓冲区，所以为了能够提供物理上连续的缓冲区，必须从物理地址空间专门划分一段区域用于<code>DMA</code>。</p>
+<p>  <code>DMA</code> 技术就是我们在主板上放一块独立的芯片。在进行内存和 <code>I/O </code>设备的数据传输的时候，我们不再通过 <code>CPU</code> 来控制数据传输，而直接通过 <code>DMA</code> 控制器（<code>DMA Controller</code>，简称 <code>DMAC</code>）。这块芯片，我们可以认为它其实就是一个协处理器（<code>Co-Processor</code>）。</p>
+</li>
+<li><p><code>ZONE_NORMAL</code>(<code>16~896M</code>)</p>
+<p>  <code>ZONE_NORMAL</code>的范围是<code>16M~896M</code>，该区域的物理页面是内核能够直接使用的。属于直接映射区</p>
+</li>
+<li><p><code>ZONE_HIGHMEM</code>（<code>896M~结束</code>）</p>
+<p>  是系统中剩下的可用内存,但因为内核的地址空间有限,这部分内存不直接映射到内核。</p>
+</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="http://ilinuxkernel.com/?p=1013">Linux内核高端内存</a></p>
+<br>
+
+<h4 id="临时内存页表、内核镜像"><a href="#临时内存页表、内核镜像" class="headerlink" title="临时内存页表、内核镜像"></a>临时内存页表、内核镜像</h4><p>内核启动过程中，存在一个实模式保护模式的切换过程。在<code>Linux</code>启动的最初阶段，内核刚刚被装入内存时，分页功能还未启用，此时是直接存取物理地址的（或者说线性地址就等于物理地址）。但初始化完成后，内核也需要有自己的虚拟地址空间（<code>1个G大小</code>），该虚拟地址空间的地址映射关系，会被作为模版拷贝到其他进程的内核地址空间中。</p>
+<p>临时内核页表只用来映射物理地址的前8M空间内容。目的是允许<code>CPU</code>在实模式（直接存取物理地址）和保护模式（根据虚拟地址映射）之间切换的过程中，都能对这前<code>8M</code>的地址进行访问。（假如内核使用的全部内存可以存放在<code>8M</code>的空间里，因为一个页表可以映射<code>4M</code>的地址，所以<code>8M</code>的空间需要两个页表，也就是需要两个页目录项。这两张页表我们称为临时内核页表<code>pg0</code>和<code>pg1</code>。（页表的作用，参见地址映射））</p>
+<p><code>Linux Kernel</code> 有自己專屬的 <code>Page Directory</code> 及 <code>Page Table</code><br>在系統初始化時，會先建立 2個 <code>Page Table</code> – 包含 <code>2048</code>個 <code>Page</code>，共 <code>8MB</code> 的記憶體空間<br>這 <code>8MB</code> 是 <code>Linux</code> 開機最少需要的記憶體大小，而且保留給 <code>Kernel</code> 使用</p>
+<p><code>Kernel Page Global Directory</code> 是以變數 <code>swapper_pg_dir</code> 表示其資料結構可視為含有 <code>1024</code> 個元素的 <code>pgd_t</code>型態的陣列實體記憶體位址為 <code>0x00101000</code></p>
+<p><code>Kernel Page Table</code> (第 <code>0</code>及第 <code>1</code>個 Table) 是以變數 <code>pg0</code> 及 <code>pg1</code> 表示其資料結構可視為含有 <code>1024</code>個元素的 <code>pte_t</code> 型態的陣列實體記憶體位址分別為 <code>0x00102000</code> 及 <code>0x00103000</code></p>
+<p><code>Linux Page</code> 初始化的動作定義於 <code>arch/i386/kernel/head.S</code>因為開機時僅需要 <code>8MB</code>，所以只要初始化 <code>2</code>個 <code>Page Table</code> 便可，即 <code>pg0</code> 及 <code>pg1</code>其餘的 <code>Page Table</code> 均填入 <code>0</code> 的值</p>
+<p>又為了讓這 <code>2</code>個 <code>Page Table</code> 可以被 <code>Real Mode</code> 及 <code>Protect Mode</code> 所存取<code>Kernel Page Global Directory</code> 中的第 <code>0</code>、第 <code>768</code>個 Entry以及第 <code>1</code>、第 <code>769</code>個 <code>Entry</code>分別會設為相同的 <code>Page Table</code> 的實體記憶體位址，如圖所示</p>
+<p>初始化完成後，得到以下的結果：</p>
+<pre><code>swapper_pg_dir[0] = swapper_pg_dir[768] = 0x00102007
+swapper_pg_dir[1] = swapper_pg_dir[769] = 0x00103007
+</code></pre>
+<p><code>pg0</code> 加上 <code>pg1</code> 定址到實體記憶體 <code>0x00000000</code> - <code>0x007FFFFF</code>，共 <code>8MB</code> 的分頁</p>
+<p>根據 <code>pgd_t</code> 及 <code>pte_t</code> 的欄位格式可得知：</p>
+<ol>
+<li><code>bit</code> <code>0-11</code> 為 <code>0x007</code>，表示 <code>Enable</code> 旗號 <code>Present</code>、<code>Read/Write</code>、<code>User/Supervisor</code>（详见下面#页表描述符章节）</li>
+<li><code>bit</code> <code>12-31</code> 為 <code>Base Address</code></li>
+</ol>
+<p><code>《深入理解Linux虚拟内存管理》</code>、</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/fullofwindandsnow/article/details/8565512">Linux内存管理总结-系统初始化</a></p>
+<p><a target="_blank" rel="noopener" href="http://parrotshen.blogspot.com/2008/01/test.html">Linux Memory Paging - 3</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/4a8a08f09d37b73795649038408b5f33/p/10154324.html">linux启动过程中建立临时页表</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/tolimit/p/4585803.html">linux内存源码分析 - 页表的初始化</a></p>
+<br>
+
+<h2 id="x86-64位虚拟地址空间"><a href="#x86-64位虚拟地址空间" class="headerlink" title="x86-64位虚拟地址空间"></a>x86-64位虚拟地址空间</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-2cdf1bedff166c2f.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Linux-Memory-X86-64.jpg"></p>
+<br>
+
+<p><a href="./Linux-Memory-X86-64.jpg">点我查看原图</a></p>
+<br>
+
+<h3 id="ZONE-DMA、ZONE-DMA32、ZONE-NORMAL"><a href="#ZONE-DMA、ZONE-DMA32、ZONE-NORMAL" class="headerlink" title="ZONE_DMA、ZONE_DMA32、ZONE_NORMAL"></a>ZONE_DMA、ZONE_DMA32、ZONE_NORMAL</h3><ul>
+<li><code>ZONE_DMA</code> 标记适合<code>DMA</code>的内存域。该区域的长度依赖于处理器类型。在<code>IA-32</code>计算机上，一般的限制是<code>16 MiB</code>，这是由古老的ISA设备强加的边界。但更现代的计算机也可能受这一限制的影响。</li>
+<li><code>ZONE_DMA32</code> 标记了使用<code>32位</code>地址字可寻址、适合<code>DMA</code>的内存域。显然，只有在<code>64位</code>系统上，两种<code>DMA</code>内存域才有差别。在<code>32位</code>计算机上，本内存域是空的，即长度为<code>0 MiB</code>。在<code>Alpha</code>和<code>AMD64</code>系统上，该内存域的长度可能从<code>0</code>到<code>4GiB</code>。</li>
+<li><code>ZONE_NORMAL</code>标记了可直接映射到内核段的普通内存域。这是在所有体系结构上保证都会存在的唯一内存域，但无法保证该地址范围对应了实际的物理内存。例如，如果<code>AMD64</code>系统有<code>2 GiB</code>内存，那么所有内存都属于<code>ZONE_DMA32</code>范围，而<code>ZONE_NORMAL</code>则为空。</li>
+</ul>
+<br>
+
+<h2 id="其他基础知识"><a href="#其他基础知识" class="headerlink" title="其他基础知识"></a>其他基础知识</h2><br>
+
+<h3 id="页表描述符（page-table-descriptor）"><a href="#页表描述符（page-table-descriptor）" class="headerlink" title="页表描述符（page table descriptor）"></a>页表描述符（page table descriptor）</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-c58943107fd21df0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>P（<code>Present</code>） - 为<code>1</code>表明该<code>page</code>存在于当前物理内存中，为<code>0</code>则<code>PTE</code>的其他部分都失去意义了，不用看了，直接触发<code>page fault</code>。<code>P</code>位为<code>0</code>的PTE也不会有对应的<code>TLB entry</code>，因为早在P位由<code>1</code>变为<code>0</code>的时候，对应的<code>TLB</code>就已经被<code>flush</code>掉了。</li>
+<li>G （<code>Global</code>）- 这个标志位在这篇文章中有介绍，主要是用于<code>context switch</code>的时候不用<code>flush</code>掉<code>kernel</code>对应的<code>TLB</code>，所以这个标志位在<code>TLB entry</code>中也是存在的。</li>
+<li>A（<code>Access</code>） - 当这个<code>page</code>被访问（读/写）过后，硬件将该位置<code>1</code>，<code>TLB</code>只会缓存<code>access</code>的值为<code>1</code>的<code>page</code>对应的映射关系。软件可将该位置<code>0</code>，然后对应的<code>TLB</code>将会被<code>flush</code>掉。这样，软件可以统计出每个<code>page</code>被访问的次数，作为内存不足时，判断该<code>page</code>是否应该被回收的参考。</li>
+<li>D （<code>Dirty</code>）- 这个标志位只对<code>file backed</code>的<code>page</code>有意义，对<code>anonymous</code>的<code>page</code>是没有意义的。当<code>page</code>被写入后，硬件将该位置<code>1</code>，表明该<code>page</code>的内容比外部<code>disk/flash</code>对应部分要新，当系统内存不足，要将该<code>page</code>回收的时候，需首先将其内容<code>flush</code>到外部存储。之后软件将该标志位清0。</li>
+<li>R/W（<code>Read/Write</code>） - 置为<code>1</code>表示该<code>page</code>是<code>writable</code>的，置为<code>0</code>则是<code>readonly</code>，对只读的<code>page</code>进行写操作会触发<code>page fault</code>。</li>
+<li>U/S（<code>User/Supervisor</code>） - 置为<code>0</code>表示只有<code>supervisor</code>（比如操作系统中的<code>kernel</code>）才可访问该<code>page</code>，置为<code>1</code>表示<code>user</code>也可以访问。</li>
+<li>PCD（<code>Page Cache Disabled</code>）- 置为<code>1</code>表示<code>disable</code>，即该<code>page</code>中的内容是不可以被<code>cache</code>的。如果置为<code>0</code>（<code>enable</code>），还要看<code>CR0寄存器</code>中的<code>CD位</code>这个总控开关是否也是<code>0</code>。</li>
+<li>PWT （<code>Page Write Through</code>）- 置为<code>1</code>表示该<code>page</code>对应的<code>cache</code>部分采用<code>write through</code>的方式，否则采用<code>write back</code>。</li>
+</ul>
+<p><strong>64位页面描述符：</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e919d40d408e8c17.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-204714b4708fda1d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<br>
+
+<h3 id="system-map"><a href="#system-map" class="headerlink" title="system.map"></a>system.map</h3><p>每次编译内核时，都生成一个文件System.map并保存在源代码目录下。除了所有其他（全局）变量、内核定义的函数和例程的地址，该文件还包括图3-11给出的常数的值。</p>
+<p><a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/fanlv/blog/main/backup/Content/Foundation/x86-debian-10.10.0-System.map-4.19.0-17-686-pae">x86-debian-10.10.0-System.map</a></p>
+<p><a target="_blank" rel="noopener" href="https://raw.githubusercontent.com/fanlv/blog/main/backup/Content/Foundation/x64-System.map-4.14.81.bm.15-amd64">x64-Debian-9-System.map</a></p>
+<pre><code>fanlv@debian:~$ head -10 /boot/System.map-4.19.0-17-686-pae
+000001c9 A kexec_control_code_size
+01000000 A phys_startup_32
+c1000000 T _stext
+c1000000 T _text
+c1000000 T startup_32
+c100009b W xen_entry
+c10000a0 T start_cpu0
+c10000b0 T startup_32_smp
+c1000218 T verify_cpu
+c1000314 T pvh_start_xen
+</code></pre>
+<p>符号类型：大写为全局符号，小写为局部符号<br>A：该符号的值是不能改变的，等于<code>const</code><br>B：该符号来自于未初始化代码段<code>bss段</code><br>C: 该符号是通用的，通用的符号指未初始化的数据。当链接时，多个通用符号可能对应一个名称，如果该符号在某一个位置定义，这个通用符号被当做未定义的引用。不明白，内核中也没有该类型的符号<br>D: 该符号位于初始化的数据段<br>G: 位于初始化数据段，专门对应小的数据对象，比如<code>global int x</code>,对应的大数据对象为 数组类型等<br>I： 到其他符号的间接引用，是对于<code>a.out</code>文件的<code>GNU</code>扩展，使用非常少<br>N：调试符号<br>R：只读代码段的符号<br>S：<code>BSS段</code>（未初始化数据段）的小对象符号<br>T：代码段符号，全局函数，<code>t</code>为局部函数<br>U：未定义的符号<br>V：该符号是一个<code>weak object</code>，当其连接到为定义的对象上上，该符号的值变为<code>0</code><br>W： 类似于<code>V</code><br>—： 该符号是<code>a.out</code>文件中的一个<code>stabs symbol</code>，获取调试信息<br>？： 未知类型的符号</p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/chun_1959/article/details/45786769">system.map文件详解</a></p>
+<br>
+
+<h3 id="N-UMA-模型中的内存组织"><a href="#N-UMA-模型中的内存组织" class="headerlink" title="(N)UMA 模型中的内存组织"></a>(N)UMA 模型中的内存组织</h3><p>有两种类型计算机，分别以不同的方法管理物理内存</p>
+<ol>
+<li><code>UMA</code>计算机（一致内存访问，<code>uniform memory access</code>）将可用内存以连续方式组织起来（可能有小的缺口）。SMP系统中的每个处理器访问各个内存区都是同样快。<ul>
+<li>SMP(<code>Symmetric Multi-Processor</code>)所谓对称多处理器结构，是指服务器中多个<code>CPU</code>对称工作，无主次或从属关系。各<code>CPU</code>共享相同的物理内存，每个<code>CPU</code>访问内存中的任何地址所需时间是相同的，因此<strong>SMP也被称为一致存储器访问结构(UMA：Uniform Memory Access)</strong></li>
+</ul>
+</li>
+<li><code>NUMA</code>计算机（非一致内存访问，<code>non-uniform memory access</code>）总是多处理器计算机。系统的各个<code>CPU</code>都有本地内存，可支持特别快速的访问。各个处理器之间通过总线连接起来，以支持对其他<code>CPU</code>的本地内存的访问，当然比访问本地内存慢些。</li>
+</ol>
+<p>PS：还有个MPP(<code>Massive Parallel Processing</code>)，这里不做讨论。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7a5a953fd520ed72.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>现在我们用的OS基本都是NUMA内存模式</strong>，可以通过<code>lscpu</code> 查看<code>numa</code>相关信息</p>
+<pre><code>dp-xxx(xxx@default:prod):message#lscpu
+Architecture:          x86_64
+CPU op-mode(s):        32-bit, 64-bit
+Byte Order:            Little Endian
+CPU(s):                92
+On-line CPU(s) list:   0,1
+Off-line CPU(s) list:  2-91
+Thread(s) per core:    0
+Core(s) per socket:    23
+Socket(s):             2
+NUMA node(s):          2
+Vendor ID:             GenuineIntel
+CPU family:            6
+Model:                 85
+Model name:            Intel(R) Xeon(R) Platinum 8260 CPU @ 2.40GHz
+Stepping:              7
+CPU MHz:               2399.998
+BogoMIPS:              4799.99
+Virtualization:        VT-x
+Hypervisor vendor:     KVM
+Virtualization type:   full
+L1d cache:             32K
+L1i cache:             32K
+L2 cache:              4096K
+L3 cache:              16384K
+NUMA node0 CPU(s):     0-45
+NUMA node1 CPU(s):     46-91
+</code></pre>
+<p>和 <code>numactl --hardware</code> 查看</p>
+<pre><code>[root@n227-005-021 fanlv ]$ numactl --hardware
+available: 1 nodes (0)
+node 0 cpus: 0 1 2 3 4 5 6 7
+node 0 size: 15787 MB
+node 0 free: 2025 MB
+node distances:
+node   0
+  0:  10
+ 
+</code></pre>
+<p><strong>NUMA特性禁用</strong></p>
+<pre><code>一、检查OS是否开启NUMA
+#numactl --hardware
+二、Linux OS层面禁用NUMA
+1、修改 grub.conf
+#vi /boot/grub/grub.conf
+#/* Copyright 2010, Oracle. All rights reserved. */
+ 
+default=0
+timeout=5
+hiddenmenu
+foreground=000000
+background=ffffff
+splashimage=(hd0,0)/boot/grub/oracle.xpm.gz
+ 
+title Trying_C0D0_as_HD0
+root (hd0,0)
+kernel /boot/vmlinuz-2.6.18-128.1.16.0.1.el5 root=LABEL=DBSYS ro bootarea=dbsys rhgb quiet console=ttyS0,115200n8 console=tty1 crashkernel=128M@16M numa=off
+initrd /boot/initrd-2.6.18-128.1.16.0.1.el5.img
+ 
+2、重启Linux操作系统
+#/sbin/reboot
+ 
+3、确认OS层面禁用NUMA是否成功
+#cat /proc/cmdline
+root=LABEL=DBSYS ro bootarea=dbsys rhgb quiet console=ttyS0,115200n8 console=tty1 crashkernel=128M@16M numa=off
+</code></pre>
+<br>
+
+<h3 id="三种内存模型"><a href="#三种内存模型" class="headerlink" title="三种内存模型"></a>三种内存模型</h3><br>
+
+<h4 id="什么是内存模型？"><a href="#什么是内存模型？" class="headerlink" title="什么是内存模型？"></a>什么是内存模型？</h4><p>这里的内存模型，是指<code>Linux</code>内核用怎么样的方式去管理物理内存，一个物理内存页（<code>4k</code>），内核会用一个<a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/master/include/linux/mm_types.h#L70">page（64Byte）</a>（类似物理页的<code>meta</code>）去记录<code>Physics Page Number</code>相关信息，下面几种内存模型是讲如何存储这个物理机的<code>meta</code>信息（<code>page</code>），保证内核能快速根据<code>PFN/PPN</code>找到<code>Page</code>，也可以根据<code>Page</code>快速算出<code>PFN</code>。</p>
+<p><code>Linux</code>内存模型发展经历了三个模式，分别为<code>FLATMEM</code>、<code>DISCONTIGMEM</code>、<code>SPARSEMEM</code>。</p>
+<p>PS：这里说下PFN和PPN是一个东西。具体可以看<a target="_blank" rel="noopener" href="https://compas.cs.stonybrook.edu/~nhonarmand/courses/fa17/cse306/slides/06-paging.pdf">这个PPT第4页</a></p>
+<br>
+
+<h4 id="FLATMEM-flat-memory-model"><a href="#FLATMEM-flat-memory-model" class="headerlink" title="FLATMEM (flat memory model)"></a>FLATMEM (flat memory model)</h4><p><code>FLATMEM</code>内存模型是<code>Linux</code>最早使用的内存模型，那时计算机的内存通常不大。<code>Linux</code>会使用一个<code>struct page mem_map[x]</code>的数组根据PFN去依次存放所有的<code>strcut page</code>，且<code>mem_map</code>也位于内核空间的线性映射区，所以根据<code>PFN(页帧号)</code>即可轻松的找到目标页帧的<code>strcut page</code>。</p>
+<pre><code>#define __pfn_to_page(pfn)    (mem_map + ((pfn) - ARCH_PFN_OFFSET))
+#define __page_to_pfn(page)    ((unsigned long)((page) - mem_map) + \
+                 ARCH_PFN_OFFSET)
+</code></pre>
+<p>而对于FLATMEM来说，如果其管理的的物理内存本身是连续的还好说，如果不连续的话，那么中间一部分物理地址是没有对应的物理内存的，形象的说就像是一个个洞（<code>hole</code>），这会浪费<code>mem_map</code>数组本身占用的内存空间。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c8c7c21d83278669.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<br>
+
+<h4 id="DISCONTIGMEM-discontiguous-memory-model"><a href="#DISCONTIGMEM-discontiguous-memory-model" class="headerlink" title="DISCONTIGMEM (discontiguous memory model)"></a>DISCONTIGMEM (discontiguous memory model)</h4><p>对于物理地址空间不存在空洞(<code>holes</code>)的计算机来说，<code>FLATMEM</code>无疑是最优解。可物理地址中若是存在空洞的话，<code>FLATMEM</code>就显得格外的浪费内存，因为<code>FLATMEM</code>会在<code>mem_map</code>数组中为所有的物理地址都创建一个<code>struct page</code>，即使大块的物理地址是空洞，即不存在物理内存。可是为这些空洞这些<code>struct page</code>完全是没有必要的。</p>
+<p>那什么情况下物理内存是不连续的？那就要说到后来出现的<code>NUMA</code>。为了有效的管理NUMA模式下的物理内存，一种被称为不连续内存模型(<code>discontiguous memory model</code>)的实现于<code>1999年</code>被引入<code>Linux</code>系统。</p>
+<p><strong>DISCONTIGMEM是个稍纵即逝的内存模型，在SPARSEMEM出现后即被完全替代</strong>，且当前的<code>Linux kernel</code>默认都是使用<code>SPARSEMEM</code>，所以介绍<code>DISCONTIGMEM</code>的意义不大。</p>
+<pre><code>//PS. 这段源码在Linux最新的代码中已经找不到
+#define __pfn_to_page(pfn)            \
+({    unsigned long __pfn = (pfn);        \
+    unsigned long __nid = arch_pfn_to_nid(__pfn);  \
+    NODE_DATA(__nid)-&gt;node_mem_map + arch_local_page_offset(__pfn, __nid);\
+})
+
+#define __page_to_pfn(pg)                        \
+({    const struct page *__pg = (pg);                    \
+    struct pglist_data *__pgdat = NODE_DATA(page_to_nid(__pg));    \
+    (unsigned long)(__pg - __pgdat-&gt;node_mem_map) +            \
+     __pgdat-&gt;node_start_pfn;                    \
+})
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c5734ee77b6e12f2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<br>
+
+<h4 id="SPARSEMEM-sparse-memory-model"><a href="#SPARSEMEM-sparse-memory-model" class="headerlink" title="SPARSEMEM (sparse memory model)"></a>SPARSEMEM (sparse memory model)</h4><p>稀疏内存模型是当前内核默认的选择，从<code>2005年</code>被提出后沿用至今，但中间经过几次优化，包括：<code>CONFIG_SPARSEMEM_VMEMMAP</code>和<code>CONFIG_SPARSEMEM_EXTREME</code>的引入，这两个配置通常是被打开的。</p>
+<p><strong><code>CONFIG_SPARSEMEM_VMEMMAP:</code></strong></p>
+<pre><code>/* memmap is virtually contiguous.  */
+#define __pfn_to_page(pfn)    (vmemmap + (pfn))
+#define __page_to_pfn(page)    (unsigned long)((page) - vmemmap)
+
+// /linux/arch/x86/include/asm/pgtable_64.h
+#define vmemmap ((struct page *)VMEMMAP_START)  
+</code></pre>
+<p>PS：引入 <code>vmemmap</code> 的核心思想就是用空间（虚拟地址空间）换时间，<strong>2008年以后，SPARSEMEM_VMEMMAP 成为 x86-64 唯一支持的内存模型</strong>，因为它只比<code>FLAGMEM</code>开销稍微大一点点，但是比<code>DISCONTIGMEM</code>要高效的多。详见<a target="_blank" rel="noopener" href="https://lwn.net/Articles/789304/">这里</a></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-26470483d3f7872a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-953e1dc0f94b6573.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>关于这三种内存模型，网上很多文章讲的很混乱，推荐看这篇：<br><a target="_blank" rel="noopener" href="https://chasinglulu.github.io/2019/05/29/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E3%80%8Cmemory-model%E3%80%8D/">内存模型「memory model」</a></p>
+<p><a target="_blank" rel="noopener" href="https://lwn.net/Articles/839737/">Reducing page structures for huge pages</a></p>
+<br>
+
+<h3 id="CPU寻址方式"><a href="#CPU寻址方式" class="headerlink" title="CPU寻址方式"></a>CPU寻址方式</h3><p>实模式和保护模式都是<code>CPU</code>的工作模式，而<code>CPU</code>的工作模式是指<code>CPU</code>的寻址方式、寄存器大小等用来反应<code>CPU</code>在该环境下如何工作的概念。</p>
+<br>
+
+<h4 id="实模式"><a href="#实模式" class="headerlink" title="实模式"></a>实模式</h4><p>实模式的“实”体现在程序中用到的地址都是<strong>真实的物理地址</strong>，“段基址:段内偏移地址”产生的逻辑地址就是物理地址，即程序员可见的地址完全是真实的内存地址。</p>
+<p>在实模式下，内存寻址方式和<code>8086</code>相同，由<code>16位</code>段寄存器的内容乘以<code>16</code>（左移<code>4</code>位）作为段基址，加上<code>16</code>位段偏移地址形成<code>20</code>位的物理地址，最大寻址空间<code>1MB</code>，最大分段<code>64KB</code>。可以使用<code>32位</code>指令，即<code>32位</code>的<code>x86 CPU</code>也可以兼容实模式，此时的实模式相当于高速的<code>8086</code>（<strong>32位CPU的实模式可以使用32位下的资源</strong>）。在3<code>2位CPU</code>下，<strong>系统复位或加电时都是以实模式启动，然后再切换为保护模式</strong>。在实模式下，所有的段都是可以读、写和可执行的。</p>
+<p><code>8086CPU</code>的实模式开创性地提出了地址分段的概念，改变了在它之前的<code>CPU</code>只能“硬编码”，程序无法重定位的缺点。然而实模式还是有很多缺陷，其中最主要的是实模式的安全隐患。在实模式下，用户程序和操作系统拥有同等权利，因为实模式下没有特权级。此外，程序可以随意修改自己的段基址，加上实模式下对地址的访问就是实实在在的物理地址，因此程序可以随意修改任意物理地址，甚至包括操作系统所在的内存，这给操作系统带来极大的安全问题。</p>
+<br>
+
+<h4 id="保护模式"><a href="#保护模式" class="headerlink" title="保护模式"></a>保护模式</h4><p>保护模式下，<code>CPU</code>访问的所有地址都是逻辑地址（段寄存器都为<code>0</code>的话，逻辑地址就是虚拟地址），<code>CPU</code>会通过”<code>分段</code>“或者“<code>分页</code>“方式来查寻到对应的物理地址。</p>
+<p>在保护模式下，全部 <code>32</code> 条地址线有效，可寻址高达 <code>4 GB</code> 的物理地址空间。扩充的存储器<strong>段式管理机制</strong>和可选的<strong>页式管理机制</strong>，不仅为存储器共享和保护提供了硬件支持，而且为实现虚拟存储器提供了硬件支持，支持多任务，能够快速地进行任务切换和保护任务环境。四个特权级和完善的特权检查机制，既能实现资源共享又能保证代码和数据的安全及任务的隔离。</p>
+<p><strong>总的来说，我们现在的系统CPU都是在保护模式下，并且用的是页管理机制（查页表方式）来访问内存。</strong></p>
+<p><strong>CPU寻址相关的寄存器：</strong></p>
+<p>控制寄存器（<code>CR0~CR3</code>）用于控制和确定处理器的操作模式以及当前执行任务的特性。4个控制寄存器都是32位的。</p>
+<ul>
+<li><code>CR0</code>：<strong>含有控制CPU操作模式和状态的标识</strong></li>
+<li><code>CR1</code>：保留不用</li>
+<li><code>CR2</code>：存储导致页错误的线性地址</li>
+<li><code>CR3</code>：<strong>含有页目录表的物理内存基址</strong></li>
+</ul>
+<p><strong>CR0中的保护控制位：</strong></p>
+<p><strong>PE：CR0的位0是启用保护（Protection Enable）标志。（CR0的最低位）</strong></p>
+<p>当设置该位时即开启了保护模式，当复位时即进入实地址模式。这个标志仅开启段级保护，而没有启用分页机制。若要启用分页机制，那么<code>PE</code>和<code>PG</code>都要置位。</p>
+<p><strong>PG：CR0的位31是分页（Paging）标志。（CR0的最高位）</strong></p>
+<p>当设置该位时即开启了分页机制，当复位时则禁止分页机制，此时所有线性地址等同于物理地址。</p>
+<p>注意，在开启这个标志之前必须已经开启PE标志，否则<code>CPU</code>会产生一个一般保护性异常。</p>
+<p>改变<code>PG</code>位的代码必须在线性地址空间和物理地址空间中具有相同地址，这部分具有相同地址的代码在分页和未分页世界之间起着桥梁的作用。</p>
+<p>如果<code>PE=0、PG=0</code>，处理器工作在实地址模式下。（兼容早期的实模式操作系统）</p>
+<p>如果<code>PE=1、PG=0</code>，处理器工作在无分页机制的段保护模式下（兼容段式管理的操作系统）</p>
+<p>如果<code>PE=1、PG=1</code>，处理器工作在段页式保护模式下</p>
+<p>在系统刚上电时，处理器被复位成<code>PE=0</code>和<code>PG=0</code>（即实模式状态），以允许引导代码在启用分段和分页机制之前能够初始化这些寄存器和数据结构。</p>
+<br>
+
+<h4 id="PAE-32位系统如何突破4G限制？"><a href="#PAE-32位系统如何突破4G限制？" class="headerlink" title="PAE - 32位系统如何突破4G限制？"></a>PAE - 32位系统如何突破4G限制？</h4><p>在<code>x86 CPU</code>中，只有<code>32位</code>地址总线，也就意味着只有<code>4G</code>地址空间。为了实现在<code>32位</code>系统中使用更多内存，<code>Intel CPU</code> 提供了 <code>PAE</code> (<code>Pyhsical Address Extensions</code>)机制，这样可以让操作系统使用超过<code>4G</code>的物理内存。</p>
+<p><code>PAE</code>机制的打开，需要设置<code>CR0</code>、<code>CR4</code>控制寄存器和<code>IA32_EFER</code> <code>MSR</code> 寄存器，设置值<code>CR0.PG=1</code>，<code>CR4.PAE=1</code> 和 <code>IA32_EFER.LME=0</code>。 但<code>PAE</code>机制打开后，<code>MMU</code>会将<code>32位</code>线性地址转换为<code>52位</code>物理地址，尽快物理地址是<code>52位</code>（4PB），但线性地址仍然为<code>32位</code>，即进程可使用的物理内存不超过<code>4GB</code>。</p>
+<br>
+
+<h4 id="Linux-如何从实模式切换到保护模式"><a href="#Linux-如何从实模式切换到保护模式" class="headerlink" title="Linux 如何从实模式切换到保护模式"></a>Linux 如何从实模式切换到保护模式</h4><p>在使用启动装载器（如<code>LILO</code>、<code>GRUB</code>等）将内核载入物理内存之后，将通过跳转语句，将控制流切换到内存中适当的位置，来调用<code>arch/x86/boot/header.S</code>中的汇编语言“函数”<code>setup</code>。这是可能的，因为<code>setup</code>函数总是位于目标文件中的同<br>一位置。</p>
+<p>该代码执行下列任务，这需要许多汇编代码。</p>
+<ol>
+<li>它检查内核是否加载到内存中正确的位置。为此，它使用一个4字节的特征标记，该标记在编<br>译时集成到内核映像中，并且总是位于物理内存中一个不变的正确位置。</li>
+<li>它确定系统内存的大小。</li>
+<li>初始化显卡。</li>
+<li>将内核映像移动到内存中的某个位置，使得在后续的解压缩期间，映像不会自阻其路。</li>
+<li><strong>将CPU切换到保护模式</strong>。</li>
+</ol>
+<p>具体实现，内核会调用 <a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/5bfc75d92efd494db37f5c4c173d3639d4772966/arch/x86/boot/pmjump.S#L24"><code>protected_mode_jump</code></a> 把CPU从实模式切换到保护模式。核心代码如下</p>
+<pre><code>movl    %cr0, %edx
+orb    $X86_CR0_PE, %dl    #Protected mode
+movl    %edx, %cr0
+</code></pre>
+<br>
+
+<h3 id="分页模式"><a href="#分页模式" class="headerlink" title="分页模式"></a>分页模式</h3><br>
+
+<h4 id="内核视角"><a href="#内核视角" class="headerlink" title="内核视角"></a>内核视角</h4><p>由上面我们知道，<code>CPU</code>读取数据过程是先去<code>CR3</code>寄存器拿到<code>pdg</code>，然后然后查一级一级页表，最终拿到物理地址的高<code>40位</code>基地址。<code>CR3寄存器</code>和每个程序的页表内容都是由<code>Linux</code>内核来维护的。<br><br></p>
+<h4 id="应用程序页表"><a href="#应用程序页表" class="headerlink" title="应用程序页表"></a>应用程序页表</h4><p><code>Linux</code>内核通过一个被称为进程描述符的 <a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/master/include/linux/sched.h#L661">task_struct</a> 结构体来管理进程，这个结构体包含了一个进程所需的所有信息。程序内存相关的都存在 <a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/master/include/linux/mm_types.h#L394">mm_struct</a> 中 <code>mm_struct</code> 有一个<code>pgd_t * pgd;</code>就是最顶级的目录的地址。内核在做程序切换的时候会调用 <code>pick_next_task</code> -&gt; <code>context_switch</code> -&gt; <a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/9269d27e519ae9a89be8d288f59d1ec573b0c686/arch/x86/mm/tlb.c#L428"><code>switch_mm_irqs_off</code></a> -&gt; <a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/9269d27e519ae9a89be8d288f59d1ec573b0c686/arch/x86/mm/tlb.c#L269"><code>load_new_mm_cr3</code></a> -&gt; </p>
+<p>这里需要注意两点。第一点，<code>cr3</code> 里面存放当前进程的顶级 <code>pgd</code>，这个是硬件的要求。<code>cr3</code> 里面需要存放 <code>pgd</code> 在物理内存的地址，不能是虚拟地址。因而 <code>load_new_mm_cr3</code> 里面会使用 <code>__pa</code>，将 <code>mm_struct</code> 里面的成员变量 <code>pgd</code>（<code>mm_struct</code> 里面存的都是虚拟地址）变为物理地址，才能加载到 <code>cr3</code> 里面去。</p>
+<p>第二点，用户进程在运行的过程中，访问虚拟内存中的数据，会被 <code>cr3</code> 里面指向的页表转换为物理地址后，才在物理内存中访问数据，这个过程都是在用户态运行的，地址转换的过程无需进入内核态。</p>
+<pre><code>static void load_new_mm_cr3(pgd_t *pgdir, u16 new_asid, bool need_flush)
+{
+    unsigned long new_mm_cr3;
+
+    if (need_flush) {
+        invalidate_user_asid(new_asid);
+        new_mm_cr3 = build_cr3(pgdir, new_asid);
+    } else {
+        new_mm_cr3 = build_cr3_noflush(pgdir, new_asid);
+    }
+
+    /*
+     * Caution: many callers of this function expect
+     * that load_cr3() is serializing and orders TLB
+     * fills with respect to the mm_cpumask writes.
+     */
+    write_cr3(new_mm_cr3);
+}
+</code></pre>
+<p><code>write_cr3 </code>相对就比较简单，一个<code>mov</code>汇编指令来设置<code>cr3</code>寄存器的值</p>
+<pre><code>static inline void write_cr3(unsigned long x)
+{
+    PVOP_ALT_VCALL1(mmu.write_cr3, x,
+            "mov %%rdi, %%cr3", ALT_NOT(X86_FEATURE_XENPV));
+}
+</code></pre>
+<br>
+
+<h4 id="内核页表"><a href="#内核页表" class="headerlink" title="内核页表"></a>内核页表</h4><p>和用户态页表不同，在系统初始化的时候，我们就要创建内核页表了。<a target="_blank" rel="noopener" href="https://github.com/torvalds/linux/blob/master/arch/x86/include/asm/pgtable_64.h#L19">内核页表定义如下</a>：</p>
+<pre><code>extern p4d_t level4_kernel_pgt[512];
+extern p4d_t level4_ident_pgt[512];
+extern pud_t level3_kernel_pgt[512];
+extern pud_t level3_ident_pgt[512];
+extern pmd_t level2_kernel_pgt[512];
+extern pmd_t level2_fixmap_pgt[512];
+extern pmd_t level2_ident_pgt[512];
+extern pte_t level1_fixmap_pgt[512 * FIXMAP_PMD_NUM];
+extern pgd_t init_top_pgt[];
+
+    
+struct mm_struct init_mm = {
+  .mm_rb    = RB_ROOT,
+  .pgd    = swapper_pg_dir,
+  .mm_users  = ATOMIC_INIT(2),
+  .mm_count  = ATOMIC_INIT(1),
+  .mmap_sem  = __RWSEM_INITIALIZER(init_mm.mmap_sem),
+  .page_table_lock =  __SPIN_LOCK_UNLOCKED(init_mm.page_table_lock),
+  .mmlist    = LIST_HEAD_INIT(init_mm.mmlist),
+  .user_ns  = &amp;init_user_ns,
+  INIT_MM_CONTEXT(init_mm)
+};
+</code></pre>
+<p>定义完了内核页表，接下来是初始化内核页表，在系统启动的时候 <code>start_kernel</code> 会调用 <code>setup_arch</code>。</p>
+<pre><code>void __init setup_arch(char **cmdline_p)
+{
+#ifdef CONFIG_X86_32
+    memcpy(&amp;boot_cpu_data, &amp;new_cpu_data, sizeof(new_cpu_data));
+
+    /*
+     * copy kernel address range established so far and switch
+     * to the proper swapper page table
+     */
+    clone_pgd_range(swapper_pg_dir     + KERNEL_PGD_BOUNDARY,
+            initial_page_table + KERNEL_PGD_BOUNDARY,
+            KERNEL_PGD_PTRS);
+
+    load_cr3(swapper_pg_dir);
+    .......
+}
+
+static inline void load_cr3(pgd_t *pgdir)
+{
+    write_cr3(__sme_pa(pgdir));
+}
+</code></pre>
+<p>内核的页表初始化是在 <code>arch\x86\kernel\head_64.S</code> 中。这段代码比较难看懂，占不去深究。大概知道内核是怎么维护页表的就好。</p>
+<br>
+
+<h4 id="硬件视角"><a href="#硬件视角" class="headerlink" title="硬件视角"></a>硬件视角</h4><br>
+
+<h5 id="CPU翻译虚拟地址到物理地址过程"><a href="#CPU翻译虚拟地址到物理地址过程" class="headerlink" title="CPU翻译虚拟地址到物理地址过程"></a>CPU翻译虚拟地址到物理地址过程</h5><p><img src="https://upload-images.jianshu.io/upload_images/12321605-16b2286da60c1b08.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<br>
+
+<h5 id="CPU读取数据过程"><a href="#CPU读取数据过程" class="headerlink" title="CPU读取数据过程"></a>CPU读取数据过程</h5><p><img src="https://upload-images.jianshu.io/upload_images/12321605-ff93072e983e0e68.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-877f131a5206033e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<br>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><p><strong>《深入理解Linux虚拟内存管理》</strong></p>
+<p><strong>《深入理解操作系统》</strong></p>
+<p><strong>《深入理解Linux内核》</strong></p>
+<p><a target="_blank" rel="noopener" href="http://ilinuxkernel.com/?p=1013">http://ilinuxkernel.com/?p=1013</a></p>
+<p><a target="_blank" rel="noopener" href="https://jekton.github.io/2018/11/18/linux-page-table-setup/">https://jekton.github.io/2018/11/18/linux-page-table-setup/</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/fullofwindandsnow/article/details/8565512">https://blog.csdn.net/fullofwindandsnow/article/details/8565512</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/tolimit/p/4585803.html">https://www.cnblogs.com/tolimit/p/4585803.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/4a8a08f09d37b73795649038408b5f33/p/10154324.html">https://www.cnblogs.com/4a8a08f09d37b73795649038408b5f33/p/10154324.html</a></p>
+<p><a target="_blank" rel="noopener" href="http://parrotshen.blogspot.com/2008/01/test.html">http://parrotshen.blogspot.com/2008/01/test.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/67053210">https://zhuanlan.zhihu.com/p/67053210</a></p>
+<p><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/220068494">https://zhuanlan.zhihu.com/p/220068494</a></p>
+<p><a target="_blank" rel="noopener" href="https://toutiao.io/posts/6r7pjh/preview">https://toutiao.io/posts/6r7pjh/preview</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/chenwb89/p/operating_system_002.html">https://www.cnblogs.com/chenwb89/p/operating_system_002.html</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.wowotech.net/memory_management/memory_model.html">http://www.wowotech.net/memory_management/memory_model.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://chasinglulu.github.io/2019/05/29/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E3%80%8Cmemory-model%E3%80%8D/">https://chasinglulu.github.io/2019/05/29/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%E3%80%8Cmemory-model%E3%80%8D/</a></p>
+<p><a target="_blank" rel="noopener" href="https://elinux.org/images/b/b0/Introduction_to_Memory_Management_in_Linux.pdf">https://elinux.org/images/b/b0/Introduction_to_Memory_Management_in_Linux.pdf</a></p>
+<p><a target="_blank" rel="noopener" href="https://pdfs.semanticscholar.org/5b92/9e20c9203232ac8aefbab9d905499f4bde25.pdf">https://pdfs.semanticscholar.org/5b92/9e20c9203232ac8aefbab9d905499f4bde25.pdf</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2021/08/01/golang-stack/" title="深入理解 Golang Stack"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 深入理解 Golang Stack</span></a><a class="button is-default" href="/2021/07/16/envoy-debug/" title="Envoy 编译调试"><span class="has-text-weight-semibold">下一页: Envoy 编译调试</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
