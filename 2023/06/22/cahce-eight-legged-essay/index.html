@@ -1,0 +1,350 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>缓存基础技术</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+
+
+基础1.1 Redis 常用的数据结构Redis支持五种数据类型：string（字符串），hash（哈希），list（列表），set（集合）及zset(sorted set：有序集合)。
+
+Sting 、SDS(embstr、raw)
+List  qucklist （ziplist、linklist）
+Set  （dict、 intset）
+Zset  （ziplist 、 skiplist）
+Hash  （ziplist、 dict）
+BitMap
+Hyperloglog
+Geo编码
+
+1.2 Redis为什么速度快？
+基于内存实现
+数据都存储在内存里，减少了一些不必要的`I/O 操作，操作速率很快。
+
+
+高效的数据结构
+底层多种数据结构支持不同的数据类型，支持Redis存储不同的数据；
+不同数据结.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">缓存基础技术</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80"><span class="toc-text">基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-Redis-%E5%B8%B8%E7%94%A8%E7%9A%84%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text">1.1 Redis 常用的数据结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-Redis%E4%B8%BA%E4%BB%80%E4%B9%88%E9%80%9F%E5%BA%A6%E5%BF%AB%EF%BC%9F"><span class="toc-text">1.2 Redis为什么速度快？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E4%B8%BA%E4%BB%80%E4%B9%88-Redis-%E9%80%89%E6%8B%A9%E5%8D%95%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B"><span class="toc-text">1.3 为什么 Redis 选择单线程模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-4-%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%E3%80%81%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%E3%80%81%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F%EF%BC%9F"><span class="toc-text">1.4 缓存雪崩、缓存击穿、缓存穿透？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5-Redis%E5%A6%82%E4%BD%95%E5%88%A0%E9%99%A4%E8%BF%87%E6%9C%9Fkey%EF%BC%9F"><span class="toc-text">1.5 Redis如何删除过期key？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-6-Redis%E5%86%85%E5%AD%98%E6%B7%98%E6%B1%B0%E7%AD%96%E7%95%A5"><span class="toc-text">1.6 Redis内存淘汰策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-7-Redis%E5%A6%82%E4%BD%95%E6%8C%81%E4%B9%85%E5%8C%96"><span class="toc-text">1.7 Redis如何持久化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-8-%E7%9F%A5%E9%81%93%E4%BB%80%E4%B9%88%E6%98%AF%E7%83%ADkey%E5%90%97%EF%BC%9F%E7%83%ADkey%E9%97%AE%E9%A2%98%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3%EF%BC%9F"><span class="toc-text">1.8 知道什么是热key吗？热key问题怎么解决？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-9-Redis%E5%A4%A7Key%E5%8D%B1%E5%AE%B3%EF%BC%9F%E6%80%8E%E4%B9%88%E8%A7%A3%E5%86%B3"><span class="toc-text">1.9 Redis大Key危害？怎么解决</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-10-%E4%BA%86%E8%A7%A3Redis%E4%BA%8B%E5%8A%A1%E6%9C%BA%E5%88%B6%E5%90%97"><span class="toc-text">1.10 了解Redis事务机制吗</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-11-SDS"><span class="toc-text">1.11 SDS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-12-ADList"><span class="toc-text">1.12 ADList</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-13-dict"><span class="toc-text">1.13 dict</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-14-intset"><span class="toc-text">1.14 intset</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-15-ziplist"><span class="toc-text">1.15 ziplist</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-16-quicklist"><span class="toc-text">1.16 quicklist</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-17-skiplist"><span class="toc-text">1.17 skiplist</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-18-Redis%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8skiplist%E8%80%8C%E4%B8%8D%E7%94%A8%E5%B9%B3%E8%A1%A1%E6%A0%91%EF%BC%9F"><span class="toc-text">1.18 Redis为什么用skiplist而不用平衡树？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-19-skiplist%E4%B8%8E%E5%B9%B3%E8%A1%A1%E6%A0%91%E3%80%81%E5%93%88%E5%B8%8C%E8%A1%A8%E7%9A%84%E6%AF%94%E8%BE%83"><span class="toc-text">1.19 skiplist与平衡树、哈希表的比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-20-Redis%E7%9A%84%E9%AB%98%E5%8F%AF%E7%94%A8"><span class="toc-text">1.20 Redis的高可用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-21-Redis%E5%B8%B8%E8%A7%81%E7%9A%84%E5%87%A0%E7%A7%8D%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5"><span class="toc-text">1.21 Redis常见的几种缓存策略</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-22-%E5%86%85%E5%AD%98%E5%9B%9E%E6%94%B6%E6%9C%BA%E5%88%B6"><span class="toc-text">1.22 内存回收机制</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-23-%E5%AE%B9%E5%99%A8%E5%9E%8B%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%9A%84%E9%80%9A%E7%94%A8%E8%A7%84%E5%88%99"><span class="toc-text">1.23 容器型数据结构的通用规则</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-23-Scan"><span class="toc-text">1.23 Scan</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-24-Localcache%E9%80%89%E5%9E%8B"><span class="toc-text">1.24 Localcache选型</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">缓存基础技术</h1><time class="has-text-grey" datetime="2023-06-22T01:00:08.000Z">2023-06-22</time><article class="mt-2 post-content"><input type="hidden" name="hidden" id="hidden_id1" value="fanlv_blog_hidden_recenet_list">
+
+
+<h1 id="基础"><a href="#基础" class="headerlink" title="基础"></a>基础</h1><h2 id="1-1-Redis-常用的数据结构"><a href="#1-1-Redis-常用的数据结构" class="headerlink" title="1.1 Redis 常用的数据结构"></a>1.1 Redis 常用的数据结构</h2><p>Redis支持五种数据类型：<code>string</code>（字符串），<code>hash</code>（哈希），<code>list</code>（列表），<code>set</code>（集合）及<code>zset</code>(<code>sorted set</code>：有序集合)。</p>
+<ol>
+<li><strong>Sting 、SDS(embstr、raw)</strong></li>
+<li><strong>List  qucklist （ziplist、linklist）</strong></li>
+<li><strong>Set  （dict、 intset）</strong></li>
+<li><strong>Zset  （ziplist 、 skiplist）</strong></li>
+<li><strong>Hash  （ziplist、 dict）</strong></li>
+<li><strong>BitMap</strong></li>
+<li><strong>Hyperloglog</strong></li>
+<li><strong>Geo编码</strong></li>
+</ol>
+<h2 id="1-2-Redis为什么速度快？"><a href="#1-2-Redis为什么速度快？" class="headerlink" title="1.2 Redis为什么速度快？"></a>1.2 Redis为什么速度快？</h2><ul>
+<li><strong>基于内存实现</strong><ul>
+<li>数据都存储在内存里，减少了一些不必要的`I/O 操作，操作速率很快。</li>
+</ul>
+</li>
+<li><strong>高效的数据结构</strong><ul>
+<li>底层多种数据结构支持不同的数据类型，支持<code>Redis</code>存储不同的数据；</li>
+<li>不同数据结构的设计，使得数据存储时间复杂度降到最低。</li>
+</ul>
+</li>
+<li><strong>合理的数据编码</strong><ul>
+<li>根据字符串的长度及元素的个数适配不同的编码格式。</li>
+</ul>
+</li>
+<li><strong>合适的线程模型</strong><ul>
+<li><code>I/O</code>多路复用模型同时监听客户端连接；</li>
+<li>单线程在执行过程中不需要进行上下文切换，减少了耗时。</li>
+</ul>
+</li>
+</ul>
+<h2 id="1-3-为什么-Redis-选择单线程模型"><a href="#1-3-为什么-Redis-选择单线程模型" class="headerlink" title="1.3 为什么 Redis 选择单线程模型"></a>1.3 为什么 Redis 选择单线程模型</h2><p><code>Redis</code>选择使用单线程模型处理客户端的请求主要还是因为 <strong>CPU 不是 Redis 服务器的瓶颈</strong>，所以使用多线程模型带来的性能提升并不能抵消它带来的开发成本和维护成本，系统的性能瓶颈也主要在网络<code>I/O</code>操作上；<br>而<code>Redis</code>引入多线程操作也是出于性能上的考虑，对于一些大键值对的删除操作，通过多线程非阻塞地释放内存空间也能减少对<code>Redis</code>主线程阻塞的时间，提高执行的效率。</p>
+<h2 id="1-4-缓存雪崩、缓存击穿、缓存穿透？"><a href="#1-4-缓存雪崩、缓存击穿、缓存穿透？" class="headerlink" title="1.4 缓存雪崩、缓存击穿、缓存穿透？"></a>1.4 缓存雪崩、缓存击穿、缓存穿透？</h2><p>缓存雪崩：</p>
+<ul>
+<li>大量的KEY过期时间过于集中，导致瞬时很多缓存失效，由此可能导致数据库压力陡然升高。</li>
+<li>解决方案： 将失效时间随机打乱，如在系统启动预热时设定一定程度上离散的过期时间。</li>
+</ul>
+<p>缓存击穿： </p>
+<ul>
+<li>缓存中某一个KEY过期失效，如果此时有大量请求过来无法命中缓存的KEY，缓存层像被凿开了一个口子一样流入大量数据库查询请求。也算是一种惊群效应。</li>
+<li>解决方案：双重校验方式从数据库中读取数据到缓存。双重校验：第一层查询缓存失败后，进入临界区，保证同时只有一个请求线程读取数据库，进入临界区后再次尝试缓存，仍然没有命中则查询数据库。</li>
+</ul>
+<p>缓存穿透： </p>
+<ul>
+<li>外部请求不断查询一个系统中不存在的数据，服务无法命中缓存转而每次尝试从数据库中查询。</li>
+<li>解决方案：<ol>
+<li>对查询结果为空key设置值为null的缓存，牺牲缓存空间换响应时间。</li>
+<li>把所有非法的key映射到一个bitmap中，通过bitmap拦截。《布隆过滤器》原理</li>
+</ol>
+</li>
+</ul>
+<h2 id="1-5-Redis如何删除过期key？"><a href="#1-5-Redis如何删除过期key？" class="headerlink" title="1.5 Redis如何删除过期key？"></a>1.5 Redis如何删除过期key？</h2><p><strong>主动删除</strong>：<code>redis</code>默认每隔一定时间检查已过期<code>key</code>进行删除, 或者内存不足时触发主动删除机制</p>
+<p><code>Redis</code>默认会每秒进行十次过期扫描，过期扫描不会遍历过期字典中所有的<code>key</code>，而是采用了一种简单的贪心策略。</p>
+<ol>
+<li>从过期字典中随机<code>20</code>个<code>key</code>；</li>
+<li>删除这<code>20</code>个<code>key</code>中已经过期的<code>key</code>； </li>
+<li>如果过期的<code>key</code>比率超过<code>1/4</code>，那就重复步骤 <code>1</code>；</li>
+<li>同时，为了保证过期扫描不会出现循环过度，导致线程卡死现象，算法还增加了扫描时间的上限，默认不会超过<code>25ms</code></li>
+</ol>
+<p><strong>惰性删除</strong>：在有请求读写<code>key</code>时再检查<code>key</code>是否过期，过期则删除</p>
+<h2 id="1-6-Redis内存淘汰策略"><a href="#1-6-Redis内存淘汰策略" class="headerlink" title="1.6 Redis内存淘汰策略"></a>1.6 Redis内存淘汰策略</h2><ul>
+<li><code>noeviction</code>:不删除策略，内存达到上限时直接返回错误信息</li>
+<li><code>allkeys-random</code>: 针对所有的<code>key</code>，随机删除一部分</li>
+<li><code>allkeys-lru</code>: 针对所有的<code>key</code>,优先删除最少使用的</li>
+<li><code>volatile-random</code>: 针对设置了过期时间的<code>key</code>,随机删除一部分</li>
+<li><code>volatile-ttl</code>: 针对设置了过期时间的<code>key</code>，优先删除最快过期的<code>key</code></li>
+</ul>
+<p><code>key</code>增加一个额外<code>24bit</code>字段（<code>RedisObject</code>）存时间戳，每次随机抽样<code>5</code>个。</p>
+<p>上一节提到处理 <code>key</code> 过期方式分为集中处理和懒惰处理，<code>LRU</code>淘汰不一样，它的处理方式只有懒惰处理。</p>
+<p>当 <code>Redis</code>执行写操作时，发现内存超出<code>maxmemory</code>，就会执行一次<code>LRU</code>淘汰算法。</p>
+<p>这个算法也很简单，就是随机采样出<code> 5(可以配置) 个 key</code>，然后淘汰掉最旧的 <code>key</code>，如果淘汰后内存还是超出 <code>maxmemory</code>，那就继续随机采样淘汰，直到内存低于<code>maxmemory</code> 为止。</p>
+<pre><code>struct RedisObject { // 一共占用16字节
+    int4 type; // 4bits  类型
+    int4 encoding; // 4bits 存储格式
+    int24 lru; // 24bits 记录LRU信息
+    int32 refcount; // 4bytes 
+    void *ptr; // 8bytes，64-bit system 
+} robj;
+</code></pre>
+<ul>
+<li>不同的对象具有不同的类型 <code>type(4bit)</code>，同一个类型的<code>type</code>会有不同的存储形式<code>encoding(4bit)</code>。</li>
+<li>为了记录对象的<code>LRU</code>信息，使用了<code>24</code>个<code>bit</code>的<code>lru</code>来记录<code>LRU</code>信息。</li>
+<li>每个对象都有个引用计数<code>refcount</code>，当引用计数为零时，对象就会被销毁，内存被回收。<code>ptr</code>指针将指向对象内容 (<code>body</code>) 的具体存储位置。</li>
+<li>一个<code>RedisObject</code>对象头共需要占据<code>16</code>字节的存储空间。</li>
+</ul>
+<h2 id="1-7-Redis如何持久化"><a href="#1-7-Redis如何持久化" class="headerlink" title="1.7 Redis如何持久化"></a>1.7 Redis如何持久化</h2><p><strong>AOF</strong></p>
+<p><code>AOF（Append Only File ）</code>： 记录每次<code>redis</code>的写命令，如对一个<code>key</code>更新<code>10</code>次，记录<code>10</code>条写指令。可以设置每秒一次或者每个写动作发生后追加。会定期<code>Compact</code>之前的文件</p>
+<ul>
+<li>优点： 持久化频率高，异常down机时数据丢失少。</li>
+<li>缺点： 文件大，恢复时相对耗时。</li>
+</ul>
+<p><strong>RDB</strong></p>
+<p><code>RDB</code>：快照持久化。在特点时间点保存全量的数据信息。 </p>
+<ul>
+<li>优点： 恢复时直接将快照文件加载到内存，速度快。 </li>
+<li>缺点： 因为全量数据量大，持久化频率一般设置较低。异常关机时会丢失上次持久化到关机时刻的变更数据。</li>
+</ul>
+<p>可以通过<code>SAVE</code>或者<code>BGSAVE</code>来生成<code>RDB</code>文件。</p>
+<p><code>SAVE</code>命令会阻塞<code>redis</code>进程，直到<code>RDB</code>文件生成完毕，在进程阻塞期间，<code>redis</code>不能处理任何命令请求，这显然是不合适的。</p>
+<p><code>BGSAVE</code>则是会<code>fork</code>出一个子进程，然后由子进程去负责生成<code>RDB</code>文件，父进程还可以继续处理命令请求，不会阻塞进程。</p>
+<h2 id="1-8-知道什么是热key吗？热key问题怎么解决？"><a href="#1-8-知道什么是热key吗？热key问题怎么解决？" class="headerlink" title="1.8 知道什么是热key吗？热key问题怎么解决？"></a>1.8 知道什么是热key吗？热key问题怎么解决？</h2><p><code>热key</code>是指在一个分布式系统（如分布式缓存）中被高频访问和操作的<code>key</code>。<code>热key</code>可能会导致访问热点，从而导致单个服务节点的负载过高，系统性能受限甚至过载。针对热<code>key</code>问题，可以采取以下解决方法：</p>
+<ol>
+<li><p><strong>键值分片</strong>：将键值对按照<code>key</code>的范围或哈希值进行分片，使得<code>热key</code>分散到不同的服务节点上。这样可以避免单个节点的过载，并实现负载均衡。</p>
+</li>
+<li><p><strong>热 key local 缓存</strong>：提前加载<code>热key</code>数据到内存中，如果<code>redis</code>宕机，走内存查询</p>
+</li>
+</ol>
+<h2 id="1-9-Redis大Key危害？怎么解决"><a href="#1-9-Redis大Key危害？怎么解决" class="headerlink" title="1.9 Redis大Key危害？怎么解决"></a>1.9 Redis大Key危害？怎么解决</h2><p><code>Redis</code>使用过程中经常会有各种大<code>key</code>的情况， 比如单个简单的<code>key</code>存储的<code>value</code>很大。</p>
+<p>由于<code>redis</code>是单线程运行的，如果一次操作的<code>value</code>很大会对整个<code>redis</code>的响应时间造成负面影响，导致<code>IO</code>网络拥塞。</p>
+<p>解决方案：将整存整取的大对象，分拆为多个小对象。可以尝试将对象分拆成几个<code>key-value</code>。</p>
+<h2 id="1-10-了解Redis事务机制吗"><a href="#1-10-了解Redis事务机制吗" class="headerlink" title="1.10 了解Redis事务机制吗"></a>1.10 了解Redis事务机制吗</h2><p><code>redis</code>通过<code>MULTI</code>、<code>EXEC</code>、<code>WATCH</code>等命令来实现事务机制，事务执行过程将一系列多个命令按照顺序一次性执行，并且在执行期间，事务不会被中断，也不会去执行客户端的其他请求，直到所有命令执行完毕。事务的执行过程如下：</p>
+<ol>
+<li>服务端收到客户端请求，事务以<code>MULTI</code>开始</li>
+<li>如果客户端正处于事务状态，则会把事务放入队列同时返回给客户端<code>QUEUED</code>，反之则直接执行这个命令</li>
+<li>当收到客户端<code>EXEC</code>命令时，<code>WATCH</code>命令监视整个事务中的<code>key</code>是否有被修改，如果有则返回空回复到客户端表示失败，否则<code>redis</code>会遍历整个事务队列，执行队列中保存的所有命令，最后返回结果给客户端</li>
+</ol>
+<p><strong>语法错误</strong>：语法错误指命令不存在或者命令参数的个数不对。只要有一个命令有语法错误，执行<code>EXEC</code>命令后<code>Redis</code>就会直接返回错误，<strong>连语法正确的命令也不会执行</strong>。</p>
+<p><strong>运行错误</strong>：运行错误指在命令执行时出现的错误，比如使用散列类型的命令操作集合类型的键，这种错误在实际执行之前Redis是无法发现的，所以在事务里这样的命令是会被Redis接受并执行的。如果事务里的一条命令出现了运行错误，<strong>事务里其他的命令依然会继续执行</strong>（包括出错命令之后的命令）</p>
+<p><strong>使用WATCH检测balance，事务期间balance数据未变动，事务执行成功<br>WATCH命令用于在事务开始之前监视任意数量的键： 当调用EXEC命令执行事务时， 如果任意一个被监视的键已经被其他客户端修改了， 那么整个事务不再执行， 直接返回失败。<br>WATCH的机制本身是一个CAS的机制，被监视的key会被保存到一个链表中，如果某个key被修改，那么REDIS_DIRTY_CAS标志将会被打开，这时服务器会拒绝执行事务。</strong></p>
+<h2 id="1-11-SDS"><a href="#1-11-SDS" class="headerlink" title="1.11 SDS"></a>1.11 SDS</h2><ol>
+<li><code>redis 3.2</code>之后，针对不同长度的字符串引入了不同的<code>SDS</code>数据结构，并且强制内存对齐<code>1</code>，将内存对齐交给统一的内存分配函数，从而达到节省内存的目的</li>
+<li><code>SDS</code>的字符串长度通过<code>sds-&gt;len</code>来控制，不受限于<code>C</code>语言字符串<code>\0</code>，可以存储二进制数据，并且将获取字符串长度的时间复杂度降到了<code>O(1)</code></li>
+<li><code>SDS</code>的头和<code>buf</code>字节数组的内存是连续的，可以通过寻址方式获取<code>SDS</code>的指针以及<code>flags</code>值</li>
+<li><code>SDS</code>的拼接扩展有一个内存预分配策略，用空间减少每次拼接的内存重分配可能性</li>
+<li><code>SDS</code>的缩短并不会真正释放掉对应空闲空间</li>
+<li><code>SDS</code>分配内存都会多分配<code>1</code>个字节用来在<code>buf</code>的末尾追加一个<code>\0</code>，在部分场景下可以和C语言字符串保证同样的行为甚至复用部分<code>string.h</code>的函数</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d43bf36169cee9c8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sdshdr8.png"></p>
+<ul>
+<li><code>len</code>记录当前字节数组的长度（不包括<code>\0</code>），使得获取字符串长度的时间复杂度由<code>O(N)</code>变为了<code>O(1)</code></li>
+<li><code>alloc</code>记录了当前字节数组总共分配的内存大小（不包括<code>\0</code>）</li>
+<li><code>flags</code>记录了当前字节数组的属性、用来标识到底是<code>sdshdr8</code>还是<code>sdshdr16</code>等</li>
+<li><code>buf</code>保存了字符串真正的值以及末尾的一个<code>\0</code></li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d3f05d09634d1e9b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="embstr.png"></p>
+<h2 id="1-12-ADList"><a href="#1-12-ADList" class="headerlink" title="1.12 ADList"></a>1.12 ADList</h2><p><code>ADList(A generic doubly linked list)</code>是<code>redis</code>自定义的一种双向链表，广泛运用于<code>redisClients</code> 、 <code>redisServer</code>、发布订阅、慢查询、监视器等。（注：3.0及以前还会被运用于<code>list</code>结构中，在3.2以后被<code>quicklist</code>取代）。</p>
+<ul>
+<li>双端：链表节点带有<code>prev</code>和<code>next</code>指针，获取某个节点的前置节点和后置节点的时间复杂度都是<code>O（N</code>）</li>
+<li>无环：表头节点的<code>prev</code>指针和表尾节点的<code>next</code>都指向<code>NULL</code>，对立案表的访问时以<code>NULL</code>为截止</li>
+<li>表头和表尾：因为链表带有<code>head</code>指针和<code>tail</code>指针，程序获取链表头结点和尾节点的时间复杂度为<code>O(1)</code></li>
+<li>长度计数器：链表中存有记录链表长度的属性<code>len</code></li>
+<li>多态：链表节点使用<code>void*</code>指针来保存节点值，并且可以通过<code>list</code>结构的<code>dup</code>、<code>free</code>、 <code>match</code>三个属性为节点值设置类型特定函数。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ad3afe556ed284cb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="value.png"></p>
+<h2 id="1-13-dict"><a href="#1-13-dict" class="headerlink" title="1.13 dict"></a>1.13 dict</h2><p><code>dict</code>&nbsp;(<code>dictionary</code> 字典)，通常的存储结构是<code>Key-Value</code>形式的，通过<code>Hash</code>函数对<code>key</code>求<code>Hash</code>值来确定<code>Value</code>的位置，因此也叫<code>Hash</code>表，是一种用来解决算法中查找问题的数据结构，默认的算法复杂度接近<code>O(1)</code>。</p>
+<p>需要注意的是创建初始化一个<code>dict</code>时并没有为<code>buckets</code>分配空间，<code>table</code>是赋值为<code>null</code>的。只有在往<code>dict</code>里添加<code>dictEntry</code>节点时才会为<code>buckets</code>分配空间，真正意义上创建一张<code>hash</code>表。</p>
+<p><strong>什么是Rehash</strong></p>
+<p>随着操作的不断执行，<code>hash</code>表保存的键值对会逐渐的增多或者减少，这时就会暴露一些问题。如果<code>hash</code>表很大，但是键值对太少，也就是<code>hash</code>表的负载(<code>dictht-&gt;used/dictht-&gt;size</code>)太小，就会有大量的内存浪费；如果<code>hash</code>表的负载太大，就会影响字典的查找效率。这时候就需要进行<code>rehash</code>将<code>hash</code>表的负载控制在一个合理的范围。</p>
+<p><strong>（扩容、缩容）Rehash的方式</strong></p>
+<ul>
+<li>主动<code>Rehash</code>，一毫秒执行一次</li>
+<li>被动<code>Rehash</code>，字典的增删改查(<code>CRUD</code>)调用<code>dictAdd，dicFind，dictDelete，dictGetRandomKey</code>等函数时，会调用<code>_dictRehashStep</code>，迁移<code>buckets</code>中的一个非空<code>bucket</code> <br><code>dictht</code>的负载因子，就是<code>used</code>与<code>size</code>的比值，也称装载因子（<code>load factor</code>）。这个比值越大，哈希值冲突概率越高。当比值[默认]超过<code>5</code>，会强制进行<code>rehash</code>。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-aeecfb8c998891e2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Expand he.png"></p>
+<p>当哈希表的负载因子小于<code>0.1</code>时， 程序自动开始对哈希表执行收缩操作。</p>
+<pre><code>serverCron-&gt;tryResizeHashTables-&gt;dictResize-&gt;dictExpand
+serverCron函数是个心跳函数,调用tryResizeHashTables段为:
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2803f669b81086ab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-99000124988d09f1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="hashFunct.png"></p>
+<h2 id="1-14-intset"><a href="#1-14-intset" class="headerlink" title="1.14 intset"></a>1.14 intset</h2><p><code>intset</code>是<code>Redis</code>内存数据结构之一，用来实现<code>Redis</code>的<code>Set</code>结构（当集合元素不大于设定值并且元素都是整数时，就会用<code>intset</code>作为<code>set</code>的底层数据结构），它的特点有：</p>
+<ul>
+<li>元素类型只能为数字。</li>
+<li>元素有三种类型：<code>int16_t</code>、<code>int32_t</code>、<code>int64_t</code>。</li>
+<li>元素有序，不可重复。</li>
+<li><code>intset</code>和<code>sds</code>一样，内存连续，就像数组一样。</li>
+<li><code>intset</code>实质就是一个有序数组，内存连续，无重复</li>
+<li>可以看到添加删除元素都比较耗时，查找元素是O(logN)时间复杂度，不适合大规模的数据</li>
+<li>有三种编码方式，通过升级的方式进行编码切换</li>
+<li>不支持降级</li>
+<li>数据使用小端存储</li>
+</ul>
+<p><code>intset</code>的编码是由最大的一个数决定的，如果有一个数是<code>int64</code>，那么整个<code>inset</code>的编码都是<code>int64</code>。<br><code>length</code>是<code>inset</code>的整数个数，<code>contents</code>整数数组</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4f17dca3d4266165.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="intset.jpg"></p>
+<h2 id="1-15-ziplist"><a href="#1-15-ziplist" class="headerlink" title="1.15 ziplist"></a>1.15 ziplist</h2><p><code>ziplist</code>是<code>redis</code>节省内存的典型例子之一，这个数据结构通过特殊的编码方式将数据存储在连续的内存中。在<code>3.2</code>之前是<code>list</code>的基础数据结构之一，在<code>3.2</code>之后被<code>quicklist</code>替代。但是仍然是<code>zset</code>底层实现之一。</p>
+<ol>
+<li><code>ziplist</code>是<code>redis</code>为了节省内存，提升存储效率自定义的一种紧凑的数据结构</li>
+<li><code>ziplist</code>保存着尾节点的偏移量，可以方便的拿到头尾节点</li>
+<li>每一个<code>entry</code>都保存着前一个<code>entry</code>的长度，可以很方便的从尾遍历</li>
+<li>每个<code>entry</code>中都可以保存一个字节数组或整数，不同类型和大小的数据有不同的编码方式</li>
+<li>添加和删除节点可能会引发连锁更新，极端情况下会更新整个<code>ziplist</code>，但是概率很小</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8d027a8938cab4c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d9f7ad42f2b5e104.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="entry.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3114e2ebb59d29d8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="字符串的encoding +data.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-aeb05414b7e1b74d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="整数的encoding+data.png"></p>
+<h2 id="1-16-quicklist"><a href="#1-16-quicklist" class="headerlink" title="1.16 quicklist"></a>1.16 quicklist</h2><ul>
+<li><code>quicklist</code>是<code>redis</code>在<code>ziplist</code>和<code>adlist</code>两种数据结构的基础上融合而成的一个实用的复杂数据结构</li>
+<li><code>quicklist</code>在<code>3.2</code>之后取代<code>adlist</code>和<code>ziplist</code>作为<code>list</code>的基础数据类型</li>
+<li><code>quicklist</code>的大部分<code>api</code>都是直接复用<code>ziplist</code></li>
+<li><code>quicklist</code>的单个节点最大存储默认为<code>8kb</code></li>
+<li><code>quicklist</code>提供了基于<code>lzf</code>算法的压缩<code>api</code>，通过将不常用的中间节点数据压缩达到节省内存的目的</li>
+<li><code>quicklist</code>将双向链表和<code>ziplist</code>两者的优点结合起来，在时间和空间上做了一个均衡，能较大程度上提高<code>Redis</code>的效率。<code>push</code>和<code>pop</code>等操作操作的时间复杂度也都达到了最优。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6bb978c4a755b900.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="quicklist.png"></p>
+<h2 id="1-17-skiplist"><a href="#1-17-skiplist" class="headerlink" title="1.17 skiplist"></a>1.17 skiplist</h2><p><code>skiplist</code>本质上也是一种查找结构，用于解决算法中的查找问题（<code>Searching</code>），即根据给定的<code>key</code>，快速查到它所在的位置（或者对应的<code>value</code>）。</p>
+<pre><code>// redis 5.0.2的客户端代码，redis 3.2.x版本最大Level是32
+#define ZSKIPLIST_MAXLEVEL 64 /* Should be enough for 2^64 elements */
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b19687de5046464d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="length=6.png"></p>
+<p>实际上，<code>Redis</code>中<code>sorted set</code>的实现是这样的：</p>
+<ul>
+<li>当数据较少时，<code>sorted set</code>是由一个<code>ziplist</code>来实现的。</li>
+<li>当数据多的时候，<code>sorted set</code>是由一个<code>dict</code>加一个<code>skiplist</code>来实现的。简单来讲，<code>dict</code>用来查询数据到分数的对应关系，而<code>skiplist</code>用来根据分数查询数据（可能是范围查找）。</li>
+</ul>
+<p>现在我们集中精力来看一下<code>sorted set</code>与<code>skiplist</code>的关系：</p>
+<ul>
+<li><code>zscore</code>的查询，不是由<code>skiplist</code>来提供的，而是由那个<code>dict</code>来提供的。</li>
+<li>为了支持排名(<code>rank</code>)，<code>Redis</code>里对<code>skiplist</code>做了扩展，使得根据排名能够快速查到数据，或者根据分数查到数据之后，也同时很容易获得排名。而且，根据排名的查找，时间复杂度也为<code>O(log n)</code>。</li>
+<li><code>zrevrange</code>的查询，是根据排名查数据，由扩展后的<code>skiplist</code>来提供。</li>
+<li><code>zrevrank</code>是先在<code>dict</code>中由数据查到分数，再拿分数到<code>skiplist</code>中去查找，查到后也同时获得了排名。</li>
+</ul>
+<p>总结起来，<code>Redis</code>中的<code>skiplist</code>跟前面介绍的经典的<code>skiplist</code>相比，有如下不同：</p>
+<ul>
+<li>分数(<code>score</code>)允许重复，即<code>skiplist</code>的<code>key</code>允许重复。这在最开始介绍的经典<code>skiplist</code>中是不允许的。</li>
+<li>在比较时，不仅比较分数（相当于<code>skiplist</code>的<code>key</code>），还比较数据本身。在<code>Redis</code>的<code>skiplist</code>实现中，数据本身的内容唯一标识这份数据，而不是由<code>key</code>来唯一标识。另外，当多个元素分数相同的时候，还需要根据数据内容来进字典排序。</li>
+<li>第<code>1</code>层链表不是一个单向链表，而是一个双向链表。这是为了方便以倒序方式获取一个范围内的元素。</li>
+<li>在<code>skiplist</code>中可以很方便地计算出每个元素的排名(<code>rank</code>)。</li>
+</ul>
+<h2 id="1-18-Redis为什么用skiplist而不用平衡树？"><a href="#1-18-Redis为什么用skiplist而不用平衡树？" class="headerlink" title="1.18 Redis为什么用skiplist而不用平衡树？"></a>1.18 Redis为什么用skiplist而不用平衡树？</h2><ol>
+<li>内存占用，一个节点平均<code>1.3</code>个指针</li>
+<li>对范围查找的支持，更方便。</li>
+<li>实现比红黑树跟简单</li>
+</ol>
+<h2 id="1-19-skiplist与平衡树、哈希表的比较"><a href="#1-19-skiplist与平衡树、哈希表的比较" class="headerlink" title="1.19 skiplist与平衡树、哈希表的比较"></a>1.19 skiplist与平衡树、哈希表的比较</h2><ul>
+<li><code>skiplist</code>和各种平衡树（如<code>AVL</code>、红黑树等）的元素是有序排列的，而哈希表不是有序的。因此，在哈希表上只能做单个<code>key</code>的查找，不适宜做范围查找。所谓范围查找，指的是查找那些大小在指定的两个值之间的所有节点。</li>
+<li>在做范围查找的时候，平衡树比<code>skiplist</code>操作要复杂。在平衡树上，我们找到指定范围的小值之后，还需要以中序遍历的顺序继续寻找其它不超过大值的节点。如果不对平衡树进行一定的改造，这里的中序遍历并不容易实现。而在<code>skiplist</code>上进行范围查找就非常简单，只需要在找到小值之后，对第1层链表进行若干步的遍历就可以实现。</li>
+<li>平衡树的插入和删除操作可能引发子树的调整，逻辑复杂，而<code>skiplist</code>的插入和删除只需要修改相邻节点的指针，操作简单又快速。</li>
+<li>从内存占用上来说，<code>skiplist</code>比平衡树更灵活一些。一般来说，平衡树每个节点包含<code>2</code>个指针（分别指向左右子树），而<code>skiplist</code>每个节点包含的指针数目平均为<code>1/(1-p)</code>，具体取决于参数<code>p</code>的大小。如果像<code>Redis</code>里的实现一样，取<code>p=1/4</code>，那么平均每个节点包含<code>1.33</code>个指针，比平衡树更有优势。</li>
+<li>查找单个<code>key</code>，<code>skiplist</code>和平衡树的时间复杂度都为<code>O(log n)</code>，大体相当；而哈希表在保持较低的哈希值冲突概率的前提下，查找时间复杂度接近<code>O(1)</code>，性能更高一些。所以我们平常使用的各种<code>Map</code>或<code>dictionary</code>结构，大都是基于哈希表实现的。</li>
+<li>从算法实现难度上来比较，<code>skiplist</code>比平衡树要简单得多。</li>
+</ul>
+<h2 id="1-20-Redis的高可用"><a href="#1-20-Redis的高可用" class="headerlink" title="1.20 Redis的高可用"></a>1.20 Redis的高可用</h2><p><strong>主从架构</strong></p>
+<p>主从模式是最简单的实现高可用的方案，核心就是主从同步。主从同步的原理如下：</p>
+<ol>
+<li>slave发送sync命令到master</li>
+<li>master收到sync之后，执行bgsave，生成RDB全量文件</li>
+<li>master把slave的写命令记录到缓存</li>
+<li>bgsave执行完毕之后，发送RDB文件到slave，slave执行</li>
+<li>master发送缓存中的写命令到slave，slave执行</li>
+</ol>
+<p>增量复制<br>当slave节点与master全量同步后，master节点上数据再次发生更新，就会触发增量复制。<br>断点续传（continue replication）<br>断点续传或者说是断点恢复复制，也就是说 slave 因为某种原因与master断开连接了一段时间，然后又与master发生重连。</p>
+<ol>
+<li>故障恢复复杂，如果没有RedisHA系统（需要开发），当主库节点出现故障时，需要手动将一个从节点晋升为主节点，同时需要通知业务方变更配置，并且需要让其它从库节点去复制新主库节点，整个过程需要人为干预，比较繁琐；</li>
+<li>主库的写能力受到单机的限制，可以考虑分片；</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-04ffe469023c0447.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2241940b6f155cad.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><strong>哨兵</strong></p>
+<p>哨兵可以同时监视多个主从服务器，并且在被监视的master下线时，自动将某个slave提升为master，然后由新的master继续接收命令。整个过程如下：</p>
+<ol>
+<li>初始化sentinel，将普通的redis代码替换成sentinel专用代码</li>
+<li>初始化masters字典和服务器信息，服务器信息主要保存ip:port，并记录实例的地址和ID</li>
+<li>创建和master的两个连接，命令连接和订阅连接，并且订阅sentinel:hello频道</li>
+<li>每隔10秒向master发送info命令，获取master和它下面所有slave的当前信息</li>
+<li>当发现master有新的slave之后，sentinel和新的slave同样建立两个连接，同时每个10秒发送info命令，更新master信息</li>
+<li>sentinel每隔1秒向所有服务器发送ping命令，如果某台服务器在配置的响应时间内连续返回无效回复，将会被标记为下线状态</li>
+<li>选举出领头sentinel，领头sentinel需要半数以上的sentinel同意</li>
+<li>领头sentinel从已下线的的master所有slave中挑选一个，将其转换为master</li>
+<li>让所有的slave改为从新的master复制数据</li>
+<li>将原来的master设置为新的master的从服务器，当原来master重新回复连接时，就变成了新master的从服务器<br>sentinel会每隔1秒向所有实例（包括主从服务器和其他sentinel）发送ping命令，并且根据回复判断是否已经下线，这种方式叫做主观下线。当判断为主观下线时，就会向其他监视的sentinel询问，如果超过半数的投票认为已经是下线状态，则会标记为客观下线状态，同时触发故障转移。</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2445e57376f5fb7e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sentinel.png"></p>
+<p><strong>redis集群</strong></p>
+<p>如果说依靠哨兵可以实现redis的高可用，如果还想在支持高并发同时容纳海量的数据，那就需要redis集群。redis集群是redis提供的分布式数据存储方案，集群通过数据分片sharding来进行数据的共享，同时提供复制和故障转移的功能。</p>
+<p>一个redis集群由多个节点node组成，而多个node之间通过cluster meet命令来进行连接，节点的握手过程：</p>
+<ol>
+<li>节点A收到客户端的cluster meet命令</li>
+<li>A根据收到的IP地址和端口号，向B发送一条meet消息</li>
+<li>节点B收到meet消息返回pong</li>
+<li>A知道B收到了meet消息，返回一条ping消息，握手成功</li>
+<li>最后，节点A将会通过gossip协议把节点B的信息传播给集群中的其他节点，其他节点也将和B进行握手 <br><img src="https://upload-images.jianshu.io/upload_images/12321605-3cc7e6d4e21fbeb1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="发送MEET-.png"></li>
+</ol>
+<p>redis通过集群分片的形式来保存数据，整个集群数据库被分为16384个slot，集群中的每个节点可以处理0-16384个slot，当数据库16384个slot都有节点在处理时，集群处于上线状态，反之只要有一个slot没有得到处理都会处理下线状态。通过cluster addslots命令可以将slot指派给对应节点处理。</p>
+<p>slot是一个位数组，数组的长度是16384/8=2048，而数组的每一位用1表示被节点处理，0表示不处理，如图所示的话表示A节点处理0-7的slot。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-da3377381aba58c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="slot.png"></p>
+<p>当客户端向节点发送命令，如果刚好找到slot属于当前节点，那么节点就执行命令，反之，则会返回一个MOVED命令到客户端指引客户端转向正确的节点。（MOVED过程是自动的）</p>
+<p>如果增加或者移出节点，对于slot的重新分配也是非常方便的，redis提供了工具帮助实现slot的迁移，整个过程是完全在线的，不需要停止服务。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a4d7bfc30aafb389.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="move.png"></p>
+<p>故障转移</p>
+<p>如果节点A向节点B发送ping消息，节点B没有在规定的时间内响应pong，那么节点A会标记节点B为pfail疑似下线状态，同时把B的状态通过消息的形式发送给其他节点，如果超过半数以上的节点都标记B为pfail状态，B就会被标记为fail下线状态，此时将会发生故障转移，优先从复制数据较多的从节点选择一个成为主节点，并且接管下线节点的slot，整个过程和哨兵非常类似，都是基于Raft协议做选举。</p>
+<h2 id="1-21-Redis常见的几种缓存策略"><a href="#1-21-Redis常见的几种缓存策略" class="headerlink" title="1.21 Redis常见的几种缓存策略"></a>1.21 Redis常见的几种缓存策略</h2><ul>
+<li>Cache-Aside</li>
+<li>Read-Through</li>
+<li>Write-Through</li>
+<li>Write-Behind</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ded0ea7884b99d86.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Application.png"></p>
+<p><code>Read-Through</code>和<code>Cache-Aside</code>很相似，不同点在于程序不需要再去管理从哪去读数据（缓存还是数据库）。相反它会直接从缓存中读数据，该场景下是缓存去决定从哪查询数据。当我们比较两者的时候这是一个优势因为它会让程序代码变得更简洁。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0c006a046b427f70.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Pasted Graphic 5.png"></p>
+<p><code>Write-Through</code>下所有的写操作都经过缓存，每次我们向缓存中写数据的时候，缓存会把数据持久化到对应的数据库中去，且这两个操作都在一个事务中完成。因此，只有两次都写成功了才是最终写成功了。这的确带来了一些写延迟但是它保证了数据一致性。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2a859d365baed725.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Write data.png"></p>
+<p><code>Write-Behind</code>和<code>Write-Through</code>在“程序只和缓存交互且只能通过缓存写数据”这一点上很相似。不同点在于<code>Write-Through</code>会把数据立即写入数据库中，而<code>Write-Behind</code>会在一段时间之后（或是被其他方式触发）把数据一起写入数据库，这个异步写操作是<code>Write-Behind</code>的最大特点。</p>
+<h2 id="1-22-内存回收机制"><a href="#1-22-内存回收机制" class="headerlink" title="1.22 内存回收机制"></a>1.22 内存回收机制</h2><p><code>Redis</code>并不总是可以将空闲内存立即归还给操作系统。</p>
+<p>如果当前<code>Redis</code>内存有<code>10G</code>，当你删除了<code>1GB</code>的<code>key</code>后，再去观察内存，你会发现内存变化不会太大。原因是操作系统回收内存是以页为单位，如果这个页上只要有一个<code>key</code> 还在使用，那么它就不能被回收。<code>Redis</code>虽然删除了<code>1GB</code>的<code>key</code>，但是这些<code>key</code>分散到了很多页面中，每个页面都还有其它 key 存在，这就导致了内存不会立即被回收。</p>
+<p>不过，如果你执行<code>flushdb</code>，然后再观察内存会发现内存确实被回收了。原因是所有的<code>key</code>都干掉了，大部分之前使用的页面都完全干净了，会立即被操作系统回收。<code>Redis</code>虽然无法保证立即回收已经删除的<code>key</code>的内存，但是它会重用那些尚未回收的空闲内存。</p>
+<h2 id="1-23-容器型数据结构的通用规则"><a href="#1-23-容器型数据结构的通用规则" class="headerlink" title="1.23 容器型数据结构的通用规则"></a>1.23 容器型数据结构的通用规则</h2><p><code>list/set/hash/zset</code>这四种数据结构是容器型数据结构，它们共享下面两条通用规则：</p>
+<ol>
+<li><code>create if not exists</code>，如果容器不存在，那就创建一个，再进行操作。比如<code>rpush</code>操作刚开始是没有列表的，<code>Redis</code>就会自动创建一个，然后再<code>rpush</code>进去新元素。</li>
+<li><code>drop if no elements</code>，如果容器里元素没有了，那么立即删除元素，释放内存。这意味着 <code>lpop</code> 操作到最后一<br>个元素，列表就消失了。</li>
+</ol>
+<h2 id="1-23-Scan"><a href="#1-23-Scan" class="headerlink" title="1.23 Scan"></a>1.23 Scan</h2><p><code>keys</code>算法是遍历算法，复杂度是<code>O(n)</code>，如果实例中有千万级以上的<code>key</code>，这个指令就会导致<code>Redis</code>服务卡顿，所有读写<code>Redis</code>的其它的指令都会被延后甚至会超时报错，因为<code>Redis</code>是单线程程序，顺序执行所有指令，其它指令必须等到当前的<code>keys</code>指令执行完了才可以继续。</p>
+<p>面对这两个显著的缺点该怎么办呢？</p>
+<p><code>Redis</code>为了解决这个问题，它在<code>2.8</code>版本中加入了大海捞针的指令——<code>scan</code>。<code>scan</code>相比<code>keys</code>具备有以下特点: </p>
+<ol>
+<li>复杂度虽然也是<code>O(n)</code>，但是它是通过游标分步进行的，不会阻塞线程; </li>
+<li>提供<code>limit</code>参数，可以控制每次返回结果的最大条数，<code>limit</code>只是一个<code>hint</code>，返回的结果可多可少; </li>
+<li>同<code>keys</code>一样，它也提供模式匹配功能;</li>
+<li>服务器不需要为游标保存状态，游标的唯一状态就是<code>scan</code>返回给客户端的游标整数; </li>
+<li>返回的结果可能会有重复，需要客户端去重复，这点非常重要; </li>
+<li>遍历的过程中如果有数据修改，改动后的数据能不能遍历到是不确定的; </li>
+<li>单次返回的结果是空的并不意味着遍历结束，而要看返回的游标值是否为零;</li>
+</ol>
+<p><code>scan</code>的遍历顺序非常特别。它不是从第一维数组的第<code>0</code>位一直遍历到末尾，而是采用了高位进位加法来遍历。之所以使用这样特殊的方式进行遍历，是考虑到字典的扩容和缩容时避免槽位的遍历重复和遗漏。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-02f7c2e2e4a8872b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="f9123d79-e54f-4fb3-a8d9-4b99af27008b.png"></p>
+<h2 id="1-24-Localcache选型"><a href="#1-24-Localcache选型" class="headerlink" title="1.24 Localcache选型"></a>1.24 Localcache选型</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-844ce1e94563fcbb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="localcache"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2023/06/22/net-eight-legged-essay/" title="网络基础知识"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 网络基础知识</span></a><a class="button is-default" href="/2023/05/08/hello-rust-1/" title="《Rust 编程第一课》"><span class="has-text-weight-semibold">下一页: 《Rust 编程第一课》</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

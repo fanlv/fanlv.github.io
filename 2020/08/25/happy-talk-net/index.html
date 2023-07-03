@@ -1,0 +1,730 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《趣谈网络协议》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="通信协议综述IP &amp;amp;&amp;amp; MACIP 地址是一个网卡在网络世界的通讯地址，相当于我们现实世界的门牌号码。既然是门牌号码，不能大家都一样，不然就会起冲突。比方说，假如大家都叫六单元 1001 号，那快递就找不到地方了。所以，有时候咱们的电脑弹出网络地址冲突，出现上不去网的情况，多半是 IP 地址冲突了。
+
+下面这个表格，详细地展示了 A、B、C 三类地址所能包含的主机的数量。在后文中，我也会多次借助这个表格来讲解。
+
+无类型域间选路（CIDR）
+于是有了一个折中的方式叫作无类型域间选路，简称 CIDR。这种方式打破了原来设计的几类地址的做法，将 32 位的 IP 地址一分为二，前面是网络号，后面是主机号。从哪里分呢？你如果注意观察的话可以看到，10.100.122.2/24，这个 IP 地址中有.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《趣谈网络协议》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE%E7%BB%BC%E8%BF%B0"><span class="toc-text">通信协议综述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#IP-amp-amp-MAC"><span class="toc-text">IP &amp;&amp; MAC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%A2%84%E5%90%AF%E5%8A%A8%E6%89%A7%E8%A1%8C%E7%8E%AF%E5%A2%83%EF%BC%88PXE%EF%BC%89"><span class="toc-text">预启动执行环境（PXE）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%89%A9%E7%90%86%E5%B1%82%E5%92%8C%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82"><span class="toc-text">物理层和数据链路层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9F%BA%E6%9C%AC%E4%BB%8B%E7%BB%8D"><span class="toc-text">基本介绍</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#STP-%E5%8D%8F%E8%AE%AE"><span class="toc-text">STP 协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#ICMP-%E5%8D%8F%E8%AE%AE%E7%9A%84%E6%A0%BC%E5%BC%8F"><span class="toc-text">ICMP 协议的格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MAC-%E5%A4%B4%E5%92%8C-IP-%E5%A4%B4%E7%9A%84%E7%BB%86%E8%8A%82"><span class="toc-text">MAC 头和 IP 头的细节</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BC%A0%E8%BE%93%E5%B1%82"><span class="toc-text">传输层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#TCP-%E5%92%8C-UDP-%E6%9C%89%E5%93%AA%E4%BA%9B%E5%8C%BA%E5%88%AB%EF%BC%9F"><span class="toc-text">TCP 和 UDP 有哪些区别？</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%B6%E4%BB%96"><span class="toc-text">其他</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HTTP"><span class="toc-text">HTTP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E5%AA%92%E4%BD%93%E5%8D%8F%E8%AE%AE"><span class="toc-text">流媒体协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DNS-amp-amp-HTTPDNS"><span class="toc-text">DNS &amp;&amp; HTTPDNS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#CDN"><span class="toc-text">CDN</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E4%B8%AD%E5%BF%83"><span class="toc-text">数据中心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#QoS"><span class="toc-text">QoS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E7%BD%91%E7%BB%9C"><span class="toc-text">容器网络</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《趣谈网络协议》</h1><time class="has-text-grey" datetime="2020-08-25T02:00:00.000Z">2020-08-25</time><article class="mt-2 post-content"><h2 id="通信协议综述"><a href="#通信协议综述" class="headerlink" title="通信协议综述"></a>通信协议综述</h2><h3 id="IP-amp-amp-MAC"><a href="#IP-amp-amp-MAC" class="headerlink" title="IP &amp;&amp; MAC"></a>IP &amp;&amp; MAC</h3><p>IP 地址是一个网卡在网络世界的通讯地址，相当于我们现实世界的门牌号码。既然是门牌号码，不能大家都一样，不然就会起冲突。比方说，假如大家都叫六单元 1001 号，那快递就找不到地方了。所以，有时候咱们的电脑弹出网络地址冲突，出现上不去网的情况，多半是 IP 地址冲突了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-90a27f35483d8a00.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>下面这个表格，详细地展示了 A、B、C 三类地址所能包含的主机的数量。在后文中，我也会多次借助这个表格来讲解。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7d6a468a197f8230.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>无类型域间选路（CIDR）</strong></p>
+<p>于是有了一个折中的方式叫作无类型域间选路，简称 CIDR。这种方式打破了原来设计的几类地址的做法，将 32 位的 IP 地址一分为二，前面是网络号，后面是主机号。从哪里分呢？你如果注意观察的话可以看到，10.100.122.2/24，这个 IP 地址中有一个斜杠，斜杠后面有个数字 24。这种地址表示形式，就是 CIDR。后面 24 的意思是，32 位中，前 24 位是网络号，后 8 位是主机号。</p>
+<p>伴随着 CIDR 存在的，一个是<strong>广播地址</strong>，10.100.122.255。如果发送这个地址，所有 10.100.122 网络里面的机器都可以收到。另一个是子<strong>网掩码</strong>，255.255.255.0。</p>
+<p>将子网掩码和 IP 地址进行 AND 计算。前面三个 255，转成二进制都是 1。1 和任何数值取 AND，都是原来数值，因而前三个数不变，为 10.100.122。后面一个 0，转换成二进制是 0，0 和任何数值取 AND，都是 0，因而最后一个数变为 0，合起来就是 10.100.122.0。这就是网络号。<strong>将子网掩码和 IP 地址按位计算 AND，就可得到网络号</strong>。</p>
+<p><strong>MAC 地址</strong></p>
+<p>在 IP 地址的上一行是 link/ether fa:16:3e:c7:79:75 brd ff:ff:ff:ff:ff:ff，这个被称为 MAC 地址，是一个网卡的物理地址，用十六进制，6 个 byte 表示。</p>
+<p>MAC 地址是一个很容易让人“误解”的地址。因为 MAC 地址号称全局唯一，不会有两个网卡有相同的 MAC 地址，而且网卡自生产出来，就带着这个地址。很多人看到这里就会想，既然这样，整个互联网的通信，全部用 MAC 地址好了，只要知道了对方的 MAC 地址，就可以把信息传过去。</p>
+<p>这样当然是不行的。 <strong>一个网络包要从一个地方传到另一个地方，除了要有确定的地址，还需要有定位功能</strong>。 而有门牌号码属性的 IP 地址，才是有远程定位功能的。</p>
+<p><strong>网络设备的状态标识</strong></p>
+<p>解析完了 MAC 地址，我们再来看 是干什么的？这个叫做 <code>net_device</code> flags，网络设备的状态标识。</p>
+<p>UP 表示网卡处于启动的状态；BROADCAST 表示这个网卡有广播地址，可以发送广播包；MULTICAST 表示网卡可以发送多播包；LOWER_UP 表示 L1 是启动的，也即网线插着呢。MTU1500 是指什么意思呢？是哪一层的概念呢？最大传输单元 MTU 为 1500，这是以太网的默认值。</p>
+<p>上一节，我们讲过网络包是层层封装的。MTU 是二层 MAC 层的概念。MAC 层有 MAC 的头，以太网规定正文部分不允许超过 1500 个字节。正文里面有 IP 的头、TCP 的头、HTTP 的头。如果放不下，就需要分片来传输。</p>
+<p>qdisc <code>pfifo_fast</code> 是什么意思呢？<strong>qdisc 全称是 queueing discipline，中文叫排队规则。</strong>内核如果需要通过某个网络接口发送数据包，它都需要按照为这个接口配置的 qdisc（排队规则）把数据包加入队列。</p>
+<p>最简单的 qdisc 是 pfifo，它不对进入的数据包做任何的处理，数据包采用先入先出的方式通过队列。pfifo_fast 稍微复杂一些，它的队列包括三个波段（band）。在每个波段里面，使用先进先出规则。</p>
+<p>三个波段（band）的优先级也不相同。band 0 的优先级最高，band 2 的最低。如果 band 0 里面有数据包，系统就不会处理 band 1 里面的数据包，band 1 和 band 2 之间也是一样。</p>
+<p>数据包是按照服务类型（Type of Service，TOS）被分配到三个波段（band）里面的。TOS 是 IP 头里面的一个字段，代表了当前的包是高优先级的，还是低优先级的。</p>
+<h3 id="预启动执行环境（PXE）"><a href="#预启动执行环境（PXE）" class="headerlink" title="预启动执行环境（PXE）"></a>预启动执行环境（PXE）</h3><p>那我们安装操作系统的过程，只能插在 BIOS 启动之后了。因为没安装系统之前，连启动扇区都没有。因而这个过程叫做预启动执行环境（Pre-boot Execution Environment），简称 PXE。</p>
+<p>PXE 协议分为客户端和服务器端，由于还没有操作系统，只能先把客户端放在 BIOS 里面。当计算机启动时，BIOS 把 PXE 客户端调入内存里面，就可以连接到服务端做一些操作了。</p>
+<p>首先，PXE 客户端自己也需要有个 IP 地址。因为 PXE 的客户端启动起来，就可以发送一个 DHCP 的请求，让 DHCP Server 给它分配一个地址。PXE 客户端有了自己的地址，那它怎么知道 PXE 服务器在哪里呢？对于其他的协议，都好办，要有人告诉他。例如，告诉浏览器要访问的 IP 地址，或者在配置中告诉它；例如，微服务之间的相互调用。</p>
+<p>但是 PXE 客户端启动的时候，啥都没有。好在 DHCP Server 除了分配 IP 地址以外，还可以做一些其他的事情。这里有一个 DHCP Server 的一个样例配置：</p>
+<pre><code>ddns-update-style interim;
+ignore client-updates;
+allow booting;
+allow bootp;
+subnet 192.168.1.0 netmask 255.255.255.0
+{
+option routers 192.168.1.1;
+option subnet-mask 255.255.255.0;
+option time-offset -18000;
+default-lease-time 21600;
+max-lease-time 43200;
+range dynamic-bootp 192.168.1.240 192.168.1.250;
+filename "pxelinux.0";
+next-server 192.168.1.180;
+}
+</code></pre>
+<p>按照上面的原理，默认的 DHCP Server 是需要配置的，无非是我们配置 IP 的时候所需要的 IP 地址段、子网掩码、网关地址、租期等。如果想使用 PXE，则需要配置 next-server，指向 PXE 服务器的地址，另外要配置初始启动文件 filename。</p>
+<p>这样 PXE 客户端启动之后，发送 DHCP 请求之后，除了能得到一个 IP 地址，还可以知道 PXE 服务器在哪里，也可以知道如何从 PXE 服务器上下载某个文件，去初始化操作系统。</p>
+<p><strong>解析 PXE 的工作过程</strong></p>
+<p>首先，启动 PXE 客户端。第一步是通过 DHCP 协议告诉 DHCP Server，我刚来，一穷二白，啥都没有。DHCP Server 便租给它一个 IP 地址，同时也给它 PXE 服务器的地址、启动文件 pxelinux.0。</p>
+<p>其次，PXE 客户端知道要去 PXE 服务器下载这个文件后，就可以初始化机器。于是便开始下载，下载的时候使用的是 TFTP 协议。所以 PXE 服务器上，往往还需要有一个 TFTP 服务器。PXE 客户端向 TFTP 服务器请求下载这个文件，TFTP 服务器说好啊，于是就将这个文件传给它。</p>
+<p>然后，PXE 客户端收到这个文件后，就开始执行这个文件。这个文件会指示 PXE 客户端，向 TFTP 服务器请求计算机的配置信息 pxelinux.cfg。TFTP 服务器会给 PXE 客户端一个配置文件，里面会说内核在哪里、initramfs 在哪里。PXE 客户端会请求这些文件。</p>
+<p>最后，启动 Linux 内核。一旦启动了操作系统，以后就啥都好办了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-23947aa222844158.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="物理层和数据链路层"><a href="#物理层和数据链路层" class="headerlink" title="物理层和数据链路层"></a>物理层和数据链路层</h2><h3 id="基本介绍"><a href="#基本介绍" class="headerlink" title="基本介绍"></a>基本介绍</h3><p><strong>第一层（物理层）</strong></p>
+<p>我们要的是电脑连电脑。这种方式就是一根网线，有两个头。一头插在一台电脑的网卡上，另一头插在另一台电脑的网卡上。但是在当时，普通的网线这样是通不了的，所以水晶头要做交叉线，用的就是所谓的 1－3、2－6 交叉接法。</p>
+<p>水晶头的第 1、2 和第 3、6 脚，它们分别起着收、发信号的作用。将一端的 1 号和 3 号线、2 号和 6 号线互换一下位置，就能够在物理层实现一端发送的信号，另一端能收到。</p>
+<p>当然电脑连电脑，除了网线要交叉，还需要配置这两台电脑的 IP 地址、子网掩码和默认网关。这三个概念上一节详细描述过了。要想两台电脑能够通信，这三项必须配置成为一个网络，可以一个是 192.168.0.1/24，另一个是 192.168.0.2/24，否则是不通的。</p>
+<p>到此为止，两台电脑已经构成了一个最小的局域网，也即 LAN。可以玩联机局域网游戏啦！</p>
+<p>等到第三个哥们也买了一台电脑，怎么把三台电脑连在一起呢？</p>
+<p>先别说交换机，当时交换机也贵。有一个叫做 Hub 的东西，也就是集线器。这种设备有多个口，可以将宿舍里的多台电脑连接起来。但是，和交换机不同，集线器没有大脑，它完全在物理层工作。它会将自己收到的每一个字节，都复制到其他端口上去。这是第一层物理层联通的方案。</p>
+<p><strong>第二层（数据链路层）</strong></p>
+<p>你可能已经发现问题了。Hub 采取的是广播的模式，如果每一台电脑发出的包，宿舍的每个电脑都能收到，那就麻烦了。这就需要解决几个问题：</p>
+<ol>
+<li>这个包是发给谁的？谁应该接收？</li>
+<li>大家都在发，会不会产生混乱？有没有谁先发、谁后发的规则？</li>
+<li>如果发送的时候出现了错误，怎么办？</li>
+</ol>
+<p>这几个问题，都是第二层，数据链路层，也即 MAC 层要解决的问题。MAC 的全称是 <strong>Medium Access Control</strong>，即媒体访问控制。控制什么呢？<strong>其实就是控制在往媒体上发数据的时候，谁先发、谁后发的问题。防止发生混乱。这解决的是第二个问题。这个问题中的规则，学名叫多路访问</strong>。有很多算法可以解决这个问题。就像车管所管束马路上跑的车，能想的办法都想过了。</p>
+<p>比如接下来这三种方式：</p>
+<ul>
+<li>方式一：分多个车道。每个车一个车道，你走你的，我走我的。这在计算机网络里叫作信道划分；</li>
+<li>方式二：今天单号出行，明天双号出行，轮着来。这在计算机网络里叫作轮流协议；</li>
+<li>方式三：不管三七二十一，有事儿先出门，发现特堵，就回去。错过高峰再出。我们叫作随机接入协议。著名的以太网，用的就是这个方式。</li>
+</ul>
+<p>接下来要解决第一个问题：发给谁，谁接收？这里用到一个物理地址，叫作链路层地址。但是因为第二层主要解决媒体接入控制的问题，所以它常被称为MAC 地址。</p>
+<p>解决第一个问题就牵扯到第二层的网络包格式。对于以太网，第二层的最开始，就是目标的 MAC 地址和源的 MAC 地址。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3e57880f718598e6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>接下来是类型，大部分的类型是 IP 数据包，然后 IP 里面包含 TCP、UDP，以及 HTTP 等，这都是里层封装的事情。</p>
+<p>有了这个目标 MAC 地址，数据包在链路上广播，MAC 的网卡才能发现，这个包是给它的。MAC 的网卡把包收进来，然后打开 IP 包，发现 IP 地址也是自己的，再打开 TCP 包，发现端口是自己，也就是 80，而 nginx 就是监听 80。</p>
+<p>于是将请求提交给 nginx，nginx 返回一个网页。然后将网页需要发回请求的机器。然后层层封装，最后到 MAC 层。因为来的时候有源 MAC 地址，返回的时候，源 MAC 就变成了目标 MAC，再返给请求的机器。</p>
+<p>对于以太网，第二层的最后面是 <strong>CRC，也就是循环冗余检测</strong>。<strong>通过 XOR 异或的算法</strong>，来计算整个包是否在发送的过程中出现了错误，主要解决第三个问题。</p>
+<p><strong>ARP</strong></p>
+<p>这里还有一个没有解决的问题，当源机器知道目标机器的时候，可以将目标地址放入包里面，如果不知道呢？一个广播的网络里面接入了 N 台机器，我怎么知道每个 MAC 地址是谁呢？<strong>这就是 ARP 协议，也就是已知 IP 地址，求 MAC 地址的协议</strong>。</p>
+<p>在一个局域网里面，当知道了 IP 地址，不知道 MAC 怎么办呢？靠“吼”。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-27e03169cd8f7f9d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>广而告之，发送一个广播包，谁是这个 IP 谁来回答。具体询问和回答的报文就像下面这样：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e4e518f4aafb6037.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>为了避免每次都用 ARP 请求，机器本地也会进行 ARP 缓存。当然机器会不断地上线下线，IP 也可能会变，所以 ARP 的 MAC 地址缓存过一段时间就会过期。</p>
+<p><strong>交换机</strong></p>
+<p>谁能知道目标 MAC 地址是否就是连接某个口的电脑的 MAC 地址呢？这就需要一个能把 MAC 头拿下来，检查一下目标 MAC 地址，然后根据策略转发的设备，按第二节课中讲过的，这个设备显然是个二层设备，我们称为交换机。</p>
+<p>交换机怎么知道每个口的电脑的 MAC 地址呢？这需要交换机会学习。</p>
+<p>一台 MAC1 电脑将一个包发送给另一台 MAC2 电脑，当这个包到达交换机的时候，一开始交换机也不知道 MAC2 的电脑在哪个口，所以没办法，它只能将包转发给除了来的那个口之外的其他所有的口。但是，这个时候，交换机会干一件非常聪明的事情，就是交换机会记住，MAC1 是来自一个明确的口。以后有包的目的地址是 MAC1 的，直接发送到这个口就可以了。</p>
+<p>当交换机作为一个关卡一样，过了一段时间之后，就有了整个网络的一个结构了，这个时候，基本上不用广播了，全部可以准确转发。当然，每个机器的 IP 地址会变，所在的口也会变，因而交换机上的学习的结果，我们称为<strong>转发表</strong>，是有一个过期时间的。</p>
+<h3 id="STP-协议"><a href="#STP-协议" class="headerlink" title="STP 协议"></a>STP 协议</h3><p>在数据结构中，有一个方法叫做最小生成树。有环的我们常称为图。将图中的环破了，就生成了树。在计算机网络中，生成树的算法叫作 STP，全称 Spanning Tree Protocol。</p>
+<p>STP 协议比较复杂，一开始很难看懂，但是其实这是一场血雨腥风的武林比武或者华山论剑，最终决出五岳盟主的方式。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3abf8c836b540bf4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在 STP 协议里面有很多概念，译名就非常拗口，但是我一作比喻，你很容易就明白了。</p>
+<ul>
+<li>Root Bridge，也就是根交换机。这个比较容易理解，可以比喻为“掌门”交换机，是某棵树的老大，是掌门，最大的大哥。</li>
+<li>Designated Bridges，有的翻译为指定交换机。这个比较难理解，可以想像成一个“小弟”，对于树来说，就是一棵树的树枝。所谓“指定”的意思是，我拜谁做大哥，其他交换机通过这个交换机到达根交换机，也就相当于拜他做了大哥。这里注意是树枝，不是叶子，因为叶子往往是主机。</li>
+<li>Bridge Protocol Data Units （BPDU） ，网桥协议数据单元。可以比喻为“相互比较实力”的协议。行走江湖，比的就是武功，拼的就是实力。当两个交换机碰见的时候，也就是相连的时候，就需要互相比一比内力了。BPDU 只有掌门能发，已经隶属于某个掌门的交换机只能传达掌门的指示。</li>
+<li>Priority Vector，优先级向量。可以比喻为实力 （值越小越牛）。实力是啥？就是一组 ID 数目，[Root Bridge ID, Root Path Cost, Bridge ID, and Port ID]。为什么这样设计呢？这是因为要看怎么来比实力。先看 Root Bridge ID。拿出老大的 ID 看看，发现掌门一样，那就是师兄弟；再比 Root Path Cost，也即我距离我的老大的距离，也就是拿和掌门关系比，看同一个门派内谁和老大关系铁；最后比 Bridge ID，比我自己的 ID，拿自己的本事比。</li>
+</ul>
+<p><strong>STP 的工作过程是怎样的？</strong></p>
+<p>接下来，我们来看 STP 的工作过程。</p>
+<p>一开始，江湖纷争，异常混乱。大家都觉得自己是掌门，谁也不服谁。于是，所有的交换机都认为自己是掌门，每个网桥都被分配了一个 ID。这个 ID 里有管理员分配的优先级，当然网络管理员知道哪些交换机贵，哪些交换机好，就会给它们分配高的优先级。这种交换机生下来武功就很高，起步就是乔峰。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1ffd84f6168f575b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>既然都是掌门，互相都连着网线，就互相发送 BPDU 来比功夫呗。这一比就发现，有人是岳不群，有人是封不平，赢的接着当掌门，输的就只好做小弟了。当掌门的还会继续发 BPDU，而输的人就没有机会了。它们只有在收到掌门发的 BPDU 的时候，转发一下，表示服从命令。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e718783d083612ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>数字表示优先级。就像这个图，5 和 6 碰见了，6 的优先级低，所以乖乖做小弟。于是一个小门派形成，5 是掌门，6 是小弟。其他诸如 1-7、2-8、3-4 这样的小门派，也诞生了。于是江湖出现了很多小的门派，小的门派，接着合并。</p>
+<p>合并的过程会出现以下四种情形，我分别来介绍。</p>
+<p><strong>情形一：掌门遇到掌门</strong></p>
+<p>当 5 碰到了 1，掌门碰见掌门，1 觉得自己是掌门，5 也刚刚跟别人 PK 完成为掌门。这俩掌门比较功夫，最终 1 胜出。于是输掉的掌门 5 就会率领所有的小弟归顺。结果就是 1 成为大掌门。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9c95f4ea34e2ea3e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>情形二：同门相遇</strong></p>
+<p>同门相遇可以是掌门与自己的小弟相遇，这说明存在“环”了。这个小弟已经通过其他门路拜在你门下，结果你还不认识，就 PK 了一把。结果掌门发现这个小弟功夫不错，不应该级别这么低，就把它招到门下亲自带，那这个小弟就相当于升职了。</p>
+<p>我们再来看，假如 1 和 6 相遇。6 原来就拜在 1 的门下，只不过 6 的上司是 5，5 的上司是 1。1 发现，6 距离我才只有 2，比从 5 这里过来的 5（=4+1）近多了，那 6 就直接汇报给我吧。于是，5 和 6 分别汇报给 1。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-614064e9216835b0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>情形三：掌门与其他帮派小弟相遇</strong></p>
+<p>小弟拿本帮掌门和这个掌门比较，赢了，这个掌门拜入门来。输了，会拜入新掌门，并且逐渐拉拢和自己连接的兄弟，一起弃暗投明。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7fe558b98b8871ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>例如，2 和 7 相遇，虽然 7 是小弟，2 是掌门。就个人武功而言，2 比 7 强，但是 7 的掌门是 1，比 2 牛，所以没办法，2 要拜入 7 的门派，并且连同自己的小弟都一起拜入。</p>
+<p><strong>情形四：不同门小弟相遇</strong></p>
+<p>各自拿掌门比较，输了的拜入赢的门派，并且逐渐将与自己连接的兄弟弃暗投明。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bdd547aaac15bd0d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>例如，5 和 4 相遇。虽然 4 的武功好于 5，但是 5 的掌门是 1，比 4 牛，于是 4 拜入 5 的门派。后来当 3 和 4 相遇的时候，3 发现 4 已经叛变了，4 说我现在老大是 1，比你牛，要不你也来吧，于是 3 也拜入 1。</p>
+<p>最终，生成一棵树，武林一统，天下太平。但是天下大势，分久必合，合久必分，天下统一久了，也会有相应的问题。</p>
+<p><strong>如何解决广播问题和安全问题？</strong></p>
+<p>有两种分的方法，<strong>一个是物理隔离</strong>。每个部门设一个单独的会议室，对应到网络方面，就是每个部门有单独的交换机，配置单独的子网，这样部门之间的沟通就需要路由器了。路由器咱们还没讲到，以后再说。这样的问题在于，有的部门人多，有的部门人少。人少的部门慢慢人会变多，人多的部门也可能人越变越少。如果每个部门有单独的交换机，口多了浪费，少了又不够用。</p>
+<p>另外一种方式是<strong>虚拟隔离</strong>，就是用我们常说的 VLAN，或者叫虚拟局域网。使用 VLAN，一个交换机上会连属于多个局域网的机器，那交换机怎么区分哪个机器属于哪个局域网呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-71657eecc8bbd6b0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>我们只需要在原来的二层的头上加一个 TAG，里面有一个 VLAN ID，一共 12 位。为什么是 12 位呢？因为 12 位可以划分 4096 个 VLAN。这样是不是还不够啊。现在的情况证明，目前云计算厂商里面绝对不止 4096 个用户。当然每个用户需要一个 VLAN 了啊，怎么办呢，这个我们在后面的章节再说。</p>
+<p>如果我们买的交换机是支持 VLAN 的，当这个交换机把二层的头取下来的时候，就能够识别这个 VLAN ID。这样只有相同 VLAN 的包，才会互相转发，不同 VLAN 的包，是看不到的。这样广播问题和安全问题就都能够解决了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-16ef8140cccb19a5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>我们可以设置交换机每个口所属的 VLAN。如果某个口坐的是程序员，他们属于 VLAN 10；如果某个口坐的是人事，他们属于 VLAN 20；如果某个口坐的是财务，他们属于 VLAN 30。这样，财务发的包，交换机只会转发到 VLAN 30 的口上。程序员啊，你就监听 VLAN 10 吧，里面除了代码，啥都没有。</p>
+<p>而且对于交换机来讲，每个 VLAN 的口都是可以重新设置的。一个财务走了，把他所在座位的口从 VLAN 30 移除掉，来了一个程序员，坐在财务的位置上，就把这个口设置为 VLAN 10，十分灵活。</p>
+<p>有人会问交换机之间怎么连接呢？将两个交换机连接起来的口应该设置成什么 VLAN 呢？对于支持 VLAN 的交换机，有一种口叫作 Trunk 口。它可以转发属于任何 VLAN 的口。交换机之间可以通过这种口相互连接。</p>
+<h3 id="ICMP-协议的格式"><a href="#ICMP-协议的格式" class="headerlink" title="ICMP 协议的格式"></a>ICMP 协议的格式</h3><p>ping 是基于 ICMP 协议工作的。ICMP 全称 Internet Control Message Protocol，就是互联网控制报文协议。这里面的关键词是“控制”，那具体是怎么控制的呢？</p>
+<p>网络包在异常复杂的网络环境中传输时，常常会遇到各种各样的问题。当遇到问题的时候，总不能“死个不明不白”，要传出消息来，报告情况，这样才可以调整传输策略。这就相当于我们经常看到的电视剧里，古代行军的时候，为将为帅者需要通过侦察兵、哨探或传令兵等人肉的方式来掌握情况，控制整个战局。</p>
+<p>ICMP 报文是封装在 IP 包里面的。因为传输指令的时候，肯定需要源地址和目标地址。它本身非常简单。因为作为侦查兵，要轻装上阵，不能携带大量的包袱。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5a2efe4f45523fcd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>ICMP 报文有很多的类型，不同的类型有不同的代码。最常用的类型是主动请求为 8，主动请求的应答为 0。</p>
+<p><strong>查询报文类型</strong></p>
+<p>对应 ICMP 的查询报文类型。例如，常用的 ping 就是查询报文，是一种主动请求，并且获得主动应答的 ICMP 协议。所以，ping 发的包也是符合 ICMP 协议格式的，只不过它在后面增加了自己的格式。</p>
+<p>对 ping 的主动请求，进行网络抓包，称为 ICMP ECHO REQUEST。同理主动请求的回复，称为ICMP ECHO REPLY。比起原生的 ICMP，这里面多了两个字段，一个是标识符。这个很好理解，你派出去两队侦查兵，一队是侦查战况的，一队是去查找水源的，要有个标识才能区分。另一个是序号，你派出去的侦查兵，都要编个号。如果派出去 10 个，回来 10 个，就说明前方战况不错；如果派出去 10 个，回来 2 个，说明情况可能不妙。</p>
+<p><strong>差错报文类型</strong></p>
+<p>我举几个 ICMP 差错报文的例子：终点不可达为 3，源抑制为 4，超时为 11，重定向为 5。这些都是什么意思呢？我给你具体解释一下。</p>
+<p><strong>ping：查询报文类型的使用</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7826800d77d28cfa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>ping 命令执行的时候，源主机首先会构建一个 ICMP 请求数据包，ICMP 数据包内包含多个字段。最重要的是两个，第一个是类型字段，对于请求数据包而言该字段为 8；另外一个是顺序号，主要用于区分连续 ping 的时候发出的多个数据包。每发出一个请求数据包，顺序号会自动加 1。为了能够计算往返时间 RTT，它会在报文的数据部分插入发送时间。</p>
+<p><strong>Traceroute：差错报文类型的使用</strong></p>
+<p>所以，Traceroute 的第一个作用就是故意设置特殊的 TTL，来追踪去往目的地时沿途经过的路由器。Traceroute 的参数指向某个目的 IP 地址，它会发送一个 UDP 的数据包。将 TTL 设置成 1，也就是说一旦遇到一个路由器或者一个关卡，就表示它“牺牲”了。</p>
+<p>Traceroute 还有一个作用是故意设置不分片，从而确定路径的 MTU。要做的工作首先是发送分组，并设置“不分片”标志。发送的第一个分组的长度正好与出口 MTU 相等。如果中间遇到窄的关口会被卡住，会发送 ICMP 网络差错包，类型为“需要进行分片但设置了不分片位”。其实，这是人家故意的好吧，每次收到 ICMP“不能分片”差错时就减小分组的长度，直到到达目标主机。</p>
+<h3 id="MAC-头和-IP-头的细节"><a href="#MAC-头和-IP-头的细节" class="headerlink" title="MAC 头和 IP 头的细节"></a>MAC 头和 IP 头的细节</h3><p>一旦配置了 IP 地址和网关，往往就能够指定目标地址进行访问了。由于在跨网关访问的时候，牵扯到 MAC 地址和 IP 地址的变化，这里有必要详细描述一下 MAC 头和 IP 头的细节。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-01b82789d64b55af.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在 MAC 头里面，先是目标 MAC 地址，然后是源 MAC 地址，然后有一个协议类型，用来说明里面是 IP 协议。IP 头里面的版本号，目前主流的还是 IPv4，服务类型 TOS 在第三节讲 ip addr 命令的时候讲过，TTL 在第 7 节讲 ICMP 协议的时候讲过。另外，还有 8 位标识协议。这里到了下一层的协议，也就是，是 TCP 还是 UDP。最重要的就是源 IP 和目标 IP。先是源 IP 地址，然后是目标 IP 地址。</p>
+<p>在任何一台机器上，当要访问另一个 IP 地址的时候，都会先判断，这个目标 IP 地址，和当前机器的 IP 地址，是否在同一个网段。怎么判断同一个网段呢？需要 CIDR 和子网掩码，这个在第三节的时候也讲过了。</p>
+<p>如果是同一个网段，例如，你访问你旁边的兄弟的电脑，那就没网关什么事情，直接将源地址和目标地址放入 IP 头中，然后通过 ARP 获得 MAC 地址，将源 MAC 和目的 MAC 放入 MAC 头中，发出去就可以了。</p>
+<p>如果不是同一网段，例如，你要访问你们校园网里面的 BBS，该怎么办？这就需要发往默认网关 Gateway。Gateway 的地址一定是和源 IP 地址是一个网段的。往往不是第一个，就是第二个。例如 192.168.1.0/24 这个网段，Gateway 往往会是 192.168.1.1/24 或者 192.168.1.2/24。</p>
+<p>如何发往默认网关呢？网关不是和源 IP 地址是一个网段的么？这个过程就和发往同一个网段的其他机器是一样的：将源地址和目标 IP 地址放入 IP 头中，通过 ARP 获得网关的 MAC 地址，将源 MAC 和网关的 MAC 放入 MAC 头中，发送出去。网关所在的端口，例如 192.168.1.1/24 将网络包收进来，然后接下来怎么做，就完全看网关的了。</p>
+<p>网关往往是一个路由器，是一个三层转发的设备。啥叫三层设备？前面也说过了，就是把 MAC 头和 IP 头都取下来，然后根据里面的内容，看看接下来把包往哪里转发的设备。</p>
+<p>很多情况下，人们把网关就叫做路由器。其实不完全准确，而另一种比喻更加恰当：路由器是一台设备，它有五个网口或者网卡，相当于有五只手，分别连着五个局域网。每只手的 IP 地址都和局域网的 IP 地址相同的网段，每只手都是它握住的那个局域网的网关。</p>
+<p><strong>静态路由是什么？</strong></p>
+<p>这个时候，问题来了，该选择哪一只手？IP 头和 MAC 头加什么内容，哪些变、哪些不变呢？这个问题比较复杂，大致可以分为两类，一个是静态路由，一个是动态路由。动态路由下一节我们详细地讲。这一节我们先说静态路由。</p>
+<p><strong>静态路由，其实就是在路由器上</strong>，配置一条一条规则。这些规则包括：想访问 BBS 站（它肯定有个网段），从 2 号口出去，下一跳是 IP2；想访问教学视频站（它也有个自己的网段），从 3 号口出去，下一跳是 IP3，然后保存在路由器里。</p>
+<p>从这个过程可以看出，IP 地址也会变。<strong>这个过程用英文说就是 Network Address Translation，简称 NAT</strong>。</p>
+<p><strong>如何配置路由？</strong></p>
+<p>通过上一节的内容，你应该已经知道，路由器就是一台网络设备，它有多张网卡。当一个入口的网络包送到路由器时，它会根据一个本地的转发信息库，来决定如何正确地转发流量。这个转发信息库通常被称为<strong>路由表</strong>。</p>
+<p>一张路由表中会有多条路由规则。每一条规则至少包含这三项信息。</p>
+<ul>
+<li>目的网络：这个包想去哪儿？</li>
+<li>出口设备：将包从哪个口扔出去？</li>
+<li>下一跳网关：下一个路由器的地址。</li>
+</ul>
+<p>通过 route 命令和 ip route 命令都可以进行查询或者配置。</p>
+<p>例如，我们设置 ip route add 10.176.48.0/20 via 10.173.32.1 dev eth0，就说明要去 10.176.48.0/20 这个目标网络，要从 eth0 端口出去，经过 10.173.32.1。</p>
+<p>上一节的例子中，网关上的路由策略就是按照这三项配置信息进行配置的。这种配置方式的一个核心思想是：根据目的 IP 地址来配置路由。</p>
+<p><strong>如何配置策略路由？</strong></p>
+<p>当然，在真实的复杂的网络环境中，除了可以根据目的 ip 地址配置路由外，还可以根据多个参数来配置路由，这就称为<strong>策略路由</strong>。</p>
+<p>可以配置多个路由表，可以根据源 IP 地址、入口设备、TOS 等选择路由表，然后在路由表中查找路由。这样可以使得来自不同来源的包走不同的路由。</p>
+<pre><code>ip rule add from 192.168.1.0/24 table 10 
+ip rule add from 192.168.2.0/24 table 20
+</code></pre>
+<p>表示从 192.168.1.10/24 这个网段来的，使用 table 10 中的路由表，而从 192.168.2.0/24 网段来的，使用 table20 的路由表。</p>
+<pre><code>ip route add default scope global nexthop via 100.100.100.1 weight 1 nexthop via 200.200.200.1 weight 2    
+</code></pre>
+<p>下一跳有两个地方，分别是 100.100.100.1 和 200.200.200.1，权重分别为 1 比 2。</p>
+<p><strong>动态路由协议</strong></p>
+<p><strong>1.基于链路状态路由算法的 OSPF</strong></p>
+<p><strong>OSPF（Open Shortest Path First，开放式最短路径优先</strong>）就是这样一个基于链路状态路由协议，广泛应用在数据中心中的协议。由于主要用在数据中心内部，用于路由决策，<strong>因而称为内部网关协议（Interior Gateway Protocol，简称 IGP）</strong>。</p>
+<p>内部网关协议的重点就是找到最短的路径。在一个组织内部，路径最短往往最优。当然有时候 OSPF 可以发现多个最短的路径，可以在这多个路径中进行负载均衡，这常常被称为<strong>等价路由</strong>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fcef92c7d8f08878.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这一点非常重要。有了等价路由，到一个地方去可以有相同的两个路线，可以分摊流量，还可以当一条路不通的时候，走另外一条路。这个在后面我们讲数据中心的网络的时候，一般应用的接入层会有负载均衡 LVS。它可以和 OSPF 一起，实现高吞吐量的接入层设计。</p>
+<p><strong>2.基于距离矢量路由算法的 BGP</strong></p>
+<p>但是外网的路由协议，也即国家之间的，又有所不同。我们称为外网路由协议（Border Gateway Protocol，简称 BGP）。</p>
+<p>在一个国家内部，有路当然选近的走。但是国家之间，不光远近的问题，还有政策的问题。例如，唐僧去西天取经，有的路近。但是路过的国家看不惯僧人，见了僧人就抓。例如灭法国，连光头都要抓。这样的情况即便路近，也最好绕远点走。</p>
+<p>对于网络包同样，每个数据中心都设置自己的 Policy。例如，哪些外部的 IP 可以让内部知晓，哪些内部的 IP 可以让外部知晓，哪些可以通过，哪些不能通过。这就好比，虽然从我家里到目的地最近，但是不能谁都能从我家走啊！</p>
+<p>在网络世界，这一个个国家成为自治系统 AS（Autonomous System）。自治系统分几种类型。</p>
+<ul>
+<li>Stub AS：对外只有一个连接。这类 AS 不会传输其他 AS 的包。例如，个人或者小公司的网络。</li>
+<li>Multihomed AS：可能有多个连接连到其他的 AS，但是大多拒绝帮其他的 AS 传输包。例如一些大公司的网络。</li>
+<li>Transit AS：有多个连接连到其他的 AS，并且可以帮助其他的 AS 传输包。例如主干网。</li>
+</ul>
+<p>每个自治系统都有边界路由器，通过它和外面的世界建立联系。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7a37b7a217618af8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>BGP 又分为两类，eBGP 和 iBGP</strong>。自治系统间，边界路由器之间使用 eBGP 广播路由。内部网络也需要访问其他的自治系统。边界路由器如何将 BGP 学习到的路由导入到内部网络呢？就是通过运行 iBGP，使得内部的路由器能够找到到达外网目的地的最好的边界路由器。</p>
+<p>BGP 协议使用的算法是<strong>路径矢量路由协议（path-vector protocol）</strong>。它是距离矢量路由协议的升级版。</p>
+<p>前面说了距离矢量路由协议的缺点。其中一个是收敛慢。在 BGP 里面，除了下一跳 hop 之外，还包括了自治系统 AS 的路径，从而可以避免坏消息传得慢的问题，也即上面所描述的，B 知道 C 原来能够到达 A，是因为通过自己，一旦自己都到达不了 A 了，就不用假设 C 还能到达 A 了。</p>
+<h2 id="传输层"><a href="#传输层" class="headerlink" title="传输层"></a>传输层</h2><h3 id="TCP-和-UDP-有哪些区别？"><a href="#TCP-和-UDP-有哪些区别？" class="headerlink" title="TCP 和 UDP 有哪些区别？"></a>TCP 和 UDP 有哪些区别？</h3><p>一般面试的时候我问这两个协议的区别，大部分人会回答，TCP 是面向连接的，UDP 是面向无连接的。</p>
+<p>什么叫面向连接，什么叫无连接呢？在互通之前，面向连接的协议会先建立连接。例如，TCP 会三次握手，而 UDP 不会。为什么要建立连接呢？你 TCP 三次握手，我 UDP 也可以发三个包玩玩，有什么区别吗？</p>
+<p><strong>所谓的建立连接，是为了在客户端和服务端维护连接，而建立一定的数据结构来维护双方交互的状态，用这样的数据结构来保证所谓的面向连接的特性。</strong></p>
+<p>例如，<strong>TCP 提供可靠交付</strong>。通过 TCP 连接传输的数据，无差错、不丢失、不重复、并且按序到达。我们都知道 IP 包是没有任何可靠性保证的，一旦发出去，就像西天取经，走丢了、被妖怪吃了，都只能随它去。但是 TCP 号称能做到那个连接维护的程序做的事情，这个下两节我会详细描述。<strong>而 UDP 继承了 IP 包的特性，不保证不丢失，不保证按顺序到达</strong>。</p>
+<p>再如，<strong>TCP 是面向字节流的</strong>。发送的时候发的是一个流，没头没尾。IP 包可不是一个流，而是一个个的 IP 包。之所以变成了流，这也是 TCP 自己的状态维护做的事情。而 UDP 继承了 IP 的特性，基于数据报的，一个一个地发，一个一个地收。</p>
+<p>还有 <strong>TCP 是可以有拥塞控制的</strong>。它意识到包丢弃了或者网络的环境不好了，就会根据情况调整自己的行为，看看是不是发快了，要不要发慢点。UDP 就不会，应用让我发，我就发，管它洪水滔天。</p>
+<p>因而 <strong>TCP 其实是一个有状态服务</strong>，通俗地讲就是有脑子的，里面精确地记着发送了没有，接收到没有，发送到哪个了，应该接收哪个了，错一点儿都不行。而 UDP 则是无状态服务。通俗地说是没脑子的，天真无邪的，发出去就发出去了。</p>
+<p><strong>UDP 包头是什么样的？</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4bf2df9c07db2bdb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>UDP 的三大特点</strong></p>
+<p>第一，沟通简单，不需要一肚子花花肠子（大量的数据结构、处理逻辑、包头字段）。前提是它相信网络世界是美好的，秉承性善论，相信网络通路默认就是很容易送达的，不容易被丢弃的。</p>
+<p>第二，轻信他人。它不会建立连接，虽然有端口号，但是监听在这个地方，谁都可以传给他数据，他也可以传给任何人数据，甚至可以同时传给多个人数据。</p>
+<p>第三，愣头青，做事不懂权变。不知道什么时候该坚持，什么时候该退让。它不会根据网络的情况进行发包的拥塞控制，无论网络丢包丢成啥样了，它该怎么发还怎么发。</p>
+<p><strong>UDP 的三大使用场景</strong></p>
+<p>第一，<strong>需要资源少，在网络情况比较好的内网，或者对于丢包不敏感的应用</strong>。这很好理解，就像如果你是领导，你会让你们组刚毕业的小朋友去做一些没有那么难的项目，打一些没有那么难的客户，或者做一些失败了也能忍受的实验性项目。</p>
+<p>我们在第四节讲的** DHCP 就是基于 UDP 协议的**。一般的获取 IP 地址都是内网请求，而且一次获取不到 IP 又没事，过一会儿还有机会。我们讲过 PXE 可以在启动的时候自动安装操作系统，操作系统镜像的下载使用的 TFTP，这个也是基于 UDP 协议的。在还没有操作系统的时候，客户端拥有的资源很少，不适合维护一个复杂的状态机，而且因为是内网，一般也没啥问题。</p>
+<p>第二，<strong>不需要一对一沟通，建立连接，而是可以广播的应用</strong>。咱们小时候人都很简单，大家在班级里面，谁成绩好，谁写作好，应该表扬谁惩罚谁，谁得几个小红花都是当着全班的面讲的，公平公正公开。长大了人心复杂了，薪水、奖金要背靠背，和员工一对一沟通。</p>
+<p>UDP 的不面向连接的功能，可以使得可以承载广播或者多播的协议。<strong>DHCP 就是一种广播的形式</strong>，就是基于 UDP 协议的，而广播包的格式前面说过了。</p>
+<p>第三，<strong>需要处理速度快，时延低，可以容忍少数丢包，但是要求即便网络拥塞，也毫不退缩</strong>，一往无前的时候。记得曾国藩建立湘军的时候，专门招出生牛犊不怕虎的新兵，而不用那些“老油条”的八旗兵，就是因为八旗兵经历的事情多，遇到敌军不敢舍死忘生。</p>
+<p><strong>TCP 包头格式</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-95834d01d22060a9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>首先，源端口号和目标端口号是不可少的，这一点和 UDP 是一样的。如果没有这两个端口号。数据就不知道应该发给哪个应用。</p>
+<p>通过对 TCP 头的解析，我们知道要掌握 TCP 协议，重点应该关注以下几个问题：</p>
+<ul>
+<li>顺序问题 ，稳重不乱；</li>
+<li>丢包问题，承诺靠谱；</li>
+<li>连接维护，有始有终；</li>
+<li>流量控制，把握分寸；</li>
+<li>拥塞控制，知进知退。</li>
+</ul>
+<p><strong>TCP 的三次握手</strong></p>
+<p>三次握手除了双方建立连接外，主要还是为了沟通一件事情，<strong>就是 TCP 包的序号的问题</strong>。</p>
+<p>A 要告诉 B，我这面发起的包的序号起始是从哪个号开始的，B 同样也要告诉 A，B 发起的包的序号起始是从哪个号开始的。为什么序号不能都从 1 开始呢？因为这样往往会出现冲突。</p>
+<p>例如，A 连上 B 之后，发送了 1、2、3 三个包，但是发送 3 的时候，中间丢了，或者绕路了，于是重新发送，后来 A 掉线了，重新连上 B 后，序号又从 1 开始，然后发送 2，但是压根没想发送 3，但是上次绕路的那个 3 又回来了，发给了 B，B 自然认为，这就是下一个包，于是发生了错误。</p>
+<p>因而，每个连接都要有不同的序号。这个序号的起始序号是随着时间变化的，可以看成一个 32 位的计数器，每 4 微秒加一，如果计算一下，如果到重复，需要 4 个多小时，那个绕路的包早就死翘翘了，因为我们都知道 IP 包头里面有个 TTL，也即生存时间。</p>
+<p>好了，双方终于建立了信任，建立了连接。前面也说过，为了维护这个连接，双方都要维护一个状态机，在连接建立的过程中，双方的状态变化时序图就像这样。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a719890b32259f58.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>一开始，客户端和服务端都处于 CLOSED 状态。先是服务端主动监听某个端口，处于 LISTEN 状态。然后客户端主动发起连接 SYN，之后处于 SYN-SENT 状态。服务端收到发起的连接，返回 SYN，并且 ACK 客户端的 SYN，之后处于 SYN-RCVD 状态。客户端收到服务端发送的 SYN 和 ACK 之后，发送 ACK 的 ACK，之后处于 ESTABLISHED 状态，因为它一发一收成功了。服务端收到 ACK 的 ACK 之后，处于 ESTABLISHED 状态，因为它也一发一收了。</p>
+<p><strong>TCP 四次挥手</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f65755bc0fa20a3c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>断开的时候，我们可以看到，当 A 说“不玩了”，就进入 FIN_WAIT_1 的状态，B 收到“A 不玩”的消息后，发送知道了，就进入 CLOSE_WAIT 的状态。</p>
+<p>A 收到“B 说知道了”，就进入 FIN_WAIT_2 的状态，如果这个时候 B 直接跑路，则 A 将永远在这个状态。TCP 协议里面并没有对这个状态的处理，但是 Linux 有，可以调整 tcp_fin_timeout 这个参数，设置一个超时时间。</p>
+<p>如果 B 没有跑路，发送了“B 也不玩了”的请求到达 A 时，A 发送“知道 B 也不玩了”的 ACK 后，从 FIN_WAIT_2 状态结束，按说 A 可以跑路了，但是最后的这个 ACK 万一 B 收不到呢？则 B 会重新发一个“B 不玩了”，这个时候 A 已经跑路了的话，B 就再也收不到 ACK 了，因而 TCP 协议要求 A 最后等待一段时间 TIME_WAIT，这个时间要足够长，长到如果 B 没收到 ACK 的话，“B 说不玩了”会重发的，A 会重新发一个 ACK 并且足够时间到达 B。</p>
+<p>A 直接跑路还有一个问题是，A 的端口就直接空出来了，但是 B 不知道，B 原来发过的很多包很可能还在路上，如果 A 的端口被一个新的应用占用了，这个新的应用会收到上个连接中 B 发过来的包，虽然序列号是重新生成的，但是这里要上一个双保险，防止产生混乱，因而也需要等足够长的时间，等到原来 B 发送的所有的包都死翘翘，再空出端口来。</p>
+<p>等待的时间设为** 2MSL，MSL 是 Maximum Segment Lifetime，**报文最大生存时间，它是任何报文在网络上存在的最长时间，超过这个时间报文将被丢弃。因为 TCP 报文基于是 IP 协议的，而 IP 头中有一个 TTL 域，是 IP 数据报可以经过的最大路由数，每经过一个处理他的路由器此值就减 1，当此值为 0 则数据报将被丢弃，同时发送 ICMP 报文通知源主机。协议规定 MSL 为 2 分钟，实际应用中常用的是 30 秒，1 分钟和 2 分钟等。</p>
+<p>还有一个异常情况就是，B 超过了 2MSL 的时间，依然没有收到它发的 FIN 的 ACK，怎么办呢？按照 TCP 的原理，B 当然还会重发 FIN，这个时候 A 再收到这个包之后，A 就表示，我已经在这里等了这么长时间了，已经仁至义尽了，之后的我就都不认了，于是就直接发送 RST，B 就知道 A 早就跑了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c7348afb80807800.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>如何实现一个靠谱的协议？</strong></p>
+<p>TCP 协议使用的也是同样的模式。为了保证顺序性，每一个包都有一个 ID。在建立连接的时候，会商定起始的 ID 是什么，然后按照 ID 一个个发送。为了保证不丢包，对于发送的包都要进行应答，但是这个应答也不是一个一个来的，而是会应答某个之前的 ID，表示都收到了，这种模式称为累计确认或者累计应答（cumulative acknowledgment）。</p>
+<p>接收端会给发送端报一个窗口的大小，叫 Advertised window。这个窗口的大小应该等于上面的第二部分加上第三部分，就是已经交代了没做完的加上马上要交代的。超过这个窗口的，接收端做不过来，就不能发送了。</p>
+<p>于是，发送端需要保持下面的数据结构。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0d4b1e336fbf8b4b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>LastByteAcked：第一部分和第二部分的分界线</li>
+<li>LastByteSent：第二部分和第三部分的分界线</li>
+<li>LastByteAcked + AdvertisedWindow：第三部分和第四部分的分界线</li>
+</ul>
+<p>对于接收端来讲，它的缓存里记录的内容要简单一些。</p>
+<ul>
+<li>第一部分：接受并且确认过的。也就是我领导交代给我，并且我做完的。</li>
+<li>第二部分：还没接收，但是马上就能接收的。也即是我自己的能够接受的最大工作量。</li>
+<li>第三部分：还没接收，也没法接收的。也即超过工作量的部分，实在做不完。</li>
+</ul>
+<p>对应的数据结构就像这样。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3e7047c074ff2de3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>MaxRcvBuffer：最大缓存的量；</li>
+<li>LastByteRead 之后是已经接收了，但是还没被应用层读取的；</li>
+<li>NextByteExpected 是第一部分和第二部分的分界线。</li>
+</ul>
+<p>第二部分的窗口有多大呢？</p>
+<p>NextByteExpected 和 LastByteRead 的差其实是还没被应用层读取的部分占用掉的 MaxRcvBuffer 的量，我们定义为 A。</p>
+<p>AdvertisedWindow 其实是 MaxRcvBuffer 减去 A。</p>
+<p>也就是：AdvertisedWindow=MaxRcvBuffer-((NextByteExpected-1)-LastByteRead)。</p>
+<p>那第二部分和第三部分的分界线在哪里呢？NextByteExpected 加 AdvertisedWindow 就是第二部分和第三部分的分界线，其实也就是 LastByteRead 加上 MaxRcvBuffer。</p>
+<p>其中第二部分里面，由于受到的包可能不是顺序的，会出现空档，只有和第一部分连续的，可以马上进行回复，中间空着的部分需要等待，哪怕后面的已经来了。</p>
+<p><strong>顺序问题与丢包问题</strong></p>
+<p>还是刚才的图，在发送端来看，1、2、3 已经发送并确认；4、5、6、7、8、9 都是发送了还没确认；10、11、12 是还没发出的；13、14、15 是接收方没有空间，不准备发的。</p>
+<p>在接收端来看，1、2、3、4、5 是已经完成 ACK，但是没读取的；6、7 是等待接收的；<strong>8、9 是已经接收，但是没有 ACK 的</strong>。</p>
+<p>发送端和接收端当前的状态如下：</p>
+<ul>
+<li>1、2、3 没有问题，双方达成了一致。</li>
+<li>4、5 接收方说 ACK 了，但是发送方还没收到，有可能丢了，有可能在路上。</li>
+<li>6、7、8、9 肯定都发了，但是 8、9 已经到了，但是 6、7 没到，出现了乱序，缓存着但是没办法 ACK。</li>
+</ul>
+<p>根据这个例子，我们可以知道，顺序问题和丢包问题都有可能发生，所以我们先来看<strong>确认与重发的机制</strong>。</p>
+<p>假设 4 的确认到了，不幸的是，5 的 ACK 丢了，6、7 的数据包丢了，这该怎么办呢？</p>
+<p>一种方法就是<strong>超时重试</strong>，也即对每一个发送了，但是没有 ACK 的包，都有设一个定时器，超过了一定的时间，就重新尝试。但是这个超时的时间如何评估呢？这个时间不宜过短，时间必须大于往返时间 RTT，否则会引起不必要的重传。也不宜过长，这样超时时间变长，访问就变慢了。</p>
+<p>估计往返时间，需要 TCP 通过采样 RTT 的时间，然后进行加权平均，算出一个值，而且这个值还是要不断变化的，因为网络状况不断地变化。除了采样 RTT，还要采样 RTT 的波动范围，计算出一个估计的超时时间。由于重传时间是不断变化的，我们称为<strong>自适应重传算法（Adaptive Retransmission Algorithm）</strong>。</p>
+<p>如果过一段时间，5、6、7 都超时了，就会重新发送。接收方发现 5 原来接收过，于是丢弃 5；6 收到了，发送 ACK，要求下一个是 7，7 不幸又丢了。当 7 再次超时的时候，<strong>有需要重传的时候，TCP 的策略是超时间隔加倍。每当遇到一次超时重传的时候，都会将下一次超时时间间隔设为先前值的两倍。两次超时，就说明网络环境差，不宜频繁反复发送</strong>。</p>
+<p><strong>有一个可以快速重传的机制</strong>，当接收方收到一个序号大于下一个所期望的报文段时，就会检测到数据流中的一个间隔，于是它就会发送冗余的 ACK，仍然 ACK 的是期望接收的报文段。而当客户端收到三个冗余的 ACK 后，就会在定时器过期之前，重传丢失的报文段。</p>
+<p>例如，接收方发现 6 收到了，8 也收到了，但是 7 还没来，那肯定是丢了，于是发送 6 的 ACK，要求下一个是 7。接下来，收到后续的包，仍然发送 6 的 ACK，要求下一个是 7。当客户端收到 3 个重复 ACK，就会发现 7 的确丢了，不等超时，马上重发。</p>
+<p>还有一种方式称为 <strong>Selective Acknowledgment （SACK）</strong>。这种方式需要在 TCP 头里加一个 SACK 的东西，可以将缓存的地图发送给发送方。例如可以发送 ACK6、SACK8、SACK9，有了地图，发送方一下子就能看出来是 7 丢了。</p>
+<p><strong>流量控制问题</strong></p>
+<p>我们再来看流量控制机制，在对于包的确认中，同时会携带一个窗口的大小。</p>
+<p>我们先假设窗口不变的情况，窗口始终为 9。4 的确认来的时候，会右移一个，这个时候第 13 个包也可以发送了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-86cd8f06222509dd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这个时候，假设发送端发送过猛，会将第三部分的 10、11、12、13 全部发送完毕，之后就停止发送了，未发送可发送部分为 0。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-14716c6df118113c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>当对于包 5 的确认到达的时候，在客户端相当于窗口再滑动了一格，这个时候，才可以有更多的包可以发送了，例如第 14 个包才可以发送。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ed0311b40be16f6f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果接收方实在处理的太慢，导致缓存中没有空间了，可以通过确认信息修改窗口的大小，甚至可以设置为 0，则发送方将暂时停止发送。</p>
+<p>我们假设一个极端情况，接收端的应用一直不读取缓存中的数据，当数据包 6 确认后，窗口大小就不能再是 9 了，就要缩小一个变为 8。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ae038c6b1b767e56.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这个新的窗口 8 通过 6 的确认消息到达发送端的时候，你会发现窗口没有平行右移，而是仅仅左面的边右移了，窗口的大小从 9 改成了 8。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d210aa6525c929dc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果接收端还是一直不处理数据，则随着确认的包越来越多，窗口越来越小，直到为 0。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4938fc33ce0e2c42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>当这个窗口通过包 14 的确认到达发送端的时候，发送端的窗口也调整为 0，停止发送。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c487e3f88ba63809.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果这样的话，发送方会定时发送窗口探测数据包，看是否有机会调整窗口的大小。当接收方比较慢的时候，<strong>要防止低能窗口综合征</strong>，别空出一个字节来就赶快告诉发送方，然后马上又填满了，可以当窗口太小的时候，不更新窗口，直到达到一定大小，或者缓冲区一半为空，才更新窗口。</p>
+<p><strong>拥塞控制问题</strong></p>
+<p>最后，我们看一下拥塞控制的问题，也是通过窗口的大小来控制的，前面的滑动窗口 rwnd 是怕发送方把接收方缓存塞满，而拥塞窗口 cwnd，是怕把网络塞满。</p>
+<p>这里有一个公式 LastByteSent - LastByteAcked &lt;= min {cwnd, rwnd} ，是拥塞窗口和滑动窗口共同控制发送的速度。</p>
+<p>那发送方怎么判断网络是不是慢呢？这其实是个挺难的事情，因为对于 TCP 协议来讲，他压根不知道整个网络路径都会经历什么，对他来讲就是一个黑盒。TCP 发送包常被比喻为往一个水管里面灌水，而 TCP 的拥塞控制就是在不堵塞，不丢包的情况下，尽量发挥带宽。</p>
+<p>水管有粗细，网络有带宽，也即每秒钟能够发送多少数据；水管有长度，端到端有时延。在理想状态下，水管里面水的量 = 水管粗细 x 水管长度。对于到网络上，通道的容量 = 带宽 × 往返延迟。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-773e9e069426d2fa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如图所示，假设往返时间为 8s，去 4s，回 4s，每秒发送一个包，每个包 1024byte。已经过去了 8s，则 8 个包都发出去了，其中前 4 个包已经到达接收端，但是 ACK 还没有返回，不能算发送成功。5-8 后四个包还在路上，还没被接收。这个时候，整个管道正好撑满，在发送端，已发送未确认的为 8 个包，正好等于带宽，也即每秒发送 1 个包，乘以来回时间 8s。</p>
+<p>如果我们在这个基础上再调大窗口，使得单位时间内更多的包可以发送，会出现什么现象呢？</p>
+<p>我们来想，原来发送一个包，从一端到达另一端，假设一共经过四个设备，每个设备处理一个包时间耗费 1s，所以到达另一端需要耗费 4s，如果发送的更加快速，则单位时间内，会有更多的包到达这些中间设备，这些设备还是只能每秒处理一个包的话，多出来的包就会被丢弃，这是我们不想看到的。</p>
+<p>这个时候，我们可以想其他的办法，例如这个四个设备本来每秒处理一个包，但是我们在这些设备上加缓存，处理不过来的在队列里面排着，这样包就不会丢失，但是缺点是会增加时延，这个缓存的包，4s 肯定到达不了接收端了，如果时延达到一定程度，就会超时重传，也是我们不想看到的。</p>
+<p>于是 TCP 的拥塞控制主要来避免两种现象，包丢失和超时重传。一旦出现了这些现象就说明，发送速度太快了，要慢一点。但是一开始我怎么知道速度多快呢，我怎么知道应该把窗口调整到多大呢？</p>
+<p>如果我们通过漏斗往瓶子里灌水，我们就知道，不能一桶水一下子倒进去，肯定会溅出来，要一开始慢慢的倒，然后发现总能够倒进去，就可以越倒越快。这叫作<strong>慢启动</strong>。</p>
+<p>一条 TCP 连接开始，cwnd 设置为一个报文段，一次只能发送一个；当收到这一个确认的时候，cwnd 加一，于是一次能够发送两个；当这两个的确认到来的时候，每个确认 cwnd 加一，两个确认 cwnd 加二，于是一次能够发送四个；当这四个的确认到来的时候，每个确认 cwnd 加一，四个确认 cwnd 加四，于是一次能够发送八个。可以看出这是<strong>指数性的增长</strong>。</p>
+<p>涨到什么时候是个头呢？有一个值 ssthresh 为 65535 个字节，当超过这个值的时候，就要小心一点了，不能倒这么快了，可能快满了，再慢下来。</p>
+<p>每收到一个确认后，cwnd 增加 1/cwnd，我们接着上面的过程来，一次发送八个，当八个确认到来的时候，每个确认增加 1/8，八个确认一共 cwnd 增加 1，于是一次能够发送九个，变成了线性增长。</p>
+<p>但是线性增长还是增长，还是越来越多，直到有一天，水满则溢，出现了拥塞，这时候一般就会一下子降低倒水的速度，等待溢出的水慢慢渗下去。</p>
+<p>拥塞的一种表现形式是丢包，需要超时重传，这个时候，将 sshresh 设为 cwnd/2，将 cwnd 设为 1，重新开始慢启动。这真是一旦超时重传，马上回到解放前。但是这种方式太激进了，将一个高速的传输速度一下子停了下来，会造成网络卡顿。</p>
+<p>前面我们讲过快速重传算法。当接收端发现丢了一个中间包的时候，发送三次前一个包的 ACK，于是发送端就会快速地重传，不必等待超时再重传。TCP 认为这种情况不严重，因为大部分没丢，只丢了一小部分，cwnd 减半为 cwnd/2，然后 sshthresh = cwnd，当三个包返回的时候，cwnd = sshthresh + 3，也就是没有一夜回到解放前，而是还在比较高的值，呈线性增长。</p>
+<p>就像前面说的一样，正是这种知进退，使得时延很重要的情况下，反而降低了速度。但是如果你仔细想一下，TCP 的拥塞控制主要来避免的两个现象都是有问题的。</p>
+<p>第一个问题是丢包并不代表着通道满了，也可能是管子本来就漏水。例如公网上带宽不满也会丢包，这个时候就认为拥塞了，退缩了，其实是不对的。</p>
+<p>第二个问题是 TCP 的拥塞控制要等到将中间设备都填充满了，才发生丢包，从而降低速度，这时候已经晚了。其实 TCP 只要填满管道就可以了，不应该接着填，直到连缓存也填满。</p>
+<p>为了优化这两个问题，后来有了 <strong>TCP BBR 拥塞算法</strong>。它企图找到一个平衡点，就是通过不断地加快发送速度，将管道填满，但是不要填满中间设备的缓存，因为这样时延会增加，在这个平衡点可以很好的达到高带宽和低时延的平衡。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-39c1189f8da20ffd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>Socket底层实现</strong></p>
+<p>说 TCP 的 Socket 就是一个文件流，是非常准确的。因为，Socket 在 Linux 中就是以文件的形式存在的。除此之外，还存在文件描述符。写入和读出，也是通过文件描述符。</p>
+<p>在内核中，Socket 是一个文件，那对应就有文件描述符。每一个进程都有一个数据结构 task_struct，里面指向一个文件描述符数组，来列出这个进程打开的所有文件的文件描述符。文件描述符是一个整数，是这个数组的下标。</p>
+<p>这个数组中的内容是一个指针，指向内核中所有打开的文件的列表。既然是一个文件，就会有一个 inode，只不过 Socket 对应的 inode 不像真正的文件系统一样，保存在硬盘上的，而是在内存中的。在这个 inode 中，指向了 Socket 在内核中的 Socket 结构。</p>
+<p>在这个结构里面，主要的是两个队列，一个是发送队列，一个是接收队列。在这两个队列里面保存的是一个缓存 sk_buff。这个缓存里面能够看到完整的包的结构。看到这个，是不是能和前面讲过的收发包的场景联系起来了？</p>
+<p>整个数据结构我也画了一张图。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-88d8b4eceb690a49.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>epoll实现</strong></p>
+<p>上面 select 函数还是有问题的，因为每次 Socket 所在的文件描述符集合中有 Socket 发生变化的时候，都需要通过轮询的方式，也就是需要将全部项目都过一遍的方式来查看进度，这大大影响了一个项目组能够支撑的最大的项目数量。因而使用 select，能够同时盯的项目数量由 FD_SETSIZE 限制。</p>
+<p>如果改成事件通知的方式，情况就会好很多，项目组不需要通过轮询挨个盯着这些项目，而是当项目进度发生变化的时候，主动通知项目组，然后项目组再根据项目进展情况做相应的操作。</p>
+<p>能完成这件事情的函数叫 epoll，它在内核中的实现不是通过轮询的方式，而是通过注册 callback 函数的方式，当某个文件描述符发送变化的时候，就会主动通知。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-92e5e6e83886e9ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如图所示，假设进程打开了 Socket m, n, x 等多个文件描述符，现在需要通过 epoll 来监听是否这些 Socket 都有事件发生。其中 epoll_create 创建一个 epoll 对象，也是一个文件，也对应一个文件描述符，同样也对应着打开文件列表中的一项。在这项里面有一个红黑树，在红黑树里，要保存这个 epoll 要监听的所有 Socket。</p>
+<p>当 epoll_ctl 添加一个 Socket 的时候，其实是加入这个红黑树，同时红黑树里面的节点指向一个结构，将这个结构挂在被监听的 Socket 的事件列表中。当一个 Socket 来了一个事件的时候，可以从这个列表中得到 epoll 对象，并调用 call back 通知它。</p>
+<p>这种通知方式使得监听的 Socket 数据增加的时候，效率不会大幅度降低，能够同时监听的 Socket 的数目也非常的多了。上限就为系统定义的、进程打开的最大文件描述符个数。因而，epoll 被称为解决 C10K 问题的利器。</p>
+<h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><h3 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h3><ul>
+<li>HTTP 协议虽然很常用，也很复杂，重点记住 GET、POST、 PUT、DELETE 这几个方法，以及重要的首部字段；</li>
+<li>HTTP 2.0 通过头压缩、分帧、二进制编码、多路复用等技术提升性能；</li>
+<li>QUIC 协议通过基于 UDP 自定义的类似 TCP 的连接、重试、多路复用、流量控制技术，进一步提升性能。</li>
+</ul>
+<p><strong>HTTPS</strong></p>
+<p>我们可以知道，非对称加密在性能上不如对称加密，那是否能将两者结合起来呢？例如，公钥私钥主要用于传输对称加密的秘钥，而真正的双方大数据量的通信都是通过对称加密进行的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6ac3005fcdb0d7b8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>HTTPS双向校验</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8de2a11e67a10ced.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d922eb32037d9faa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>加密分对称加密和非对称加密。对称加密效率高，但是解决不了密钥传输问题；非对称加密可以解决这个问题，但是效率不高。</li>
+<li>非对称加密需要通过证书和权威机构来验证公钥的合法性。</li>
+<li>HTTPS 是综合了对称加密和非对称加密算法的 HTTP 协议。既保证传输安全，也保证传输效率。</li>
+</ul>
+<h3 id="流媒体协议"><a href="#流媒体协议" class="headerlink" title="流媒体协议"></a>流媒体协议</h3><p><strong>视频和图片的压缩过程有什么特点？</strong></p>
+<ul>
+<li>空间冗余：图像的相邻像素之间有较强的相关性，一张图片相邻像素往往是渐变的，不是突变的，没必要每个像素都完整地保存，可以隔几个保存一个，中间的用算法计算出来。</li>
+<li>时间冗余：视频序列的相邻图像之间内容相似。一个视频中连续出现的图片也不是突变的，可以根据已有的图片进行预测和推断。</li>
+<li>视觉冗余：人的视觉系统对某些细节不敏感，因此不会每一个细节都注意到，可以允许丢失一些数据。</li>
+<li>编码冗余：不同像素值出现的概率不同，概率高的用的字节少，概率低的用的字节多，类似霍夫曼编码（Huffman Coding）的思路。</li>
+</ul>
+<p>总之，用于编码的算法非常复杂，而且多种多样，但是编码过程其实都是类似的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e52ffe0cd90fe940.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>视频编码的两大流派</strong></p>
+<p>能不能形成一定的标准呢？要不然开发视频播放的人得累死了。当然能，我这里就给你介绍，视频编码的两大流派。</p>
+<ul>
+<li>流派一：ITU（International Telecommunications Union）的 VCEG（Video Coding Experts Group），这个称为国际电联下的 VCEG。既然是电信，可想而知，他们最初做视频编码，主要侧重传输。名词系列二，就是这个组织制定的标准。</li>
+<li>流派二：ISO（International Standards Organization）的 MPEG（Moving Picture Experts Group），这个是 ISO 旗下的 MPEG，本来是做视频存储的。例如，编码后保存在 VCD 和 DVD 中。当然后来也慢慢侧重视频传输了。名词系列三，就是这个组织制定的标准。</li>
+</ul>
+<p>后来，ITU-T（国际电信联盟电信标准化部门，ITU Telecommunication Standardization Sector）与 MPEG 联合制定了 H.264/MPEG-4 AVC，这才是我们这一节要重点关注的。</p>
+<p>经过编码之后，生动活泼的一帧一帧的图像，就变成了一串串让人看不懂的二进制，这个二进制可以放在一个文件里面，按照一定的格式保存起来，这就是名词系列一。</p>
+<p>其实这些就是视频保存成文件的格式。例如，前几个字节是什么意义，后几个字节是什么意义，然后是数据，数据中保存的就是编码好的结果。</p>
+<p>整个直播过程，可以用这个的图来描述。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6cb2c649430bbb18.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-33d9da1e4f18abc8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>编码：如何将丰富多彩的图片变成二进制流？</strong></p>
+<p>虽然我们说视频是一张张图片的序列，但是如果每张图片都完整，就太大了，因而会将视频序列分成三种帧。</p>
+<ul>
+<li>I 帧，也称关键帧。里面是完整的图片，只需要本帧数据，就可以完成解码。</li>
+<li>P 帧，前向预测编码帧。P 帧表示的是这一帧跟之前的一个关键帧（或 P 帧）的差别，解码时需要用之前缓存的画面，叠加上和本帧定义的差别，生成最终画面。</li>
+<li>B 帧，双向预测内插编码帧。B 帧记录的是本帧与前后帧的差别。要解码 B 帧，不仅要取得之前的缓存画面，还要解码之后的画面，通过前后画面的数据与本帧数据的叠加，取得最终的画面。</li>
+</ul>
+<p>可以看出，I 帧最完整，B 帧压缩率最高，而压缩后帧的序列，应该是在 IBBP 的间隔出现的。这就是通过时序进行编码。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5283c8230944fb79.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在一帧中，分成多个片，每个片中分成多个宏块，每个宏块分成多个子块，这样将一张大的图分解成一个个小块，可以方便进行空间上的编码。</p>
+<p>尽管时空非常立体地组成了一个序列，但是总归还是要压缩成一个二进制流。这个流是有结构的，是一个个的网络提取层单元（NALU，Network Abstraction Layer Unit）。变成这种格式就是为了传输，因为网络上的传输，默认的是一个个的包，因而这里也就分成了一个个的单元。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7790e8af6458d36e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>每一个 NALU 首先是一个起始标识符，用于标识 NALU 之间的间隔；然后是 NALU 的头，里面主要配置了 NALU 的类型；最终 Payload 里面是 NALU 承载的数据。</p>
+<ul>
+<li>0x07 表示 SPS，是序列参数集， 包括一个图像序列的所有信息，如图像尺寸、视频格式等。</li>
+<li>0x08 表示 PPS，是图像参数集，包括一个图像的所有分片的所有相关信息，包括图像类型、序列号等。</li>
+</ul>
+<p>在传输视频流之前，必须要传输这两类参数，不然无法解码。为了保证容错性，每一个 I 帧前面，都会传一遍这两个参数集合。</p>
+<p>如果 NALU Header 里面的表示类型是 SPS 或者 PPS，则 Payload 中就是真正的参数集的内容。</p>
+<p>如果类型是帧，则 Payload 中才是正的视频数据，当然也是一帧一帧存放的，前面说了，一帧的内容还是挺多的，因而每一个 NALU 里面保存的是一片。对于每一片，到底是 I 帧，还是 P 帧，还是 B 帧，在片结构里面也有个 Header，这里面有个类型，然后是片的内容。</p>
+<p>这样，整个格式就出来了，一个视频，可以拆分成一系列的帧，每一帧拆分成一系列的片，每一片都放在一个 NALU 里面，NALU 之间都是通过特殊的起始标识符分隔，在每一个 I 帧的第一片前面，要插入单独保存 SPS 和 PPS 的 NALU，最终形成一个长长的 NALU 序列。</p>
+<p><strong>推流：如何把数据流打包传输到对端？</strong></p>
+<p>那这个格式是不是就能够直接在网上传输到对端，开始直播了呢？其实还不是，还需要将这个二进制的流打包成网络包进行发送，这里我们使用 RTMP 协议。这就进入了第二个过程，推流。</p>
+<p>RTMP 是基于 TCP 的，因而肯定需要双方建立一个 TCP 的连接。在有 TCP 的连接的基础上，还需要建立一个 RTMP 的连接，也即在程序里面，你需要调用 RTMP 类库的 Connect 函数，显示创建一个连接。</p>
+<p>RTMP 为什么需要建立一个单独的连接呢？</p>
+<p>因为它们需要商量一些事情，保证以后的传输能正常进行。主要就是两个事情，一个是版本号，如果客户端、服务器的版本号不一致，则不能工作。另一个就是时间戳，视频播放中，时间是很重要的，后面的数据流互通的时候，经常要带上时间戳的差值，因而一开始双方就要知道对方的时间戳。</p>
+<p>未来沟通这些事情，需要发送六条消息：客户端发送 C0、C1、 C2，服务器发送 S0、 S1、 S2。</p>
+<p>首先，客户端发送 C0 表示自己的版本号，不必等对方的回复，然后发送 C1 表示自己的时间戳。</p>
+<p>服务器只有在收到 C0 的时候，才能返回 S0，表明自己的版本号，如果版本不匹配，可以断开连接。</p>
+<p>服务器发送完 S0 后，也不用等什么，就直接发送自己的时间戳 S1。客户端收到 S1 的时候，发一个知道了对方时间戳的 ACK C2。同理服务器收到 C1 的时候，发一个知道了对方时间戳的 ACK S2。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7ddb00a525f70cd7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>握手之后，双方需要互相传递一些控制信息，例如 Chunk 块的大小、窗口大小等。</p>
+<p>真正传输数据的时候，还是需要创建一个流 Stream，然后通过这个 Stream 来推流 publish。</p>
+<p>推流的过程，就是将 NALU 放在 Message 里面发送，这个也称为 RTMP Packet 包。Message 的格式就像这样。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-837c327b07afcaaf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>发送的时候，去掉 NALU 的起始标识符。因为这部分对于 RTMP 协议来讲没有用。接下来，将 SPS 和 PPS 参数集封装成一个 RTMP 包发送，然后发送一个个片的 NALU。</p>
+<p>RTMP 在收发数据的时候并不是以 Message 为单位的，而是把 Message 拆分成 Chunk 发送，而且必须在一个 Chunk 发送完成之后，才能开始发送下一个 Chunk。每个 Chunk 中都带有 Message ID，表示属于哪个 Message，接收端也会按照这个 ID 将 Chunk 组装成 Message。</p>
+<p>前面连接的时候，设置的 Chunk 块大小就是指这个 Chunk。将大的消息变为小的块再发送，可以在低带宽的情况下，减少网络拥塞。</p>
+<p>这有一个分块的例子，你可以看一下。</p>
+<p>假设一个视频的消息长度为 307，但是 Chunk 大小约定为 128，于是会拆分为三个 Chunk。</p>
+<p>第一个 Chunk 的 Type＝0，表示 Chunk 头是完整的；头里面 Timestamp 为 1000，总长度 Length 为 307，类型为 9，是个视频，Stream ID 为 12346，正文部分承担 128 个字节的 Data。</p>
+<p>第二个 Chunk 也要发送 128 个字节，Chunk 头由于和第一个 Chunk 一样，因此采用 Chunk Type＝3，表示头一样就不再发送了。</p>
+<p>第三个 Chunk 要发送的 Data 的长度为 307-128-128=51 个字节，还是采用 Type＝3。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8c60fe34259d9d17.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>就这样数据就源源不断到达流媒体服务器，整个过程就像这样。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5a3d58c99186b045.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这个时候，大量观看直播的观众就可以通过 RTMP 协议从流媒体服务器上拉取，但是这么多的用户量，都去同一个地方拉取，服务器压力会很大，而且用户分布在全国甚至全球，如果都去统一的一个地方下载，也会时延比较长，需要有分发网络。</p>
+<p>分发网络分为中心和边缘两层。边缘层服务器部署在全国各地及横跨各大运营商里，和用户距离很近。中心层是流媒体服务集群，负责内容的转发。智能负载均衡系统，根据用户的地理位置信息，就近选择边缘服务器，为用户提供推 / 拉流服务。中心层也负责转码服务，例如，把 RTMP 协议的码流转换为 HLS 码流。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-07c0cfb9a761e1a8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>拉流：观众的客户端如何看到视频？</strong></p>
+<p>接下来，我们再来看观众的客户端通过 RTMP 拉流的过程。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5a58874825586f71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>先读到的是 H.264 的解码参数，例如 SPS 和 PPS，然后对收到的 NALU 组成的一个个帧，进行解码，交给播发器播放，一个绚丽多彩的视频画面就出来了。</p>
+<h3 id="DNS-amp-amp-HTTPDNS"><a href="#DNS-amp-amp-HTTPDNS" class="headerlink" title="DNS &amp;&amp; HTTPDNS"></a>DNS &amp;&amp; HTTPDNS</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-7124456107671b8a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>DNS 解析流程</strong></p>
+<ol>
+<li>电脑客户端会发出一个 DNS 请求，问 <a target="_blank" rel="noopener" href="http://www.163.com/">www.163.com</a> 的 IP 是啥啊，并发给本地域名服务器 (本地 DNS)。那本地域名服务器 (本地 DNS) 是什么呢？如果是通过 DHCP 配置，本地 DNS 由你的网络服务商（ISP），如电信、移动等自动分配，它通常就在你网络服务商的某个机房。</li>
+<li>本地 DNS 收到来自客户端的请求。你可以想象这台服务器上缓存了一张域名与之对应 IP 地址的大表格。如果能找到 <a target="_blank" rel="noopener" href="http://www.163.com,它就直接返回/">www.163.com，它就直接返回</a> IP 地址。如果没有，本地 DNS 会去问它的根域名服务器：“老大，能告诉我 <a target="_blank" rel="noopener" href="http://www.163.com/">www.163.com</a> 的 IP 地址吗？”根域名服务器是最高层次的，全球共有 13 套。它不直接用于域名解析，但能指明一条道路。</li>
+<li>根 DNS 收到来自本地 DNS 的请求，发现后缀是 .com，说：“哦，<a target="_blank" rel="noopener" href="http://www.163.com/">www.163.com</a> 啊，这个域名是由.com 区域管理，我给你它的顶级域名服务器的地址，你去问问它吧。”</li>
+<li>本地 DNS 转向问顶级域名服务器：“老二，你能告诉我 <a target="_blank" rel="noopener" href="http://www.163.com/">www.163.com</a> 的 IP 地址吗？”顶级域名服务器就是大名鼎鼎的比如 .com、.net、 .org 这些一级域名，它负责管理二级域名，比如 163.com，所以它能提供一条更清晰的方向。</li>
+<li>顶级域名服务器说：“我给你负责 <a target="_blank" rel="noopener" href="http://www.163.com/">www.163.com</a> 区域的权威 DNS 服务器的地址，你去问它应该能问到。”</li>
+<li>本地 DNS 转向问权威 DNS 服务器：“您好，<a target="_blank" rel="noopener" href="http://www.163.com/">www.163.com</a> 对应的 IP 是啥呀？”163.com 的权威 DNS 服务器，它是域名解析结果的原出处。为啥叫权威呢？就是我的域名我做主。</li>
+<li>权威 DNS 服务器查询后将对应的 IP 地址 X.X.X.X 告诉本地 DNS。</li>
+<li>本地 DNS 再将 IP 地址返回客户端，客户端和目标建立连接。</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-52597e12ef0f54fc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>传统的 DNS 有很多问题，例如解析慢、更新不及时。因为缓存、转发、NAT 问题导致客户端误会自己所在的位置和运营商，从而影响流量的调度。</li>
+<li>HttpDNS 通过客户端 SDK 和服务端，通过 HTTP 直接调用解析 DNS 的方式，绕过了传统 DNS 的这些缺点，实现了智能的调度。</li>
+</ul>
+<h3 id="CDN"><a href="#CDN" class="headerlink" title="CDN"></a>CDN</h3><p>全球有这么多的数据中心，无论在哪里上网，临近不远的地方基本上都有数据中心。是不是可以在这些数据中心里部署几台机器，形成一个缓存的集群来缓存部分数据，那么用户访问数据的时候，就可以就近访问了呢？</p>
+<p>当然是可以的。这些分布在各个地方的各个数据中心的节点，就称为边缘节点。</p>
+<p>由于边缘节点数目比较多，但是每个集群规模比较小，不可能缓存下来所有东西，因而可能无法命中，这样就会在边缘节点之上。有区域节点，规模就要更大，缓存的数据会更多，命中的概率也就更大。在区域节点之上是中心节点，规模更大，缓存数据更多。如果还不命中，就只好回源网站访问了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5fd40a6d57f58334.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这就是 CDN 分发系统的架构。CDN 系统的缓存，也是一层一层的，能不访问后端真正的源，就不打扰它。这也是电商网站物流系统的思路，北京局找不到，找华北局，华北局找不到，再找北方局。</p>
+<p>有了这个分发系统之后，接下来，客户端如何找到相应的边缘节点进行访问呢？</p>
+<p>还记得我们讲过的基于 DNS 的全局负载均衡吗？这个负载均衡主要用来选择一个就近的同样运营商的服务器进行访问。你会发现，CDN 分发网络也是一个分布在多个区域、多个运营商的分布式系统，也可以用相同的思路选择最合适的边缘节点。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1c23bcde8279a91e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在没有 CDN 的情况下，用户向浏览器输入 <a target="_blank" rel="noopener" href="http://www.web.com/">www.web.com</a> 这个域名，客户端访问本地 DNS 服务器的时候，如果本地 DNS 服务器有缓存，则返回网站的地址；如果没有，递归查询到网站的权威 DNS 服务器，这个权威 DNS 服务器是负责 web.com 的，它会返回网站的 IP 地址。本地 DNS 服务器缓存下 IP 地址，将 IP 地址返回，然后客户端直接访问这个 IP 地址，就访问到了这个网站。</p>
+<p>然而有了 CDN 之后，情况发生了变化。在 web.com 这个权威 DNS 服务器上，会设置一个 CNAME 别名，指向另外一个域名 <a target="_blank" rel="noopener" href="http://www.web.cdn.com,返回给本地/">www.web.cdn.com，返回给本地</a> DNS 服务器。</p>
+<p>当本地 DNS 服务器拿到这个新的域名时，需要继续解析这个新的域名。这个时候，再访问的就不是 web.com 的权威 DNS 服务器了，而是 web.cdn.com 的权威 DNS 服务器，这是 CDN 自己的权威 DNS 服务器。在这个服务器上，还是会设置一个 CNAME，指向另外一个域名，也即 CDN 网络的全局负载均衡器。</p>
+<p>接下来，本地 DNS 服务器去请求 CDN 的全局负载均衡器解析域名，全局负载均衡器会为用户选择一台合适的缓存服务器提供服务，选择的依据包括：</p>
+<ul>
+<li>根据用户 IP 地址，判断哪一台服务器距用户最近；</li>
+<li>用户所处的运营商；</li>
+<li>根据用户所请求的 URL 中携带的内容名称，判断哪一台服务器上有用户所需的内容；</li>
+<li>查询各个服务器当前的负载情况，判断哪一台服务器尚有服务能力。</li>
+</ul>
+<p>基于以上这些条件，进行综合分析之后，全局负载均衡器会返回一台缓存服务器的 IP 地址。</p>
+<p>本地 DNS 服务器缓存这个 IP 地址，然后将 IP 返回给客户端，客户端去访问这个边缘节点，下载资源。缓存服务器响应用户请求，将用户所需内容传送到用户终端。如果这台缓存服务器上并没有用户想要的内容，那么这台服务器就要向它的上一级缓存服务器请求内容，直至追溯到网站的源服务器将内容拉到本地。</p>
+<p><strong>动态 CDN，主要有两种模式</strong></p>
+<ul>
+<li>一种为生鲜超市模式，也即边缘计算的模式。既然数据是动态生成的，所以数据的逻辑计算和存储，也相应的放在边缘的节点。其中定时从源数据那里同步存储的数据，然后在边缘进行计算得到结果。就像对生鲜的烹饪是动态的，没办法事先做好缓存，因而将生鲜超市放在你家旁边，既能够送货上门，也能够现场烹饪，也是边缘计算的一种体现。</li>
+<li>另一种是冷链运输模式，也即路径优化的模式。数据不是在边缘计算生成的，而是在源站生成的，但是数据的下发则可以通过 CDN 的网络，对路径进行优化。因为 CDN 节点较多，能够找到离源站很近的边缘节点，也能找到离用户很近的边缘节点。中间的链路完全由 CDN 来规划，选择一个更加可靠的路径，使用类似专线的方式进行访问。</li>
+</ul>
+<p>对于常用的 TCP 连接，在公网上传输的时候经常会丢数据，导致 TCP 的窗口始终很小，发送速度上不去。根据前面的 TCP 流量控制和拥塞控制的原理，在 CDN 加速网络中可以调整 TCP 的参数，使得 TCP 可以更加激进地传输数据。</p>
+<ul>
+<li>CDN 和电商系统的分布式仓储系统一样，分为中心节点、区域节点、边缘节点，而数据缓存在离用户最近的位置。</li>
+<li>CDN 最擅长的是缓存静态数据，除此之外还可以缓存流媒体数据，这时候要注意使用防盗链。它也支持动态数据的缓存，一种是边缘计算的生鲜超市模式，另一种是链路优化的冷链运输模式。</li>
+</ul>
+<h3 id="数据中心"><a href="#数据中心" class="headerlink" title="数据中心"></a>数据中心</h3><p>前面讲办公室网络的时候，我们知道办公室里面有很多台电脑。如果要访问外网，需要经过一个叫网关的东西，而网关往往是一个路由器。</p>
+<p>数据中心里面也有一大堆的电脑，但是它和咱们办公室里面的笔记本或者台式机不一样。数据中心里面是服务器。服务器被放在一个个叫作<strong>机架（Rack）</strong>的架子上面。</p>
+<p>数据中心的入口和出口也是路由器，由于在数据中心的边界，就像在一个国家的边境，称为<strong>边界路由器（Border Router）</strong>。为了高可用，边界路由器会有多个。</p>
+<p>一般家里只会连接一个运营商的网络，而为了高可用，为了当一个运营商出问题的时候，还可以通过另外一个运营商来提供服务，所以数据中心的边界路由器会连接多个运营商网络。</p>
+<p>既然是路由器，就需要跑路由协议，数据中心往往就是路由协议中的自治区域（AS）。数据中心里面的机器要想访问外面的网站，数据中心里面也是有对外提供服务的机器，都可以通过 BGP 协议，获取内外互通的路由信息。这就是我们常听到的多线 BGP 的概念。</p>
+<p>如果数据中心非常简单，没几台机器，那就像家里或者宿舍一样，所有的服务器都直接连到路由器上就可以了。但是数据中心里面往往有非常多的机器，当塞满一机架的时候，需要有交换机将这些服务器连接起来，可以互相通信。</p>
+<p>这些交换机往往是放在机架顶端的，所以经常称为 <strong>TOR（Top Of Rack）交换机</strong>。这一层的交换机常常称为<strong>接入层（Access Layer）</strong>。注意这个接入层和原来讲过的应用的接入层不是一个概念。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-db67ce518b99ce95.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>当一个机架放不下的时候，就需要多个机架，还需要有交换机将多个机架连接在一起。这些交换机对性能的要求更高，带宽也更大。这些交换机称为<strong>汇聚层交换机（Aggregation Layer）</strong>。</p>
+<p>数据中心里面的每一个连接都是需要考虑高可用的。这里首先要考虑的是，如果一台机器只有一个网卡，上面连着一个网线，接入到 TOR 交换机上。如果网卡坏了，或者不小心网线掉了，机器就上不去了。所以，需要至少两个网卡、两个网线插到 TOR 交换机上，但是两个网卡要工作得像一张网卡一样，这就是常说的<strong>网卡绑定（bond）</strong>。</p>
+<p>这就需要服务器和交换机都支持一种协议 <strong>LACP（Link Aggregation Control Protocol）</strong>。它们互相通信，将多个网卡聚合称为一个网卡，多个网线聚合成一个网线，在网线之间可以进行负载均衡，也可以为了高可用作准备。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6b7df90adf1206c5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>网卡有了高可用保证，但交换机还有问题。如果一个机架只有一个交换机，它挂了，那整个机架都不能上网了。因而 TOR 交换机也需要高可用，同理接入层和汇聚层的连接也需要高可用性，也不能单线连着。</p>
+<p>最传统的方法是，部署两个接入交换机、两个汇聚交换机。服务器和两个接入交换机都连接，接入交换机和两个汇聚都连接，当然这样会形成环，所以需要启用 STP 协议，去除环，但是这样两个汇聚就只能一主一备了。STP 协议里我们学过，只有一条路会起作用。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c32067e3c1fb273d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>交换机有一种技术叫作堆叠，所以另一种方法是，将多个交换机形成一个逻辑的交换机，服务器通过多根线分配连到多个接入层交换机上，而接入层交换机多根线分别连接到多个交换机上，并且通过堆叠的私有协议，形成双活的连接方式。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4196a7a5364b1fb6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>由于对带宽要求更大，而且挂了影响也更大，所以两个堆叠可能就不够了，可以就会有更多的，比如四个堆叠为一个逻辑的交换机。</p>
+<p>汇聚层将大量的计算节点相互连接在一起，形成一个集群。在这个集群里面，服务器之间通过二层互通，这个区域常称为一个 POD（Point Of Delivery），有时候也称为一个可用区（Available Zone）。</p>
+<p>当节点数目再多的时候，一个可用区放不下，需要将多个可用区连在一起，连接多个可用区的交换机称为核心交换机。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-595457e25b844750.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这个时候还存在一个问题，出现环路怎么办？</p>
+<p>一种方式是，不同的可用区在不同的二层网络，需要分配不同的网段。汇聚和核心之间通过三层网络互通的，二层都不在一个广播域里面，不会存在二层环路的问题。三层有环是没有问题的，只要通过路由协议选择最佳的路径就可以了。那为啥二层不能有环路，而三层可以呢？你可以回忆一下二层环路的情况。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f7107da3c299ab7b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如图，核心层和汇聚层之间通过内部的路由协议 OSPF，找到最佳的路径进行访问，而且还可以通过 ECMP 等价路由，在多个路径之间进行负载均衡和高可用。</p>
+<p>但是随着数据中心里面的机器越来越多，尤其是有了云计算、大数据，集群规模非常大，而且都要求在一个二层网络里面。这就需要二层互连从汇聚层上升为核心层，也即在核心以下，全部是二层互连，全部在一个广播域里面，这就是常说的大二层。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3d38a5f779deb433.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果大二层横向流量不大，核心交换机数目不多，可以做堆叠，但是如果横向流量很大，仅仅堆叠满足不了，就需要部署多组核心交换机，而且要和汇聚层进行全互连。由于堆叠只解决一个核心交换机组内的无环问题，而组之间全互连，还需要其他机制进行解决。</p>
+<p>如果是 STP，那部署多组核心无法扩大横向流量的能力，因为还是只有一组起作用。</p>
+<p>于是大二层就引入了 TRILL（Transparent Interconnection of Lots of Link），即多链接透明互联协议。它的基本思想是，二层环有问题，三层环没有问题，那就把三层的路由能力模拟在二层实现。</p>
+<p>运行 TRILL 协议的交换机称为 RBridge，是具有路由转发特性的网桥设备，只不过这个路由是根据 MAC 地址来的，不是根据 IP 来的。</p>
+<p>Rbridage 之间通过链路状态协议运作。记得这个路由协议吗？通过它可以学习整个大二层的拓扑，知道访问哪个 MAC 应该从哪个网桥走；还可以计算最短的路径，也可以通过等价的路由进行负载均衡和高可用性。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-12dfd3cb5d3852c6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>TRILL 协议在原来的 MAC 头外面加上自己的头，以及外层的 MAC 头。TRILL 头里面的 Ingress RBridge，有点像 IP 头里面的源 IP 地址，Egress RBridge 是目标 IP 地址，这两个地址是端到端的，在中间路由的时候，不会发生改变。而外层的 MAC，可以有下一跳的 Bridge，就像路由的下一跳，也是通过 MAC 地址来呈现的一样。</p>
+<p>如图中所示的过程，有一个包要从主机 A 发送到主机 B，中间要经过 RBridge 1、RBridge 2、RBridge X 等等，直到 RBridge 3。在 RBridge 2 收到的包里面，分内外两层，内层就是传统的主机 A 和主机 B 的 MAC 地址以及内层的 VLAN。</p>
+<p>在外层首先加上一个 TRILL 头，里面描述这个包从 RBridge 1 进来的，要从 RBridge 3 出去，并且像三层的 IP 地址一样有跳数。然后再外面，目的 MAC 是 RBridge 2，源 MAC 是 RBridge 1，以及外层的 VLAN。</p>
+<p>当 RBridge 2 收到这个包之后，首先看 MAC 是否是自己的 MAC，如果是，要看自己是不是 Egress RBridge，也即是不是最后一跳；如果不是，查看跳数是不是大于 0，然后通过类似路由查找的方式找到下一跳 RBridge X，然后将包发出去。</p>
+<p>RBridge 2 发出去的包，内层的信息是不变的，外层的 TRILL 头里面。同样，描述这个包从 RBridge 1 进来的，要从 RBridge 3 出去，但是跳数要减 1。外层的目标 MAC 变成 RBridge X，源 MAC 变成 RBridge 2。</p>
+<p>如此一直转发，直到 RBridge 3，将外层解出来，发送内层的包给主机 B。</p>
+<p>这个过程是不是和 IP 路由很像？</p>
+<p>对于大二层的广播包，也需要通过分发树的技术来实现。我们知道 STP 是将一个有环的图，通过去掉边形成一棵树，而分发树是一个有环的图形成多棵树，不同的树有不同的 VLAN，有的广播包从 VLAN A 广播，有的从 VLAN B 广播，实现负载均衡和高可用。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-dd8ee7a6b157b972.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>核心交换机之外，就是边界路由器了。至此从服务器到数据中心边界的层次情况已经清楚了。</p>
+<p>在核心交换上面，往往会挂一些安全设备，例如入侵检测、DDoS 防护等等。这是整个数据中心的屏障，防止来自外来的攻击。核心交换机上往往还有负载均衡器，原理前面的章节已经说过了。</p>
+<p>在有的数据中心里面，对于存储设备，还会有一个存储网络，用来连接 SAN 和 NAS。但是对于新的云计算来讲，往往不使用传统的 SAN 和 NAS，而使用部署在 x86 机器上的软件定义存储，这样存储也是服务器了，而且可以和计算节点融合在一个机架上，从而更加有效率，也就没有了单独的存储网络了。</p>
+<p>于是整个数据中心的网络如下图所示。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bd4e6e05418536f6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这是一个典型的三层网络结构。这里的三层不是指 IP 层，而是指接入层、汇聚层、核心层三层。这种模式非常有利于外部流量请求到内部应用。这个类型的流量，是从外到内或者从内到外，对应到上面那张图里，就是从上到下，从下到上，上北下南，所以称为南北流量。</p>
+<p>但是随着云计算和大数据的发展，节点之间的交互越来越多，例如大数据计算经常要在不同的节点将数据拷贝来拷贝去，这样需要经过交换机，使得数据从左到右，从右到左，左西右东，所以称为东西流量。</p>
+<p>为了解决东西流量的问题，演进出了叶脊网络（Spine/Leaf）。</p>
+<ul>
+<li>叶子交换机（leaf），直接连接物理服务器。L2/L3 网络的分界点在叶子交换机上，叶子交换机之上是三层网络。</li>
+<li>脊交换机（spine switch），相当于核心交换机。叶脊之间通过 ECMP 动态选择多条路径。脊交换机现在只是为叶子交换机提供一个弹性的 L3 路由网络。南北流量可以不用直接从脊交换机发出，而是通过与 leaf 交换机并行的交换机，再接到边界路由器出去。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-11698430cfeddcbd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>传统的三层网络架构是垂直的结构，而叶脊网络架构是扁平的结构，更易于水平扩展。</p>
+<h3 id="QoS"><a href="#QoS" class="headerlink" title="QoS"></a>QoS</h3><p>在云平台上，也有这种现象，好在有一种流量控制的技术，可以实现 QoS（Quality of Service），从而保障大多数用户的服务质量。</p>
+<p>对于控制一台机器的网络的 QoS，分两个方向，一个是入方向，一个是出方向。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-99f6711c0759ffd9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>控制网络的 QoS 有哪些方式？</strong></p>
+<p>在 Linux 下，可以通过 TC 控制网络的 QoS，主要就是通过队列的方式。</p>
+<p><strong>无类别排队规则</strong></p>
+<p>第一大类称为无类别排队规则（Classless Queuing Disciplines）。还记得我们讲ip addr的时候讲过的 pfifo_fast，这是一种不把网络包分类的技术。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8c0b448d4139c2a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>pfifo_fast 分为三个先入先出的队列，称为三个 Band。根据网络包里面 TOS，看这个包到底应该进入哪个队列。TOS 总共四位，每一位表示的意思不同，总共十六种类型。</p>
+<p>通过命令行 tc qdisc show dev eth0，可以输出结果 priomap，也是十六个数字。在 0 到 2 之间，和 TOS 的十六种类型对应起来，表示不同的 TOS 对应的不同的队列。其中 Band 0 优先级最高，发送完毕后才轮到 Band 1 发送，最后才是 Band 2。</p>
+<p><strong>另外一种无类别队列规则叫作随机公平队列（Stochastic Fair Queuing）。</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-04881dbaf43e8b4d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>会建立很多的 FIFO 的队列，TCP Session 会计算 hash 值，通过 hash 值分配到某个队列。在队列的另一端，网络包会通过轮询策略从各个队列中取出发送。这样不会有一个 Session 占据所有的流量。</p>
+<p>当然如果两个 Session 的 hash 是一样的，会共享一个队列，也有可能互相影响。hash 函数会经常改变，从而 session 不会总是相互影响。</p>
+<p><strong>还有一种无类别队列规则称为令牌桶规则（TBF，Token Bucket Filte）。</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-88b4fed9f57adbfd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>所有的网络包排成队列进行发送，但不是到了队头就能发送，而是需要拿到令牌才能发送。</p>
+<p>令牌根据设定的速度生成，所以即便队列很长，也是按照一定的速度进行发送的。</p>
+<p>当没有包在队列中的时候，令牌还是以既定的速度生成，但是不是无限累积的，而是放满了桶为止。设置桶的大小为了避免下面的情况：当长时间没有网络包发送的时候，积累了大量的令牌，突然来了大量的网络包，每个都能得到令牌，造成瞬间流量大增。</p>
+<p><strong>基于类别的队列规则</strong></p>
+<p>另外一大类是基于类别的队列规则（Classful Queuing Disciplines），其中典型的为分层令牌桶规则（HTB， Hierarchical Token Bucket）。</p>
+<p>HTB 往往是一棵树，接下来我举个具体的例子，通过 TC 如何构建一棵 HTB 树来带你理解。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9e80bf9678f38952.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>使用 TC 可以为某个网卡 eth0 创建一个 HTB 的队列规则，需要付给它一个句柄为（1:）。</p>
+<p>这是整棵树的根节点，接下来会有分支。例如图中有三个分支，句柄分别为（:10）、（:11）、（:12）。最后的参数 default 12，表示默认发送给 1:12，也即发送给第三个分支。</p>
+<pre><code>tc qdisc add dev eth0 root handle 1: htb default 12
+</code></pre>
+<p>对于这个网卡，需要规定发送的速度。一般有两个速度可以配置，一个是 rate，表示一般情况下的速度；一个是 ceil，表示最高情况下的速度。对于根节点来讲，这两个速度是一样的，于是创建一个 root class，速度为（rate=100kbps，ceil=100kbps）。</p>
+<pre><code>tc class add dev eth0 parent 1: classid 1:1 htb rate 100kbps ceil 100kbps
+</code></pre>
+<p>接下来要创建分支，也即创建几个子 class。每个子 class 统一有两个速度。三个分支分别为（rate=30kbps，ceil=100kbps）、（rate=10kbps，ceil=100kbps）、（rate=60kbps，ceil=100kbps）。</p>
+<pre><code>tc class add dev eth0 parent 1:1 classid 1:10 htb rate 30kbps ceil 100kbps
+tc class add dev eth0 parent 1:1 classid 1:11 htb rate 10kbps ceil 100kbps
+tc class add dev eth0 parent 1:1 classid 1:12 htb rate 60kbps ceil 100kbps
+</code></pre>
+<p>你会发现三个 rate 加起来，是整个网卡允许的最大速度。</p>
+<p>HTB 有个很好的特性，同一个 root class 下的子类可以相互借流量，如果不直接在队列规则下面创建一个 root class，而是直接创建三个 class，它们之间是不能相互借流量的。借流量的策略，可以使得当前不使用这个分支的流量的时候，可以借给另一个分支，从而不浪费带宽，使带宽发挥最大的作用。</p>
+<p>最后，创建叶子队列规则，分别为 fifo 和 sfq。</p>
+<pre><code>tc qdisc add dev eth0 parent 1:10 handle 20: pfifo limit 5
+tc qdisc add dev eth0 parent 1:11 handle 30: pfifo limit 5
+tc qdisc add dev eth0 parent 1:12 handle 40: sfq perturb 10
+</code></pre>
+<p>基于这个队列规则，我们还可以通过 TC 设定发送规则：从 1.2.3.4 来的，发送给 port 80 的包，从第一个分支 1:10 走；其他从 1.2.3.4 发送来的包从第二个分支 1:11 走；其他的走默认分支。</p>
+<pre><code>tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip src 1.2.3.4 match ip dport 80 0xffff flowid 1:10
+tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip src 1.2.3.4 flowid 1:11
+</code></pre>
+<h3 id="容器网络"><a href="#容器网络" class="headerlink" title="容器网络"></a>容器网络</h3><p><strong>Flannel</strong></p>
+<p>这里我要说 Flannel 使用 UDP 实现 Overlay 网络的方案。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-59ffce6aeb00f213.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在物理机 A 上的容器 A 里面，能看到的容器的 IP 地址是 172.17.8.2/24，里面设置了默认的路由规则 default via 172.17.8.1 dev eth0。</p>
+<p>如果容器 A 要访问 172.17.9.2，就会发往这个默认的网关 172.17.8.1。172.17.8.1 就是物理机上面 docker0 网桥的 IP 地址，这台物理机上的所有容器都是连接到这个网桥的。</p>
+<p>在物理机上面，查看路由策略，会有这样一条 172.17.0.0/24 via 172.17.0.0 dev flannel.1，也就是说发往 172.17.9.2 的网络包会被转发到 flannel.1 这个网卡。</p>
+<p>这个网卡是怎么出来的呢？在每台物理机上，都会跑一个 flanneld 进程，这个进程打开一个 /dev/net/tun 字符设备的时候，就出现了这个网卡。</p>
+<p>你有没有想起 qemu-kvm，打开这个字符设备的时候，物理机上也会出现一个网卡，所有发到这个网卡上的网络包会被 qemu-kvm 接收进来，变成二进制串。只不过接下来 qemu-kvm 会模拟一个虚拟机里面的网卡，将二进制的串变成网络包，发给虚拟机里面的网卡。但是 flanneld 不用这样做，所有发到 flannel.1 这个网卡的包都会被 flanneld 进程读进去，接下来 flanneld 要对网络包进行处理。</p>
+<p>物理机 A 上的 flanneld 会将网络包封装在 UDP 包里面，然后外层加上物理机 A 和物理机 B 的 IP 地址，发送给物理机 B 上的 flanneld。</p>
+<p>为什么是 UDP 呢？因为不想在 flanneld 之间建立两两连接，而 UDP 没有连接的概念，任何一台机器都能发给另一台。</p>
+<p>物理机 B 上的 flanneld 收到包之后，解开 UDP 的包，将里面的网络包拿出来，从物理机 B 的 flannel.1 网卡发出去。</p>
+<p>在物理机 B 上，有路由规则 172.17.9.0/24 dev docker0 proto kernel scope link src 172.17.9.1。</p>
+<p>将包发给 docker0，docker0 将包转给容器 B。通信成功。</p>
+<p>上面的过程连通性没有问题，但是由于全部在用户态，所以性能差了一些。</p>
+<p>跨物理机的连通性问题，在虚拟机那里有成熟的方案，就是 VXLAN，那能不能 Flannel 也用 VXLAN 呢？</p>
+<p>当然可以了。如果使用 VXLAN，就不需要打开一个 TUN 设备了，而是要建立一个 VXLAN 的 VTEP。如何建立呢？可以通过 netlink 通知内核建立一个 VTEP 的网卡 flannel.1。在我们讲 OpenvSwitch 的时候提过，netlink 是一种用户态和内核态通信的机制。</p>
+<p>当网络包从物理机 A 上的容器 A 发送给物理机 B 上的容器 B，在容器 A 里面通过默认路由到达物理机 A 上的 docker0 网卡，然后根据路由规则，在物理机 A 上，将包转发给 flannel.1。这个时候 flannel.1 就是一个 VXLAN 的 VTEP 了，它将网络包进行封装。</p>
+<p>内部的 MAC 地址这样写：源为物理机 A 的 flannel.1 的 MAC 地址，目标为物理机 B 的 flannel.1 的 MAC 地址，在外面加上 VXLAN 的头。</p>
+<p>外层的 IP 地址这样写：源为物理机 A 的 IP 地址，目标为物理机 B 的 IP 地址，外面加上物理机的 MAC 地址。</p>
+<p>这样就能通过 VXLAN 将包转发到另一台机器，从物理机 B 的 flannel.1 上解包，变成内部的网络包，通过物理机 B 上的路由转发到 docker0，然后转发到容器 B 里面。通信成功。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-20f3ad4eb681115a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>Calico</strong></p>
+<p>Calico 网络模型的设计思路</p>
+<p>我们看图中的两台物理机。它们的物理网卡是同一个二层网络里面的。由于两台物理机的容器网段不同，我们完全可以将两台物理机配置成为路由器，并按照容器的网段配置路由表。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9da5027d65611db0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>例如，在物理机 A 中，我们可以这样配置：要想访问网段 172.17.9.0/24，下一跳是 192.168.100.101，也即到物理机 B 上去。</p>
+<p>这样在容器 A 中访问容器 B，当包到达物理机 A 的时候，就能够匹配到这条路由规则，并将包发给下一跳的路由器，也即发给物理机 B。在物理机 B 上也有路由规则，要访问 172.17.9.0/24，从 docker0 的网卡进去即可。</p>
+<p>当容器 B 返回结果的时候，在物理机 B 上，可以做类似的配置：要想访问网段 172.17.8.0/24，下一跳是 192.168.100.100，也即到物理机 A 上去。</p>
+<p>当包到达物理机 B 的时候，能够匹配到这条路由规则，将包发给下一跳的路由器，也即发给物理机 A。在物理机 A 上也有路由规则，要访问 172.17.8.0/24，从 docker0 的网卡进去即可。</p>
+<p>这就是 <strong>Calico 网络的大概思路，即不走 Overlay 网络，不引入另外的网络性能损耗，而是将转发全部用三层网络的路由转发来实现</strong>，只不过具体的实现和上面的过程稍有区别。</p>
+<p>首先，如果全部走三层的路由规则，没必要每台机器都用一个 docker0，从而浪费了一个 IP 地址，而是可以直接用路由转发到 veth pair 在物理机这一端的网卡。同样，在容器内，路由规则也可以这样设定：把容器外面的 veth pair 网卡算作默认网关，下一跳就是外面的物理机。</p>
+<p>于是，整个拓扑结构就变成了这个图中的样子。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9e900be9fccc2630.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>Calico 网络的转发细节</strong></p>
+<p>我们来看其中的一些细节。</p>
+<p>容器 A1 的 IP 地址为 172.17.8.2/32，这里注意，不是 /24，而是 /32，将容器 A1 作为一个单点的局域网了。</p>
+<p>容器 A1 里面的默认路由，Calico 配置得比较有技巧。</p>
+<pre><code>default via 169.254.1.1 dev eth0 
+169.254.1.1 dev eth0 scope link 
+</code></pre>
+<p>这个 IP 地址 169.254.1.1 是默认的网关，但是整个拓扑图中没有一张网卡是这个地址。那如何到达这个地址呢？</p>
+<p>前面我们讲网关的原理的时候说过，当一台机器要访问网关的时候，首先会通过 ARP 获得网关的 MAC 地址，然后将目标 MAC 变为网关的 MAC，而网关的 IP 地址不会在任何网络包头里面出现，也就是说，没有人在乎这个地址具体是什么，只要能找到对应的 MAC，响应 ARP 就可以了。</p>
+<p>ARP 本地有缓存，通过 ip neigh 命令可以查看。</p>
+<pre><code>169.254.1.1 dev eth0 lladdr ee:ee:ee:ee:ee:ee STALE
+</code></pre>
+<p>这个 MAC 地址是 Calico 硬塞进去的，但是没有关系，它能响应 ARP，于是发出的包的目标 MAC 就是这个 MAC 地址。</p>
+<p>在物理机 A 上查看所有网卡的 MAC 地址的时候，我们会发现 veth1 就是这个 MAC 地址。所以容器 A1 里发出的网络包，第一跳就是这个 veth1 这个网卡，也就到达了物理机 A 这个路由器。</p>
+<p>在物理机 A 上有三条路由规则，分别是去两个本机的容器的路由，以及去 172.17.9.0/24，下一跳为物理机 B。</p>
+<pre><code>172.17.8.2 dev veth1 scope link 
+172.17.8.3 dev veth2 scope link 
+172.17.9.0/24 via 192.168.100.101 dev eth0 proto bird onlink
+</code></pre>
+<p>同理，物理机 B 上也有三条路由规则，分别是去两个本机的容器的路由，以及去 172.17.8.0/24，下一跳为物理机 A。</p>
+<pre><code>172.17.9.2 dev veth1 scope link 
+172.17.9.3 dev veth2 scope link 
+172.17.8.0/24 via 192.168.100.100 dev eth0 proto bird onlink
+</code></pre>
+<p>如果你觉得这些规则过于复杂，我将刚才的拓扑图转换为这个更加容易理解的图。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-aa44dce0835b9858.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在这里，物理机化身为路由器，通过路由器上的路由规则，将包转发到目的地。在这个过程中，没有隧道封装解封装，仅仅是单纯的路由转发，性能会好很多。但是，这种模式也有很多问题。</p>
+<p><strong>Calico 的架构</strong></p>
+<p><strong>路由配置组件 Felix</strong></p>
+<p>如果只有两台机器，每台机器只有两个容器，而且保持不变。我手动配置一下，倒也没啥问题。但是如果容器不断地创建、删除，节点不断地加入、退出，情况就会变得非常复杂。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-03fd15a20fa31945.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>就像图中，有三台物理机，两两之间都需要配置路由，每台物理机上对外的路由就有两条。如果有六台物理机，则每台物理机上对外的路由就有五条。新加入一个节点，需要通知每一台物理机添加一条路由。</p>
+<p>这还是在物理机之间，一台物理机上，每创建一个容器，也需要多配置一条指向这个容器的路由。如此复杂，肯定不能手动配置，需要每台物理机上有一个 agent，当创建和删除容器的时候，自动做这件事情。这个 agent 在 Calico 中称为 Felix。</p>
+<p><strong>路由广播组件 BGP Speaker</strong></p>
+<p>当 Felix 配置了路由之后，接下来的问题就是，如何将路由信息，也即将“如何到达我这个节点，访问我这个节点上的容器”这些信息，广播出去。</p>
+<p>能想起来吗？这其实就是路由协议啊！路由协议就是将“我能到哪里，如何能到我”的信息广播给全网传出去，从而客户端可以一跳一跳地访问目标地址的。路由协议有很多种，Calico 使用的是 BGP 协议。</p>
+<p>在 Calico 中，每个 Node 上运行一个软件 BIRD，作为 BGP 的客户端，或者叫作 BGP Speaker，将“如何到达我这个 Node，访问我这个 Node 上的容器”的路由信息广播出去。所有 Node 上的 BGP Speaker 都互相建立连接，就形成了全互连的情况，这样每当路由有所变化的时候，所有节点就都能够收到了。</p>
+<p><strong>安全策略组件</strong></p>
+<p>Calico 中还实现了灵活配置网络策略 Network Policy，可以灵活配置两个容器通或者不通。这个怎么实现呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c609fb301be517d0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>虚拟机中的安全组，是用 iptables 实现的。Calico 中也是用 iptables 实现的。这个图里的内容是 iptables 在内核处理网络包的过程中可以嵌入的处理点。Calico 也是在这些点上设置相应的规则。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8cc21f579fb5cd52.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>当网络包进入物理机上的时候，进入 PREOUTING 规则，这里面有一个规则是 cali-fip-dnat，这是实现浮动 IP（Floating IP）的场景，主要将外网的 IP 地址 dnat 作为容器内的 IP 地址。在虚拟机场景下，路由器的网络 namespace 里面有一个外网网卡上，也设置过这样一个 DNAT 规则。</p>
+<p>接下来可以根据路由判断，是到本地的，还是要转发出去的。</p>
+<p>如果是本地的，走 INPUT 规则，里面有个规则是 cali-wl-to-host，wl 的意思是 workload，也即容器，也即这是用来判断从容器发到物理机的网络包是否符合规则的。这里面内嵌一个规则 cali-from-wl-dispatch，也是匹配从容器来的包。如果有两个容器，则会有两个容器网卡，这里面内嵌有详细的规则“cali-fw-cali 网卡 1”和“cali-fw-cali 网卡 2”，fw 就是 from workload，也就是匹配从容器 1 来的网络包和从容器 2 来的网络包。</p>
+<p>如果是转发出去的，走 FORWARD 规则，里面有个规则 cali-FORWARD。这里面分两种情况，一种是从容器里面发出来，转发到外面的；另一种是从外面发进来，转发到容器里面的。</p>
+<p>第一种情况匹配的规则仍然是 cali-from-wl-dispatch，也即 from workload。第二种情况匹配的规则是 cali-to-wl-dispatch，也即 to workload。如果有两个容器，则会有两个容器网卡，在这里面内嵌有详细的规则“cali-tw-cali 网卡 1”和“cali-tw-cali 网卡 2”，tw 就是 to workload，也就是匹配发往容器 1 的网络包和发送到容器 2 的网络包。</p>
+<p>接下来是匹配 OUTPUT 规则，里面有 cali-OUTPUT。接下来是 POSTROUTING 规则，里面有一个规则是 cali-fip-snat，也即发出去的时候，将容器网络 IP 转换为浮动 IP 地址。在虚拟机场景下，路由器的网络 namespace 里面有一个外网网卡上，也设置过这样一个 SNAT 规则。</p>
+<p>至此为止，Calico 的所有组件基本凑齐。来看看我汇总的图。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-05ce5453b73650d5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>全连接复杂性与规模问题</strong></p>
+<p>这里面还存在问题，就是 BGP 全连接的复杂性问题。</p>
+<p>你看刚才的例子里只有六个节点，BGP 的互连已经如此复杂，如果节点数据再多，这种全互连的模式肯定不行，到时候都成蜘蛛网了。于是多出了一个组件 BGP Route Reflector，它也是用 BIRD 实现的。有了它，BGP Speaker 就不用全互连了，而是都直连它，它负责将全网的路由信息广播出去。</p>
+<p>可是问题来了，规模大了，大家都连它，它受得了吗？这个 BGP Router Reflector 会不会成为瓶颈呢？</p>
+<p>所以，肯定不能让一个 BGP Router Reflector 管理所有的路由分发，而是应该有多个 BGP Router Reflector，每个 BGP Router Reflector 管一部分。</p>
+<p>多大算一部分呢？咱们讲述数据中心的时候，说服务器都是放在机架上的，每个机架上最顶端有个 TOR 交换机。那将机架上的机器连在一起，这样一个机架是不是可以作为一个单元，让一个 BGP Router Reflector 来管理呢？如果要跨机架，如何进行通信呢？这就需要 BGP Router Reflector 也直接进行路由交换。它们之间的交换和一个机架之间的交换有什么关系吗？</p>
+<p>有没有觉得在这个场景下，一个机架就像一个数据中心，可以把它设置为一个 AS，而 BGP Router Reflector 有点儿像数据中心的边界路由器。在一个 AS 内部，也即服务器和 BGP Router Reflector 之间使用的是数据中心内部的路由协议 iBGP，BGP Router Reflector 之间使用的是数据中心之间的路由协议 eBGP。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a0215c267f0bdc74.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这个图中，一个机架上有多台机器，每台机器上面启动多个容器，每台机器上都有可以到达这些容器的路由。每台机器上都启动一个 BGP Speaker，然后将这些路由规则上报到这个 Rack 上接入交换机的 BGP Route Reflector，将这些路由通过 iBGP 协议告知到接入交换机的三层路由功能。</p>
+<p>在接入交换机之间也建立 BGP 连接，相互告知路由，因而一个 Rack 里面的路由可以告知另一个 Rack。有多个核心或者汇聚交换机将接入交换机连接起来，如果核心和汇聚起二层互通的作用，则接入和接入之间之间交换路由即可。如果核心和汇聚交换机起三层路由的作用，则路由需要通过核心或者汇聚交换机进行告知。</p>
+<p><strong>跨网段访问问题</strong></p>
+<p>上面的 Calico 模式还有一个问题，就是跨网段问题，这里的跨网段是指物理机跨网段。</p>
+<p>前面我们说的那些逻辑成立的条件，是我们假设物理机可以作为路由器进行使用。例如物理机 A 要告诉物理机 B，你要访问 172.17.8.0/24，下一跳是我 192.168.100.100；同理，物理机 B 要告诉物理机 A，你要访问 172.17.9.0/24，下一跳是我 192.168.100.101。</p>
+<p>之所以能够这样，是因为物理机 A 和物理机 B 是同一个网段的，是连接在同一个交换机上的。那如果物理机 A 和物理机 B 不是在同一个网段呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f82840f86a5ab0e6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>例如，物理机 A 的网段是 192.168.100.100/24，物理机 B 的网段是 192.168.200.101/24，这样两台机器就不能通过二层交换机连接起来了，需要在中间放一台路由器，做一次路由转发，才能跨网段访问。</p>
+<p>本来物理机 A 要告诉物理机 B，你要访问 172.17.8.0/24，下一跳是我 192.168.100.100 的，但是中间多了一台路由器，下一跳不是我了，而是中间的这台路由器了，这台路由器的再下一跳，才是我。这样之前的逻辑就不成立了。</p>
+<p>我们看刚才那张图的下半部分。物理机 B 上的容器要访问物理机 A 上的容器，第一跳就是物理机 B，IP 为 192.168.200.101，第二跳是中间的物理路由器右面的网口，IP 为 192.168.200.1，第三跳才是物理机 A，IP 为 192.168.100.100。</p>
+<p>这是咱们通过拓扑图看到的，关键问题是，在系统中物理机 A 如何告诉物理机 B，怎么让它才能到我这里？物理机 A 根本不可能知道从物理机 B 出来之后的下一跳是谁，况且现在只是中间隔着一个路由器这种简单的情况，如果隔着多个路由器呢？谁能把这一串的路径告诉物理机 B 呢？</p>
+<p>我们能想到的第一种方式是，让中间所有的路由器都来适配 Calico。本来它们互相告知路由，只互相告知物理机的，现在还要告知容器的网段。这在大部分情况下，是不可能的。</p>
+<p>第二种方式，还是在物理机 A 和物理机 B 之间打一个隧道，这个隧道有两个端点，在端点上进行封装，将容器的 IP 作为乘客协议放在隧道里面，而物理主机的 IP 放在外面作为承载协议。这样不管外层的 IP 通过传统的物理网络，走多少跳到达目标物理机，从隧道两端看起来，物理机 A 的下一跳就是物理机 B，这样前面的逻辑才能成立。</p>
+<p>这就是 Calico 的<strong>IPIP 模式</strong>。使用了 IPIP 模式之后，在物理机 A 上，我们能看到这样的路由表：</p>
+<pre><code>172.17.8.2 dev veth1 scope link 
+172.17.8.3 dev veth2 scope link 
+172.17.9.0/24 via 192.168.200.101 dev tun0 proto bird onlink
+</code></pre>
+<p>这和原来模式的区别在于，下一跳不再是同一个网段的物理机 B 了，IP 为 192.168.200.101，并且不是从 eth0 跳，而是建立一个隧道的端点 tun0，从这里才是下一跳。</p>
+<p>如果我们在容器 A1 里面的 172.17.8.2，去 ping 容器 B1 里面的 172.17.9.2，首先会到物理机 A。在物理机 A 上根据上面的规则，会转发给 tun0，并在这里对包做封装：</p>
+<ul>
+<li>内层源 IP 为 172.17.8.2；</li>
+<li>内层目标 IP 为 172.17.9.2；</li>
+<li>外层源 IP 为 192.168.100.100；</li>
+<li>外层目标 IP 为 192.168.200.101。</li>
+</ul>
+<p>将这个包从 eth0 发出去，在物理网络上会使用外层的 IP 进行路由，最终到达物理机 B。在物理机 B 上，tun0 会解封装，将内层的源 IP 和目标 IP 拿出来，转发给相应的容器。</p>
+<p><strong>总结</strong></p>
+<ul>
+<li>Calico 推荐使用物理机作为路由器的模式，这种模式没有虚拟化开销，性能比较高。</li>
+<li>Calico 的主要组件包括路由、iptables 的配置组件 Felix、路由广播组件 BGP Speaker，以及大规模场景下的 BGP Route Reflector。</li>
+<li>为解决跨网段的问题，Calico 还有一种 IPIP 模式，也即通过打隧道的方式，从隧道端点来看，将本来不是邻居的两台机器，变成相邻的机器。</li>
+</ul>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2020/09/13/linux-optimize/" title="《Linux性能优化实战》"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 《Linux性能优化实战》</span></a><a class="button is-default" href="/2020/08/01/mysql-45-lesson/" title="《MySQL实战45讲》"><span class="has-text-weight-semibold">下一页: 《MySQL实战45讲》</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

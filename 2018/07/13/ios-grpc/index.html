@@ -1,0 +1,154 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>iOS之GRPC 测试（附代码）</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="背景最近在用gRPC框架测试，想起去年调研Protocol Buffer在HTTP的时候传输，了解过这个框架，当时没深入。这次做gRPC服务器端，随便看下iOS这边实现方式，附上测试代码。
+demo地址： https://github.com/fanlv/gRPCDemo
+proto文件package user;
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message BaseResponse{
+  int64 code = 1;
+  string msg = 2;
+}
+
+message User{
+    string uid = 1;
+    string name = 2;
+    string .."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">iOS之GRPC 测试（附代码）</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#proto%E6%96%87%E4%BB%B6"><span class="toc-text">proto文件</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E6%88%90go%E4%BB%A3%E7%A0%81"><span class="toc-text">生成go代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%9F%E6%88%90oc%E4%BB%A3%E7%A0%81"><span class="toc-text">生成oc代码</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E5%99%A8%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0%EF%BC%88Go%EF%BC%89"><span class="toc-text">服务器代码实现（Go）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF%E7%AB%AF%E4%BB%A3%E7%A0%81%EF%BC%88iOS%EF%BC%89"><span class="toc-text">客户端端代码（iOS）</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/iOS"><i class="tag post-item-tag">iOS</i></a><a href="/tags/GRPC"><i class="tag post-item-tag">GRPC</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">iOS之GRPC 测试（附代码）</h1><time class="has-text-grey" datetime="2018-07-13T13:30:25.000Z">2018-07-13</time><article class="mt-2 post-content"><h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在用gRPC框架测试，想起去年调研Protocol Buffer在HTTP的时候传输，了解过这个框架，当时没深入。这次做gRPC服务器端，随便看下iOS这边实现方式，附上测试代码。</p>
+<p>demo地址： <a target="_blank" rel="noopener" href="https://github.com/fanlv/gRPCDemo">https://github.com/fanlv/gRPCDemo</a></p>
+<h2 id="proto文件"><a href="#proto文件" class="headerlink" title="proto文件"></a>proto文件</h2><pre><code>package user;
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message BaseResponse{
+  int64 code = 1;
+  string msg = 2;
+}
+
+message User{
+    string uid = 1;
+    string name = 2;
+    string logo = 3;
+}
+message LoginResponse {
+    User user = 1;
+    BaseResponse baseResp = 255;
+}
+
+//service 名称，客户端会用这个去调用对应方法
+service Greeter {
+    //提供的RPC方法
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+}
+</code></pre>
+<h4 id="生成go代码"><a href="#生成go代码" class="headerlink" title="生成go代码"></a>生成go代码</h4><pre><code>--objc_out=plugins=grpc:. user.proto
+</code></pre>
+<h4 id="生成oc代码"><a href="#生成oc代码" class="headerlink" title="生成oc代码"></a>生成oc代码</h4><pre><code>protoc --objc_out=. --grpc_out=. --plugin=protoc-gen-grpc=/usr/local/bin/grpc_objective_c_plugin user.proto
+</code></pre>
+<h2 id="服务器代码实现（Go）"><a href="#服务器代码实现（Go）" class="headerlink" title="服务器代码实现（Go）"></a>服务器代码实现（Go）</h2><pre><code>package main
+
+import (
+    pb "gitee.com/xxxx/proto"//执行你生成的user.pb.go位置
+    "golang.org/x/net/context"
+    "net"
+    "google.golang.org/grpc"
+    "google.golang.org/grpc/reflection"
+
+    "log"
+)
+
+const (
+    port = ":50051"
+)
+
+
+
+type server struct{}
+
+func (s *server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
+    var resp *pb.LoginResponse
+    if in.Username =="test" &amp;&amp; in.Password == "123456" {
+        resp = &amp;pb.LoginResponse{
+            User:&amp;pb.User{
+                Uid:"001",
+                Name:"test",
+                Logo:"https://test.com/test.png",
+            },
+            BaseResp:&amp;pb.BaseResponse{
+                Code:0,
+                Msg:"ok",
+            },
+        }
+    }else {
+        resp = &amp;pb.LoginResponse{
+            User:nil,
+            BaseResp:&amp;pb.BaseResponse{
+                Code:1,
+                Msg:"login fail",
+            },
+        }
+    }
+    return resp,nil
+}
+
+func main() {
+    lis, err := net.Listen("tcp", port)
+    if err != nil {
+        log.Fatalf("failed to listen: %v", err)
+    }
+    s := grpc.NewServer()
+    pb.RegisterGreeterServer(s, &amp;server{})
+    // Register reflection service on gRPC server.
+    reflection.Register(s)
+    if err := s.Serve(lis); err != nil {
+        log.Fatalf("failed to serve: %v", err)
+    }
+
+}
+</code></pre>
+<h2 id="客户端端代码（iOS）"><a href="#客户端端代码（iOS）" class="headerlink" title="客户端端代码（iOS）"></a>客户端端代码（iOS）</h2><p>可以先去官网下一个Demo项目，地址：<a target="_blank" rel="noopener" href="https://grpc.io/docs/tutorials/basic/objective-c.html#try-it-out">grpc.io - objective-c</a></p>
+<p>里面有三个demo，我这里借用的helloworld的demo，路径：<code>grpc/examples/objective-c/helloworld</code>。</p>
+<p>执行pod install，主要会用到下面几个库</p>
+<pre><code>Installing !ProtoCompiler (3.5.0)
+Installing !ProtoCompiler-gRPCPlugin (1.13.0)
+Installing BoringSSL (10.0.5)
+Installing Protobuf (3.6.0)
+Installing gRPC (1.13.0)
+Installing gRPC-Core (1.13.0)
+Installing gRPC-ProtoRPC (1.13.0)
+Installing gRPC-RxLibrary (1.13.0)
+Installing nanopb (0.3.8)
+</code></pre>
+<p>把生成的四个pb文件（<code>User.pbobjc.h</code>、<code>User.pbobjc.m</code>、<code>User.pbrpc.h</code>、<code>User.pbrpc.m</code>）添加到项目中去。然后在main.m中添加下面的测试代码</p>
+<pre><code>  Greeter *userClient = [[Greeter alloc] initWithHost:kHostAddress];
+  LoginRequest *req = [[LoginRequest alloc] init];
+  req.username = @"test";
+  req.password = @"123456";
+
+  [userClient loginWithRequest:req handler:^(LoginResponse * _Nullable response, NSError * _Nullable error) {
+      if (!error) {
+          if (response.baseResp.code == 0) {
+              NSLog(@"%@",response.user.name);
+          }else{
+              NSLog(@"error :%@",response.baseResp.msg);
+          }
+      }else{
+          NSLog(@"%@",error);
+      }
+  }];
+</code></pre>
+<p>调用上面方法可以看到能够正常返回数据。Over</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2018/07/15/server-io-model/" title="高并发服务器IO模型"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 高并发服务器IO模型</span></a><a class="button is-default" href="/2018/07/12/csrf/" title="跨域请求的几种解决方案"><span class="has-text-weight-semibold">下一页: 跨域请求的几种解决方案</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

@@ -1,0 +1,653 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Golang 编译器优化那些事</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+
+
+
+一、背景去年写了一篇 Golang Memory Model 文章。当时在文章里面贴了验证一个线程可见性问题Demo，具体代码如下：
+func main() {
+    running := true
+    go func() {
+        println(&quot;start thread1&quot;)
+        count := 1
+        for running {
+            count++
+        }
+        println(&quot;end thread1: count =&quot;, count) // 这句代码永远执行不到为什么？
+    }()
+    go func() {
+        println(&quot;start thread2&quot;)
+        for.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Golang 编译器优化那些事</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF"><span class="toc-text">一、背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text">二、基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%BC%96%E8%AF%91%E7%B3%BB%E7%BB%9F"><span class="toc-text">2.1 编译系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-%E7%BC%96%E8%AF%91%E5%99%A8%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="toc-text">2.2 编译器工作流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E4%B8%AD%E9%97%B4%E4%BB%A3%E7%A0%81-Intermediate-Representation-IR"><span class="toc-text">2.3 中间代码(Intermediate Representation - IR)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E9%9D%99%E6%80%81%E5%8D%95%E8%B5%8B%E5%80%BC%E5%BD%A2%E5%BC%8F-Static-Single-Assignment-SSA"><span class="toc-text">2.4 静态单赋值形式(Static Single Assignment - SSA)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E7%BC%96%E8%AF%91%E5%99%A8%E5%B8%B8%E7%94%A8%E7%9A%84%E5%BE%AA%E7%8E%AF%E4%BC%98%E5%8C%96%E7%AE%97%E6%B3%95"><span class="toc-text">2.5 编译器常用的循环优化算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E7%AA%A5%E5%AD%94%E4%BC%98%E5%8C%96"><span class="toc-text">2.6 窥孔优化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-7-%E5%AF%84%E5%AD%98%E5%99%A8%E5%88%86%E9%85%8D%E5%92%8C%E6%8C%87%E6%B4%BE"><span class="toc-text">2.7 寄存器分配和指派</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-Go%E7%BC%96%E8%AF%91%E5%99%A8%E5%9F%BA%E7%A1%80"><span class="toc-text">2.8 Go编译器基础</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Go%E7%BC%96%E8%AF%91%E5%99%A8For%E5%BE%AA%E7%8E%AF%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90"><span class="toc-text">三、Go编译器For循环优化分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-Demo%E9%AA%8C%E8%AF%81"><span class="toc-text">3.1 Demo验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E6%B7%BB%E5%8A%A0%E6%8E%A7%E5%88%B6%E8%AF%AD%E5%8F%A5%E3%80%81%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E9%AA%8C%E8%AF%81"><span class="toc-text">3.2 添加控制语句、函数调用验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E6%80%BB%E7%BB%93"><span class="toc-text">3.3 总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%BF%9B%E4%B8%80%E6%AD%A5%E6%80%9D%E8%80%83"><span class="toc-text">四、进一步思考</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-GCC-%E4%BC%98%E5%8C%96%E5%88%86%E6%9E%90"><span class="toc-text">4.1 GCC 优化分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E9%97%AE%E9%A2%98%E6%9C%AC%E8%B4%A8"><span class="toc-text">4.2 问题本质</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%89%A9%E5%B1%95%E9%98%85%E8%AF%BB"><span class="toc-text">五、扩展阅读</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">六、参考资料</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/Compiler"><i class="tag post-item-tag">Compiler</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Golang 编译器优化那些事</h1><time class="has-text-grey" datetime="2021-12-18T04:13:14.000Z">2021-12-18</time><article class="mt-2 post-content"><img alt="cover" src="https://upload-images.jianshu.io/upload_images/12321605-7bac65b41e38666d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+
+
+
+<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><p>去年写了一篇 <a target="_blank" rel="noopener" href="https://fanlv.fun/2020/06/09/golang-memory-model/">Golang Memory Model</a> 文章。当时在文章里面贴了验证一个线程可见性问题<code>Demo</code>，具体代码如下：</p>
+<pre><code>func main() {
+    running := true
+    go func() {
+        println("start thread1")
+        count := 1
+        for running {
+            count++
+        }
+        println("end thread1: count =", count) // 这句代码永远执行不到为什么？
+    }()
+    go func() {
+        println("start thread2")
+        for {
+            running = false
+        }
+    }()
+    time.Sleep(time.Hour)
+}
+</code></pre>
+<p>今年<code>8</code>月份的时候跟一个朋友做技术交流的时候，朋友指出我这个<code>Demo</code>里面<code>thread1</code>不会结束，是因为<code>running = false</code>这句代码被编译器优化掉了，不是因为线程可见性的问题导致不会结束，<a target="_blank" rel="noopener" href="https://godbolt.org/z/ba35MsGeY">当时转汇编</a> 看了下，发现的确是被优化的掉了，但是一直没想清楚是为什么，后面因为一直都在忙公司新项目（最近几个月周末自己主动打了<code>8</code>天黑工，不是我卷，只是简单想把负责的项目做好）。总之就是事情比较多，人一直处于超负荷状态，所以也没闲心去研究这些事情了。一拖就是几个月，一眨眼马上<code>2021</code>年都要过去了，想着再不研究下，这个技术债不知道要拖到什么时候去了，所以这两周末花时间看了下。</p>
+<p>先说结论，上面的<code>for</code>中的<code>running = false</code> 的确是被优化掉了，<code>thread2</code>的<code>for</code>循环汇编代码如下（<a target="_blank" rel="noopener" href="https://godbolt.org/z/ba35MsGeY">完整汇编代码点我</a>）：</p>
+<pre><code>        CALL    runtime.printlock(SB)
+        LEAQ    go.string."start thread2\n"(SB), AX
+        MOVQ    AX, (SP)
+        MOVQ    $14, 8(SP)
+        CALL    runtime.printstring(SB)
+        NOP
+        CALL    runtime.printunlock(SB)
+        JMP     main_func2_pc71
+main_func2_pc71:
+        PCDATA  $1, $-1 // Golang 垃圾回收器相关的指令，这里可以无视
+        JMP     main_func2_pc73
+main_func2_pc73:
+        JMP     main_func2_pc75
+main_func2_pc75:
+        JMP     main_func2_pc71
+</code></pre>
+<p>由上面汇编代码可以看到，<code>for { running = false }</code>, 直接被优化成了<code>4</code>条<code>JMP</code>的死循环。</p>
+<p>看到编译器这个汇编代码，我第一反应是感觉这个不符合直觉（因为优化后的代码改变了程序含义），是不是<code>Go </code>编译器的<code>Bug</code>？</p>
+<p>为了验证是不是<code>Go</code>编译器<code>BUG</code>，然后我用<code>C</code>写了个类似的 <a target="_blank" rel="noopener" href="https://godbolt.org/z/ETrdf8d77">Demo</a>，分别用 <a target="_blank" rel="noopener" href="https://godbolt.org/z/ETrdf8d77">GCC</a> 和 <a target="_blank" rel="noopener" href="https://godbolt.org/z/Ea758P863">LLVM</a> 去测试，发现在 <code>-O1</code>的优化级别下，编译器都会把<code>for</code>循环里面的变量赋值给优化掉，具体汇编代码如下：</p>
+<pre><code>void thread_test1( void *ptr) {
+    while (1) {
+        counter++;
+    }
+}
+
+// 汇编代码如下
+thread_test1:
+.L2:
+        jmp     .L2
+                
+</code></pre>
+<p>从 <a target="_blank" rel="noopener" href="https://godbolt.org/z/ETrdf8d77">GCC</a> 和 <a target="_blank" rel="noopener" href="https://godbolt.org/z/Ea758P863">LLVM</a> 结果来看，这个优化并不是<code>Go</code>编译器特有的优化，那为什么会这样优化？ 我们接着往下看。</p>
+<h2 id="二、基础知识"><a href="#二、基础知识" class="headerlink" title="二、基础知识"></a>二、基础知识</h2><h3 id="2-1-编译系统"><a href="#2-1-编译系统" class="headerlink" title="2.1 编译系统"></a>2.1 编译系统</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-44302a94fbdcc7a9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>一般一个程序从源码翻译成可执行目标文件需要经过“<code>预处理</code>”、“<code>编译</code>”、“<code>汇编</code>”、”<code>链接</code>“四个阶段。</p>
+<p>我们这里主要关注的是“<code>编译器</code>”做的事情。</p>
+<h3 id="2-2-编译器工作流程"><a href="#2-2-编译器工作流程" class="headerlink" title="2.2 编译器工作流程"></a>2.2 编译器工作流程</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-89087d945e04e645.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在我们这个上下文场景中，我们主要关注编译器代码优化流程。</p>
+<h3 id="2-3-中间代码-Intermediate-Representation-IR"><a href="#2-3-中间代码-Intermediate-Representation-IR" class="headerlink" title="2.3 中间代码(Intermediate Representation - IR)"></a>2.3 中间代码(Intermediate Representation - IR)</h3><p>中间代码（<code>Intermediate Representation</code>）也叫<code>IR</code>，是处于源代码和目标代码之间的一种表示形式。我们倾向于使用<code>IR</code>有两个原因。</p>
+<ol>
+<li>是很多解释型的语言，可以直接执行<code>IR</code>，比如<code>Python</code>和<code>Java</code>。这样的话，编译器生成<code>IR</code>以后就完成任务了，没有必要生成最终的汇编代码。</li>
+<li>我们生成代码的时候，需要做大量的优化工作。而很多优化工作没有必要基于汇编代码来做，而是可以基于<code>IR</code>，用统一的算法来完成。</li>
+</ol>
+<p>像<code>GCC</code>、<code>LLVM</code>这种编译器，可以支持<code>N</code>种不同的源语言，并可以生成<code>M</code>个不同机器码，如果没有<code>IR</code>，直接由源语言直接生成真实的机器代码，这个工作量是巨大的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-34f1f5d76e859b3b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>有了<code>IR</code>可以让编译器的工作更好的<strong>模块化</strong>，编译器前端不用再关注机器细节，编译器后端也不用关注编程语言的细节。这种实现会更加合理一些。</p>
+<p><code>IR</code>基于抽象层次划分，可以分为<code>HIR</code>、<code>MIR</code>、<code>LIR</code>。</p>
+<p><code>IR</code>数据结构常见的有几种：类似三地址指令（<code>Three Address Code - TAC</code>）线性结构、树结构、有向无环图（<code>Directed Acyclic Graph - DAG</code>）、程序依赖图（<code>Program Dependence Graph，PDG</code>）</p>
+<h3 id="2-4-静态单赋值形式-Static-Single-Assignment-SSA"><a href="#2-4-静态单赋值形式-Static-Single-Assignment-SSA" class="headerlink" title="2.4 静态单赋值形式(Static Single Assignment - SSA)"></a>2.4 静态单赋值形式(Static Single Assignment - SSA)</h3><p>静态单赋值（<code>SSA</code>），是<code>IR</code>的一种设计范式，它要求一个变量只能被赋值一次。举例来说</p>
+<pre><code> y := 1
+ y := 2
+ x := y
+</code></pre>
+<p>从上面的描述所知，第一行赋值行为是不需要的，因为y在第二行被二度赋值，<code>y</code>的数值在第三行被使用，一个程序通常会进行定义可达性分析（<code>reaching definition analysis</code>）来测定它。在<code>SSA</code>下，将会变成下列的形式：</p>
+<pre><code> y1 := 1
+ y2 := 2
+ x1 := y2
+</code></pre>
+<p>使用SSA的好处：</p>
+<ol>
+<li>当每个变量只有一个定值时，数据流分析和优化算法可以变的更简单。</li>
+<li>如果一个变量有<code>N</code>个使用和<code>M</code>个定值（占了程序中大约<code>N+M</code>条指令），表示定值-使用链所需要的空间（和时间）和<code>N*M</code>成正比，即成平方增大，对于几乎所有的实际程序，<code>SSA</code>形式的大小和原始程序成线性关系。</li>
+<li><code>SSA</code>形式中，变量的使用和定值可以与控制流程图的必经节点结构以一有用的方式联系起来，从而简化诸如冲突图构建这样的算法。</li>
+<li>源程序中同一个变量的不相关使用在<code>SSA</code>形式中变成了不同的变量，从而删除了他们来了之间不必要联系。</li>
+</ol>
+<p>更多可以参考 <a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/%E9%9D%99%E6%80%81%E5%8D%95%E8%B5%8B%E5%80%BC%E5%BD%A2%E5%BC%8F">静态单赋值形式 - WIKI</a></p>
+<p>静态单赋值形式引入了一个<code>φ</code>节点(<code>/faɪ/</code>又叫<code>Phi</code>)，这个节点的作用，就是根据控制流提供的信息，来确定选择两个值中的哪一个。<code>Phi</code>运算是<code>SSA</code>格式的<code>IR</code>中必然会采用的一种运算，用来从多个可能的数据流分支中选择一个值。</p>
+<p><strong>现代语言用于优化的 IR，很多都是基于 SSA 的了，比如 Golang 编译器、Java 的 JIT 编译器、JavaScript的 V8 编译器，以及 LLVM 等。</strong></p>
+<h3 id="2-5-编译器常用的循环优化算法"><a href="#2-5-编译器常用的循环优化算法" class="headerlink" title="2.5 编译器常用的循环优化算法"></a>2.5 编译器常用的循环优化算法</h3><p><strong>第一种：归纳变量优化（Induction Variable Optimization`）</strong></p>
+<p>看下面这个循环，其中的变量<code>j</code>是由循环变量派生出来的，这种变量叫做该循环的归纳变量。归纳变量的变化是很有规律的，因此可以尝试做<strong>强度折减优化</strong>。示例代码中的乘法可以由加法替代。</p>
+<pre><code>int j = 0;
+for (int i = 1; i &lt; 100; i++) {
+    j = 2*i;  //2*i可以替换成j+2
+}
+return j;
+</code></pre>
+<p><strong>第二种：边界检查消除（Unnecessary Bounds-checking Elimination）</strong></p>
+<p>当引用一个数组成员的时候，通常要检查下标是否越界。在循环里面，如果每次都要检查的话，代价就会相当高（例如做多个数组的向量运算的时候）。如果编译器能够确定，在循环中使用的数组下标（通常是循环变量或者基于循环变量的归纳变量）不会越界，那就可以消除掉边界检查的代码，从而大大提高性能。</p>
+<p><strong>第三种：循环展开（Loop Unrolling）</strong></p>
+<p>把循环次数减少，但在每一次循环里，完成原来多次循环的工作量。比如：</p>
+<pre><code>for (int i = 0; i&lt; 100; i++){
+  sum = sum + i;
+}
+</code></pre>
+<p>优化后可以变成：</p>
+<pre><code>for (int i = 0; i&lt; 100; i+=5){
+  sum = sum + i;
+  sum = sum + i + 1;
+  sum = sum + i + 2;
+  sum = sum + i + 3;
+  sum = sum + i + 4;
+}
+</code></pre>
+<p>进一步，循环体内的<code>5</code>条语句就可以优化成<code>1</code>条语句：<code>sum = sum + i*5 + 10;</code>。</p>
+<p>减少循环次数，本身就能减少循环条件的执行次数。同时，它还会增加一个基本块中的指令数量，从而为指令排序的优化算法创造机会。指令排序会在下一讲中介绍。</p>
+<p><strong>第四种：循环向量化（Loop Vectorization）</strong></p>
+<p>在循环展开的基础上，我们有机会把多次计算优化成一个向量计算。比如，如果要循环<code>16</code>万次，对一个包含了<code>16</code>万个整数的数组做汇总，就可以变成循环<code>1</code>万次，每次用向量化的指令计算<code>16</code>个整数。</p>
+<p><strong>第五种：重组（Reassociation）</strong></p>
+<p>在循环结构中，使用代数简化和重组，能获得更大的收益。比如，如下对数组的循环操作，其中数组<code>a[i,j]</code>的地址是<code>a+i*N+j</code>。但这个运算每次循环就要计算一次，一共要计算<code>M*N</code>次。但其实，这个地址表达式的前半截<code>a+i*N</code>不需要每次都在内循环里计算，只要在外循环计算就行了。</p>
+<pre><code>for (i = 0; i&lt; M; i++){
+  for (j = 0; j&lt;N; j++){
+    a[i,j] = b + a[i,j];
+  }
+}
+</code></pre>
+<p>优化后的代码相当于：</p>
+<pre><code>for (i = 0; i&lt; M; i++){
+  t=a+i*N;
+  for (j = 0; j&lt;N; j++){
+    *(t+j) = b + *(t+j);
+  }
+}
+</code></pre>
+<p><strong>第六种：循环不变代码外提（Loop-Invariant Code Motion，LICM）</strong></p>
+<p>在循环结构中，如果发现有些代码其实跟循环无关，那就应该提到循环外面去，避免一次次重复计算。</p>
+<p><strong>第七种：代码提升（Code Hoisting，或 Expression Hoisting）</strong></p>
+<p>在下面的<code>if</code>结构中，<code>then</code>块和<code>else</code>块都有<code>z=x+y</code>这个语句，它可以提到<code>if</code>语句的外面。</p>
+<pre><code>  if (x &gt; y)
+    ...
+    z = x + y
+    ...
+  }
+  else{
+    z = x + y
+    ...
+  }
+  
+</code></pre>
+<p>这样变换以后，至少代码量会降低。但是，如果这个<code>if</code>结构是在循环里面，那么可以继续借助<strong>循环不变代码外提优化</strong>，把<code>z=x+y</code>从循环体中提出来，从而降低计算量。</p>
+<pre><code>z = x + y
+for(int i = 0; i &lt; 10000; i++){
+  if (x &gt; y)
+    ...
+  }
+  else{
+    ...
+  }
+}
+</code></pre>
+<p><strong>第八种：激进的死代码优化</strong>    </p>
+<pre><code>int testFunc()  {
+    int k =0;
+    while (k&lt;100) {
+        k++;
+    }
+    return 1;
+}
+</code></pre>
+<p>在某些优化场景下，因为循环理解的代码并不影响返回结果，编译器会直接优化掉循环的代码，只剩一个<code>return 1;</code></p>
+<p>还有一些场景，激进的死代码删除算法会删除没有输出的无线循环，从而改变程序的含义。因为在原来的程序不产生任何输出的情况下，删除这种无限循环后，程序会执行该循环之后的语句，而这些语句有可能产生输出。在许多环境下，这被认为是不可接受的（详见<a target="_blank" rel="noopener" href="https://book.douban.com/subject/1806974/">《现代编译原理》- 虎书</a><code>19.5</code>章节）。</p>
+<h3 id="2-6-窥孔优化"><a href="#2-6-窥孔优化" class="headerlink" title="2.6 窥孔优化"></a>2.6 窥孔优化</h3><p>窥孔优化，就是通过一个滑动窗口（窥孔）扫描<code>IR</code>、<code>汇编代码</code>或者是<code>机器码</code>，每次扫描<code>n</code>行，然后检查窗口中的指令，看是否可以用更快或者更短的指令来替换窗口中的指令序列。这个窗口可以沿着代码不断的滑动，从而发现所有代码中的优化机会。窺孔优化技术并不要求在窺孔中的代码一定是连续的。窺孔优化的特点是每一次改进又可以产生新的优化机会。</p>
+<p>窺孔优化常用的优化场景有：</p>
+<ol>
+<li>消除冗余的加载和保存指令。</li>
+<li>消除不可达代码。</li>
+<li>控制流优化。</li>
+<li>代数化简和强度消减。</li>
+<li>使用机器特有的指令。</li>
+</ol>
+<h3 id="2-7-寄存器分配和指派"><a href="#2-7-寄存器分配和指派" class="headerlink" title="2.7 寄存器分配和指派"></a>2.7 寄存器分配和指派</h3><p>代码生成的关键问题之一是决定哪个值放在寄存器里面，<strong>寄存器是目标机上运行速度最快的计算单元</strong>，但是我们通常没有足够的寄存器来存放所有的值。没有存放在寄存器中的值必须存放在内存中。只涉及寄存器运算分量的指令比那些涉及内运算分量的指令运行的快，因此，有效利用寄存器非常重要。</p>
+<p>寄存器的使用经常被分解为两个子问题：</p>
+<ol>
+<li>寄存器分配：对于原程序中的每个点，我们选择一组将被存放在寄存器中的变量。</li>
+<li>寄存器指派：我们指定一个变量存放在哪个寄存器中。</li>
+</ol>
+<p>当然，很少有“能够将所有的数据在所有时间内都保存在寄存器”的情况，因此精心的使用好寄存器，控制好对那些不在寄存器中的变量的访问很重要。有个几个需要特别考虑的问题：</p>
+<ol>
+<li><strong>尽可能将程序执行中最频繁的变量分配到寄存器中</strong>。</li>
+<li>尽可能高效的访问那些不在寄存器中的变量。</li>
+<li>使“记账”使用的寄存器（例如，为管理变量对存储器的访问而保留的寄存器）个数尽可能的少，以便能用更多寄存器来容纳变量的值。</li>
+<li>尽可能提高过程调用和相关操作的效率，如进入和退出作用域，以便使他们的开销减至最小。</li>
+</ol>
+<p>参与寄存器分配常见的有以下对象：</p>
+<ul>
+<li>栈指针（frame pointer），指向运行栈当前过程的栈帧开始处。</li>
+<li>动态链（dynamic link）</li>
+<li>静态链 （static link）</li>
+<li>全局偏移表指针（global offset table pointer）</li>
+<li>参数，参数由当前活跃过程传递给被调用过程</li>
+<li>返回值，当前活跃过程调用的过程返回的结果</li>
+<li>频繁使用的变量，最频繁使用的局部（<strong>也可能是非局部的或者全局</strong>）变量</li>
+<li>临时变量，在表达式求值期间和其他较短活跃期内使用和计算出的临时值。</li>
+</ul>
+<h3 id="2-8-Go编译器基础"><a href="#2-8-Go编译器基础" class="headerlink" title="2.8 Go编译器基础"></a>2.8 Go编译器基础</h3><p><code>Go Compiler</code>（下文用<code>gc</code>表示）在<code>1.5</code>版本的时候实现了 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Bootstrapping_(compilers)">自举</a>。编译器相关源代码主要在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/tree/release-branch.go1.16/src/cmd/compile">src/cmd/compile</a> 目录下。</p>
+<p>在<code>gc</code>的 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/README.md">README.md</a> 中介绍了<code>gc</code>主要分为<code>4</code>个模块：</p>
+<ol>
+<li><code>Parsing</code>，词法分析和语法分析，词法分析器代码主要在<code>scanner.go</code>中，语法分析器代码主要在<code>parser.go</code>中，<code>Go</code>的<code>AST</code>的节点定义在<code>nodes.go</code>中。</li>
+<li><code>Type-checking and AST transformations</code>，语义分析（类型检查和<code>AST</code>变换），语义分析的代码在<code>typecheck.go</code>中，主要做<code>类型检查</code>、<code>名称消解（Name Resolution）</code>、<code>类型推导</code>、<code>内联优化</code>、<code>逃逸分析</code>等。</li>
+<li><code>Generic SSA</code>，生成<code>SSA</code>格式的<code>IR</code>，<code>gc</code>的<code>IR</code>是基于控制流图<code>CFG</code>的。一个函数会被分成多个<code>基本块</code>，<code>基本块</code>中包含了一行行的<code>指令</code>。<code>Go SSA</code>中有三个比较重要的概念，分别是 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/value.go#L18">Value</a> 、 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/block.go#L12">Block</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/func.go#L26">Func</a>。<ul>
+<li><code>Value</code> 是<code>SSA</code>的最主要构造单元，它可以定义一次、使用多次。在定义一个<code>Value</code>的时候，需要一个标识符<code>ID</code>作为名称、产生该<code>Value</code>的操作码（<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/op.go#L19">Op</a>）、一个类型（<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/types/type.go#L118">Type</a>，就是代码中<code>&lt;&gt;</code>里面的值），以及一些参数。</li>
+<li><code>Block</code>，基本块有三种：简单（<code>Plain</code>）基本块，它只有一个后继基本块；退出（<code>Exit</code>）基本块，它的最后一个指令是一个返回指令；还有<code>if</code>基本块，它有一个<code>控制值</code>，并且它会根据该值是<code>true</code>还是<code>false</code>，跳转到不同的基本块。</li>
+<li><code>Func</code>，函数是由多个基本块构成的。它必须有一个入口基本块（<code>Entry Block</code>），但可以有<code>0</code>到多个退出基本块，就像一个<code>Go</code>函数允许包含多个<code>Return</code>语句一样。</li>
+</ul>
+</li>
+<li><code>Generating machine code</code>，生成机器码，主要代码在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/gc/ssa.go#L6296">cmd/compile/internal/gc/ssa.go</a> 中。需要说的是，<code>gc</code>生成的汇编代码是<code>Plan9</code>汇编，是一种<code>伪汇编</code>，它是一种半抽象的汇编代码。在生成特定<code>CPU</code>的机器码的时候，它还会做一些转换，值得一提的是<code>gc</code>并没有做<code>指令排序</code>的优化工作。</li>
+</ol>
+<p><code>Go compiler SSA</code>更多介绍，可以看<code>gc SSA </code>官方 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/README.md">README.MD</a></p>
+<p><code>gc</code>提供了一个生成可视化<code>SSA</code>的<code>IR</code>的选项，只要我们在执行<code>go build</code>设置环境变量<code>GOSSAFUNC</code>为想打印<code>IR</code>的函数名，<code>gc</code>会生成一个<code>ssa.html</code>文件。<code>ssa.html</code>文件会记录了编译器为了优化我们代码所经过的所有步骤和每个步骤的耗时。如果想在控制台也输出相关代码，可以在函数名后面加上<code>+</code>。<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/gc/main.go#L525">具体代码点我查看</a></p>
+<p>假如我要看<code>mian</code>包下面函数名为<code>thread1</code>的<code>IR</code>优化过程/代码，可以执行如下命令</p>
+<pre><code>GOSSAFUNC=main.thread1+ go build -gcflags="-N -l" ./demo.go
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-23c3deacc0136f9b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="三、Go编译器For循环优化分析"><a href="#三、Go编译器For循环优化分析" class="headerlink" title="三、Go编译器For循环优化分析"></a>三、Go编译器For循环优化分析</h2><h3 id="3-1-Demo验证"><a href="#3-1-Demo验证" class="headerlink" title="3.1 Demo验证"></a>3.1 Demo验证</h3><p>为了方便验证问题，我简化了一下<a target="_blank" rel="noopener" href="https://godbolt.org/z/TTofx3Ma5">Demo</a> 代码如下：</p>
+<pre><code>var counter = 1
+
+func main() {
+    go thread1()
+    for counter &lt; 2 {}
+    println("finish , counter = ", counter)
+}
+
+func thread1() {
+    for {
+        counter++
+    }
+}
+</code></pre>
+<p>然后<code>go build</code>时候设置<code>GOSSAFUNC</code>环境变量来查看<code>SSA IR</code>输出</p>
+<pre><code>GOSSAFUNC=main.thread1+ go build -gcflags="-N -l" ./demo.go
+</code></pre>
+<p>我们可以看到控制台输出如下，（完整的<code>SSA</code>结果<a href="./ssa1.html">点我查看</a>）</p>
+<pre><code>thread1 func() 
+  b1:
+    v1 = InitMem &lt;mem&gt; DEAD // Init函数使用的内存
+    v2 = SP &lt;uintptr&gt; DEAD // 栈指针
+    v3 = SB &lt;uintptr&gt; DEAD // 栈底指针
+    v4 = Addr &lt;*int&gt; {"".counter} v3 DEAD // 全局变量 counter 地址
+    v7 = Const64 &lt;int&gt; [1] DEAD // 常量"1"
+    v9 = Addr &lt;*int&gt; {"".counter} v3 DEAD // 全局变量 counter 地址
+    Plain -&gt; b2  // 跳转到 b2 
+  b2: &lt;- b1 b4
+    v12 = Phi &lt;mem&gt; v1 v10 DEAD // b1 过来的 v12 = v1 , b4 过来的 v12 = v10
+    Plain -&gt; b3 // 跳转到 b3
+  b3: &lt;- b2
+    v5 = Copy &lt;mem&gt; v12 DEAD  // 把 v12 的值拷贝到 v5
+    v6 = Load &lt;int&gt; v4 v5 DEAD // 读取 v4 地址中的数据到 v5 中
+    v8 = Add64 &lt;int&gt; v6 v7 DEAD / v8 = v6 + v7
+    v10 = Store &lt;mem&gt; {int} v9 v8 v5 DEAD // v9 = v8 使用的内存地址是 v5
+    Plain -&gt; b4
+  b4: &lt;- b3
+    Plain -&gt; b2
+  b5: DEAD // 这个 Block 不可达，所以直接标记为 Dead 了
+    v11 = Unknown &lt;mem&gt; DEAD
+    Ret v11
+  pass number lines begin
+</code></pre>
+<p>这个是<code>Go Compiler</code>生成的<code>SSA</code>形式的<code>IR</code>，简单说下这个<code>IR</code>相关含义：</p>
+<ol>
+<li><code>b1~b5</code>就是上文说的<code>Block</code>，表示基本块，不同基本块之间会跳转。</li>
+<li><code>v1~v12</code>就是上文说的<code>Value</code>。<code>Value</code>的<code>=</code> 右边第一个是 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/op.go#L19">Op</a>，<code>&lt;&gt;</code>里面表示的是<code>Value</code>的类型 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/types/type.go#L118">Type</a>。所有的<code>Value</code>后面都有<code>DEAD</code>标记，表示这<code>Value</code>已经是<code>死码</code>了。</li>
+<li><code>b2: &lt;- b1 b4</code>表示，数据可以从<code>b1</code>或者<code>b4</code>流转到<code>b2</code></li>
+<li><code>v12 = Phi &lt;mem&gt; v1 v10</code> 表示<code>v12</code>取<code>v1</code>和<code>v10</code>中的一个值（具体需要看是从<code>b1</code>流入的还是<code>b2</code>流入的）</li>
+</ol>
+<p>在 <a href="./ssa1.html">SSA的结果中</a> 我们看到有很多 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/compile.go#L426">Pass</a> ，每一个<code>Pass</code>对应这一个<code>IR</code>代码优化过程，比如<code>deadcode</code>是做<code>死码消除</code>优化、<code>cse</code> 是消除公共子表达式的算法等等。</p>
+<p>可以看到所有<code>Block</code>中的<code>Value</code>在执行<code>Pass</code>优化前就已经标记为<code>Dead</code>了，然后<code>opt deadcode</code>优化的时候，清除掉了所有标记为<code>Dead</code>的<code>Value</code>。在 <a href="./ssa1.html">SSA的结果中</a> 到最后生成汇编的时候，就只剩下<code>4</code>个<code>JUMP</code>指令了，也说就是变成一个空循环了。</p>
+<pre><code>b1 00003 (+13) JMP 4
+b2 00004 (+14) JMP 5
+b3 00005 (14) JMP 6
+b4 00006 (14) JMP 4
+</code></pre>
+<p>看到这里，我们知道编译器认为<code>for</code>循环里面的代码都是<code>死码</code>，所以把<code>for</code>循环中的代码优化掉了，接着我们要看编译器为什么认为<code>for</code>循环里面的代码是<code>死码</code>。</p>
+<p>由上面 <a href="./ssa1.html">SSA的结果中</a> 输出我们知道，在<code>Pass</code>之前编译器就已经认为所有<code>Value</code>是<code>Dead</code>了，所以后面的<code>Pass</code>优化逻辑，不是我们关注的重点，可以先不用管。我们要看的是编译器如何判断一个<code>Value</code>是否存活。</p>
+<p>在此之前，我们先看下这个<code>4</code>个<code>Block</code>的是如何生成的。我在<code>Go Compiler</code>的<code>ssa.go</code>源码中找到了<code>for</code>转换为<code>Block</code>的<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/gc/ssa.go#L1449">相关代码</a>，</p>
+<pre><code>// OFOR: for Ninit; Left; Right { Nbody }
+// cond (Left); body (Nbody); incr (Right)
+//
+// OFORUNTIL: for Ninit; Left; Right; List { Nbody }
+// =&gt; body: { Nbody }; incr: Right; if Left { lateincr: List; goto body }; end:
+bCond := s.f.NewBlock(ssa.BlockPlain) // b2
+bBody := s.f.NewBlock(ssa.BlockPlain) // b3
+bIncr := s.f.NewBlock(ssa.BlockPlain) // b4
+bEnd := s.f.NewBlock(ssa.BlockPlain)  // b5
+</code></pre>
+<p>由代码可以知，<code>for</code>循环生成了<code>bCond</code>、<code>bBody</code>、<code>bIncr</code>、<code>bEnd</code>四个<code>Block</code>，转对应的<code>CFG</code>如下图如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-61c1541e6ac07077.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>再来看<code>Go Compiler</code>是如何判断一个<code>Block</code>中的<code>Value</code>是<code>Live</code>还是<code>Dead</code>的，我在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/deadcode.go#L56">compile/internal/ssa/deadcode.go</a> 找到了如下代码：</p>
+<pre><code>// liveValues returns the live values in f and a list of values that are eligible
+// to be statements in reversed data flow order.
+// The second result is used to help conserve statement boundaries for debugging.
+// reachable is a map from block ID to whether the block is reachable.
+// The caller should call f.retDeadcodeLive(live) and f.retDeadcodeLiveOrderStmts(liveOrderStmts)
+// when they are done with the return values.
+func liveValues(f *Func, reachable []bool) (live []bool, liveOrderStmts []*Value) {
+    // ..... 初始化 live []bool ，默认全部是Dead/false
+    // ..... 如果是寄存器分配函数，全部设置为存活，我们先无视
+    // ..... 内联相关代码，我们先无视
+    
+    // Find all live values
+    q := f.Cache.deadcode.q[:0]
+    defer func() { f.Cache.deadcode.q = q }()
+
+    // Starting set: all control values of reachable blocks are live.
+    // Calls are live (because callee can observe the memory state).
+    for _, b := range f.Blocks {
+        if !reachable[b.ID] { 
+        // 如果 Block 不可达，则认为这个 Block下面所有的 Value 都是 Dead Value
+        // 我们这个Demo场景，b5 下面的 Value 都是 Dead Value
+            continue
+        }
+        for _, v := range b.ControlValues() {
+            if !live[v.ID] {
+                live[v.ID] = true
+                q = append(q, v)
+                if v.Pos.IsStmt() != src.PosNotStmt {
+                    liveOrderStmts = append(liveOrderStmts, v)
+                }
+            }
+        }
+        for _, v := range b.Values {
+            if (opcodeTable[v.Op].call || opcodeTable[v.Op].hasSideEffects) &amp;&amp; !live[v.ID] {
+                live[v.ID] = true
+                q = append(q, v)
+                if v.Pos.IsStmt() != src.PosNotStmt {
+                    liveOrderStmts = append(liveOrderStmts, v)
+                }
+            }
+            // ... 内联相关代码先忽略
+        }
+    }
+
+    // Compute transitive closure of live values.
+    for len(q) &gt; 0 {
+        // pop a reachable value
+        v := q[len(q)-1]
+        q = q[:len(q)-1]
+        for i, x := range v.Args { 
+            if v.Op == OpPhi &amp;&amp; !reachable[v.Block.Preds[i].b.ID] {
+                continue
+            }
+            
+            // 存活的 Value 依赖的 Value 也必须是存活状态
+           // 假设 v11 (15) = StaticLECall &lt;mem&gt; {AuxCall{"".emptyFunc()}} v10
+           // v11 如果是存活的状态, 那么 v10 也就应该是存活状态，依次类推
+            if !live[x.ID] {
+                live[x.ID] = true
+                q = append(q, x) // push
+                if x.Pos.IsStmt() != src.PosNotStmt {
+                    liveOrderStmts = append(liveOrderStmts, x)
+                }
+            }
+        }
+    }
+
+    return
+}
+</code></pre>
+<p><code>liveValues</code>函数主要做三件事</p>
+<ol>
+<li>遍历所有<code>reachable</code>（可达）的<code>Block</code>的<code>控制语句（ControlValues）</code>，有的话直接设置该<code>ControlValue</code>为<code>Live=Ture</code>，然后把存活的<code>Value</code>放到到一个队列中去，在第三步会用到。</li>
+<li>遍历所有<code>reachable</code>（可达）的<code>Block</code>的<code>Value</code>，如果<code>Value</code>的<code>Op</code>在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/opGen.go#L2907">opcodeTable</a> 对象是一个<code>函数调用(call=true)</code>就认为这个<code>Value</code>是存活的，或者如果<code>Value</code>的<code>Op</code>对象的<code>hasSideEffects</code>为<code>true</code>，也认为是存活的。<code>hasSideEffects</code>我翻了下<code>Go</code>的<code>Commit</code>是为了修复<code>Go 1.8</code> <a target="_blank" rel="noopener" href="https://github.com/golang/go/issues/19182">sync/atomic loop elided</a> 的<code>Bug</code>加入的，主要是 <code>Atomic</code> 相关的几个方法会设置<code>hasSideEffects</code>为<code>True</code>，具体可以看<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/37333/">add opcode flag hasSideEffects for do-not-remove</a> 这个<code>commit</code>。这一步里面存活的<code>Value</code>也会放到队列中去。</li>
+<li>从队列依次取出存活的<code>Value</code>，然后遍历<code>Value</code>依赖的参数，设置参数<code>Value</code>的<code>Live=Ture</code>，依次类推，算出所有存活的<code>Value</code>。</li>
+</ol>
+<p>我们再看下我们上面代码中<code>b1~b4</code>中所有<code>Value</code>的<code>op</code>，依次是<code>InitMem</code>、<code>SP</code>、<code>SB</code>、<code>Addr</code>、<code>Const64</code>、<code>Phi</code>、<code>Copy</code>、<code>Load</code>、<code>Add64</code>、<code>Store</code>，在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/ssa/opGen.go#L2907">opcodeTable</a> 中查了下，<code>call</code>和<code>hasSideEffects</code>都没有设置，默认都是<code>false</code>，所以最后所有<code>Block</code>中的<code>Value</code>都标记为<code>Dead</code>了。</p>
+<h3 id="3-2-添加控制语句、函数调用验证"><a href="#3-2-添加控制语句、函数调用验证" class="headerlink" title="3.2 添加控制语句、函数调用验证"></a>3.2 添加控制语句、函数调用验证</h3><p>上面说了，如果<code>Block</code>中有<code>控制语句（ControlValues）</code>或者<code>函数调用</code>，<code>Go Compiler</code>就会认为这个<code>Value</code>是存活的，我们分别用两个<code>Demo</code>验证下。</p>
+<p>先看<code>控制语句</code>场景，我加了个<code>flag</code>变量，代码如下：（<a target="_blank" rel="noopener" href="https://godbolt.org/z/b9sKePKWv">完整代码</a>）</p>
+<pre><code>var flag = true
+
+func thread1() {
+    for flag { // 虽然 flag 一直是 true，然而 go 编译器并没有优化掉这个变量
+        counter++
+    }
+}
+</code></pre>
+<p>我们再执行一下<code>GOSSAFUNC=main.thread1+ go build -gcflags="-N -l" ./demo2.go</code>看一下<code>SSA</code>的<code>IR</code><a href="./ssa2.html">完整代码</a></p>
+<pre><code>thread1 func()
+  b1:
+    v1 = InitMem &lt;mem&gt;
+    v2 = SP &lt;uintptr&gt; DEAD
+    v3 = SB &lt;uintptr&gt;
+    v4 = Addr &lt;*bool&gt; {"".flag} v3
+    v7 = Addr &lt;*int&gt; {"".counter} v3
+    v10 = Const64 &lt;int&gt; [1]
+    v12 = Addr &lt;*int&gt; {"".counter} v3
+    Plain -&gt; b2
+  b2: &lt;- b1 b4
+    v5 = Phi &lt;mem&gt; v1 v13
+    v6 = Load &lt;bool&gt; v4 v5  // v6 依赖了 v4、v5，所以 v4、v5 也是存活的，依次类推
+    If v6 -&gt; b3 b5 (likely) // v6 是 ControlValue ，所以 v6 是存活的
+  b3: &lt;- b2
+    v8 = Copy &lt;mem&gt; v5
+    v9 = Load &lt;int&gt; v7 v8
+    v11 = Add64 &lt;int&gt; v9 v10
+    v13 = Store &lt;mem&gt; {int} v12 v11 v8
+    Plain -&gt; b4
+  b4: &lt;- b3
+    Plain -&gt; b2
+  b5: &lt;- b2
+    v14 = Copy &lt;mem&gt; v5
+    Ret v14
+</code></pre>
+<p>因为 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/gc/ssa.go#L3031">ssa.BlockIf</a> 和 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/cmd/compile/internal/gc/ssa.go#L1647">ssa.BlockRet</a> 都设置了<code>ControlValue</code>，所以 <code>v6</code>和<code>v14</code>会认为是存活的，然后 <code>v6</code>和<code>v14</code>的<code>Args</code>又间接依赖了其他所有的<code>Value</code>，所以其他所有<code>Value</code>也都标记为存活了（上面这些<code>Value</code>输出的时候末尾没有再标记为<code>Dead</code>了）。</p>
+<p>因为<code>for</code>循环中的的代码没有被优化掉，所以这个时候循环里面的逻辑已经正常，运行函数，也能正常结束了（注意这里并不代表没有可见性问题），具体生成的汇编代码如下。</p>
+<pre><code>        JMP     thread1_pc2
+thread1_pc2:
+        CMPB    "".flag(SB), $0 // 判断 flag 是否等于 0
+        JNE     thread1_pc13 // 不等于 0 跳转到 thread1_pc13
+        JMP     thread1_pc24 // 等于 0 跳转到 thread1_pc24
+thread1_pc13:
+        INCQ    "".counter(SB)  // counter++ （内存操作）
+        JMP     thread1_pc22 // 跳转到 thread1_pc22
+thread1_pc22:
+        JMP     thread1_pc2
+thread1_pc24:
+        RET    
+</code></pre>
+<p>再来看下<strong>函数调用</strong>场景，我在函数中加了个 <a target="_blank" rel="noopener" href="https://godbolt.org/z/oE75sT6jo">空函数调用</a> 测试了下一下（注意要加<code>-l</code>禁止内联），结果也一样。<code>for</code>循环的<code>body</code>代码没有再被优化掉。</p>
+<pre><code>func thread1() {
+    for {
+        emptyFunc()
+        counter++
+    }
+}
+
+func emptyFunc() {}
+
+thread1_pc27:
+        FUNCDATA        $0, gclocals·33cdeccccebe80329f1fdbee7f5874cb(SB)
+        FUNCDATA        $1, gclocals·33cdeccccebe80329f1fdbee7f5874cb(SB)
+        PCDATA  $1, $0
+        NOP
+        CALL    "".emptyFunc(SB)
+        INCQ    "".counter(SB)
+        JMP     thread1_pc27
+</code></pre>
+<h3 id="3-3-总结"><a href="#3-3-总结" class="headerlink" title="3.3 总结"></a>3.3 总结</h3><p>基于上面分析，我们可以知道在满足以下两个条件时，<code>Go</code>编译器会才会优化掉<code>for</code>循环的<code>body</code>中相关的<code>Value</code></p>
+<ol>
+<li>循环永远不会结束，或者说没有控制语句。</li>
+<li><code>body</code>中没有函数调用。</li>
+</ol>
+<h2 id="四、进一步思考"><a href="#四、进一步思考" class="headerlink" title="四、进一步思考"></a>四、进一步思考</h2><p>上面，我们分析了<code>gc</code>代码，知道了编译器是怎么一步步把<code>for</code>循环中<code>body</code>的代码优化掉的。但是我们并不知道编译器基于什么的考量来做这个优化的。查阅了下<code>Go</code>编译器的各种资料，也没有找到支撑相关优化算法的资料。</p>
+<p><code>gc</code>这个研究走进死胡同了，这个时候，我把眼光转向了<code>GCC</code>，文章最开始说了，我用 <a target="_blank" rel="noopener" href="https://godbolt.org/z/ETrdf8d77">GCC</a> 和 <a target="_blank" rel="noopener" href="https://godbolt.org/z/Ea758P863">LLVM</a> 测试相关代码的时候，有一样的优化效果。而且<code>GCC</code>的优化参数，比<code>Go</code>编译器丰富很多（<code>Go</code>编译器相关的只有一个<code>-N</code>参数，<code>GCC</code>可以自己指定各种<a target="_blank" rel="noopener" href="https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html">优化算法</a>）。</p>
+<h3 id="4-1-GCC-优化分析"><a href="#4-1-GCC-优化分析" class="headerlink" title="4.1 GCC 优化分析"></a>4.1 GCC 优化分析</h3><p><code>C</code>测试代码如下：</p>
+<pre><code>void thread_test1 (void *ptr);
+int counter = 1;
+
+int main()
+{
+    pthread_t thread1;
+    int res = pthread_create(&amp;thread1, NULL, (void *)&amp;thread_test1, NULL);
+    if (res != 0) {
+        printf("pthread_create failed\n");
+        return 0;
+    }
+    
+    while (counter&lt;2) {}
+    printf("finish, counter = %d\n",counter);
+}
+
+void thread_test1( void *ptr) {
+    while (1) {
+        counter++;
+    }
+}
+</code></pre>
+<p>我们先不加优化标记（或者用<code>-O0</code>）看下 <a target="_blank" rel="noopener" href="https://godbolt.org/z/6cb9e1TE3">生成的编译代码</a> 如下：</p>
+<pre><code>thread_test1:
+        pushq   %rbp
+        movq    %rsp, %rbp
+        movq    %rdi, -8(%rbp)
+.L7:
+        movl    counter(%rip), %eax // 读取内存中的值给 eax 寄存器
+        addl    $1, %eax // eax 寄存器的值 +1
+        movl    %eax, counter(%rip) // 把寄存器的值回写到内存
+        jmp     .L7  // 跳转到 .L7
+</code></pre>
+<p>我们看到，在不指定优化级别的情况下，<code>GCC</code>是不会优化<code>for</code>循环中的代码的。 如果加上了<code>-O1</code>优化级别的话，<code>for</code>循环直接变成一个无限循环的<code>jmp</code>指令，<code>thread_test1</code><a target="_blank" rel="noopener" href="https://godbolt.org/z/ETrdf8d77">汇编代码</a> 会变成如下：</p>
+<pre><code>thread_test1:
+        subq    $8, %rsp
+        movl    $.LC0, %edi
+        call    puts
+.L2:
+        jmp     .L2
+</code></pre>
+<p>加个<code>flag</code>控制变量测试再测试一下，<a target="_blank" rel="noopener" href="https://godbolt.org/z/Mc3zo1YKM">代码如下</a>：</p>
+<pre><code>int flag = 1;
+void thread_test1( void *ptr) {
+    while (flag) {
+        counter++;
+    }
+}
+
+thread_test1:
+    cmpl    $0, flag(%rip) // 判断 flag == 0
+    je      .L1  // 等于0跳转到.L1
+.L3: 
+    jmp     .L3 // 不等于 0 .L3 无限循环 
+.L1:  // 函数返回
+    ret
+</code></pre>
+<p>我们看到<code>GCC</code>还是比<code>Go Compiler</code>聪明一点，知道<code>flag</code>变量一直<code>1</code>，所以只执行了一次比较（<code>cmpl</code>）然后依然是一个<code>jmp</code>的死循环。</p>
+<p>我们把<code>flag</code> 换成<code>counter</code>再试下，<a target="_blank" rel="noopener" href="https://godbolt.org/z/ah1Wb7KE6">新生成的代码如下</a>：</p>
+<pre><code>void thread_test1( void *ptr) {
+    while (counter) {
+        counter++;
+    }
+}
+
+thread_test1:
+        movl    counter(%rip), %eax // 读取 counter 内存值给 eax
+        testl   %eax, %eax // 判断 eax 是否为 0
+        je      .L1 // eax = 0 跳转到 .L1 函数结束
+.L3:
+        addl    $1, %eax // eax = eax+1
+        jne     .L3 // eax 不等于 0，就跳转到 .L3，一直到 EAX 溢出，才跳出循环
+        movl    $0, counter(%rip) // 设置 counter = 0
+.L1:
+        ret
+// eax 是 32 位寄存器，CPU 主频按 2GHZ 算，每个时钟信号周期为0.5纳秒
+// 不考虑流水线和指令拆分，eax 寄存器溢出只要 4294967296*2*0.5ns= 4.2s
+</code></pre>
+<p>这一次优化结果比较有趣，从内存读取<code>counter</code>的值以后，直接赋值给了<code>eax</code>寄存器，然后<code>for</code>循环里面不停的对<code>eax</code>做加<code>1</code>操作，然后在循环之后（<code>counter</code>溢出）的代码直接设置<code>counter=0</code>（编译器认为只有<code>counter</code>为<code>0</code>的时候<code>for</code>循环才会结束）。</p>
+<p>这里我们发现了一个比较关键的优化，在没有指定优化级别的时候，每次循环的时候，都会从内存中读出<code>counter</code>赋值给<code>eax</code>，然后对<code>eax</code>加<code>1</code>，最后把<code>eax</code>值回写到内存<code>counter</code>地址。但是在<code>-O1</code>优化级别下，如上代码所示，编译器把读取<code>counter</code>赋值给<code>eax</code>的操作提到循环外层来了，循环里面只是简单的对<code>eax</code>做了加<code>1</code>操作。这个优化也符合我们上面说的“<strong>编译器会尽可能将程序执行中最频繁的变量分配到寄存器中</strong>”。</p>
+<p>上面在一个循环内，不停的对寄存器做加<code>1</code>操作，这个算是无意义的操作，编译器没有优化掉我比较意外。</p>
+<pre><code>.L3:
+        addl    $1, %eax 
+        jne     .L3 
+        movl    $0, counter(%rip) 
+</code></pre>
+<p>所以，我用<code>-O2</code>优化级别测试了下，看下了<a target="_blank" rel="noopener" href="https://godbolt.org/z/jPPPace56">输出代码</a>如下：</p>
+<pre><code>thread_test1:
+        subq    $8, %rsp
+        movl    $.LC0, %edi
+        call    puts
+        movl    counter(%rip), %eax // 读取 counter 内存值给 eax
+        testl   %eax, %eax // 判断 eax == 0
+        je      .L1 // eax = 0 的话跳转到 .L1 （函数结束）
+        movl    $0, counter(%rip) // eax != 0, 执行当前代码，设置 counter = 0 ， 然后继续执行 .L1 （函数结束）
+.L1:
+        addq    $8, %rsp
+        ret
+</code></pre>
+<p>上面，我们看到整个循环直接被优化掉了（对程序结果没有改变），这个也是符合预期的。</p>
+<h3 id="4-2-问题本质"><a href="#4-2-问题本质" class="headerlink" title="4.2 问题本质"></a>4.2 问题本质</h3><p>再回来 <a target="_blank" rel="noopener" href="https://godbolt.org/z/1P3E19dch">看这个代码</a>，在<code>-O1</code>的级别下生成代码如下：</p>
+<pre><code>void thread_test1( void *ptr) {
+    while (1) {
+        counter++;
+    }
+}
+
+thread_test1:
+.L2:
+        jmp     .L2
+</code></pre>
+<p>我们知道，在没有优化的场景下（<code>-O0</code>），每次循环的都会从内存读取<code>counter</code>值给<code>eax</code>，然后对<code>eax+1</code>，最后把<code>eax</code>值回写到内存。</p>
+<p>（以下只是个人猜测）因为<code>counter</code>是在循环里面<code>频繁使用的变量</code>，<code>-O1</code>的场景下，编译器会把<code>counter</code>操作，优化到寄存器，优化以后的伪代码如下：</p>
+<pre><code>thread_test1:
+ movl    counter(%rip), %eax // 读取 counter 内存值给 eax
+.L2:
+         addl    $1, %eax
+        jmp     .L2
+</code></pre>
+<p>编译器进一步优化的时候比如做<code>窺孔优化</code>的时候，发现循环中做<code>eax+1</code>操作是没有意义的（因为没有读取<code>eax</code>的地方），所以最终就只优化成一条<code> jmp .L2</code>指令了。</p>
+<p><code>C/C++</code>语言中有个<code>volatile</code>关键字，它的作用之一就是禁止编译器使用寄存器优化变量存储。</p>
+<h2 id="五、扩展阅读"><a href="#五、扩展阅读" class="headerlink" title="五、扩展阅读"></a>五、扩展阅读</h2><p>问题一：编译下面这段代码，为什么<code>go build -gcflags "-N" demo.go</code> 和 <code>go build demo.go</code>程序运行的结果不一样</p>
+<pre><code>type Foo struct{}
+
+func main() {
+    fooA()
+    fooB()
+}
+
+func fooA() {
+    f1 := &amp;Foo{}
+    f2 := &amp;Foo{}
+
+    fmt.Println("f1 = ", f1, " f2 = ", f2) // f1, f2 逃逸到堆上了
+    //println("f1 = ", f1, " f2 = ", f2)
+    fmt.Println(f1 == f2)
+
+}
+
+func fooB() {
+    f1 := &amp;Foo{}
+    f2 := &amp;Foo{}
+
+    fmt.Println(f1 == f2)
+}
+</code></pre>
+<p>问题二：为什么下面<code>a</code>、<code>b</code> 两个值不相等</p>
+<pre><code>package main
+
+import "fmt"
+
+const s = "123456789"
+
+func main() {
+    var a byte = (1 &lt;&lt; uint(len(s))) / 128           // 编译器计算
+    var b byte = (1 &lt;&lt; uint(len(s[:]))) / 128        // 运行时计算, 溢出了
+    var c byte = byte(int(1&lt;&lt;uint(len(s[:]))) / 128) // 运行时计算，用int 所以没有溢出
+
+    fmt.Println(a, b, c)
+}
+</code></pre>
+<h2 id="六、参考资料"><a href="#六、参考资料" class="headerlink" title="六、参考资料"></a>六、参考资料</h2><p><a target="_blank" rel="noopener" href="https://book.douban.com/subject/3296317/">《编译原理》 - 龙书</a></p>
+<p><a target="_blank" rel="noopener" href="https://book.douban.com/subject/1806974/">《现代编译原理》-  虎书</a></p>
+<p><a target="_blank" rel="noopener" href="https://book.douban.com/subject/1400374/">《高级编译器设计与实现》 - 鲸书</a></p>
+<p><a target="_blank" rel="noopener" href="https://time.geekbang.org/column/intro/100052801?tab=intro">《编译原理实战》</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/master/src/cmd/compile/README.md">Introduction to the Go compiler</a></p>
+<p><a target="_blank" rel="noopener" href="https://quasilyte.dev/blog/post/go_ssa_rules/">Go compiler: SSA optimization rules description language</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/master/src/cmd/compile/internal/ssa/README.md">Introduction to the Go compiler’s SSA backend</a></p>
+<p><a target="_blank" rel="noopener" href="https://sitano.github.io/2018/03/18/howto-read-gossa/">How to read GoLang static single-assignment (SSA)</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2022/03/08/raft-introduction/" title="《Raft-分布式共识算法》"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 《Raft-分布式共识算法》</span></a><a class="button is-default" href="/2021/11/28/mysql-time/" title="MySQL DateTime和Timestamp时区问题"><span class="has-text-weight-semibold">下一页: MySQL DateTime和Timestamp时区问题</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

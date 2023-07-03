@@ -1,0 +1,260 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>GO非类型安全指针-Unsafe.Pointer</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="一、背景朋友发了一段测试代码里面不正确的使用了atomic.StorePointer，导致GC的时候程序Panic了。
+var current int64
+atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&amp;amp;current)), unsafe.Pointer(&amp;amp;latest))
+
+为什么会Panic这里先按下不表。之前对 unsafe.Pointer 用的并不多，也没有系统了解过。所以就想系统看下。看了下 unsafe.Pointer 官方文档还挺详细的，可能只之前使用出错的人太多了，所以 rsc 单独提了一个 CR 来说明unsafe.Pointer的用法。
+二、unsafe.Pointerunsafe.Pointer表示指向任意类型.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">GO非类型安全指针-Unsafe.Pointer</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF"><span class="toc-text">一、背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81unsafe-Pointer"><span class="toc-text">二、unsafe.Pointer</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-%E5%9C%BA%E6%99%AF%E4%B8%80-%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="toc-text">2.1 场景一 类型转换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-%E5%9C%BA%E6%99%AF%E4%BA%8C-unsafe-Pointer-%E8%BD%AC%E6%8D%A2%E4%B8%BA-uintptr"><span class="toc-text">2.2 场景二 unsafe.Pointer 转换为 uintptr</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-%E5%9C%BA%E6%99%AF%E4%B8%89-%E8%AE%A1%E7%AE%97-uintptr-%E5%BE%97%E5%88%B0-Pointer"><span class="toc-text">2.3 场景三 计算 uintptr 得到 Pointer</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%B8%80%EF%BC%9A%E4%B8%8D%E8%A6%81%E8%AF%BB%E5%88%B0-Struct-String-Byte-%E5%B0%BE%E9%83%A8%E6%95%B0%E6%8D%AE"><span class="toc-text">注意一：不要读到 Struct&#x2F;String&#x2F;[]Byte 尾部数据</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%BA%8C%EF%BC%9A%E4%B8%8D%E8%A6%81%E5%AD%98%E5%82%A8-uintptr-%E5%88%B0%E5%8F%98%E9%87%8F%E3%80%90%E9%87%8D%E8%A6%81%E3%80%91"><span class="toc-text">注意二：不要存储 uintptr 到变量【重要】</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%B8%8D%E6%94%AF%E6%8C%81%E7%94%A8%E5%8F%98%E9%87%8F%E5%AD%98%E5%82%A8-uintptr-%EF%BC%8C%E7%84%B6%E5%90%8E%E8%BD%ACunsafe-Pointer"><span class="toc-text">为什么不支持用变量存储 uintptr ，然后转unsafe.Pointer</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E4%B8%89%EF%BC%9A%E8%AF%B7%E6%B3%A8%E6%84%8F%EF%BC%8CPointer%E5%BF%85%E9%A1%BB%E6%8C%87%E5%90%91%E5%B7%B2%E5%88%86%E9%85%8D%E7%9A%84%E5%AF%B9%E8%B1%A1%EF%BC%8C%E5%9B%A0%E6%AD%A4%E5%AE%83%E5%8F%AF%E8%83%BD%E4%B8%8D%E6%98%AF-nil%E3%80%82"><span class="toc-text">注意三：请注意，Pointer必须指向已分配的对象，因此它可能不是 nil。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E6%84%8F%E5%9B%9B%EF%BC%9A-unsafe-Pointer%E6%98%AF%E4%B8%80%E4%B8%AA%E7%B1%BB%E5%9E%8B%E5%AE%89%E5%85%A8%E6%8C%87%E9%92%88%E7%B1%BB%E5%9E%8B"><span class="toc-text">注意四：*unsafe.Pointer是一个类型安全指针类型</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-%E5%9C%BA%E6%99%AF%E5%9B%9B-%E5%9C%A8%E8%B0%83%E7%94%A8-syscall-Syscall-%E6%97%B6%E5%B0%86%E6%8C%87%E9%92%88%E8%BD%AC%E6%8D%A2%E4%B8%BA-uintptr"><span class="toc-text">2.4 场景四 在调用 syscall.Syscall 时将指针转换为 uintptr</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-%E5%9C%BA%E6%99%AF%E4%BA%94-reflect-Value-Pointer-%E6%88%96-reflect-Value-UnsafeAddr-%E7%9A%84%E7%BB%93%E6%9E%9C%E4%BB%8E-uintptr-%E5%88%B0-Pointer-%E7%9A%84%E8%BD%AC%E6%8D%A2%E3%80%82"><span class="toc-text">2.5 场景五 reflect.Value.Pointer 或 reflect.Value.UnsafeAddr 的结果从 uintptr 到 Pointer 的转换。</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-6-%E5%9C%BA%E6%99%AF%E5%85%AD-reflect-SliceHeader-%E5%92%8C-reflect-StringHeader-%E8%BD%AC%E6%8D%A2"><span class="toc-text">2.6 场景六 reflect.SliceHeader 和 reflect.StringHeader 转换</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">三、总结</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">GO非类型安全指针-Unsafe.Pointer</h1><time class="has-text-grey" datetime="2022-09-12T09:11:12.000Z">2022-09-12</time><article class="mt-2 post-content"><h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><p>朋友发了一段测试代码里面不正确的使用了<code>atomic.StorePointer</code>，导致<code>GC</code>的时候程序<code>Panic</code>了。</p>
+<pre><code>var current int64
+atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&amp;current)), unsafe.Pointer(&amp;latest))
+</code></pre>
+<p>为什么会<code>Panic</code>这里先按下不表。之前对 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/master/src/unsafe/unsafe.go">unsafe.Pointer</a> 用的并不多，也没有系统了解过。所以就想系统看下。看了下 <code>unsafe.Pointer</code> <a target="_blank" rel="noopener" href="https://golang.google.cn/pkg/unsafe/">官方文档</a>还挺详细的，可能只之前使用出错的人太多了，所以 <a target="_blank" rel="noopener" href="https://github.com/rsc">rsc</a> 单独提了一个 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/18640/">CR</a> 来说明<code>unsafe.Pointer</code>的用法。</p>
+<h1 id="二、unsafe-Pointer"><a href="#二、unsafe-Pointer" class="headerlink" title="二、unsafe.Pointer"></a>二、unsafe.Pointer</h1><p><code>unsafe.Pointer</code>表示指向任意类型的指针，主要可以做下面<code>4</code>个操作：</p>
+<ol>
+<li>任意类型的指针值都可以转换为<code>unsafe.Pointer</code>。</li>
+<li><code>unsafe.Pointer</code>可以转换为任意类型的指针值。</li>
+<li><code>uintptr</code>可以转换为<code>unsafe.Pointer</code>。</li>
+<li><code>unsafe.Pointer</code>可以转换为<code>uintptr</code>。</li>
+</ol>
+<h2 id="2-1-场景一-类型转换"><a href="#2-1-场景一-类型转换" class="headerlink" title="2.1 场景一 类型转换"></a>2.1 场景一 类型转换</h2><p><code>unsafe.Pointer</code>支持<code>*T1</code>到<code>*T2</code>类型的转换，前提是<code>T2</code>类型要小于<code>T1</code>类型大小，比如<code>reflect.SliceHeader</code>转为<code>reflect.StringHeader</code></p>
+<pre><code>func SliceByteToString(b []byte) string {
+    return *(*string)(unsafe.Pointer(&amp;b))
+}
+
+func Float64bits(f float64) uint64 {
+    return *(*uint64)(unsafe.Pointer(&amp;f))
+}
+
+func Float64frombits(b uint64) float64 {
+    return *(*float64)(unsafe.Pointer(&amp;b))
+}
+</code></pre>
+<h2 id="2-2-场景二-unsafe-Pointer-转换为-uintptr"><a href="#2-2-场景二-unsafe-Pointer-转换为-uintptr" class="headerlink" title="2.2 场景二 unsafe.Pointer 转换为 uintptr"></a>2.2 场景二 unsafe.Pointer 转换为 uintptr</h2><p>将指针转换为<code>uintptr</code> 生成指向值的内存地址，作为整数。 这种<code>uintptr</code>的通常用途是打印它。</p>
+<ul>
+<li>将<code>uintptr</code>转换回<code>Pointer</code>通常是无效的。（编译器会有<code>Possible misuse of 'unsafe.Pointer' 警告</code>）</li>
+<li><code>uintptr</code>是一个整数，而不是一个引用。</li>
+<li>即使 <code>uintptr</code>保存了某个对象的地址，垃圾收集器也不会更新该<code>uintptr</code>的值。</li>
+</ul>
+<pre><code>func main() {
+    type User struct{ age int }
+    var t User
+    fmt.Printf("%p\n", &amp;t)           // 0xc000018270
+    println(&amp;t)                      // 0xc000018270
+    p := uintptr(unsafe.Pointer(&amp;t)) // c000018270
+    fmt.Printf("Ox%x\n", p)          // 0xc000018270
+}
+</code></pre>
+<h2 id="2-3-场景三-计算-uintptr-得到-Pointer"><a href="#2-3-场景三-计算-uintptr-得到-Pointer" class="headerlink" title="2.3 场景三 计算 uintptr 得到 Pointer"></a>2.3 场景三 计算 uintptr 得到 Pointer</h2><p>如果<code>p</code>指向一个已分配的对象，则可以通过转换为<code>uintptr</code>、添加偏移量和转换回<code>Pointer</code>来推进该对象。此模式最常见的用途是访问结构中的字段或数组的元素：</p>
+<pre><code>func main() {
+    type Num struct {
+        i string
+        j int64
+    }
+    n := Num{i: "test", j: 1}
+    nPointer := unsafe.Pointer(&amp;n)
+    niPointer := (*string)(nPointer)
+    *niPointer = "dr"
+    njPointer := (*int64)(unsafe.Pointer(uintptr(nPointer) + unsafe.Offsetof(n.j)))
+    *njPointer = 2
+    fmt.Println(n) // {dr 2}
+    
+      // equivalent to e := unsafe.Pointer(&amp;x[i])
+    // e := unsafe.Pointer(uintptr(unsafe.Pointer(&amp;x[0])) + i*unsafe.Sizeof(x[0]))
+}
+</code></pre>
+<h3 id="注意一：不要读到-Struct-String-Byte-尾部数据"><a href="#注意一：不要读到-Struct-String-Byte-尾部数据" class="headerlink" title="注意一：不要读到 Struct/String/[]Byte 尾部数据"></a>注意一：不要读到 Struct/String/[]Byte 尾部数据</h3><pre><code>// INVALID: end points outside allocated space.
+var s thing
+end = unsafe.Pointer(uintptr(unsafe.Pointer(&amp;s)) + unsafe.Sizeof(s))
+
+// INVALID: end points outside allocated space.
+b := make([]byte, n)
+end = unsafe.Pointer(uintptr(unsafe.Pointer(&amp;b[0])) + uintptr(n))
+</code></pre>
+<h3 id="注意二：不要存储-uintptr-到变量【重要】"><a href="#注意二：不要存储-uintptr-到变量【重要】" class="headerlink" title="注意二：不要存储 uintptr 到变量【重要】"></a>注意二：不要存储 uintptr 到变量【重要】</h3><pre><code>// INVALID: uintptr cannot be stored in variable
+// before conversion back to Pointer.
+u := uintptr(p)
+p = unsafe.Pointer(u + offset)
+
+func main() {
+    type User struct{ age int }
+    var t User
+    fmt.Printf("%p\n", &amp;t)
+    p := uintptr(unsafe.Pointer(&amp;t))
+    fmt.Println((*User)(unsafe.Pointer(p))) // 执行 go vet, 这一行会有警告：possible misuse of unsafe.Pointer
+}
+</code></pre>
+<h4 id="为什么不支持用变量存储-uintptr-，然后转unsafe-Pointer"><a href="#为什么不支持用变量存储-uintptr-，然后转unsafe-Pointer" class="headerlink" title="为什么不支持用变量存储 uintptr ，然后转unsafe.Pointer"></a>为什么不支持用变量存储 <code>uintptr</code> ，然后转<code>unsafe.Pointer</code></h4><p><strong>1. 一个值的生命范围可能并没有代码中看上去的大</strong></p>
+<pre><code>type T struct {x int; y *[1&lt;&lt;23]byte}
+func bar() {
+    t := T{y: new([1&lt;&lt;23]byte)}
+    p := uintptr(unsafe.Pointer(&amp;t.y[0]))
+    
+    // 一个聪明的编译器能够觉察到值t.y将不会再被用到而回收之。
+    *(*byte)(unsafe.Pointer(p)) = 1 // 危险操作！
+    println(t.x) // ok。继续使用值t，但只使用t.x字段。
+}
+</code></pre>
+<p><strong>2. 栈扩容的时候地址会发生变化</strong>    </p>
+<pre><code>func f(i int) int {
+    if i == 0 || i == 1 {
+        return i
+    }
+    return f(i - 1)
+}
+
+func main() {
+    var num uint64
+    xAddr := uintptr(unsafe.Pointer(&amp;num)) 
+    println("before stack copy num : ", num, " num pointer: ", &amp;num)
+
+    f(10000000)
+
+    xPointer := (*uint64)(unsafe.Pointer(xAddr)) // 这里有警告 possible misuse of unsafe.Pointer
+    atomic.AddUint64(xPointer, 1)
+    println("after stack copy num : ", num, " num pointer:", &amp;num)
+}
+
+ // 输出内容如下：    
+before stack copy num :  0  num pointer:  0xc000044768
+after stack copy num :  0  num pointer: 0xc0200fff68
+</code></pre>
+<h3 id="注意三：请注意，Pointer必须指向已分配的对象，因此它可能不是-nil。"><a href="#注意三：请注意，Pointer必须指向已分配的对象，因此它可能不是-nil。" class="headerlink" title="注意三：请注意，Pointer必须指向已分配的对象，因此它可能不是 nil。"></a>注意三：请注意，Pointer必须指向已分配的对象，因此它可能不是 nil。</h3><pre><code>// INVALID: conversion of nil pointer
+u := unsafe.Pointer(nil)
+p := unsafe.Pointer(uintptr(u) + 1) 
+fmt.Println(p1) // 0x1
+</code></pre>
+<h3 id="注意四：-unsafe-Pointer是一个类型安全指针类型"><a href="#注意四：-unsafe-Pointer是一个类型安全指针类型" class="headerlink" title="注意四：*unsafe.Pointer是一个类型安全指针类型"></a>注意四：*unsafe.Pointer是一个类型安全指针类型</h3><pre><code>func main() {
+    type T struct {x int}
+    var p *T
+    var unsafePPT = (*unsafe.Pointer)(unsafe.Pointer(&amp;p))
+    atomic.StorePointer(unsafePPT, unsafe.Pointer(&amp;T{123}))
+    fmt.Println(p) // &amp;{123}
+}
+</code></pre>
+<h2 id="2-4-场景四-在调用-syscall-Syscall-时将指针转换为-uintptr"><a href="#2-4-场景四-在调用-syscall-Syscall-时将指针转换为-uintptr" class="headerlink" title="2.4 场景四 在调用 syscall.Syscall 时将指针转换为 uintptr"></a>2.4 场景四 在调用 syscall.Syscall 时将指针转换为 uintptr</h2><p><code>syscall</code> 包中的 <code>Syscall</code> 函数将它们的 <code>uintptr</code> 参数直接传递给操作系统，然后操作系统可能会根据调用的细节将其中一些重新解释为指针。也就是说，系统调用实现隐式地将某些参数转换回从 <code>uintptr</code> 到指针。</p>
+<p>如果必须将指针参数转换为 uintptr 以用作参数，则该转换必须出现在调用表达式本身中：</p>
+<pre><code>syscall.Syscall(SYS_READ, uintptr(fd), uintptr(unsafe.Pointer(p)), uintptr(n))
+</code></pre>
+<p>编译器在调用汇编中实现的函数的参数列表中处理转换为 <code>uintptr</code> 的指针，方法是安排引用的分配对象（如果有）在调用完成之前保留并且不移动，即使从类型仅在通话期间似乎不再需要该对象。具体见 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/18584/">CR</a></p>
+<p>为了让编译器识别这种模式，转换必须出现在参数列表中，下面这种方式是无效的：</p>
+<pre><code>// INVALID: uintptr cannot be stored in variable
+// before implicit conversion back to Pointer during system call.
+u := uintptr(unsafe.Pointer(p))
+syscall.Syscall(SYS_READ, uintptr(fd), u, uintptr(n))
+</code></pre>
+<h2 id="2-5-场景五-reflect-Value-Pointer-或-reflect-Value-UnsafeAddr-的结果从-uintptr-到-Pointer-的转换。"><a href="#2-5-场景五-reflect-Value-Pointer-或-reflect-Value-UnsafeAddr-的结果从-uintptr-到-Pointer-的转换。" class="headerlink" title="2.5 场景五 reflect.Value.Pointer 或 reflect.Value.UnsafeAddr 的结果从 uintptr 到 Pointer 的转换。"></a>2.5 场景五 reflect.Value.Pointer 或 reflect.Value.UnsafeAddr 的结果从 uintptr 到 Pointer 的转换。</h2><p><code>reflect.Value.Pointer</code> 和 <code>reflect.Value.UnsafeAddr</code> 返回的是<code>uintptr</code>也不能用变量存储。同场景三的注意事项二。</p>
+<pre><code>p := (*int)(unsafe.Pointer(reflect.ValueOf(new(int)).Pointer())) // ok
+
+// INVALID: uintptr cannot be stored in variable
+// before conversion back to Pointer.
+u := reflect.ValueOf(new(int)).Pointer() // uintptr
+p := (*int)(unsafe.Pointer(u))
+</code></pre>
+<h2 id="2-6-场景六-reflect-SliceHeader-和-reflect-StringHeader-转换"><a href="#2-6-场景六-reflect-SliceHeader-和-reflect-StringHeader-转换" class="headerlink" title="2.6 场景六 reflect.SliceHeader 和 reflect.StringHeader 转换"></a>2.6 场景六 reflect.SliceHeader 和 reflect.StringHeader 转换</h2><p>场景一说了，大<code>size</code>的<code>struct</code>转小<code>size</code>的<code>struct</code>没有任何问题。比如：</p>
+<pre><code>func SliceByteToString(b []byte) string {
+    return *(*string)(unsafe.Pointer(&amp;b))
+}
+</code></pre>
+<p><code>reflect.StringHeader</code>转<code>reflect.SliceHeader</code>很多场景就会有问题，注意<strong>不要凭空生成SliceHeader和StringHeader，要从切片和字符串转换出它们。</strong> 详见 Runtime <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/master/src/unsafe/unsafe.go#L160">代码注释</a></p>
+<blockquote>
+<p>As in the previous case, the reflect data structures SliceHeader and StringHeader declare the field Data as a uintptr to keep callers from changing the result to  an arbitrary type without first importing “unsafe”. However, this means that SliceHeader and StringHeader are only valid when interpreting the content of an actual slice or string value.</p>
+</blockquote>
+<pre><code>func main() {
+    fmt.Printf("main : %s\n", gcStr())
+}
+
+func gcStr() []byte {
+    defer runtime.GC()
+    x := []byte("1234567890")
+    return StringToSliceByte(string(x))
+}
+
+// 这个方法是凭空生成的一个reflect.SliceHeader，所以 s 被 gc 回收了， main 输出乱码
+func StringToSliceByte(s string) []byte {
+    l := len(s)
+    return *(*[]byte)(unsafe.Pointer(&amp;reflect.SliceHeader{
+        Data: (*(*reflect.StringHeader)(unsafe.Pointer(&amp;s))).Data,
+        Len:  l,
+        Cap:  l,
+    }))
+}
+
+func StringToSliceByte2(s string) []byte {
+    var b []byte // 这里申明了一个 slice 所以没有问题
+    stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&amp;s))
+    sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&amp;b))
+    sliceHeader.Data = stringHeader.Data
+    sliceHeader.Len = stringHeader.Len
+    sliceHeader.Cap = stringHeader.Len
+    return b
+}
+</code></pre>
+<p><code>StringToSliceByte2</code> 是好的，是因为编译器对 <code>reflect.StringHeader</code> 做了<a target="_blank" rel="noopener" href="https://github.com/golang/go/issues/19168">优化</a> 如果使用自定义的<code>StringHeader</code>和<code>SliceHeader</code> 依然有问题。</p>
+<pre><code>type StringHeader struct {
+    Data uintptr // unsafe.Pointer
+    Len  int
+}
+
+type SliceHeader struct {
+    Data uintptr // unsafe.Pointer
+    Len  int
+    Cap  int
+}
+
+// https://groups.google.com/g/golang-nuts/c/Zsfk-VMd_fU/m/qJzdycRiCwAJ?pli=1
+func StringToSliceByte3(s string) []byte {
+    var b []byte // 这里申明了一个 slice 所以没有问题
+    stringHeader := (*StringHeader)(unsafe.Pointer(&amp;s))
+    sliceHeader := (*SliceHeader)(unsafe.Pointer(&amp;b))
+    sliceHeader.Data = stringHeader.Data
+    sliceHeader.Len = stringHeader.Len
+    sliceHeader.Cap = stringHeader.Len
+    return b
+}
+</code></pre>
+<p>如果<code>StringHeader</code>和<code>SliceHeader</code>的<code>Data</code>改成<code>unsafe.Pointer</code>，那<code>StringToSliceByte3</code>也能正常<code>work</code>。所以 <a target="_blank" rel="noopener" href="https://github.com/mdempsky">mdempsky</a> 就提议过，在<code>unsafe</code>包里面新增<code>Slice</code>和<code>String</code>类型，方便做<code>string</code>和<code>slice</code>的转换。</p>
+<pre><code>type Slice struct {
+    Data Pointer
+    Len int
+    Cap int
+}
+
+type String struct {
+    Data Pointer
+    Len int
+}
+
+func makestring(p *byte, n int) string {
+    // Direct conversion of unsafe.String to string.
+    return string(unsafe.String{unsafe.Pointer(p), n})
+}
+
+func memslice(p *byte, n int) (res []byte) {
+    // Direct conversion of *[]byte to *unsafe.Slice, without using unsafe.Pointer.
+    s := (*unsafe.Slice)(&amp;res)
+    s.Data = unsafe.Pointer(p)
+    s.Len = n
+    s.Cap = n
+    return
+}
+</code></pre>
+<p>推荐使用<code>gin</code>的<a target="_blank" rel="noopener" href="https://github.com/gin-gonic/gin/blob/ee4de846a894e9049321e809d69f4343f62d2862/internal/bytesconv/bytesconv.go#L12">转换方式</a>，简介明了：</p>
+<pre><code>func StringToBytes(s string) []byte {
+    return *(*[]byte)(unsafe.Pointer(
+        &amp;struct {
+            string
+            Cap int
+        }{s, len(s)},
+    ))
+}
+</code></pre>
+<h1 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h1><p><code>unsafe.Pointer</code>和<code>uintptr</code> 坑挺多的，使用的时候一定要注意。</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2022/09/29/wudu/" title="《五蠹》"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 《五蠹》</span></a><a class="button is-default" href="/2022/09/03/go-custom-import-domain/" title="Go 自定义引用包的域名"><span class="has-text-weight-semibold">下一页: Go 自定义引用包的域名</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

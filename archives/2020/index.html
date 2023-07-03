@@ -1,0 +1,112 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Ryo's blog</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>归档 · 2020</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-0feac2eb12658cfb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2020/06/09/golang-memory-model/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-0feac2eb12658cfb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/06/09/golang-memory-model/">Golang Memory Model</a></h2><time class="has-text-grey" datetime="2020-06-08T17:32:00.000Z">2020-06-09</time><p class="is-flex-grow-2 mt-2">
+
+一、背景1.1 一个 Code Review 引发的思考一个同学在 Golang 项目里面用 Double Check（不清楚的同学可以去百度搜下，Java中比较常见）的方式实现了一个单例。具体实现如下：
+var (
+    lock     sync.Mutex
+    instance *UserInfo
+)
+
+func getInstance() (*UserInfo, error) {
+    if instance == nil {
+        //---Lock
+        lock.Lock()
+        defer lock.Unlock()
+        if instance == nil {
+            instance = &amp;amp;UserInfo{..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/06/09/golang-memory-model/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/12/07/data_intensive/">《数据密集型应用系统设计》</a></h2><time class="has-text-grey" datetime="2020-12-07T07:00:00.000Z">2020-12-07</time><p class="is-flex-grow-2 mt-2">数据密集型应用（data-intensive applications）正在通过使用这些技术进步来推动可能性的 边界。一个应用被称为数据密集型的，如果数据是其主要挑战（数据量，数据复杂度或数据变化速度）—— 与之相对的是计算密集型，即处理器速度是其瓶颈。
+数据系统的基石可靠性、可扩展性、可维护性现今很多应用程序都是数据密集型（data-intensive）的，而非计算密集型（compute-intensive）的。因此CPU很少成为这类应用的瓶颈，更大的问题通常来自数据量、数据复杂性、以及数据的变更速度。
+可靠性（Reliability）系统在困境（adversity）（硬件故障、软件故障、人为错误）中仍可正常工作（正确完成功 能，并能达到期望的性能水准）。
+人们对于一个东西是否可靠，都有一个直观的想法。人..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/12/07/data_intensive/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/20/zero-to-one-study-architecture/">《从0开始学架构》</a></h2><time class="has-text-grey" datetime="2020-09-20T07:31:00.000Z">2020-09-20</time><p class="is-flex-grow-2 mt-2">架构设计理念架构设计理念，可以提炼为下面几个关键点：
+
+架构是系统的顶层结构。
+架构设计的主要目的是为了解决软件系统复杂度带来的问题。
+架构设计需要遵循三个主要原则：合适原则、简单原则、演化原则。
+架构设计首先要掌握业界已经成熟的各种架构模式，然后再进行优化、调整、创新。
+
+框架设计需要考的因素/影响架构复杂性的几个因素
+高性能， 衡量软件性能包括了响应时间、TPS、服务器资源利用率等客观指标，也可以是用户的主观感受。
+高可用，高可用性就是技术实力的象征，高可用性就是竞争力。99.99%（俗称4个9）网站不可用时间=52.56分钟
+可扩展性，设计具备良好可扩展性的系统，有两个基本条件：“正确预测变化、完美封装变化”。
+低成本，语言选择、方案选择。
+安全，功能安全XSS、CSRF等，架构安全、访问策略。
+规模..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/20/zero-to-one-study-architecture/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-in-action/">《Linux内核技术实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2">Page Cache什么是 Page Cache？
+通过这张图片你可以清楚地看到，红色的地方就是 Page Cache，很明显，Page Cache 是内核管理的内存，也就是说，它属于内核不属于用户。
+$ cat /proc/meminfo
+...
+Buffers:            1224 kB
+Cached:           111472 kB
+SwapCached:        36364 kB
+Active:          6224232 kB
+Inactive:         979432 kB
+Active(anon):    6173036 kB
+Inactive(anon):   927932 kB
+Active(file):      51196 kB
+Inactive(..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-in-action/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-optimize/">《Linux性能优化实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2">CPU性能篇uptime 什么是平均负载？简单来说，平均负载是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。这里我先解释下，可运行状态和不可中断状态这俩词儿。
+所谓可运行状态的进程，是指正在使用 CPU 或者正在等待 CPU 的进程，也就是我们常用 ps 命令看到的，处于 R 状态（Running 或 Runnable）的进程。
+不可中断状态的进程则是正处于内核态关键流程中的进程，并且这些流程是不可打断的，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 D 状态（Uninterruptible Sleep，也称为 Disk Sleep）的进程。
+比如，当一个进程向磁盘读写数据时，为了保证数据的一致性，在得到..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-optimize/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/08/25/happy-talk-net/">《趣谈网络协议》</a></h2><time class="has-text-grey" datetime="2020-08-25T02:00:00.000Z">2020-08-25</time><p class="is-flex-grow-2 mt-2">通信协议综述IP &amp;amp;&amp;amp; MACIP 地址是一个网卡在网络世界的通讯地址，相当于我们现实世界的门牌号码。既然是门牌号码，不能大家都一样，不然就会起冲突。比方说，假如大家都叫六单元 1001 号，那快递就找不到地方了。所以，有时候咱们的电脑弹出网络地址冲突，出现上不去网的情况，多半是 IP 地址冲突了。
+
+下面这个表格，详细地展示了 A、B、C 三类地址所能包含的主机的数量。在后文中，我也会多次借助这个表格来讲解。
+
+无类型域间选路（CIDR）
+于是有了一个折中的方式叫作无类型域间选路，简称 CIDR。这种方式打破了原来设计的几类地址的做法，将 32 位的 IP 地址一分为二，前面是网络号，后面是主机号。从哪里分呢？你如果注意观察的话可以看到，10.100.122.2/24，这个 IP 地址中有..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/08/25/happy-talk-net/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/08/01/mysql-45-lesson/">《MySQL实战45讲》</a></h2><time class="has-text-grey" datetime="2020-08-01T11:56:08.000Z">2020-08-01</time><p class="is-flex-grow-2 mt-2">binlog &amp;amp;&amp;amp; redo log什么是 binlog
+binlog 是逻辑日志，记录的是这个语句的原始逻辑/变化，比如“给 ID=2 这一行的 c 字段加 1 ”。 
+binlog 是追加写，不会覆盖之前的数据，可以提供完整的数据归档的能力。
+
+什么是 redo log
+redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；
+redo log 提供 crash-safe 能力。
+一般只有4G ，4个文件，循环复写。
+
+binlog 和 redo log 不同点因为最开始 MySQL 里并没有 InnoDB 引擎。MySQL 自带的引擎是 MyISAM，但是 MyISAM 没有 crash-safe 的能力，binlog 日志只能用于归档。而 InnoDB 是另一个公司以插..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/08/01/mysql-45-lesson/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/07/16/computer-organization/">《深入浅出计算机组成原理》</a></h2><time class="has-text-grey" datetime="2020-07-16T02:00:00.000Z">2020-07-16</time><p class="is-flex-grow-2 mt-2">基础篇计算机的基本硬件组成
+第一，广。组成原理中的概念非常多，每个概念的信息量也非常大。比如想要理解 CPU 中的算术逻辑单元（也就是 ALU）是怎么实现加法的，需要牵涉到如何把整数表示成二进制，还需要了解这些表示背后的电路、逻辑门、CPU 时钟、触发器等知识。
+第二，深。组成原理中的很多概念，阐述开来就是计算机学科的另外一门核心课程。比如，计算机的指令是怎么从你写的 C、Java 这样的高级语言，变成计算机可以执行的机器码的？如果我们展开并深入讲解这个问题，就会变成《编译原理》这样一门核心课程。
+第三，学不能致用。学东西是要拿来用的，但因为这门课本身的属性，很多人在学习时，常常沉溺于概念和理论中，无法和自己日常的开发工作联系起来，以此来解决工作中遇到的问题，所以，学习往往没有成就感，就很难有动力坚持下去。..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/07/16/computer-organization/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/06/06/golang-rmmutex/">Golang RWMutext 代码走读</a></h2><time class="has-text-grey" datetime="2020-06-06T14:20:56.000Z">2020-06-06</time><p class="is-flex-grow-2 mt-2">type RWMutex struct {
+   w           Mutex  // held if there are pending writers
+   writerSem   uint32 // 写的信号量
+   readerSem   uint32 // 读的信号量
+   readerCount int32  // 等待写的个数
+   readerWait  int32  // 等待读的个数
+}
+
+
+// 加“读锁”
+// 对readerCount + 1 。
+// 然后看 readerCount是不是小于0
+// 小于0表示 正在加写锁，然后阻塞到rw.readerSem 这个信号上。
+func (rw *RWMutex) RLock() {
+   if atomic.AddInt32(..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/06/06/golang-rmmutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Sort"><i class="tag post-item-tag">Sort</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/01/16/sort/">常用的排序算法</a></h2><time class="has-text-grey" datetime="2020-01-16T10:45:00.000Z">2020-01-16</time><p class="is-flex-grow-2 mt-2">插入排序func insertSort(nums []int) {
+    for i := 1; i &amp;lt; len(nums); i++ {
+        tmp := nums[i]
+        for j := i; j &amp;gt;= 0; j-- {
+            if j &amp;gt; 0 &amp;amp;&amp;amp; tmp &amp;lt; nums[j-1] {
+                nums[j] = nums[j-1]
+            } else {
+                nums[j] = tmp
+                break
+            }
+        }
+    }
+}
+
+折半插入排序func binaryInsertSor..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/01/16/sort/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container archives-widget is-in-archive-page"><h3>归档</h3><section><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">7</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+
+window.addEventListener('resize', $claudia.throttle(function () {
+    var images = document.querySelectorAll('.js-img-fadeIn')
+
+    images.forEach($claudia.blurBackdropImg)
+}, 150))</script></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+
+window.addEventListener('resize', $claudia.throttle(function () {
+    var images = document.querySelectorAll('.js-img-fadeIn')
+
+    images.forEach($claudia.blurBackdropImg)
+}, 150))</script></body></html>

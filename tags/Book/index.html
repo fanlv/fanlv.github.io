@@ -1,0 +1,261 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Ryo's blog</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>标签 · Book</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/06/23/nonviolent-communication-father/">《非暴力沟通的父母语言》</a></h2><time class="has-text-grey" datetime="2023-06-23T02:08:51.000Z">2023-06-23</time><p class="is-flex-grow-2 mt-2">
+
+
+第一章 停止吼叫，你可以这样做关键词：倾听+接纳&amp;nbsp;用说教、打骂、威胁、警告、贿赂等方法让孩子变得听话，根本无济于事。任何以牺牲亲子关系为代价的沟通方式都是失败的。或许孩子在你的压迫下会变得看起来很听话，但这并不是长期而有效的管教方式，也不是有效的沟通方式。
+1.1、有效的沟通从倾听开始
+放下手中的事，认真倾听孩子的心声。或许你正在看书，打扫房间，或者是追剧……不管你在做什么，请暂时停下来，和孩子一起坐下来，注视着孩子的眼睛，认真地听他想说什么。只要我们认真地倾听了，即使我们的沟通技巧稍微欠缺，也能收到良好的沟通效果。
+对孩子的话题表现出极大的兴趣。虽然孩子所说的事在我们看来也许有些幼稚，但是请闭上我们的嘴巴，把说话的权利留给孩子，把自己当作一个容器，不管孩子说的是什么，都毫无保留地放进去，不..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/06/23/nonviolent-communication-father/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Rust"><i class="tag post-item-tag">Rust</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/05/08/hello-rust-1/">《Rust 编程第一课》</a></h2><time class="has-text-grey" datetime="2023-05-08T07:43:28.000Z">2023-05-08</time><p class="is-flex-grow-2 mt-2">《陈天 · Rust 编程第一课》
+一、所有权
+
+
+脑图链接
+所有权和生命周期是Rust和其它编程语言的主要区别，也是Rust其它知识点的基础。
+1.1、变量在函数调用时发生了什么fn main() {
+    // vec 动态数组因为大小在编译期无法确定，所以放在堆上，
+    // 并且在栈上有一个包含了长度和容量的胖指针指向堆上的内存。
+    let data = vec![10, 42, 9, 8];
+    let v = 42;
+    if let Some(pos) = find_pos(data, v) {
+        println!(&quot;Found {} at {}&quot;, v, pos);
+    }
+}
+
+fn find_pos(data: Vec&amp;lt;u32&amp;gt;, v: ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/05/08/hello-rust-1/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Compiler"><i class="tag post-item-tag">Compiler</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/05/01/the-beauty-of-compilation-principle/">《编译原理之美》</a></h2><time class="has-text-grey" datetime="2023-05-01T02:00:00.000Z">2023-05-01</time><p class="is-flex-grow-2 mt-2">
+
+0、为什么你要学习编译原理？
+1、理解代码：编译器的前端技术
+1.1 词法分析Lexical Analysis
+通常，编译器的第一项工作叫做词法分析。就像阅读文章一样，文章是由一个个的中文单词组成的。程序处理也一样，只不过这里不叫单词，而是叫做词法记号，英文叫 Token。
+也可以用词法分析器的生成工具来生成，比如 Lex（或其 GNU 版本，Flex）。这些生成工具是基于一些规则来工作的，这些规则用正则文法表达，符合正则文法的表达式称为正则表达式。生成工具可以读入正则表达式，生成一种叫有限自动机的算法，来完成具体的词法分析工作。
+不要被正则文法（Regular Grammar）和有限自动机（Finite-state Automaton，FSA，or Finite Automaton）吓到。正则文法是一..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/05/01/the-beauty-of-compilation-principle/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/03/11/study-arch1/">《架构实战案例解析》</a></h2><time class="has-text-grey" datetime="2023-03-11T12:03:15.000Z">2023-03-11</time><p class="is-flex-grow-2 mt-2">摘录与 《架构实战案例解析》
+
+
+
+架构的本质物理学中有个很著名的“熵增定律”：一个封闭系统，都是从有序到无序，也就是它的熵（即混乱程度）会不断地增加，最终系统会彻底变得无序。
+一方面，随着业务需求的增加，我们会往系统里不停地添加业务功能；另一方面，随着访问量的不断增加，我们会不断通过技术手段来加强系统非业务性功能。如果事先不做良好的设计，随着时间的推进，整个系统野蛮生长，就会逐渐碎片化，越来越无序，最终被推倒重来。
+不过，自然界中的生物可以通过和外界交互，主动进行新陈代谢，制造“负熵”，也就是降低混乱程度，来保证自身的有序性，继续生存。比如，植物通过光合作用，把光能、二氧化碳和水合成有机物，以此滋养自己，延续生命。对于软件系统，我们也可以主动地调整系统各个部分的关系，保证系统整体的有序性，来更好地适应不断..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/03/11/study-arch1/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/02/26/mastering-regular-expressions/">《精通正则表达式》</a></h2><time class="has-text-grey" datetime="2023-02-26T02:38:53.000Z">2023-02-26</time><p class="is-flex-grow-2 mt-2">摘录与 《精通正则表达式》
+一、正则表达式入门正则表达式（Regular Expression）是强大、便捷、高效的文本处理工具。正则表达式本身，加上如同一门袖珍编程语言的通用模式表示法（general pattern notation），赋予使用者描述和分析文本的能力。配合上特定工具提供的额外支持，正则表达式能够添加、删除、分离、叠加、插入和修整各种类型的文本和数据。
+1.1 检索文本文件：Egrep
+
+egrep -i  '^func' cache.go  // 匹配 func 开头的
+egrep -i  '^$' cache.go | wc -l // 计算文件 空行数
+egrep '\&amp;lt;ctx' cache.go // 含有 ctx 开头单词的行
+egrep 'Get\&amp;gt;' cache...</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/02/26/mastering-regular-expressions/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/02/25/hello-regular-expr/">《正则表达式必知必会》</a></h2><time class="has-text-grey" datetime="2023-02-25T10:00:00.000Z">2023-02-25</time><p class="is-flex-grow-2 mt-2">摘录与 《正则表达式必知必会》
+零、快速上手
+[abc] 匹配单个字符a、b、c
+
+. 匹配除换行符（\n、\r）之外的任何单个字符。
+
+[0-9]等价[0123456789] 含义是匹配一个数字，输入 123。 匹配三个结果 1、2、3。-（连字符）是一个特殊的元字符，它只有出现在[和]之间的时候才是元字符
+
+\d 等价上面的[0-9]\w 匹配字母、数字、下划线。等价于[A-Za-z0-9_]。^[0-9]表示匹配一个非数字。^有取反的意思[A-Za-z0-9]等价[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789].
+
+*  匹配前面的子表达式零次或多次。例如，zo* 能匹配z以及zoo。* 等价于{0,}。
+
++ 匹配前面的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/02/25/hello-regular-expr/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Rust"><i class="tag post-item-tag">Rust</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/02/19/hello-rust-async/">《Hello Rust Async》</a></h2><time class="has-text-grey" datetime="2023-02-19T02:08:08.000Z">2023-02-19</time><p class="is-flex-grow-2 mt-2">摘录与 Asynchronous Programming in Rust
+一、Getting Started1.1 Rust 的异步 vs 其他语言的尽管很多语言都支持异步编程，但实现细节上有很多不一样。Rust的异步实现和大部分语言的在以下方面有区别：
+
+Rust中 Futures 是惰性的，并且只有被轮询才会进一步执行。丢弃（Dropping）一个future可以阻止它继续执行。
+Rust中的异步是零成本的，这意味着你只需要为你所使用的东西付出代价。特别来说，你使用异步时可以不需要堆分配或动态分发，这对性能来说是好事！这也使得你能够在约束环境下使用异步，例如嵌入式系统。
+Rust不提供内置运行时。相反，运行时由社区维护的库提供。
+Rust里单线程的和多线程的运行时都可用，而他们会有不同的优劣。
+
+Dem..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/02/19/hello-rust-async/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/01/15/reliable/">《靠谱》</a></h2><time class="has-text-grey" datetime="2023-01-15T04:35:57.000Z">2023-01-15</time><p class="is-flex-grow-2 mt-2">摘录与 《靠谱》
+第一章　靠谱：成功的进阶方法论所谓靠谱，就是收到做到、说到做到、想到做到。
+靠谱，就是不断交付确定靠谱的人就是收到做到、说到做到、想到做到的人。靠谱的事就是难而正确的事。靠谱的关系就是双向奔赴或有能量流入的关系。我们一生都应该追随这些靠谱的事物。
+靠谱，有以下三层含义
+
+第一，总是能完成目标，说到做到。只要承诺了，就一定会按时，按要求，保质保量地交付成果。
+第二，总是能完成指令，收到做到。你安排一件事他能完成，你安排多件事他仍旧能完成。一个靠谱的人，收到指令后会回复；遇到困难会沟通；项目进展会按节点通报；安排会落实。他会说到做到，尽心尽力，有始有终，积极主动；不玻璃心，没有惰性，不骄横。他能深刻地意识到，这不是繁文缛节，这是一个公司的基本规范。
+第三，总是能解决难题，想到做到。靠谱的人坚信..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/01/15/reliable/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/01/15/master-of-learning/">《学习高手》- Part</a></h2><time class="has-text-grey" datetime="2023-01-15T00:36:58.000Z">2023-01-15</time><p class="is-flex-grow-2 mt-2">摘录与《学习高手》
+哈佛学生的24小时，到底是如何度过的？6:30am
+起床：在学校时总能形成较稳定的生物钟。有时即使不开闹铃，也能在6:30前后不超过10分钟的区间内醒来。
+warm-up俯卧撑：我的惯常“醒盹”做法。伸个懒腰活动一下筋骨，然后快速做30个俯卧撑，不多不少。喘口气，清醒效果特好。推荐大家（尤其男生）试试。
+当日To-do list确认：用不超过5分钟的时间列好当天所有要完成的To-do’s，涵盖学习、工作、社交等不同板块事项，在一日之始做到心中有数，随后才能有条不紊地高效做事。
+6:40am
+起床工序完成后，喝一杯常温水，简单地洗漱，吃一点黑巧克力，然后出门去健身房。入学以来我都住校园宿舍，走路三分钟就可以到商学院专属的健身中心，特别方便。
+6:45am—7:25am
+到达健身房，拉伸热身..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/01/15/master-of-learning/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/12/11/ten-minute-meditation/">《十分钟冥想》</a></h2><time class="has-text-grey" datetime="2022-12-11T04:35:57.000Z">2022-12-11</time><p class="is-flex-grow-2 mt-2">摘录与 《十分钟冥想》
+导言冥想和心灵冥想竟然有如此广泛的好处，也许你觉得有点儿难以置信，但是仔细想一想就会发现，你所做的任何需要用心的事情都能从冥想中受益，这就如同调整计算机硬盘的分区。难道有什么事是你不需要用心的吗？因此，考虑到心灵在我们生活中起到的重要作用，这场冥想引发的革命竟然没有更早发生，真是值得我们关注。我们不会对身体锻炼有丝毫踌躇（好吧，大多数情况下如此），却把心灵健康放在不起眼的位置。到底是因为没人能看到我们的心灵，还是因为我们觉得这是一场注定要失败的行动，这些并不重要。事实上，我们的整个生活都是通过心灵来体验的。我们的人生幸福感、满足感以及积极的人际关系都来自我们的内心。因此，每天花上几分钟来训练和养护我们的心灵吧！这才是明智的做法。
+科学最近这些年来，核磁共振技术的进步，再加上完善的脑电..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/12/11/ten-minute-meditation/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/09/29/wudu/">《五蠹》</a></h2><time class="has-text-grey" datetime="2022-09-29T04:30:20.000Z">2022-09-29</time><p class="is-flex-grow-2 mt-2">摘录与 《五蠹》
+一、背景看 《Clean Architecture》的时候，看到书里面介绍什么架构师，大致内容如下。
+
+首先，软件架构师自身需要是程序员，并且必须一直坚持做一线程序员，绝对不要听从那些说应该让软件架构师从代码中解放出来以专心解决高阶问题的伪建议。不是这样的！软件架构师其实应该是能力最强的一群程序员，他们通常会在自身承接编程任务的同时，逐渐引导整个团队向一个能够最大化生产力的系统设计方向前进。也许软件架构师生产的代码量不是最多的，但是他们必须不停地承接编程任务。如果不亲身承受因系统设计而带来的麻烦，就体会不到设计不佳所带来的痛苦，接着就会逐渐迷失正确的设计方向。
+
+然后就吐槽了下某些 PPT架构师 只会脱离业务去谈一些高大上的架构，完全都落不了地。然后某个博览群书的技术大佬推荐我看下《五蠹》..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/09/29/wudu/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/08/13/man-month/">《人月神话》</a></h2><time class="has-text-grey" datetime="2022-08-13T08:06:19.000Z">2022-08-13</time><p class="is-flex-grow-2 mt-2">摘录与 《人月神话》
+什么是人月神话？
+一个项目有10人/月的工作量，把人增加到100人，所以只用3天就能开发完，这就是人月神话。
+一个谬误的思考方式是在估计和进度安排中使用的工作量单位：人月。成本的确随开发产品的人数和时间的不同，有着很大的变化，进度却不是如此。因此我认为用人月作为衡量一项工作的规模是一个危险和带有欺骗性的神话。它暗示着人员数量和时间是可以相互替换的。
+一、焦油坑（The Tar Pit）史前史中，没有别的场景比巨兽在焦油坑中垂死挣扎的场面更令人震撼。上帝见证着恐龙、猛犸象、剑齿虎在焦油中挣扎。它们挣扎得越是猛烈，焦油纠缠得越紧，没有任何猛兽足够强壮或具有足够的技巧，能够挣脱束缚，它们最后都沉到了坑底。
+过去几十年的大型系统开发就犹如这样一个焦油坑，很多大型和强壮的动物在其中剧烈地挣扎。他..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/08/13/man-month/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/08/06/principle/">《原则：应对变化中的世界秩序》</a></h2><time class="has-text-grey" datetime="2022-08-06T14:22:15.000Z">2022-08-06</time><p class="is-flex-grow-2 mt-2">摘录与 《原则：应对变化中的世界秩序》
+一、大周期概述人类的生产率是驱动世界总财富、权力和生活水平逐步提高的最重要的力量。随着时间的推移，生产率稳步提高（生产率是人均产出，受人类的学习、积累和发明的驱动）。然而，不同群体的生产率增速有差异，其原因总是一样的：不同的教育质量、创造力、职业道德以及将想法转化为产出的经济体制。决策者需要理解这些原因，以使自己的国家获得可能实现的最佳结果。投资者和公司也需要理解这些原因，以便确定最佳的长期投资对象。
+下图及下页图显示过去500年的人均产出［即实际GDP（国内生产总值）估值］和预期寿命。这可能是两种公认的福祉衡量方法（但数据可能并不精确）。你可以看到这些数据渐进的上行幅度相对于围绕趋势线的波动幅度。
+与围绕趋势线的波动相比，这些上行趋势非常明显，这一事实表明，相对于其..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/08/06/principle/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/07/18/nonviolent-communication/">《非暴力沟通》</a></h2><time class="has-text-grey" datetime="2022-07-18T15:08:00.000Z">2022-07-18</time><p class="is-flex-grow-2 mt-2">摘录与 《非暴力沟通》
+一、由衷的给予非暴力沟通帮助我们与他人和自己建立连结，使我们得以流露与生俱来的慈悲之心。它指引我们通过将注意力聚焦在观察、感受、需要和请求这四个要素，来重新构建表达和聆听的方式。
+非暴力沟通培育深度倾听的能力，让我们带着尊重和同理心对待他人，并且发自内心地相互给予。用非暴力沟通的方式，有的人学会了爱自己，有的人在人际关系中创造了更深厚的连结，有的人在工作或政治领域中建立了更有效的关系。在世界各地，非暴力沟通还被用来调和各个层面的纠纷和冲突。
+二、疏离生命的语言由衷的给予和接受，是人类天性所乐见的。然而我们习得了太多疏离生命的语言形式，导致我们的说话和行为方式给他人和自己带来伤害。其中的一种形式是道德评判，即认为那些不符合我们价值观的人是不对的、不好的。另一种形式是做比较，让人们难以升..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/07/18/nonviolent-communication/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/21/hackers-and-painters/">《黑客与画家》</a></h2><time class="has-text-grey" datetime="2021-09-21T05:23:17.000Z">2021-09-21</time><p class="is-flex-grow-2 mt-2">摘录与 《黑客与画家》
+第一章节：为什么书呆子不受欢迎首先这里“书呆子”指的“高智商”的人。
+解开这个谜的关键是把问题换一种提法。为什么聪明的小孩没有让自己变得受欢迎？如果他们真的很聪明，为什么找不到受欢迎的诀窍呢？他们在标准化测试中表现得这么好，为什么就不能在这方面也大获成功呢？
+有一种观点认为，其他小孩妒忌聪明学生，所以聪明的学生不可能受到欢迎。我倒希望这种解释是对的。回想起来，要是初中里真的有人妒忌我，那么他们一定费了很大力气才把这种妒忌隐藏得无法发现。而且，在任何情况下，如果聪明真的令他人妒忌，这反而会招来女生。因为女生喜欢被其他男生妒忌的男生。
+在我就读过的学校，聪明根本就是无足轻重的一样东西。同学们既不看重它，也不唾弃它。如果别的事情都相同，那么大家还是愿意自己变得聪明一点，因为这总比做个笨人好..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/21/hackers-and-painters/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/18/the-art-of-thinking-clearly/">《清醒思考的艺术》</a></h2><time class="has-text-grey" datetime="2021-09-17T16:00:00.000Z">2021-09-18</time><p class="is-flex-grow-2 mt-2">摘录与 《清醒思考的艺术》
+1. 幸存偏误为什么你该去逛逛墓地
+幸存偏误是指：由于日常生活中更容易看到成功、看不到失败，你会系统性地高估成功的希望。不了解现实的你（与雷托一样）对成功抱有一种幻想，认识不到成功的概率有多微弱。每位成功的作家背后都有100个作品卖不出去的作家，每个作品卖不出去的作家背后又有100个找不到出版社的作者，每个找不到出版社的作者背后又有数百个抽屉里沉睡着刚动笔的手稿的写作爱好者。而我们总是听到成功者的故事，认识不到作家的成功概率有多小。摄影师、企业家、艺术家、运动员、建筑师、诺贝尔奖得主、电视制作人和选美冠军的情况也是一样。媒体没兴趣去刨挖失败者的墓地，这事也不归他们负责。这意味着：要想缓解幸存偏误，你就得了解这些。
+幸存偏误意味着：你系统性地高估了成功概率。解决办法：尽可能常去逛逛..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/18/the-art-of-thinking-clearly/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/11/the-courage-to-be-disliked/">《被讨厌的勇气》</a></h2><time class="has-text-grey" datetime="2021-09-11T12:39:35.000Z">2021-09-11</time><p class="is-flex-grow-2 mt-2">摘录与 《被讨厌的勇气》
+引言提出论点：“人可以改变，而且人人都可以获得幸福。”
+青年：世界是简单的，人生也是如此。假若这种命题中含有几分真理，那也是对于孩子的世界而言。孩子的世界没有劳动或纳税之类的现实义务，他们每天都在父母或社会的呵护下自由自在地生活，未来充满无限希望，自己也似乎无所不能。孩子们的眼睛被遮盖了，不必去面对丑恶的现实。的确，孩子眼中的世界呈现出简单的姿态。
+但是，随着年龄的增长，世界便逐渐露出真面目。人们不得不接受“我只不过如此”之类的现实，原以为等候在人生路上的一切“可能”都会变成“不可能”。幸福的浪漫主义季节转瞬即逝，残酷的现实主义时代终将到来。
+人一旦长大，就会被复杂的人际关系所困扰，被诸多的责任所牵绊。工作、家庭或者社会责任，一切都是。当然，孩提时代无法理解的歧视、战争或阶级之类的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/11/the-courage-to-be-disliked/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/10/linux-45-lesson/">《操作系统实战 45 讲》</a></h2><time class="has-text-grey" datetime="2021-08-10T02:00:00.000Z">2021-08-10</time><p class="is-flex-grow-2 mt-2">
+
+
+摘录与 《操作系统45讲》
+操作系统实战 45 讲
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/10/linux-45-lesson/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/ETCD"><i class="tag post-item-tag">ETCD</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/04/11/etcd/">《ETCD实战》</a></h2><time class="has-text-grey" datetime="2021-04-11T02:00:35.000Z">2021-04-11</time><p class="is-flex-grow-2 mt-2">摘录与 《ETCD实战》
+背景ectd 常见问题
+etcd 基础
+etcd 实践
+etcd v2 功能
+etcd v2 存在的问题
+
+第一，etcd v2 不支持范围查询和分页。分页对于数据较多的场景是必不可少的。在 Kubernetes 中，在集群规模增大后，Pod、Event 等资源可能会出现数千个以上，但是 etcd v2 不支持分页，不支持范围查询，大包等 expensive request 会导致严重的性能乃至雪崩问题。
+第二，etcd v2 不支持多 key 事务。在实际转账等业务场景中，往往我们需要在一个事务中同时更新多个 key。
+然后是 Watch 机制可靠性问题。Kubernetes 项目严重依赖 etcd Watch 机制，然而 etcd v2 是内存型、不支持保存 key 历史版本的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/04/11/etcd/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/25/design-patterns/">《设计模式之美》</a></h2><time class="has-text-grey" datetime="2021-03-25T08:05:51.000Z">2021-03-25</time><p class="is-flex-grow-2 mt-2">摘录与 《设计模式之美》
+前言什么是设计模式设计模式讲的是如何写出可扩展、可读、可维护的高质量代码，所以，它们跟平时的编码会有直接的关系，也会直接影响到你的开发能力。
+为什么要学习设计模式
+应对面试中的设计模式相关问题。学习设计模式和算法一样，最功利、最直接的目的，可能就是应对面试了。
+告别写被人吐槽的烂代码，代码能力是一个程序员最基础的能力，是基本功，是展示一个程序员基础素养的最直接的衡量标准。你写的代码，实际上就是你名片。我见过太多的烂代码，比如命名不规范、类设计不合理、分层不清晰、没有模块化概念、代码结构混乱、高度耦合等等。这样的代码维护起来非常费劲，添加或者修改一个功能，常常会牵一发而动全身，让你无从下手，恨不得将全部的代码删掉重写！当然，在这些年的工作经历中，我也看到过很多让我眼前一亮的代码。每当..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/25/design-patterns/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/11/clean-code/">《Clean Code》</a></h2><time class="has-text-grey" datetime="2021-03-11T15:50:08.000Z">2021-03-11</time><p class="is-flex-grow-2 mt-2">摘录与 《代码整洁之道》
+什么是整洁代码
+能通过所有测试；
+没有重复代码；
+体现系统中的全部设计理念；
+包括尽量少的实体，比如类、方法、函数等。
+
+童子军军规光把代码写好可不够。必须时时保持代码整洁。我们都见过代码随时间流逝而腐坏。我们应当更积极地阻止腐坏的发生。
+让营地比你来时更干净。
+有意义的命名名副其实名副其实说起来简单。我们想要强调，这事很严肃。选个好名字要花时间，但省下来的时间比花掉的多。注意命名，而且一旦发现有更好的名称，就换掉旧的。这么做，读你代码的人（包括你自己）都会更开心。
+变量、函数或类的名称应该已经答复了所有的大问题。它该告诉你，它为什么会存在，它做什么事，应该怎么用。如果名称需要注释来补充，那就不算是名副其实。
+避免误导程序员必须避免留下掩藏代码本意的错误线索。应当避免使用与本意相悖..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/11/clean-code/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/10/30day-os/">《30天自制操作系统》</a></h2><time class="has-text-grey" datetime="2021-03-10T02:35:59.000Z">2021-03-10</time><p class="is-flex-grow-2 mt-2">30天自制操作系统启动区（boot sector）软盘第一个的扇区称为启动区。那么什么是扇区呢？计算机读写软盘的时候，并不是一个字节一个字节地读写的，而是以512字节为一个单位进行读写。因此,软盘的512字节就称为一个扇区。一张软盘的空间共有1440KB，也就是1474560字节，除以512得2880，这也就是说一张软盘共有2880个扇区。那为什么第一个扇区称为启动区呢？那是因为计算机首先从最初一个扇区开始读软盘，然后去检查这个扇区最后2个字节的内容。如果这最后2个字节不是0x55 AA，计算机会认为这张盘上没有所需的启动程序，就会报一个不能启动的错误。（也许有人会问为什么一定是0x55 AA呢？那是当初的设计者随便定的，笔者也没法解释）。如果计算机确认了第一个扇区的最后两个字节正好是0x55 AA，那它就..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/10/30day-os/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/26/clean-architecture/">《Clean Architecture》</a></h2><time class="has-text-grey" datetime="2021-02-26T15:50:08.000Z">2021-02-26</time><p class="is-flex-grow-2 mt-2">零、概述软件架构设计是一件非常困难的事情，这通常需要大多数程序员所不具备的经验和技能。同时，也不是所有人都愿意花时间来学习和钻研这个方向。做一个好的软件架构师所需要的自律和专注程度可能会让大部分程序员始料未及，更别提软件架构师这个职业本身的社会认同感与人们投身其中的热情了。
+采用好的软件架构可以大大节省软件项目构建与维护的人力成本。让每次变更都短小简单，易于实施，并且避免缺陷，用最小的成本，最大程度地满足功能性和灵活性的要求。
+0.1 设计与架构究竟是什么？一直以来，设计（Design）与架构（Architecture）这两个概念让大多数人十分迷惑——什么是设计？什么是架构？二者究竟有什么区别？
+本书的一个重要目标就是要清晰、明确地对二者进行定义。首先我要明确地说，二者没有任何区别。一丁点区别都没有！
+“架..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/26/clean-architecture/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Redis"><i class="tag post-item-tag">Redis</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/10/reids-action/">《Redis核心技术与实战》</a></h2><time class="has-text-grey" datetime="2021-02-10T10:32:31.000Z">2021-02-10</time><p class="is-flex-grow-2 mt-2">数据结构Redis数据结构简单来说，底层数据结构一共有 6 种，分别是简单动态字符串、双向链表、压缩列表、哈希表、跳表和整数数组。它们和数据类型的对应关系如下图所示：
+
+全局哈希表
+因为这个哈希表保存了所有的键值对，所以，我也把它称为全局哈希表。哈希表的最大好处很明显，就是让我们可以用 O(1) 的时间复杂度来快速查找到键值对——我们只需要计算键的哈希值，就可以知道它所对应的哈希桶位置，然后就可以访问相应的 entry 元素。
+渐进式 rehash简单来说就是在第二步拷贝数据时，Redis 仍然正常处理客户端请求，每处理一个请求时，从哈希表 1 中的第一个索引位置开始，顺带着将这个索引位置上的所有 entries 拷贝到哈希表 2 中；等处理下一个请求时，再顺带拷贝哈希表 1 中的下一个索引位置的 entr..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/10/reids-action/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/12/07/data_intensive/">《数据密集型应用系统设计》</a></h2><time class="has-text-grey" datetime="2020-12-07T07:00:00.000Z">2020-12-07</time><p class="is-flex-grow-2 mt-2">数据密集型应用（data-intensive applications）正在通过使用这些技术进步来推动可能性的 边界。一个应用被称为数据密集型的，如果数据是其主要挑战（数据量，数据复杂度或数据变化速度）—— 与之相对的是计算密集型，即处理器速度是其瓶颈。
+数据系统的基石可靠性、可扩展性、可维护性现今很多应用程序都是数据密集型（data-intensive）的，而非计算密集型（compute-intensive）的。因此CPU很少成为这类应用的瓶颈，更大的问题通常来自数据量、数据复杂性、以及数据的变更速度。
+可靠性（Reliability）系统在困境（adversity）（硬件故障、软件故障、人为错误）中仍可正常工作（正确完成功 能，并能达到期望的性能水准）。
+人们对于一个东西是否可靠，都有一个直观的想法。人..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/12/07/data_intensive/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/20/zero-to-one-study-architecture/">《从0开始学架构》</a></h2><time class="has-text-grey" datetime="2020-09-20T07:31:00.000Z">2020-09-20</time><p class="is-flex-grow-2 mt-2">架构设计理念架构设计理念，可以提炼为下面几个关键点：
+
+架构是系统的顶层结构。
+架构设计的主要目的是为了解决软件系统复杂度带来的问题。
+架构设计需要遵循三个主要原则：合适原则、简单原则、演化原则。
+架构设计首先要掌握业界已经成熟的各种架构模式，然后再进行优化、调整、创新。
+
+框架设计需要考的因素/影响架构复杂性的几个因素
+高性能， 衡量软件性能包括了响应时间、TPS、服务器资源利用率等客观指标，也可以是用户的主观感受。
+高可用，高可用性就是技术实力的象征，高可用性就是竞争力。99.99%（俗称4个9）网站不可用时间=52.56分钟
+可扩展性，设计具备良好可扩展性的系统，有两个基本条件：“正确预测变化、完美封装变化”。
+低成本，语言选择、方案选择。
+安全，功能安全XSS、CSRF等，架构安全、访问策略。
+规模..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/20/zero-to-one-study-architecture/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-in-action/">《Linux内核技术实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2">Page Cache什么是 Page Cache？
+通过这张图片你可以清楚地看到，红色的地方就是 Page Cache，很明显，Page Cache 是内核管理的内存，也就是说，它属于内核不属于用户。
+$ cat /proc/meminfo
+...
+Buffers:            1224 kB
+Cached:           111472 kB
+SwapCached:        36364 kB
+Active:          6224232 kB
+Inactive:         979432 kB
+Active(anon):    6173036 kB
+Inactive(anon):   927932 kB
+Active(file):      51196 kB
+Inactive(..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-in-action/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-optimize/">《Linux性能优化实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2">CPU性能篇uptime 什么是平均负载？简单来说，平均负载是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。这里我先解释下，可运行状态和不可中断状态这俩词儿。
+所谓可运行状态的进程，是指正在使用 CPU 或者正在等待 CPU 的进程，也就是我们常用 ps 命令看到的，处于 R 状态（Running 或 Runnable）的进程。
+不可中断状态的进程则是正处于内核态关键流程中的进程，并且这些流程是不可打断的，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 D 状态（Uninterruptible Sleep，也称为 Disk Sleep）的进程。
+比如，当一个进程向磁盘读写数据时，为了保证数据的一致性，在得到..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-optimize/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/08/25/happy-talk-net/">《趣谈网络协议》</a></h2><time class="has-text-grey" datetime="2020-08-25T02:00:00.000Z">2020-08-25</time><p class="is-flex-grow-2 mt-2">通信协议综述IP &amp;amp;&amp;amp; MACIP 地址是一个网卡在网络世界的通讯地址，相当于我们现实世界的门牌号码。既然是门牌号码，不能大家都一样，不然就会起冲突。比方说，假如大家都叫六单元 1001 号，那快递就找不到地方了。所以，有时候咱们的电脑弹出网络地址冲突，出现上不去网的情况，多半是 IP 地址冲突了。
+
+下面这个表格，详细地展示了 A、B、C 三类地址所能包含的主机的数量。在后文中，我也会多次借助这个表格来讲解。
+
+无类型域间选路（CIDR）
+于是有了一个折中的方式叫作无类型域间选路，简称 CIDR。这种方式打破了原来设计的几类地址的做法，将 32 位的 IP 地址一分为二，前面是网络号，后面是主机号。从哪里分呢？你如果注意观察的话可以看到，10.100.122.2/24，这个 IP 地址中有..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/08/25/happy-talk-net/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/08/01/mysql-45-lesson/">《MySQL实战45讲》</a></h2><time class="has-text-grey" datetime="2020-08-01T11:56:08.000Z">2020-08-01</time><p class="is-flex-grow-2 mt-2">binlog &amp;amp;&amp;amp; redo log什么是 binlog
+binlog 是逻辑日志，记录的是这个语句的原始逻辑/变化，比如“给 ID=2 这一行的 c 字段加 1 ”。 
+binlog 是追加写，不会覆盖之前的数据，可以提供完整的数据归档的能力。
+
+什么是 redo log
+redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；
+redo log 提供 crash-safe 能力。
+一般只有4G ，4个文件，循环复写。
+
+binlog 和 redo log 不同点因为最开始 MySQL 里并没有 InnoDB 引擎。MySQL 自带的引擎是 MyISAM，但是 MyISAM 没有 crash-safe 的能力，binlog 日志只能用于归档。而 InnoDB 是另一个公司以插..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/08/01/mysql-45-lesson/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/07/16/computer-organization/">《深入浅出计算机组成原理》</a></h2><time class="has-text-grey" datetime="2020-07-16T02:00:00.000Z">2020-07-16</time><p class="is-flex-grow-2 mt-2">基础篇计算机的基本硬件组成
+第一，广。组成原理中的概念非常多，每个概念的信息量也非常大。比如想要理解 CPU 中的算术逻辑单元（也就是 ALU）是怎么实现加法的，需要牵涉到如何把整数表示成二进制，还需要了解这些表示背后的电路、逻辑门、CPU 时钟、触发器等知识。
+第二，深。组成原理中的很多概念，阐述开来就是计算机学科的另外一门核心课程。比如，计算机的指令是怎么从你写的 C、Java 这样的高级语言，变成计算机可以执行的机器码的？如果我们展开并深入讲解这个问题，就会变成《编译原理》这样一门核心课程。
+第三，学不能致用。学东西是要拿来用的，但因为这门课本身的属性，很多人在学习时，常常沉溺于概念和理论中，无法和自己日常的开发工作联系起来，以此来解决工作中遇到的问题，所以，学习往往没有成就感，就很难有动力坚持下去。..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/07/16/computer-organization/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Chip"><i class="tag post-item-tag">Chip</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/05/sya-chip/">《说透芯片》</a></h2><time class="has-text-grey" datetime="2021-07-05T02:00:00.000Z">2021-07-05</time><p class="is-flex-grow-2 mt-2">基础知识晶体管想了解晶体管，你得先了解它的“前身”——电子管。电子管是中文翻译后的名称，英文原文其实是真空管。从这个名字，你可以想象，它其实是把参与工作的金属薄片，也就是电极，封装在一个真空的容器内，真空容器一般指的是玻璃瓶。
+整个电子行业，并不是从芯片开始的，而是从电子管开始。电子管最鼎盛时期的代表作，就是世界上的第一台电子计算机。这台 1946 年诞生的电子计算机，占地 150 平方米，重达 30 吨，里面的电路使用了 17468 只电子管、7200 只电阻、10000 只电容、50 万条线。
+这台计算机虽然运算速度不快，但基本具备了现代计算机的主要结构和功能，这也是电子管能达到的最高成就了。其实从上图你也可以看出来，电子管最大的缺点就是，真空容器对于电子产品来说体积太大了。
+如果人类停留在电子管技术上..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/05/sya-chip/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container tag-widget is-in-tag-page"><h3>标签</h3><section><a href="/tags/DataStructure"><span class="tag post-item-tag" style="margin-bottom: 5px;">DataStructure</span></a><a href="/tags/Note"></a><a href="/tags/Book"><span class="tag post-item-tag" style="margin-bottom: 5px;">Book</span></a><a href="/tags/ele"><span class="tag post-item-tag" style="margin-bottom: 5px;">ele</span></a><a href="/tags/Calculus"><span class="tag post-item-tag" style="margin-bottom: 5px;">Calculus</span></a><a href="/tags/Golang"><span class="tag post-item-tag" style="margin-bottom: 5px;">Golang</span></a><a href="/tags/HTTP"><span class="tag post-item-tag" style="margin-bottom: 5px;">HTTP</span></a><a href="/tags/Eng-Practices"><span class="tag post-item-tag" style="margin-bottom: 5px;">Eng-Practices</span></a><a href="/tags/ETCD"><span class="tag post-item-tag" style="margin-bottom: 5px;">ETCD</span></a><a href="/tags/Envoy"><span class="tag post-item-tag" style="margin-bottom: 5px;">Envoy</span></a><a href="/tags/Compiler"><span class="tag post-item-tag" style="margin-bottom: 5px;">Compiler</span></a><a href="/tags/Lua"><span class="tag post-item-tag" style="margin-bottom: 5px;">Lua</span></a><a href="/tags/Rust"><span class="tag post-item-tag" style="margin-bottom: 5px;">Rust</span></a><a href="/tags/Idgen"><span class="tag post-item-tag" style="margin-bottom: 5px;">Idgen</span></a><a href="/tags/iOS"><span class="tag post-item-tag" style="margin-bottom: 5px;">iOS</span></a><a href="/tags/GRPC"><span class="tag post-item-tag" style="margin-bottom: 5px;">GRPC</span></a><a href="/tags/Linux"><span class="tag post-item-tag" style="margin-bottom: 5px;">Linux</span></a><a href="/tags/Memory"><span class="tag post-item-tag" style="margin-bottom: 5px;">Memory</span></a><a href="/tags/LinearAlgebra"><span class="tag post-item-tag" style="margin-bottom: 5px;">LinearAlgebra</span></a><a href="/tags/MySQL"><span class="tag post-item-tag" style="margin-bottom: 5px;">MySQL</span></a><a href="/tags/Algorithm"><span class="tag post-item-tag" style="margin-bottom: 5px;">Algorithm</span></a><a href="/tags/HTPP"><span class="tag post-item-tag" style="margin-bottom: 5px;">HTPP</span></a><a href="/tags/Protobuf"><span class="tag post-item-tag" style="margin-bottom: 5px;">Protobuf</span></a><a href="/tags/Net"><span class="tag post-item-tag" style="margin-bottom: 5px;">Net</span></a><a href="/tags/Probability"><span class="tag post-item-tag" style="margin-bottom: 5px;">Probability</span></a><a href="/tags/Quic"><span class="tag post-item-tag" style="margin-bottom: 5px;">Quic</span></a><a href="/tags/Redis"><span class="tag post-item-tag" style="margin-bottom: 5px;">Redis</span></a><a href="/tags/Raft"><span class="tag post-item-tag" style="margin-bottom: 5px;">Raft</span></a><a href="/tags/GoSourceCode"><span class="tag post-item-tag" style="margin-bottom: 5px;">GoSourceCode</span></a><a href="/tags/IO"><span class="tag post-item-tag" style="margin-bottom: 5px;">IO</span></a><a href="/tags/Consul"><span class="tag post-item-tag" style="margin-bottom: 5px;">Consul</span></a><a href="/tags/Sort"><span class="tag post-item-tag" style="margin-bottom: 5px;">Sort</span></a><a href="/tags/Statistics"><span class="tag post-item-tag" style="margin-bottom: 5px;">Statistics</span></a><a href="/tags/ebpf"><span class="tag post-item-tag" style="margin-bottom: 5px;">ebpf</span></a><a href="/tags/LLVM"><span class="tag post-item-tag" style="margin-bottom: 5px;">LLVM</span></a><a href="/tags/Chip"><span class="tag post-item-tag" style="margin-bottom: 5px;">Chip</span></a></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+
+window.addEventListener('resize', $claudia.throttle(function () {
+    var images = document.querySelectorAll('.js-img-fadeIn')
+
+    images.forEach($claudia.blurBackdropImg)
+}, 150))</script></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+
+window.addEventListener('resize', $claudia.throttle(function () {
+    var images = document.querySelectorAll('.js-img-fadeIn')
+
+    images.forEach($claudia.blurBackdropImg)
+}, 150))</script></body></html>

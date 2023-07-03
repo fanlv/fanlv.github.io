@@ -1,0 +1,1434 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Golang “锁”事</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="一、 Go 同步原语
+
+sync.Cond -&amp;gt; notifyList -&amp;gt; runtime.mutex、atomic
+sync.WaitGroup -&amp;gt; atomic、 runtime.sema
+sync.Map -&amp;gt; sync.Mutex、atomic
+sync.Once -&amp;gt; sync.Mutex、atomic
+sync.RWMutex -&amp;gt; sync.Mutex、atomic
+sync.Mutex -&amp;gt; runtime.sema
+channel -&amp;gt; runtime.mutex
+
+sync.Mutex和runtime.mutext区别：简单说就是sync.Mutex是用户层的锁，Lock抢锁失败会造成goroutine阻塞（会调用gopark）。run.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Golang “锁”事</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81-Go-%E5%90%8C%E6%AD%A5%E5%8E%9F%E8%AF%AD"><span class="toc-text">一、 Go 同步原语</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Atomic"><span class="toc-text">二、Atomic</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81runtime-mutex"><span class="toc-text">三、runtime.mutex</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-mutex-%E7%BB%93%E6%9E%84"><span class="toc-text">3.1 mutex 结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-lock-%E5%AE%9E%E7%8E%B0"><span class="toc-text">3.2 lock 实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-unlock-%E5%AE%9E%E7%8E%B0"><span class="toc-text">3.3 unlock 实现</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81runtime-semaphore"><span class="toc-text">四、runtime.semaphore</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E4%BF%A1%E5%8F%B7%E9%87%8F-P-V-%E6%93%8D%E4%BD%9C"><span class="toc-text">4.1 信号量 P&#x2F;V 操作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-semtable"><span class="toc-text">4.2 semtable</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-3-semacquire-%E8%8E%B7%E5%8F%96%E4%BF%A1%E5%8F%B7%E9%87%8F"><span class="toc-text">4.3 semacquire 获取信号量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-4-semrelease-%E9%87%8A%E6%94%BE%E4%BF%A1%E5%8F%B7%E9%87%8F"><span class="toc-text">4.4 semrelease 释放信号量</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-5%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">4.5、总结</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81Sync-Mutex-%E6%BA%90%E7%A0%81"><span class="toc-text">五、Sync.Mutex 源码</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-%E5%8F%91%E5%B1%95%E5%8E%86%E5%8F%B2"><span class="toc-text">5.1 发展历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-Mutex%E7%BB%93%E6%9E%84%E5%88%86%E6%9E%90"><span class="toc-text">5.2 Mutex结构分析</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-3-Lock"><span class="toc-text">5.3 Lock</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-4-Unlock"><span class="toc-text">5.4 Unlock</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81RWMutex"><span class="toc-text">六、RWMutex</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81Sync-Map"><span class="toc-text">七、Sync.Map</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#7-1-Sync-RWMutex-%E5%A4%9A%E6%A0%B8%E7%9A%84%E4%BC%B8%E7%BC%A9%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-text">7.1 Sync.RWMutex 多核的伸缩性问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-2-%E5%A6%82%E4%BD%95%E5%8E%BB%E4%BC%98%E5%8C%96%EF%BC%9F"><span class="toc-text">7.2 如何去优化？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-1-distributedrwmutex"><span class="toc-text">7.2.1 distributedrwmutex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-2-Atomic-Value"><span class="toc-text">7.2.2 Atomic.Value</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-3-%E5%9F%BA%E4%BA%8E%E4%BA%8C%E5%8F%89%E6%A0%91%E5%AE%9E%E7%8E%B0-dmap"><span class="toc-text">7.2.3 基于二叉树实现 - dmap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-4-%E4%B8%A4%E4%B8%AAmap"><span class="toc-text">7.2.4 两个map</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-3%E3%80%81Sync-Map-%E7%9A%84%E6%9C%80%E7%BB%88%E5%AE%9E%E7%8E%B0"><span class="toc-text">7.3、Sync.Map 的最终实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-4-%E8%BF%9B%E4%B8%80%E6%AD%A5%E4%BC%98%E5%8C%96"><span class="toc-text">7.4 进一步优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-5-%E6%80%9D%E8%80%83%EF%BC%9Adirty-%E8%83%BD%E5%90%A6%E4%B8%8D%E5%85%A8%E9%87%8F%E6%8B%B7%E8%B4%9D-read%EF%BC%9F"><span class="toc-text">7.5 思考：dirty 能否不全量拷贝 read？</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Golang “锁”事</h1><time class="has-text-grey" datetime="2023-04-15T01:28:58.000Z">2023-04-15</time><article class="mt-2 post-content"><h1 id="一、-Go-同步原语"><a href="#一、-Go-同步原语" class="headerlink" title="一、 Go 同步原语"></a>一、 Go 同步原语</h1><p><img src="https://upload-images.jianshu.io/upload_images/12321605-818855b609c0f2c8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li><code>sync.Cond</code> -&gt; <code>notifyList</code> -&gt; <code>runtime.mutex</code>、<code>atomic</code></li>
+<li><code>sync.WaitGroup</code> -&gt; <code>atomic</code>、 <code>runtime.sema</code></li>
+<li><code>sync.Map</code> -&gt; <code>sync.Mutex</code>、<code>atomic</code></li>
+<li><code>sync.Once</code> -&gt; <code>sync.Mutex</code>、<code>atomic</code></li>
+<li><code>sync.RWMutex</code> -&gt; <code>sync.Mutex</code>、<code>atomic</code></li>
+<li><code>sync.Mutex</code> -&gt; <code>runtime.sema</code></li>
+<li><code>channel</code> -&gt; <code>runtime.mutex</code></li>
+</ul>
+<p><strong>sync.Mutex和runtime.mutext区别：</strong>简单说就是<code>sync.Mutex</code>是用户层的锁，<code>Lock</code>抢锁失败会造成<code>goroutine</code>阻塞（会调用<code>gopark</code>）。<code>runtime.mutex</code> 是给 <code>runtime</code>使用的锁，<code>Lock</code>抢锁失败，会造成<code>m</code>阻塞（线程阻塞，底层调用的<code>futex</code>）。</p>
+<h1 id="二、Atomic"><a href="#二、Atomic" class="headerlink" title="二、Atomic"></a>二、Atomic</h1><p><code>Golang</code>中的<code>Atomic</code>主要保证了三件事，<strong>原子性、可见性、有序性</strong>。</p>
+<p>我们先看下<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/sync/atomic/doc.go">Go的源码里面Atomic</a> 的<code>API</code>，主要包括<code>Swap</code>、<code>CAS</code>、<code>Add</code>、<code>Load</code>、<code>Store</code>、<code>Pointer</code>几类，在<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/internal/atomic/asm_amd64.s">IA64 CPU</a>上对应的汇编指令如下：</p>
+<ul>
+<li><code>Swap</code> : 主要是 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/internal/atomic/asm_amd64.s#L110">XCHGQ</a> 指令</li>
+<li><code>CAS</code> : 主要是 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/internal/atomic/asm_amd64.s#L22">LOCK CMPXCHGQ</a> 指令</li>
+<li><code>Add</code> : 主要是 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/internal/atomic/asm_amd64.s#L99">LOCK XADDQ</a> 指令</li>
+<li><code>Load</code> : 主要是 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/internal/atomic/asm_386.s#L202">MOVQ（Load64）</a> 指令</li>
+<li><code>Store</code> : 主要是 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/internal/atomic/asm_amd64.s#L133">XCHGQ</a> 指令</li>
+<li><code>Pointer</code> : <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.16/src/runtime/internal/atomic/asm_amd64.s#L50">主要当做64位int</a>，调用上述相关方法。</li>
+</ul>
+<p><strong>关于LOCK prefix和XCHG指令</strong>在 <a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/architecture-and-technology/64-ia-32-architectures-software-developer-vol-3a-part-1-manual.html">英特尔开发人员手册</a> section 8.2.5中，我们找到了如下的解释：</p>
+<blockquote>
+<p>For the Intel486 and Pentium processors, the LOCK# signal is always asserted on the bus during a LOCK operation, even if the area of memory being locked is cached in the processor.</p>
+</blockquote>
+<blockquote>
+<p>For the P6 and more recent processor families, if the area of memory being locked during a LOCK operation is cached in the processor that is performing the LOCK operation as write-back memory and is completely contained in a cache line, the processor may not assert the LOCK# signal on the bus. Instead, it will modify the memory location internally and allow it’s cache coherency mechanism to ensure that the operation is carried out atomically. This operation is called “cache locking.” The cache coherency mechanism automatically prevents two or more processors that have cached the same area of memory from simultaneously modifying data in that area.</p>
+</blockquote>
+<blockquote>
+<p>The I/O instructions, locking instructions, the LOCK prefix, and <strong>serializing instructions force stronger orderingon the processor</strong>.</p>
+</blockquote>
+<blockquote>
+<p>Synchronization mechanisms in multiple-processor systems may depend upon a strong memory-ordering model. Here, a program can use a locking instruction such as the XCHG instruction or the LOCK prefix to ensure that a read-modify-write operation on memory is carried out atomically. Locking operations typically operate like I/O operations in that they wait for all previous instructions to complete and for all buffered writes to drain to memory (see Section 8.1.2, “Bus Locking”).</p>
+</blockquote>
+<p><strong>从描述中，我们了解到：LOCK prefix 和 XCHG 指令前缀提供了强一致性的内(缓)存读写保证，可以保证 LOCK 之后的指令在带 LOCK 前缀的指令执行之后才会执行。同时，我们在手册中还了解到，现代的 CPU 中的 LOCK 操作并不是简单锁 CPU 和主存之间的通讯总线， Intel 在 cache 层实现了这个 LOCK 操作，此因此我们也无需为 LOCK 的执行效率担忧。</strong></p>
+<p>PS：<code>Java</code>中的<code>volatile</code>关键字也是基于 <code>Lock prefix</code> 实现的。</p>
+<p>从上面可以看到<code>Swap</code>、<code>CAS</code>、<code>Add</code>、<code>Store</code> 都是基于<code>LOCK prefix</code>和<code>XCHG</code>指令实现的，他能保证缓存读写的强一致性。</p>
+<h1 id="三、runtime-mutex"><a href="#三、runtime-mutex" class="headerlink" title="三、runtime.mutex"></a>三、runtime.mutex</h1><h2 id="3-1-mutex-结构"><a href="#3-1-mutex-结构" class="headerlink" title="3.1 mutex 结构"></a>3.1 mutex 结构</h2><p><code>runtime</code>的 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/runtime2.go#L161">mutex</a> 定义在<code>runtime/runtime2.go</code>中。定义如下：</p>
+<pre><code>type mutex struct {
+    // Empty struct if lock ranking is disabled, otherwise includes the lock rank
+    lockRankStruct
+    // Futex-based impl treats it as uint32 key,
+    // while sema-based impl as M* waitm.
+    // Used to be a union, but unions break precise GC.
+    key uintptr // lock、unlock、sleeping 三种状态 sleep 阻塞当前 m ，然后排队等系统唤醒
+}
+</code></pre>
+<p><code>lockRankStruct</code>这个是给<code>runtime</code>做 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/207348">死锁</a> 检测用的，只有设置了<code>GOEXPERIMENT=staticlockranking</code>才<code>lockRankStruct</code>才会有<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/lockrank_on.go#L18">具体实现</a>，否则的话这个结构体只会是个<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/lockrank_off.go#L9">空Struct</a>，空的<code>Struct</code>只要不是最后一个字段是不会占用任何空间的（详见<a target="_blank" rel="noopener" href="https://gfw.go101.org/article/unofficial-faq.html#final-zero-size-field">final-zero-size-field</a>），具体<code>lockrank</code>的<code>CR</code>，可以看这个<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/207619">提交</a>。<code>lookrank</code>主要通过加锁<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/lockrank.go#L187">顺序</a> 来判断是否会死锁，如果加锁顺序不符合预期就会<code>throw</code>异常（注意这个不是<code>panic</code>不能被<code>recover</code>）。<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/lockrank_on.go#L120">具体代码</a>如下：</p>
+<pre><code>// checkRanks checks if goroutine g, which has mostly recently acquired a lock
+// with rank 'prevRank', can now acquire a lock with rank 'rank'.
+//
+//go:systemstack
+func checkRanks(gp *g, prevRank, rank lockRank) {
+    rankOK := false
+    if rank &lt; prevRank {
+        // If rank &lt; prevRank, then we definitely have a rank error
+        rankOK = false
+    } else if rank == lockRankLeafRank {
+        // If new lock is a leaf lock, then the preceding lock can
+        // be anything except another leaf lock.
+        rankOK = prevRank &lt; lockRankLeafRank
+    } else {
+        // We've now verified the total lock ranking, but we
+        // also enforce the partial ordering specified by
+        // lockPartialOrder as well. Two locks with the same rank
+        // can only be acquired at the same time if explicitly
+        // listed in the lockPartialOrder table.
+        list := lockPartialOrder[rank]
+        for _, entry := range list {
+            if entry == prevRank {
+                rankOK = true
+                break
+            }
+        }
+    }
+    if !rankOK {
+        printlock()
+        println(gp.m.procid, " ======")
+        printHeldLocks(gp)
+        throw("lock ordering problem")
+    }
+}
+</code></pre>
+<h2 id="3-2-lock-实现"><a href="#3-2-lock-实现" class="headerlink" title="3.2 lock 实现"></a>3.2 lock 实现</h2><p>在<code>macOS</code>和<code>Windows</code>上<code>runtime.mutex</code>是基于<code>pthread_mutex</code>来实现的，详见 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/lock_sema.go#L35">lock_sema</a>。而在<code>Linux</code>上<code>lock</code>是基于<code>futex</code>来实现的，详见 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/lock_futex.go#L46">lock_futex</a>。这里我们只关注<code>Linux</code>下的实现。</p>
+<pre><code>func lock(l *mutex) {
+    lockWithRank(l, getLockRank(l))
+}
+
+func lockWithRank(l *mutex, rank lockRank) {
+    lock2(l)
+}
+
+func lock2(l *mutex) {
+    gp := getg() // 获取当前的 goroutine
+
+    if gp.m.locks &lt; 0 {
+        throw("runtime·lock: lock count")
+    }
+    gp.m.locks++ // g绑定的m的lock数量加1
+
+      // l.key 只有三种状态 mutex_unlocked、mutex_locked、mutex_sleeping
+      // mutex_unlocked 表示无锁状态
+      // mutex_locked 正常加锁状态
+      // mutex_sleeping 表示有线程调用futexsleep阻塞了
+    // 设置状态为 mutex_locked ，**注意这里是直接设置，不是CAS**
+    v := atomic.Xchg(key32(&amp;l.key), mutex_locked)
+    if v == mutex_unlocked { // 之前的状态是 mutex_unlocked 表示加锁成功了
+        return
+    }
+
+     // 走到这里，表示没有加锁成功
+     // 这里 v 不是 mutex_unlocked 所以只能是 MUTEX_LOCKED 或 MUTEX_SLEEPING
+    // 所以 wait 可能是 MUTEX_LOCKED 或 MUTEX_SLEEPING
+    // 如果我们将 l-&gt;key 从 MUTEX_SLEEPING 更改为其他值，我们必须小心在返回之前将其更改回 MUTEX_SLEEPING
+    wait := v
+
+    // 多核情况下尝试自旋4次，单个就不用自旋了
+    spin := 0
+    if ncpu &gt; 1 {
+        spin = active_spin // active_spin = 4
+    }
+    for {
+        for i := 0; i &lt; spin; i++ { 
+                // 注意我们上面设置了 l.key = mutex_locked
+                // 这里如果 key = mutex_unlocked，表示肯定是其他持有锁的线程进行了锁的释放
+            for l.key == mutex_unlocked {
+                    // CAS 抢锁成功直接返回，否则再尝试自旋
+                    // 这里 wait 是 MUTEX_LOCKED 或 MUTEX_SLEEPING
+                if atomic.Cas(key32(&amp;l.key), mutex_unlocked, wait) {
+                    return
+                }
+            }
+
+            procyield(active_spin_cnt) // 执行 active_spin_cnt = 30 次 PAUSE指令
+        }
+
+        // passive_spin = 1 ，再尝试抢一次锁。
+        for i := 0; i &lt; passive_spin; i++ {
+            for l.key == mutex_unlocked {
+                if atomic.Cas(key32(&amp;l.key), mutex_unlocked, wait) {
+                    return
+                }
+            }
+            osyield() // CAS 失败，系统调用`sched_yield`让出CPU
+        }
+
+        
+        // 直接设置为 mutex_sleeping 状态
+        v = atomic.Xchg(key32(&amp;l.key), mutex_sleeping)
+        if v == mutex_unlocked {
+               // 注意这里，如果是从 mutex_unlocked =&gt; mutex_sleeping 也认为是加锁成功，然后直接返回，不会走futexsleep阻塞当前线程。
+               // 造成的影响就是，解锁的时候执行，执行 futexwakeup了，但是没有需要唤醒的线程（功能上应该没有影响）
+            return 
+        }
+        wait = mutex_sleeping // 设置 wait 状态为 mutex_sleeping 下次循环会设置为 mutex_sleeping 状态
+        // l.key == mutex_sleeping 就 sleep，直到被唤醒。
+        // 不然继续循环（说明在atomic.Xchg mutex_sleeping设置完这短短时间内，其他线程设置又重新设置了l.key状态比如设置为了mutex_locked或者mutex_unlocked。这个时候不会进入sleep，而是会去循环执行步骤1。）
+        // 如果 *addr == val { 当前线程进入sleep状态 } ；不会阻塞超过ns，ns&lt;0表示永远休眠
+         // futexsleep(addr *uint32, val uint32, ns int64)
+         // 阻塞 m
+        futexsleep(key32(&amp;l.key), mutex_sleeping, -1)
+    }
+}
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-827caa9b92314703.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="runtime.mutext.lock.png"></p>
+<p><a href="./runtime.mutext.lock.png">原图点我</a></p>
+<p><strong>lock主要步骤如下：</strong></p>
+<ol>
+<li>调用<code>atomic.Xchg</code>直接设置<code>key</code>的状态为<code>mutex_locked</code>（注意这里不是<code>CAS</code>，是直接设置）。</li>
+<li>根据<code>atomic.Xchg</code>返回的状态<code>v</code>，来判断是否加锁成功了，如果<code>v = mutex_unlocked</code>表示加锁成功了（这个时候可以直接返回了）。否则就是加锁失败，这个时候<code>v</code>可能是<code>MUTEX_LOCKED</code>或者<code>MUTEX_SLEEPING</code>的状态。</li>
+<li>如果是多核的话，会尝试自旋<code>4</code>，把<code>l.key</code>从状态<code>mutex_unlocked</code>改成<code>wait</code>。注意，我们在<code>步骤1</code>里面直接设置了<code>key</code>为<code>mutex_locked</code>，如果这里<code>l.key = mutex_unlocked</code>,只能说明是其他持有锁的线程释放了锁。这个<code>CAS</code>成功，表示加锁成功。如果加锁失败，会调用下<code>procyield</code>优化下自旋性能。</li>
+<li>自旋<code>4</code>次失败，会再尝试一次<code>CAS</code>，失败的话会调用<code>osyield</code>让出<code>CPU</code>。</li>
+<li><code>osyield</code>完成以后，继续执行，这个时候直接调用<code>atomic.Xchg</code>设置<code>l.key = mutex_sleeping</code>,表示当前准备调用<code>futexsleep</code>进行<code>sleep</code>。</li>
+<li>使用系统调用<code>futexsleep</code>，如果<code>l.key == mutex_sleeping</code>,则当前线程进入睡眠状态，直到有其他地方调用<code>futexwakeup</code>来唤醒。如果这个时候<code>l.key != mutex_sleeping</code>，说明在<code>步骤5</code>设置完这短短时间内，其他线程设置又重新设置了<code>l.key</code>状态比如设置为了<code>mutex_locked</code>或者<code>mutex_unlocked</code>。这个时候不会进入<code>sleep</code>，而是会去循环执行<code>步骤1</code>。</li>
+</ol>
+<h2 id="3-3-unlock-实现"><a href="#3-3-unlock-实现" class="headerlink" title="3.3 unlock 实现"></a>3.3 unlock 实现</h2><pre><code>func unlock(l *mutex) {
+    unlockWithRank(l)
+}
+
+func unlockWithRank(l *mutex) {
+    unlock2(l)
+}
+
+func unlock2(l *mutex) {
+    // 设置 l.key = mutex_unlocked
+    v := atomic.Xchg(key32(&amp;l.key), mutex_unlocked)
+    if v == mutex_unlocked {// 重复调用 unlock，直接抛出异常。
+        throw("unlock of unlocked lock")
+    }
+    if v == mutex_sleeping { 
+        // 之前的状态是 mutex_sleeping，说明其他有线程在`sleep`，唤醒一个`sleep`的对象。
+        // 如果任何线程阻塞在addr上，则唤醒至少cnt个阻塞的任务
+        // futexwakeup(addr *uint32, cnt uint32) 
+        futexwakeup(key32(&amp;l.key), 1)
+    }
+
+    gp := getg()
+    gp.m.locks--
+    if gp.m.locks &lt; 0 {
+        throw("runtime·unlock: lock count")
+    }
+    if gp.m.locks == 0 &amp;&amp; gp.preempt { // restore the preemption request in case we've cleared it in newstack
+        gp.stackguard0 = stackPreempt
+    }
+}
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5b398b7707157a3c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>unlock 实现总结：</strong></p>
+<ol>
+<li>调用<code>atomic.Xchg</code>设置<code>l.key = mutex_unlocked</code>。</li>
+<li>如果设置之前的状态就是<code>mutex_unlocked</code>，直接抛异常程序退出。</li>
+<li>如果之前状态是<code>mutex_sleeping</code>，则唤醒一个阻塞在<code>futexsleep</code>的线程。</li>
+<li><code>m</code>的锁数量减一，如果锁数量等<code>0</code>且当前<code>g</code>是被抢占状态，要标记<code>gp.stackguard0</code>为<code>stackPreempt</code>，下次发生函数调用的时候，会主动让出这个<code>g</code>。</li>
+</ol>
+<h1 id="四、runtime-semaphore"><a href="#四、runtime-semaphore" class="headerlink" title="四、runtime.semaphore"></a>四、runtime.semaphore</h1><h2 id="4-1-信号量-P-V-操作"><a href="#4-1-信号量-P-V-操作" class="headerlink" title="4.1 信号量 P/V 操作"></a>4.1 信号量 P/V 操作</h2><ul>
+<li><code>P原语</code>：<code>P</code>是荷兰语<code>Proberen</code>(测试)的首字母。为阻塞原语，负责把当前进程由运行状态转换为阻塞状态，直到另外一个进程唤醒它。操作为：申请一个空闲资源(把信号量减<code>1</code>)，若成功，则退出；若失败，则该进程被阻塞；</li>
+<li><code>V原语</code>：<code>V</code>是荷兰语<code>Verhogen</code>(增加)的首字母。为唤醒原语，负责把一个被阻塞的进程唤醒，它有一个参数表，存放着等待被唤醒的进程信息。操作为：释放一个被占用的资源(把信号量加<code>1</code>)，如果发现有被阻塞的进程，则选择一个唤醒之。</li>
+</ul>
+<p><code>semaphore</code>基本操作，在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/sync/runtime.go#L8">src/sync/runtime.go</a> 定义了下面几个方法：</p>
+<pre><code>// Semacquire等待*s &gt; 0，然后原子递减它。
+// 它是一个简单的睡眠原语，用于同步库使用。
+func runtime_Semacquire(s *uint32)
+
+// SemacquireMutex类似于Semacquire,用来阻塞互斥的对象
+// 如果lifo为true，waiter将会被插入到队列的头部
+// skipframes是跟踪过程中要省略的帧数
+func runtime_SemacquireMutex(s *uint32, lifo bool, skipframes int)
+
+// Semrelease会自动增加*s并通知一个被Semacquire阻塞的等待的goroutine
+// 它是一个简单的唤醒原语，用于同步库
+// 如果handoff为true, 传递信号到队列头部的waiter
+// skipframes是跟踪过程中要省略的帧数，从这里开始计算
+func runtime_Semrelease(s *uint32, handoff bool, skipframes int)
+</code></pre>
+<p>这个几个函数具体的实现在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/sema.go#L53">src/runtime/sema.go</a>。</p>
+<pre><code>//go:linkname sync_runtime_Semacquire sync.runtime_Semacquire
+func sync_runtime_Semacquire(addr *uint32) {
+    semacquire1(addr, false, semaBlockProfile, 0)
+}
+
+//go:linkname poll_runtime_Semacquire internal/poll.runtime_Semacquire
+func poll_runtime_Semacquire(addr *uint32) {
+    semacquire1(addr, false, semaBlockProfile, 0)
+}
+
+//go:linkname sync_runtime_Semrelease sync.runtime_Semrelease
+func sync_runtime_Semrelease(addr *uint32, handoff bool, skipframes int) {
+    semrelease1(addr, handoff, skipframes)
+}
+
+//go:linkname sync_runtime_SemacquireMutex sync.runtime_SemacquireMutex
+func sync_runtime_SemacquireMutex(addr *uint32, lifo bool, skipframes int) {
+    semacquire1(addr, lifo, semaBlockProfile|semaMutexProfile, skipframes)
+}
+
+//go:linkname poll_runtime_Semrelease internal/poll.runtime_Semrelease
+func poll_runtime_Semrelease(addr *uint32) {
+    semrelease(addr)
+}
+</code></pre>
+<h2 id="4-2-semtable"><a href="#4-2-semtable" class="headerlink" title="4.2 semtable"></a>4.2 semtable</h2><p><code>Treap</code>是<code>Binary Search Tree</code>+<code>Heap</code>的组合。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/sema.go#L49">semTable</a> 是一个长度为<code>251</code>的全局数组，每个<code>semaRoot</code>指向一个<code>treap</code>，主要用于存放阻塞在信号量(<code>semaphore</code>)上的<code>sudog</code></p>
+<pre><code>var semtable [semTabSize]struct {
+    root semaRoot
+    pad  [cpu.CacheLinePadSize - unsafe.Sizeof(semaRoot{})]byte // 防止 flase sharing
+}
+</code></pre>
+<p><code>semaRoot</code>最早是双向链表，在某些场景下性能比较查，所以优化成了<code>treap</code>，具体可以看 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/37103">CR37103</a>    </p>
+<p>优化之后<code>semtable</code>存储的结构大概是这样：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b35dab034e457bd4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="4-3-semacquire-获取信号量"><a href="#4-3-semacquire-获取信号量" class="headerlink" title="4.3 semacquire 获取信号量"></a>4.3 semacquire 获取信号量</h2><p><code>semaphore</code>获取信号量操作步骤如下：</p>
+<ol>
+<li> 调用<code>runtime_SemacquireMutex</code> （比如<code>sync.Mutex.Lock()</code>场景）</li>
+<li><code>sync_runtime_SemacquireMutex</code> </li>
+<li><code>semacquire1</code> </li>
+<li><code>CAS(addr, v, v-1)</code>状态成功就返回，失败继续往下</li>
+<li> 缓存池拿一个<code>sudog</code>，或者<code>new</code>一个<code>sudog</code>（<code>acquireSudog</code>） </li>
+<li>把<code>g</code>相关的数据存到<code>sudog</code>中。</li>
+<li>循环 <ul>
+<li>对当前<code>semaRoot</code>加锁 </li>
+<li><code>nwait++</code> </li>
+<li><code>cansemacquire/CAS(addr, v, v-1)</code> </li>
+<li><code>sudog</code>加到<code>semaRoot</code>的<code>treap</code>中/<code>root.queue()</code> </li>
+<li>可能要调整树的结构（左旋<code>rotateRight</code>/右旋<code>rotateLeft</code>）防止树退化为链表</li>
+<li><code>goparkunlock</code>让出当前<code>g</code>的执行</li>
+<li>被唤醒 </li>
+<li><code>CAS</code>成功或者<code>s.ticket != 0</code>（当前没有其他竞争者了） 认为成功 </li>
+<li>否则继续循环</li>
+</ul>
+</li>
+<li>最后释放<code>sudog</code>/<code>releaseSudog </code></li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/sema.go#L98">具体源码如下</a>：</p>
+<pre><code>func semacquire1(addr *uint32, lifo bool, profile semaProfileFlags, skipframes int) {
+    gp := getg()
+    if gp != gp.m.curg {// 判断下g是不是当前m绑定的g
+        throw("semacquire not on the G stack")
+    }
+
+    // CAS(addr, v, v-1) 成功就直接成功否则一直循环，如果 *addr = 0 返回 false 走下面 slowpath
+    if cansemacquire(addr) {
+        return
+    }
+    
+    // 走到这里表示当前g要阻塞
+    // 下面逻辑，就是把g封装成sudog,然后存到semTable中。
+    // 最后调用 gopark 让出当前g
+
+
+    s := acquireSudog() // 这个先去 p.sudogcache 拿，没拿到去全局sudohgcache拿
+    root := semroot(addr) // 根据sema的地址，算出用到semTable中哪个semaRoot
+    t0 := int64(0)
+    s.releasetime = 0
+    s.acquiretime = 0
+    s.ticket = 0
+    if profile&amp;semaBlockProfile != 0 &amp;&amp; blockprofilerate &gt; 0 {
+        t0 = cputicks()
+        s.releasetime = -1
+    }
+    if profile&amp;semaMutexProfile != 0 &amp;&amp; mutexprofilerate &gt; 0 {
+        if t0 == 0 {
+            t0 = cputicks()
+        }
+        s.acquiretime = t0
+    }
+    for {
+        lockWithRank(&amp;root.lock, lockRankRoot) // 加锁，方面下面修改 semaRoot的属性
+        // 对等待的计数加1，这样sema_release时候不会走快路径
+        atomic.Xadd(&amp;root.nwait, 1)
+        // 看下是否有其他的goroutine调用了sema_release
+        // 在尝试 CAS(addr, v, v-1) 试下
+        if cansemacquire(addr) {
+            atomic.Xadd(&amp;root.nwait, -1)
+            unlock(&amp;root.lock)
+            break
+        }
+        
+        // 这里，就是这个新的 sudog 加到 semaTable中的
+        root.queue(addr, s, lifo)
+        goparkunlock(&amp;root.lock, waitReasonSemacquire, traceEvGoBlockSync, 4+skipframes) // 这你会让出当前的goroutine
+        
+        
+        // goroutine 被调度回来了，表示有 sema_release 以后唤醒了这个 sema
+        // s.ticket != 0 表示是等待队列头部的 sudog，当前队列只有一个sudog了，所以直接结束
+        // CAS(addr, v, v-1) 成功也结束
+        if s.ticket != 0 || cansemacquire(addr) {
+            break
+        }
+    }
+    if s.releasetime &gt; 0 {
+        blockevent(s.releasetime-t0, 3+skipframes)
+    }
+    releaseSudog(s) // 释放 sudog
+}
+
+
+func cansemacquire(addr *uint32) bool {
+    for {
+        v := atomic.Load(addr)
+        if v == 0 {
+            return false
+        }
+        if atomic.Cas(addr, v, v-1) {
+            return true
+        }
+    }
+}
+
+func acquireSudog() *sudog {
+    // 设置禁止抢占
+    mp := acquirem()
+    pp := mp.p.ptr()
+    //当前本地sudog缓存没有了，则去全局缓存中拉取一批
+    if len(pp.sudogcache) == 0 {
+        lock(&amp;sched.sudoglock)
+        // 首先尝试从全局缓存中获取sudog，直到本地容量达到50%
+        for len(pp.sudogcache) &lt; cap(pp.sudogcache)/2 &amp;&amp; sched.sudogcache != nil {
+            s := sched.sudogcache
+            sched.sudogcache = s.next
+            s.next = nil
+            pp.sudogcache = append(pp.sudogcache, s)
+        }
+        unlock(&amp;sched.sudoglock)
+        // 如果全局缓存为空，则分配创建一个新的sudog
+        if len(pp.sudogcache) == 0 {
+            pp.sudogcache = append(pp.sudogcache, new(sudog))
+        }
+    }
+    n := len(pp.sudogcache)
+    s := pp.sudogcache[n-1]
+    pp.sudogcache[n-1] = nil
+    pp.sudogcache = pp.sudogcache[:n-1]
+    if s.elem != nil {
+        throw("acquireSudog: found s.elem != nil in cache")
+    }
+    //解除抢占限制
+    releasem(mp)
+    return s
+}
+</code></pre>
+<h2 id="4-4-semrelease-释放信号量"><a href="#4-4-semrelease-释放信号量" class="headerlink" title="4.4 semrelease 释放信号量"></a>4.4 semrelease 释放信号量</h2><p><code>semaphore</code>释放信号量操作步骤如下：</p>
+<ol>
+<li>调用<code>runtime_Semrelease</code>，比如<code>sync.Mutex.Unlock()</code>场景。</li>
+<li><code>sync_runtime_Semrelease</code>  </li>
+<li><code>semrelease1</code></li>
+<li> 原子<code>*addr++</code></li>
+<li><code>nwait=0</code>，表示没有阻塞在这个信号量上的<code>g</code>直接返回。</li>
+<li>有阻塞的<code>g</code>在<code>semTable</code>中找到对应的<code>semaRoot</code>，然后<code>对</code>semaRoot`加锁。</li>
+<li>再次<code>check</code>下<code>nwait=0</code>，等于<code>0</code>直接返回。</li>
+<li>拿到<code>sema</code>的<code>addres</code>在<code>semTable</code>中对应的队列头部的<code>seamRoot</code>。</li>
+<li><code>dequeue</code>是否需要调整左旋<code>rotateLeft</code>或者右旋<code>rotateRight</code>调整树结构。</li>
+<li><code>readyWithTime</code>，调用<code>goread</code>唤醒<code>sudog</code>绑定的<code>g</code>。</li>
+<li><code>goyield</code></li>
+</ol>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/sema.go#L155">semrelease源码如下：</a></p>
+<pre><code>func semrelease1(addr *uint32, handoff bool, skipframes int) {
+    root := semroot(addr)
+    atomic.Xadd(addr, 1)
+
+    // 没有等待者直接返回
+    if atomic.Load(&amp;root.nwait) == 0 {
+        return
+    }
+
+    //查找一个等待着并唤醒它
+    lockWithRank(&amp;root.lock, lockRankRoot)
+    if atomic.Load(&amp;root.nwait) == 0 {
+        //计数已经被其他goroutine消费，所以不需要唤醒其他goroutine
+        unlock(&amp;root.lock)
+        return
+    }
+    s, t0 := root.dequeue(addr) //查找第一个出现的addr （ s.elem == unsafe.Pointer(addr) ）
+    if s != nil {
+        atomic.Xadd(&amp;root.nwait, -1)
+    }
+    unlock(&amp;root.lock)
+    if s != nil { // 可能比较慢 甚至被挂起所以先unlock
+        acquiretime := s.acquiretime
+        if acquiretime != 0 {
+            mutexevent(t0-acquiretime, 3+skipframes)
+        }
+        if s.ticket != 0 {
+            throw("corrupted semaphore ticket")
+        }
+        if handoff &amp;&amp; cansemacquire(addr) {
+            s.ticket = 1
+        }
+        
+        readyWithTime(s, 5+skipframes) // -&gt; goready(s.g,5)标记runnable 等待被重新调度
+        if s.ticket == 1 &amp;&amp; getg().m.locks == 0 {
+            // 直接切换G
+            // readyWithTime已经将等待的G作为runnext放到当前的P
+            // 我们现在调用调度器可以立即执行等待的G
+            // 注意waiter继承了我们的时间片：这是希望避免在P上无限得进行激烈的信号量竞争
+            // goyield类似于Gosched，但是它是发送“被强占”的跟踪事件，更重要的是，将当前G放在本地runq,而不是全局队列。
+            // 我们仅在饥饿状态下执行此操作(handoff=true)
+            // 我们等待进入饥饿状体，然后开始进行ticket和P的手递手交接
+            // See issue 33747 for discussion.
+            // https://go-review.googlesource.com/c/go/+/206180
+            
+            goyield() // -&gt; goyield -&gt; goyield_m 
+        }
+    }
+}
+
+
+// goyield is like Gosched, but it:
+// - does not emit a GoSched trace event
+// - puts the current G on the runq of the current P instead of the globrunq
+func goyield() {
+    checkTimeouts()
+    mcall(goyield_m)
+}
+
+func goyield_m(gp *g) {
+    pp := gp.m.p.ptr()
+    casgstatus(gp, _Grunning, _Grunnable)
+    dropg()
+    runqput(pp, gp, false)
+    schedule()
+}
+</code></pre>
+<h2 id="4-5、总结"><a href="#4-5、总结" class="headerlink" title="4.5、总结"></a>4.5、总结</h2><p>获取信号量操作主要尝试把<code>sema</code>地址<code>CAS</code>方式原子减<code>1</code>，成就直接返回，失败以后会把当前<code>g</code>打包成<code>sudog</code>然后保存到<code>semTable</code>，然后调用<code>gopark</code>让出当前的<code>goroutine</code>。</p>
+<p>释放信号量操作就是吧<code>sema</code>地址加<code>1</code>，然后看有没有等待中的<code>g</code>，没有直接返回，有的话去<code>semaTable</code>的等待队列取出然后调用<code>goready</code>唤醒对应的<code>g</code>。</p>
+<p>主要理解<code>semaTable</code>里面存储<code>sudog</code>的方式就好了。</p>
+<h1 id="五、Sync-Mutex-源码"><a href="#五、Sync-Mutex-源码" class="headerlink" title="五、Sync.Mutex 源码"></a>五、Sync.Mutex 源码</h1><h2 id="5-1-发展历史"><a href="#5-1-发展历史" class="headerlink" title="5.1 发展历史"></a>5.1 发展历史</h2><p><code>sync.Mutex</code>第一版 <a target="_blank" rel="noopener" href="https://github.com/golang/go/commit/bf3dd3f0efe5b45947a991e22660c62d4ce6b671#diff-a8c424f9dc7e3acf3f180a5cbf3f7748e6fd39c6f1eab0b4fd7ec11c548cdbeb">代码</a> 是<code>2008</code>年的时候 <a target="_blank" rel="noopener" href="https://github.com/rsc">@rsc</a> 提交的。最早的实现比较简单，是通过简单的<code>CAS</code>加<code>信号量(runtime-sema)</code>的方式来实现的。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/dvyukov">@dvyukov</a> <code>2011</code>年的时候，提交了第一次优化了 <a target="_blank" rel="noopener" href="https://codereview.appspot.com/4631075/">sync: improve Mutex to allow successive acquisitions</a>，这一版中加入了<code>mutexWoken</code>唤醒状态和等待者计数的概念。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/dvyukov">@dvyukov</a> <code>2015</code>年的时候，新增了第二次优化 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/5430/">sync: add active spinning to Mutex</a>，这一版里面主要是加了自旋逻辑。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/dvyukov">@dvyukov</a> <code>2016</code>年的时候，新增了第三次优化 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/34310/">sync: make Mutex more fair</a>，这一版加入了饥饿模式，让锁在更公平一些。</p>
+<h2 id="5-2-Mutex结构分析"><a href="#5-2-Mutex结构分析" class="headerlink" title="5.2 Mutex结构分析"></a>5.2 Mutex结构分析</h2><p>先看<code>Mutex</code>的 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/sync/mutex.go#L42">注释</a>：</p>
+<pre><code>// Mutex fairness.
+//
+// Mutex can be in 2 modes of operations: normal and starvation.
+// In normal mode waiters are queued in FIFO order, but a woken up waiter
+// does not own the mutex and competes with new arriving goroutines over
+// the ownership. New arriving goroutines have an advantage -- they are
+// already running on CPU and there can be lots of them, so a woken up
+// waiter has good chances of losing. In such case it is queued at front
+// of the wait queue. If a waiter fails to acquire the mutex for more than 1ms,
+// it switches mutex to the starvation mode.
+//
+// In starvation mode ownership of the mutex is directly handed off from
+// the unlocking goroutine to the waiter at the front of the queue.
+// New arriving goroutines don't try to acquire the mutex even if it appears
+// to be unlocked, and don't try to spin. Instead they queue themselves at
+// the tail of the wait queue.
+//
+// If a waiter receives ownership of the mutex and sees that either
+// (1) it is the last waiter in the queue, or (2) it waited for less than 1 ms,
+// it switches mutex back to normal operation mode.
+//
+// Normal mode has considerably better performance as a goroutine can acquire
+// a mutex several times in a row even if there are blocked waiters.
+// Starvation mode is important to prevent pathological cases of tail latency.
+</code></pre>
+<p>翻译如下：</p>
+<pre><code>// 公平锁
+//
+// 锁有两种模式：正常模式和饥饿模式。
+// 在正常模式下，所有的等待锁的 goroutine 都会存在一个先进先出的队列中（轮流被唤醒）
+// 但是一个被唤醒的goroutine并不是直接获得锁，而是仍然需要和那些新请求锁的（new arrivial）
+// 的goroutine竞争，而这其实是不公平的，因为新请求锁的goroutine有一个优势——它们正在CPU上
+// 运行，并且数量可能会很多。所以一个被唤醒的goroutine拿到锁的概率是很小的。在这种情况下，
+// 这个被唤醒的goroutine会加入到队列的头部。如果一个等待的goroutine有超过1ms
+// 都没获取到锁，那么就会把锁转变为饥饿模式。
+//
+// 在饥饿模式中，锁的所有权会直接从释放锁(unlock)的goroutine转交给队列头的goroutine，
+// 新请求锁的goroutine就算锁是空闲状态也不会去获取锁，并且也不会尝试自旋。它们只是排到队列的尾部。
+//
+// 如果一个goroutine获取到了锁之后，它会判断以下两种情况：
+// 1. 它是队列中最后一个goroutine；
+// 2. 它拿到锁所花的时间小于1ms；
+// 以上只要有一个成立，它就会把锁转变回正常模式。
+
+// 正常模式会有比较好的性能，因为即使有很多阻塞的等待锁的goroutine，
+// 一个goroutine也可以尝试请求多次锁。
+// 饥饿模式对于防止尾部延迟来说非常的重要。
+</code></pre>
+<p>在看看下<code>Mutex</code>结构体<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/sync/mutex.go#L21">代码</a>：</p>
+<pre><code>type Mutex struct {
+    state int32
+    sema  uint32
+}
+
+const (
+    mutexLocked = 1 &lt;&lt; iota // 表示当前是否已经上锁，1是锁定，0是无锁
+    mutexWoken // 当前是不是唤醒状态, 1 表示唤醒
+    mutexStarving // 当前是否是饥饿状态，1 表示是饥饿
+    mutexWaiterShift = iota // state 右移3位表示 Waiter的个数
+
+    starvationThresholdNs = 1e6 // 等待时间超过这个数就变饥饿模式。
+)
+</code></pre>
+<p><code>sema</code>这个字段比较简单，就是调用<code>runtime_SemacquireMutex</code>和<code>runtime_Semrelease</code>需要传的参数。<code>state</code>里面不同的位表示不同的含义，如下图所示：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-14e319d3d5f4c349.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="5-3-Lock"><a href="#5-3-Lock" class="headerlink" title="5.3 Lock"></a>5.3 Lock</h2><pre><code>// 如果已经上锁了，这里会阻塞当前的goroutine直到mutex可用
+func (m *Mutex) Lock() {
+    // 快路径，先尝试CAS把state从0改成锁定
+    if atomic.CompareAndSwapInt32(&amp;m.state, 0, mutexLocked) {
+        if race.Enabled {
+            race.Acquire(unsafe.Pointer(m))
+        }
+        return
+    }
+    
+    // 慢路径
+    m.lockSlow()
+}
+
+func (m *Mutex) lockSlow() {
+    var waitStartTime int64
+    starving := false
+    awoke := false
+    iter := 0
+    old := m.state
+    for {
+        // old&amp;(mutexLocked|mutexStarving) 表示保留Locked和Starving两个bit位上的数据，其他的全部清空
+        // old&amp;(mutexLocked|mutexStarving) == mutexLocked 表示是锁定状态但是不是饥饿状态。
+        // runtime_canSpin主要判断能不能自旋，它做了几件事
+        // 1. 自旋次数 &lt; 4
+        // 2. 必须是多核CPU 且 GOMAXPROCS&gt;1
+        // 3. P 并且本地运行队列为空.
+        if old&amp;(mutexLocked|mutexStarving) == mutexLocked &amp;&amp; runtime_canSpin(iter) {
+            // 当前“唤醒” 标记为 0 ，然后还有其他g处于等待状态
+           // CAS 尝试设置唤醒状态标记位 = 1
+           // 告诉其他的 g ，我目前正在处于自旋抢锁状态
+            if !awoke &amp;&amp; old&amp;mutexWoken == 0 &amp;&amp; old&gt;&gt;mutexWaiterShift != 0 &amp;&amp;
+                atomic.CompareAndSwapInt32(&amp;m.state, old, old|mutexWoken) {
+                awoke = true
+            }
+            // runtime_doSpin 就是调用的 procyield(active_spin_cnt)
+            // procyield 可以看 https://fanlv.fun/2022/10/05/runtime-mutex/#2-4-procyield-%E5%8A%9F%E8%83%BD
+            runtime_doSpin()
+            iter++
+            old = m.state // 读取下 m.state 新的值，可能已经被其他 g 改变了。
+            continue // 设置失败尝试继续自旋
+        }
+        
+        new := old
+        
+        if old&amp;mutexStarving == 0 {
+           // 不是饥饿状态，尝试加锁
+           // 是饥饿状态，就不用设置了，下面Waiter+1，然后乖乖排队去就行了
+            new |= mutexLocked
+        }
+        
+        // 如果mutexLocked 或者 mutexStarving = 1
+        // Waiter 数量加一
+        if old&amp;(mutexLocked|mutexStarving) != 0 {
+            new += 1 &lt;&lt; mutexWaiterShift
+        }
+
+        
+        // 如果当前是 mutexLocked = 1(是锁定状态)
+        // 然后 starving = true （下面加锁等待时间超过1ms）
+        // 这个时候需要把 mutexStarving 标记位设置为 1
+        // 如果不是锁定状态，我就不设置了饥饿状态了。搞不好下面CAS一把设置就成功了。
+        if starving &amp;&amp; old&amp;mutexLocked != 0 {
+            new |= mutexStarving
+        }
+        if awoke {
+            // 如果已经设置为唤醒状态, 需要清除唤醒标记, 因为后面要么获得了锁，要么进入休眠.
+            if new&amp;mutexWoken == 0 {
+                throw("sync: inconsistent mutex state")
+            }
+            new &amp;^= mutexWoken
+        }
+        
+        // CAS 更新状态
+        if atomic.CompareAndSwapInt32(&amp;m.state, old, new) {
+            if old&amp;(mutexLocked|mutexStarving) == 0 {
+               // 老的状态是没有加锁，也不是饥饿，那表示我们直接加锁成功了
+               // 直接返回了
+                break // locked the mutex with CAS
+            }
+            
+            // 走到这里，表示之前的锁可能是加锁状态可能是饥饿状态
+            // 无论是否是加锁、或者饥饿状态，都要调用信号量，去排队。
+
+            
+            // waitStartTime != 0 表示是 sleep 以后被唤醒的 goroutine
+            queueLifo := waitStartTime != 0
+            if waitStartTime == 0 {
+                waitStartTime = runtime_nanotime()
+            }
+            
+            // 请求信号量
+            // queueLifo = true 会放到 semTable suodg队列的头部。
+            // 如果没有可以用的信号量会阻塞到这句代码，底层其实是调用 gopark 休眠这个 g
+            runtime_SemacquireMutex(&amp;m.sema, queueLifo, 1)
+            
+            // 这里表示有人释放了锁/信号量，我们这个g被唤醒了。
+            // 虽然我们是在队列头部被唤醒了，但是如果这个时候，业务代码有新的请求过来，刚刚好有代码调用 Lock。我们这个刚刚被唤醒的g，是要跟新的Lock调用场景去抢锁的。
+            // 等待时间超过 1ms ，直接设置starving=true
+            starving = starving || runtime_nanotime()-waitStartTime &gt; starvationThresholdNs
+            old = m.state // 读取一下最新的 state 状态。现在也不知道被改成什么了。
+            if old&amp;mutexStarving != 0 { 
+                // 当前是饥饿状态 我们也不用再去抢锁了，默认就是给我们执行了
+                if old&amp;(mutexLocked|mutexWoken) != 0 || old&gt;&gt;mutexWaiterShift == 0 {
+                  // 饥饿状态下不可能有（mutexWoken=0&amp;&amp; mutexLocked==0）这种情况
+                  // mutexWaiter 也不可能 = 0 ，因为下面 mutexWaiter = 1 时候就退出了饥饿状态
+                    throw("sync: inconsistent mutex state")
+                }
+                
+                // 下面这个位操作，一个AddInt32 改变三个标记位状态.
+                // 设置第一位是1，然后 waiter - 1
+                // mutexLocked = 1  mutexWaiterShift = 3 delta = -7
+                // delta 第三位是 0 0 1
+                delta := int32(mutexLocked - 1&lt;&lt;mutexWaiterShift) 
+                if !starving || old&gt;&gt;mutexWaiterShift == 1 {
+                    // 没有等待了退出饥饿状态
+                    delta -= mutexStarving
+                }
+                // 修改state的状态。
+                atomic.AddInt32(&amp;m.state, delta)
+                break
+            }
+            awoke = true // 设置被唤醒，因为之前调用了runtime_SemacquireMutex，执行到这表示重新被调度到了。
+            iter = 0
+        } else {
+            // atomic.CompareAndSwapInt32(&amp;m.state, old, new)
+            // CAS 失败，重新读下当前状态，然后再循环来一次。
+            old = m.state
+        }
+    }
+
+    if race.Enabled {
+        race.Acquire(unsafe.Pointer(m))
+    }
+}
+</code></pre>
+<h2 id="5-4-Unlock"><a href="#5-4-Unlock" class="headerlink" title="5.4 Unlock"></a>5.4 Unlock</h2><pre><code>func (m *Mutex) Unlock() {
+    if race.Enabled {
+        _ = m.state
+        race.Release(unsafe.Pointer(m))
+    }
+
+    // Fast path: CAS 取消无锁状态，0 就表示没有其他锁等待者了
+    // 没有成功就进入 slow path
+    new := atomic.AddInt32(&amp;m.state, -mutexLocked)
+    if new != 0 {
+        // Outlined slow path to allow inlining the fast path.
+        // To hide unlockSlow during tracing we skip one extra frame when tracing GoUnblock.
+        m.unlockSlow(new)
+    }
+}
+
+func (m *Mutex) unlockSlow(new int32) {
+    if (new+mutexLocked)&amp;mutexLocked == 0 {
+       // new = m.state-mutexLocked
+       // m.state&amp;mutexLocked == 0 表示无锁。 
+       // 如果是无锁，上面fast path就成功了.
+       // 所以理论不会有这种情况
+        fatal("sync: unlock of unlocked mutex")
+    }
+    if new&amp;mutexStarving == 0 { // 不是饥饿状态
+        old := new
+        for {
+
+            // 如果锁没有waiter,或者锁有其他以下已发生的情况之一，则后面的工作就不用做了，直接返回
+            // 1. 锁处于锁定状态，表示锁已经被其他goroutine获取了
+            // 2. 锁处于被唤醒状态，这表明有等待goroutine被唤醒，不用再尝试唤醒其他goroutine
+            // 3. 锁处于饥饿模式，那么锁之后会被直接交给等待队列队头goroutine
+            if old&gt;&gt;mutexWaiterShift == 0 || old&amp;(mutexLocked|mutexWoken|mutexStarving) != 0 {
+                return
+            }
+
+            // 代码走到这，说明当前锁是空闲状态，等待队列中有waiter，且没有goroutine被唤醒
+            
+            // waiter - 1 然后设置唤醒状态 = 1
+            new = (old - 1&lt;&lt;mutexWaiterShift) | mutexWoken
+            if atomic.CompareAndSwapInt32(&amp;m.state, old, new) {// 设置成功
+                runtime_Semrelease(&amp;m.sema, false, 1) // 唤醒一个信号量
+                return
+            }
+            old = m.state // 对一下最新状态
+        }
+    } else {
+     // 饥饿模式下，唤醒信号量等待队列的头部的sudog。
+    // 饥饿状态过来的g都会放到信号量队列的尾部。
+        runtime_Semrelease(&amp;m.sema, true, 1)
+    }
+}
+</code></pre>
+<p>饥饿模式下做了个优化，会调用 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/sema.go#L194">readyWithTime</a> 把队列头部的<code>g</code>放到<code>pp.runnext</code>里面。然后再调用<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.18/src/runtime/sema.go#L212">goyield</a> 把当前的<code>g</code>放到<code>p runnable queue</code>的尾部，然后调用 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/947091d31ccda14b0a362adff37b6e037f0f59f3/src/runtime/proc.go#L3438">schedule</a> 函数，这样就可以优先执行等待队列中的<code>g</code>了。</p>
+<p>详情可以看这个<code>CR</code>：<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/206180">sync: yield to the waiter when unlocking a starving mutex</a></p>
+<h1 id="六、RWMutex"><a href="#六、RWMutex" class="headerlink" title="六、RWMutex"></a>六、RWMutex</h1><pre><code>type RWMutex struct {
+   w           Mutex  // held if there are pending writers
+   writerSem   uint32 // 写的信号量
+   readerSem   uint32 // 读的信号量
+   readerCount int32  // 等待写的个数
+   readerWait  int32  // 等待读的个数
+}
+
+
+// 加“读锁”
+// 对readerCount + 1 。
+// 然后看 readerCount是不是小于0
+// 小于0表示 正在加写锁，然后阻塞到rw.readerSem 这个信号上。
+func (rw *RWMutex) RLock() {
+   if atomic.AddInt32(&amp;rw.readerCount, 1) &lt; 0 {
+      // A writer is pending, wait for it.
+      runtime_SemacquireMutex(&amp;rw.readerSem, false, 0)
+   }
+}
+
+
+// 释放 “读锁”
+// 对readerCount - 1 。
+// 然后看 readerCount是不是小于0
+// 小于0表示 正在加写锁，然后调用rw.rUnlockSlow
+func (rw *RWMutex) RUnlock() {
+   if r := atomic.AddInt32(&amp;rw.readerCount, -1); r &lt; 0 {
+      // Outlined slow-path to allow the fast-path to be inlined
+      rw.rUnlockSlow(r)
+   }
+}
+
+
+// r+1 == -rwmutexMaxReaders 表示“读锁”已经释放，抛出异常
+// rw.readerWait - 1 
+// rw.readerWait - 1 = 0 表示所有读锁都释放了
+// 所有读锁都释放了可以唤醒 rw.writerSem 对应 写锁的lock方法继续执行
+func (rw *RWMutex) rUnlockSlow(r int32) {
+   if r+1 == 0 || r+1 == -rwmutexMaxReaders {
+      race.Enable()
+      throw("sync: RUnlock of unlocked RWMutex")
+   }
+   // A writer is pending.
+   if atomic.AddInt32(&amp;rw.readerWait, -1) == 0 {
+      // The last reader unblocks the writer.
+      runtime_Semrelease(&amp;rw.writerSem, false, 1)
+   }
+}
+
+
+// mutex 加锁，保证写锁和写锁之间互斥
+// rw.readerCount - rwmutexMaxReaders
+// r 表示读锁数量
+// rw.readerWait + 读lock的数量 
+// 等待 rw.writerSem 的信号 （读锁那边释放完了，会发这个信号）
+func (rw *RWMutex) Lock() {
+   // First, resolve competition with other writers.
+   rw.w.Lock()
+   // Announce to readers there is a pending writer.
+   r := atomic.AddInt32(&amp;rw.readerCount, -rwmutexMaxReaders) + rwmutexMaxReaders
+   // Wait for active readers.
+   if r != 0 &amp;&amp; atomic.AddInt32(&amp;rw.readerWait, r) != 0 {
+      runtime_SemacquireMutex(&amp;rw.writerSem, false, 0)
+   }
+}
+
+
+// rw.readerCount + rwmutexMaxReaders
+// r 表示读锁的数量，大于 rwmutexMaxReaders 就抛出异常
+// 发送 rw.readerSem  信号量，通知RLock 代码可以继续执行。
+func (rw *RWMutex) Unlock() {
+   // Announce to readers there is no active writer.
+   r := atomic.AddInt32(&amp;rw.readerCount, rwmutexMaxReaders)
+   if r &gt;= rwmutexMaxReaders {
+      race.Enable()
+      throw("sync: Unlock of unlocked RWMutex")
+   }
+   // Unblock blocked readers, if any.
+   for i := 0; i &lt; int(r); i++ {
+      runtime_Semrelease(&amp;rw.readerSem, false, 0)
+   }
+}
+</code></pre>
+<h1 id="七、Sync-Map"><a href="#七、Sync-Map" class="headerlink" title="七、Sync.Map"></a>七、Sync.Map</h1><h2 id="7-1-Sync-RWMutex-多核的伸缩性问题"><a href="#7-1-Sync-RWMutex-多核的伸缩性问题" class="headerlink" title="7.1 Sync.RWMutex 多核的伸缩性问题"></a>7.1 Sync.RWMutex 多核的伸缩性问题</h2><p>早在<code>2016</code>的时候，<a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a>（这个哥们是<code>Go</code>项目主要维护者之一） 在<code>Go</code>的 <code>Github</code> 上提出了一个<a target="_blank" rel="noopener" href="https://github.com/golang/go/issues/17973">sync: RWMutex scales poorly with CPU count</a> 的<code>Issue</code>给大家讨论。简单说就是 <code>Sync.RWMutex</code>这个读写锁，多核情况下扩展性很差。他贴的 <code>Benchmark</code> 测试代码如下：</p>
+<pre><code>func BenchmarkRWMutex(b *testing.B) {
+    for ng := 1; ng &lt;= 256; ng &lt;&lt;= 2 { // ng 表示，开多少个 goroutine
+        b.Run(fmt.Sprintf("name[%d]", ng), func(b *testing.B) {
+            var mu sync.RWMutex
+            mu.Lock()
+
+            var wg sync.WaitGroup
+            wg.Add(ng)
+
+            n := b.N        // n 表示下面要执行多少次 RLock 和 RUnlock 
+            quota := n / ng // quota 表示分摊到每个 goroutine 上需要执行多少次 Lock 和 RUnlock 
+
+            for g := ng; g &gt; 0; g-- {
+                if g == 1 { //  n / ng 不是整除的话，剩下余出来的数据，在g=1 的时候全部减掉，不然下面 n 不会等于0
+                    quota = n
+                }
+
+                go func(quota int) {
+                    for i := 0; i &lt; quota; i++ { // 一个循环执行一次 RLock 和 RUnlock
+                        mu.RLock()
+                        mu.RUnlock()
+                    }
+                    wg.Done()
+                }(quota)
+
+                n -= quota
+            }
+
+            if n != 0 {
+                b.Fatalf("Incorrect quota assignments: %v remaining", n)
+            }
+
+            b.StartTimer() // 从这里开始计时
+            mu.Unlock()    // 这里释放写锁，上面所有阻塞在 RLock 的 goroutine 同时唤醒去执行 RLock
+            wg.Wait()      // 所有 goroutine 的 RLock 和 RUnlock 都执行完毕
+            b.StopTimer()  // 从这里结束计时
+        })
+    }
+}
+    
+</code></pre>
+<p><code>Benchmark</code>的结果可以看出，在多个<code>Gorutine</code>并发下，可以看到<code>CPU</code>核数越多，<code>RWLock</code>的性能越差。</p>
+<pre><code># ./benchmarks.test -test.bench . -test.cpu 1,4,16,64
+testing: warning: no tests to run
+BenchmarkRWMutex/1      20000000                72.6 ns/op
+BenchmarkRWMutex/1-4    20000000                72.4 ns/op
+BenchmarkRWMutex/1-16   20000000                72.8 ns/op
+BenchmarkRWMutex/1-64   20000000                72.5 ns/op
+BenchmarkRWMutex/4      20000000                72.6 ns/op
+BenchmarkRWMutex/4-4    20000000               105 ns/op
+BenchmarkRWMutex/4-16   10000000               130 ns/op
+BenchmarkRWMutex/4-64   20000000               160 ns/op
+BenchmarkRWMutex/16     20000000                72.4 ns/op
+BenchmarkRWMutex/16-4   10000000               125 ns/op
+BenchmarkRWMutex/16-16  10000000               263 ns/op
+BenchmarkRWMutex/16-64   5000000               287 ns/op
+BenchmarkRWMutex/64     20000000                72.6 ns/op
+BenchmarkRWMutex/64-4   10000000               137 ns/op
+BenchmarkRWMutex/64-16   5000000               306 ns/op
+BenchmarkRWMutex/64-64   3000000               517 ns/op
+BenchmarkRWMutex/256                    20000000                72.4 ns/op
+BenchmarkRWMutex/256-4                  20000000               137 ns/op
+BenchmarkRWMutex/256-16                  5000000               280 ns/op
+BenchmarkRWMutex/256-64                  3000000               602 ns/op
+PASS
+</code></pre>
+<p>为什么多核下面会更慢？其实很简单，就是资源竞争会增加额外开销。<code>RLock</code>和<code>RUnlock</code>，底层实现是<code>atomic.AddInt32</code>，<code>atomic.AddInt32</code>对应的<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/dev.boringcrypto.go1.8/src/runtime/internal/atomic/asm_amd64.s#L81">汇编代码</a>如下：</p>
+<pre><code>// uint32 Xadd(uint32 volatile *val, int32 delta)
+// Atomically:
+//    *val += delta;
+//    return *val;
+TEXT ·Xadd(SB), NOSPLIT, $0-20
+    MOVQ    ptr+0(FP), BX
+    MOVL    delta+8(FP), AX
+    MOVL    AX, CX
+    LOCK
+    XADDL    AX, 0(BX)
+    ADDL    CX, AX
+    MOVL    AX, ret+16(FP)
+    RET
+</code></pre>
+<p>可以看到里面有 <code>LOCK</code> 前缀的指令，<code>Lock</code>其实就是<code>CPU</code>层面的一个锁，锁的单位是<code>Cache Line</code> 。多个核都要同时更新这个<code>Cacheline</code>，所以性能就有所下降。</p>
+<h2 id="7-2-如何去优化？"><a href="#7-2-如何去优化？" class="headerlink" title="7.2 如何去优化？"></a>7.2 如何去优化？</h2><p>我们知道，在业务中遇到锁的性能瓶颈时候，我们一般会下面几个方面去考虑优化锁。</p>
+<ol>
+<li>优化锁的粒度</li>
+<li>读写分离</li>
+<li>减少锁持有时间。</li>
+<li>使用<code>CAS</code></li>
+</ol>
+<p>2、3、4 在这个读写锁场景都不试用（已经是读写锁了，且瓶颈也在<code>CAS</code>对<code>cacheline</code>的资源竞争），所以只能从锁的粒度方向考虑。</p>
+<h3 id="7-2-1-distributedrwmutex"><a href="#7-2-1-distributedrwmutex" class="headerlink" title="7.2.1 distributedrwmutex"></a>7.2.1 distributedrwmutex</h3><p><a target="_blank" rel="noopener" href="https://github.com/dvyukov">@dvyukov</a>（<code>Go</code>小组成员之一） 提出了一个<a target="_blank" rel="noopener" href="https://codereview.appspot.com/4850045/diff2/1:3001/src/pkg/co/distributedrwmutex.go">分布式读写锁的方案</a>，<br>核心原理就是，一个<code>P</code>对应一个读写锁，这样读锁在多核情况就没有竞争的问题了，因为每个核的读锁是独立的，互不影响（有点类似 <code>ThreadLocal</code> 的概念）。具体核心代码如下：</p>
+<pre><code>func (m *DistributedRWMutex) RUnlock() {
+        l := m.getLocal()
+        l.RUnlock()
+}
+
+func (m *DistributedRWMutex) getLocal() *sync.RWMutex {
+        v := runtime.GetProcLocal(m.slot)
+        p := (*sync.RWMutex)(unsafe.Pointer(uintptr(*v)))
+        if p == nil {
+                p = new(sync.RWMutex)
+                atomic.AddUint64(v, uint64(uintptr(unsafe.Pointer(p))))
+        }
+        return p
+}
+</code></pre>
+<p>不过这个实现方式也有一个问题需要注意。就是<code>Goroutine</code>和<code>P</code>不是强绑定的。有可能你在某个<code>P</code>执行<code>Lock</code>以后，做了<code>系统调用</code>这个时候<code>M、G</code>和<code>P</code>可能会解绑，系统调用完成回来的时候，可能绑定的是一个新的<code>P</code>了。这个时候再去调用<code>getLocal</code>可能拿到的已经是不一样的锁对象了，再去用这个锁对象去调用<code>RUnlock</code>是有问题的。一般这种需要在<code>Goroutine</code>里面直接拿到<code>RWLock</code>锁对象。类似下面这种：</p>
+<pre><code>// ...balabala...
+go func() {
+    rwx := rw.RLocker() // 这里拿到当前P对应的ReadLocker
+    rwx.Lock()
+    defer rwx.Unlock()
+    // ... balabala...
+    // syscall 这里切换P了也没影响
+
+}()
+// ...balabala...
+</code></pre>
+<p>还有一个 <a target="_blank" rel="noopener" href="https://github.com/jonhoo/drwmutex/">drwmutex</a> 库也是这个思想，这里不过多赘述。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 的回复说，老的<code>RWMutex</code>接口，是允许在不同的<code>Goroutine</code>或者<code>P</code>里面调用<code>RLock / RUnlock</code>，考虑兼容性问题，不太想做这样的改造。</p>
+<h3 id="7-2-2-Atomic-Value"><a href="#7-2-2-Atomic-Value" class="headerlink" title="7.2.2 Atomic.Value"></a>7.2.2 Atomic.Value</h3><p>还有更大的问题是当时（<code>GO1.8</code>）一些基础库中大量使用了<code>RWMutex</code>作为包级锁。比如<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/reflect/type.go#L1434">reflect</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/net/http/server.go#L1412">http.statusMu</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/encoding/json/encode.go#L336">json.encoderCache</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/mime/type.go#L15">mime.mimeLock</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/dvyukov">@dvyukov</a> 指出这些场景其实可以用<code>Atomic.Value</code>去实现，类似场景有<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/encoding/json/encode.go#L1266">encoding/json/encode.go:cachedTypeFields</a></p>
+<pre><code>// cachedTypeFields is like typeFields but uses a cache to avoid repeated work.
+func cachedTypeFields(t reflect.Type) []field {
+    m, _ := fieldCache.value.Load().(map[reflect.Type][]field)
+    f := m[t]
+    if f != nil {
+        return f
+    }
+
+    // Compute fields without lock.
+    // Might duplicate effort but won't hold other computations back.
+    f = typeFields(t)
+    if f == nil {
+        f = []field{}
+    }
+
+    fieldCache.mu.Lock()
+    m, _ = fieldCache.value.Load().(map[reflect.Type][]field)
+    newM := make(map[reflect.Type][]field, len(m)+1)
+    for k, v := range m {
+        newM[k] = v
+    }
+    newM[t] = f
+    fieldCache.value.Store(newM)
+    fieldCache.mu.Unlock()
+    return f
+}
+</code></pre>
+<p>PS：<code>Atomic.Load</code>转汇编其实就是简单的<code>MOV</code>指令，没有<code>LOCK</code>所以没有<code>Cacheline</code>资源竞争的问题。</p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/2641/">mime: use atomic.Value to store mime types</a> 这个<code>CL</code>也是尝试用<code>atomic.Value</code>去替代<code>sync.RWMutex</code>。</p>
+<p>这个实现，虽然读的时候没有资源竞争的问题。但是写的时候是<code>O(n)</code>的开销。这个方案对写太不友好。</p>
+<h3 id="7-2-3-基于二叉树实现-dmap"><a href="#7-2-3-基于二叉树实现-dmap" class="headerlink" title="7.2.3 基于二叉树实现 - dmap"></a>7.2.3 基于二叉树实现 - dmap</h3><p><a target="_blank" rel="noopener" href="https://github.com/ianlancetaylor">@ianlancetaylor</a> 基于二叉树实现了<code>dmap</code>，<code>dmap</code>的插入时间复杂度是<code>O(LogN)</code>，<code>insert</code>就是常规的写入操作，这里就不过多去赘述了。 </p>
+<pre><code>// Insert inserts a key/value pair into a dmap.
+func (d *dmap) insert(key, val interface{}) {
+    var n *node
+    for { // 判断根节点是不是为空。为空直接加锁然后写Root，否则就拿到根节点
+        root, _ := d.root.Load().(*node)
+        if root != nil {
+            n = root
+            break
+        }
+        root = &amp;node{
+            key: key,
+            val: val,
+        }
+        d.mu.Lock()
+        if d.root.Load() == nil {
+            d.root.Store(root)
+            d.mu.Unlock()
+            return
+        }
+        d.mu.Unlock() // 走到这表示，有其他 goroutine 写了根节点，会循继续去 load 根节点
+    }
+
+    // 到这里，n 表示是 root 节点
+    
+    for {
+        cmp := d.compare(key, n.key) // 判断两个 key是否相等
+        if cmp == 0 {
+            if val != n.val {
+                panic("invalid double-insert")
+            }
+            return
+        }
+        p := &amp;n.left 
+        if cmp &gt; 0 { // key 大于当前节点key。就找右节点
+            p = &amp;n.right
+        }
+        n2, _ := (*p).Load().(*node)
+        if n2 != nil { // 当前节点不为空，继续重新走循环，比较key和 n.key 大小
+            n = n2 
+        } else { // 当前节点为空，尝试写入，写入失败，就继续重新走循环逻辑 
+            n2 = &amp;node{
+                key: key,
+                val: val,
+            }
+            n.mu.Lock()
+            if (*p).Load() == nil {
+                (*p).Store(n2)
+                n.mu.Unlock()
+                return
+            }
+            n.mu.Unlock()
+        }
+    }
+}
+</code></pre>
+<p>查找的实现，有<code>fastpath</code>和<code>slowpath</code>两个路径，<code>fastpath</code>用的是<code>map</code>来查找，命中的话就直接返回，时间复杂度是<code>O(1)</code>的，<code>map</code>中没查到的话，会去二叉树里面查，时间复杂度是<code>O（LogN）</code>。有个<code>tricky</code>的地方是，没有命中<code>map</code>但是在二叉树中查到这个<code>key</code>的话，会对这个<code>key</code>的<code>count+1</code>，如果这个<code>key</code>的<code>miss count</code>大于<code>map</code>的长度的话，会复制一下<code>map</code>然后把新的<code>map</code>回写到<code>Atomic.Value</code>里面。</p>
+<pre><code>// Lookup looks up a key in the distributed map.
+func (d *dmap) lookup(key interface{}) interface{} {
+    // Common values are cached in a map held in the root.
+    m, _ := d.m.Load().(map[interface{}]interface{})
+    if val, ok := m[key]; ok { // map里面找到了，直接返回
+        return val
+    }
+
+    n, _ := d.root.Load().(*node)
+    for n != nil {
+        cmp := d.compare(key, n.key)
+        if cmp == 0 {
+            count := atomic.AddUint32(&amp;n.count, 1)
+
+            // Add this key/val pair to the map in the root,
+            // but only if it's worth copying the existing map.
+            if count &lt; 0 || (count &gt; 1 &amp;&amp; int(count) &gt; len(m)) {
+                newm := make(map[interface{}]interface{}, len(m)+1)
+                for k, v := range m {
+                    newm[k] = v
+                }
+                newm[key] = n.val
+
+                // It's possible that some other
+                // goroutine has updated d.m since we
+                // loaded it.  That means we did extra
+                // work but it's otherwise OK.
+                // 这里如果有多个 goroutine 写会导致有互相覆盖的问题
+                d.m.Store(newm)
+            }
+
+            return n.val
+        }
+
+        p := &amp;n.left
+        if cmp &gt; 0 {
+            p = &amp;n.right
+        }
+        n, _ = (*p).Load().(*node)
+    }
+
+    return nil
+}
+</code></pre>
+<h3 id="7-2-4-两个map"><a href="#7-2-4-两个map" class="headerlink" title="7.2.4 两个map"></a>7.2.4 两个map</h3><p><a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 基于上面 <a target="_blank" rel="noopener" href="https://github.com/ianlancetaylor">@ianlancetaylor</a> 的二叉树加<code>map</code>的思想优化了下。用<code>map</code>替代了二叉树。<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33852/">具体实现</a>如下：</p>
+<pre><code>// Map is a key-value map from which entries can be read without external
+// synchronization.
+type Map struct {
+    tenured        atomic.Value // 年老代 map
+    liveNotTenured uint32 // 记录 miss count
+
+    mu   sync.RWMutex // 对 live 读写的时候，需要用到这个读写锁
+    live map[interface{}]interface{}
+}
+</code></pre>
+<p>读的话，先去<code>tenured</code>里面去读，读<code>tenured</code>不用加锁，读写<code>live</code>用的是读写锁，然后根据<code>misscount</code>把<code>live</code>复制给<code>tenured</code></p>
+<pre><code>func (b *Map) Load(key interface{}) (value interface{}, ok bool) {
+    m, _ := b.tenured.Load().(map[interface{}]interface{})
+    if value, ok = m[key]; ok {
+        return value, true
+    }
+
+    b.mu.RLock()
+    promote := false
+    if b.live != nil {
+        value, ok = b.live[key]
+        lnt := atomic.AddUint32(&amp;b.liveNotTenured, 1)
+        if lnt &gt;= 1&lt;&lt;31 || int(lnt) &gt;= len(b.live) {
+            promote = true
+        }
+    }
+    b.mu.RUnlock()
+
+    if !promote {
+        return value, ok
+    }
+
+    b.mu.Lock()
+    lnt := atomic.LoadUint32(&amp;b.liveNotTenured)
+    if b.live != nil &amp;&amp; (lnt &gt;= 1&lt;&lt;31 || int(lnt) &gt;= len(b.live)) {
+        b.tenured.Store(b.live)
+        b.live = nil
+        atomic.StoreUint32(&amp;b.liveNotTenured, 0)
+    }
+    b.mu.Unlock()
+    return value, ok
+}
+</code></pre>
+<p>写的话，很简单，只写<code>live</code>。</p>
+<pre><code>func (b *Map) StoreOrLoad(key, value interface{}) (actualValue interface{}, dup bool) {
+    b.mu.Lock()
+    if b.live == nil {
+        m, _ := b.tenured.Load().(map[interface{}]interface{})
+        b.live = make(map[interface{}]interface{}, len(m)+1)
+        for k, v := range m {
+            b.live[k] = v
+        }
+    }
+    actualValue, dup = b.live[key]
+    if !dup {
+        b.live[key] = value
+        actualValue = value
+    }
+    b.mu.Unlock()
+    return actualValue, dup
+}
+</code></pre>
+<h2 id="7-3、Sync-Map-的最终实现"><a href="#7-3、Sync-Map-的最终实现" class="headerlink" title="7.3、Sync.Map 的最终实现"></a>7.3、Sync.Map 的最终实现</h2><p>经过一轮讨论以后，<a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 单独发了一个提案：<a target="_blank" rel="noopener" href="https://github.com/golang/go/issues/18177">sync: add a Map to replace RWLock+map usage</a> 最终决定不去修复<code>RWLock</code>的伸缩性问题，而是提供一个可伸缩并发安全的<code>Map</code>来做。 这个并发安全的<code>Map</code>实现方案就是用的上面双<code>Map</code>实现。然后这个并发安全的<code>Map</code>会先放在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/wiki/X-Repositories">x-Repositories</a> 包中经过一段时间迭代，如果没问题了再收敛到<code>Go</code>源码包中。具体可以看 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33912/">syncmap: add a synchronized map implementation</a>。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 基于<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33852/">双map的demo</a>，做了一些优化，新增了一些<code>API</code>，比如<code>Delete</code>、<code>Range</code>等。<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33912/">提交了一个正式的 CR</a>：</p>
+<pre><code>// A Map must not be copied after first use.
+type Map struct {
+    mu sync.Mutex
+
+    // clean 是 fastpath 用的，读的时候不用加锁，没有cacheline竞争问题
+    clean atomic.Value // map[interface{}]interface{}
+    
+    // dirty 读写都需要加锁
+    dirty map[interface{}]interface{}
+    
+    // 如果clean没有查到，这个时候misses会加1
+    // 当 misses &gt;= len(dirty)，会把dirty赋值给clean，然后情况dirty
+    misses int
+}
+</code></pre>
+<p>我们再来看下数据读取的实现，这个里面有几点需要注意，跟上面<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33852/">双map的demo</a> 不同的事，这里的实现是<code>clean</code>和<code>dirty</code>两个<code>map</code>只会有一个不为空。所以读的时候，如果<code>clean</code>不为空就直接读<code>clean</code>，并不会再去<code>dirty</code>读一次。如果<code>dirty</code>不为<code>nil</code>，读取以后还会调用一下<code>m.missLocked</code>，这个函数主要的作用是判断对<code>m.misses</code>加<code>1</code>，然后判断要不要把<code>dirty</code>赋值给<code>clean</code>，然后清空<code>dirty</code>。</p>
+<pre><code>// Load returns the value stored in the map for a key, or nil if no
+// value is present.
+// The ok result indicates whether value was found in the map.
+func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+    clean, _ := m.clean.Load().(map[interface{}]interface{})
+    if clean != nil {
+        value, ok = clean[key]
+        return value, ok
+    }
+
+    m.mu.Lock()
+    if m.dirty == nil {
+        clean, _ := m.clean.Load().(map[interface{}]interface{})
+        if clean == nil {
+            // Completely empty — promote to clean immediately.
+            m.clean.Store(map[interface{}]interface{}{})
+        } else {
+            value, ok = clean[key]
+        }
+        m.mu.Unlock()
+        return value, ok
+    }
+    value, ok = m.dirty[key]
+    m.missLocked()
+    m.mu.Unlock()
+    return value, ok
+}
+
+func (m *Map) missLocked() {
+    if m.misses++; m.misses &gt;= len(m.dirty) {
+        m.clean.Store(m.dirty)
+        m.dirty = nil
+    }
+}
+</code></pre>
+<p><code>Store</code>的函数就比较简单了。如果写入的时候，直接加锁，然后判断<code>dirty</code>是否为空，如果是空，需要把<code>clean</code>数据复制一份给<code>dirty</code>然后清空<code>clean</code>，然后再把数据赋值给<code>dirty</code>。</p>
+<pre><code>// Store sets the value for a key.
+func (m *Map) Store(key, value interface{}) {
+    m.mu.Lock()
+    m.dirtyLocked()
+    m.dirty[key] = value
+    m.mu.Unlock()
+}
+
+// dirtyLocked prepares the map for a subsequent write.
+// It ensures that the dirty field is non-nil and clean is nil by making a deep
+// copy of clean.
+func (m *Map) dirtyLocked() {
+    m.misses = 0
+    if m.dirty != nil {
+        return
+    }
+
+    clean, _ := m.clean.Load().(map[interface{}]interface{})
+    m.dirty = make(map[interface{}]interface{}, len(clean))
+    for k, v := range clean {
+        m.dirty[k] = v
+    }
+    m.clean.Store(map[interface{}]interface{}(nil))
+}
+</code></pre>
+<p><strong>这个实现其实有个很大的问题，就是如果有频繁读写交替的话，会导致数据一直在<code>clean</code>和<code>dirty</code>两个<code>map</code>中来回<code>copy</code>，如果<code>map</code>很大的话，这个性能会很差，还会阻塞其他线程的读写，但是这个CR当时的场景是期望提供给Runtime包中一些读多写少的场景使用，所以看<code>benchmark</code>跑的性能还是有很大的提升的。</strong></p>
+<p>代码合入的时候 <a target="_blank" rel="noopener" href="https://github.com/rsc">@rsc</a> 提了两点优化建议</p>
+<ol>
+<li>如果允许<code>clean != nil and dirty != nil</code>会更好。</li>
+<li>如果一个<code>key</code>没有被覆盖或者删除的话，它命中了<code>lock-free path</code>后续理论上应该一直命中<code>lock-free path</code>会更好一些。</li>
+</ol>
+<h2 id="7-4-进一步优化"><a href="#7-4-进一步优化" class="headerlink" title="7.4 进一步优化"></a>7.4 进一步优化</h2><p>过了几个月，基于 <a target="_blank" rel="noopener" href="https://github.com/rsc">@rsc</a> 之前合码的时候给的建议，<a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a>  <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/37342/">又优化了一版</a>，整个<code>sync.Map</code>的结构变成了下面这样：</p>
+<pre><code>type Map struct {
+    mu sync.Mutex
+    read atomic.Value // readOnly
+    dirty map[interface{}]*entry    
+    misses int
+}
+
+type readOnly struct { // readOnly 的 map
+    m       map[interface{}]*entry
+    amended bool // amended=true m没有全部key的数据，没查到还需要去dirty查下.
+}
+
+var expunged = unsafe.Pointer(new(interface{})) // 表示这个数据已经不在dirty中了。
+
+type entry struct {
+    p unsafe.Pointer // *interface{}
+}
+</code></pre>
+<p>主要改动只读的<code>map</code>，之前叫<code>clean</code>类型是<code>map[interface{}]interface{}</code>，现在改成了<code>read</code>，类型是<code>readOnly struct</code>，<code>readOnly</code>还有个<code>amended</code>表示当前<code>readOnly.m</code>是不是全量数据。我们继续往下<code>Store</code>的代码</p>
+<pre><code>func (m *Map) Store(key, value interface{}) {
+    // fast-path
+    read, _ := m.read.Load().(readOnly)
+    if e, ok := read.m[key]; ok &amp;&amp; e.tryStore(&amp;value) { 
+       // 如果这个 key 在 read 里面找到了以后，尝试直接调用 tryStore 去更新 value 数据
+       // tryStore 里面会做两件事
+       // 1. 判断当前 entry.p 是不是等于 expunged，等于 expunged 就不能更新，直接返回false。下面会走 slow-path去更新
+       // 2. 如果不是 expunged ，那就尝试更新 entry.p = &amp;value，如果 CAS 设置成功了就返回。
+       // 如果是 expunged 状态，表面 dirty 里面已经没有这个 key了，如 read 里面更新这个东西，下次 dirty数据全量提升为 read 的时候，这个数据就会丢失。
+        return 
+    }
+
+    // 下面是 slow-path
+    m.mu.Lock()
+    read, _ = m.read.Load().(readOnly)
+    if e, ok := read.m[key]; ok {
+        if e.unexpungeLocked() { // e.unexpungeLocked 尝试CAS(&amp;e.p, expunged, nil)
+            m.dirty[key] = e // 把 e 赋值给 dirty
+        }
+        // 到这里 e.p 肯定不是等于 expunged 了
+        e.storeLocked(&amp;value) // 设置 e.p = &amp;value
+    } else if e, ok := m.dirty[key]; ok {
+        e.storeLocked(&amp;value) // 如果只在dirty里面有，直接设置 e.p = &amp;value
+    } else {
+        if !read.amended { // 如果目前 read 有全量数据，但是 read 和 dirty 都没有这个 key
+            m.dirtyLocked() // dirtyLocked 这个函数主要做的就是，把 read 里面的 e.p != nil &amp;&amp; e.p != expunged 的元素 copy 一份赋值给 dirty
+            m.read.Store(readOnly{m: read.m, amended: true})
+        }
+        m.dirty[key] = newEntry(value) // dirty 保存这个 kv
+    }
+    m.mu.Unlock()
+}
+</code></pre>
+<p>总结下<code>Store</code>主要做了下几件事：</p>
+<ol>
+<li><code>fast-path</code> 路径<ul>
+<li>看下 <code>read</code> 中是否有这个<code>key</code>，有的话尝试调用<code>tryStore</code>，把设置的<code>value</code>保存到<code>entry</code>对象中去。</li>
+<li><code>tryStore</code> 里面会判断<code>entry.p</code>是不是<code>expunged</code>状态，是的话就不能设置，需要走<code>slow-path</code></li>
+<li>如果不是的话保存成功就直接返回。</li>
+</ul>
+</li>
+<li><code>slow-path</code>路径<ul>
+<li>会先加互斥锁</li>
+<li>看下 <code>read</code> 中是否有这个<code>key</code>，有的话尝试调用<code>unexpungeLocked</code>，<code>CAS</code>方式清除<code>entry.p</code>的<code>expunged</code>状态。如果清楚成功，会在<code>dirty</code>里面添加这个数据。如果没有清楚成功，说明状态不是<code>expunged</code>，可以直接更新<code>read</code>的<code>entry.p=&amp;value</code>就行了。</li>
+<li>不在<code>read</code>里面，在<code>dirty</code>里面，直接设置<code>entry.p=&amp;value</code>就行了。</li>
+<li><code>read</code>和<code>dirty</code>都没有找到这个<code>key</code>，先看下<code>read</code>是不是有全量数据，是的话，就调用<code>m.dirtyLocked</code>，把<code>read</code>数据<code>copy</code>一份到<code>dirty</code>，并设置<code>read.amended=true</code>,表示 <code>read</code>里面已经没有全量数据了，需要去<code>drity</code>里面找。</li>
+<li>最后设置 <code> m.dirty[key] = newEntry(value)</code>，dirty 保存这个 kv</li>
+</ul>
+</li>
+</ol>
+<p>在来看下<code>Load</code>相关代码：</p>
+<pre><code>func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+    read, _ := m.read.Load().(readOnly)
+    e, ok := read.m[key]
+    if !ok &amp;&amp; read.amended { // 如果 read 没找到，且 read 没有全量数据
+        m.mu.Lock()
+        read, _ = m.read.Load().(readOnly)
+        e, ok = read.m[key] // 加锁以后，这里需要 double check一下
+        if !ok &amp;&amp; read.amended {
+            e, ok = m.dirty[key] // 去 dirty map 读
+            m.missLocked() // 这里面对 misscount+1 ，然后看下是否需要把 dirty 全部给 read，然后设置 dirty 为 nil。
+        }
+        m.mu.Unlock()
+    }
+    if !ok {
+        return nil, false
+    }
+    return e.load() // 如果 e.p != nil &amp;&amp; e.p == expunged , 就把 e.p 的指向的值转成Interface返回
+}
+</code></pre>
+<p>最后再来看下<code>Delete</code>的怎么做的，<code>Delete</code>其实比较简单，就是设置，在<code>read</code>里面找到这个<code>entry</code>然后设置<code>e.p=nil</code>,如果在<code>dirty</code>中就直接调用<code>delete</code>方法删除这个<code>key</code>。</p>
+<pre><code>func (m *Map) Delete(key interface{}) {
+    read, _ := m.read.Load().(readOnly)
+    e, ok := read.m[key]
+    if !ok &amp;&amp; read.amended {
+        m.mu.Lock()
+        read, _ = m.read.Load().(readOnly)
+        e, ok = read.m[key]
+        if !ok &amp;&amp; read.amended {
+            delete(m.dirty, key)
+        }
+        m.mu.Unlock()
+    }
+    if ok {
+        e.delete()
+    }
+}
+
+func (e *entry) delete() (hadValue bool) {
+    for {
+        p := atomic.LoadPointer(&amp;e.p)
+        if p == nil || p == expunged {
+            return false
+        }
+        if atomic.CompareAndSwapPointer(&amp;e.p, p, nil) {
+            return true
+        }
+    }
+}
+</code></pre>
+<h2 id="7-5-思考：dirty-能否不全量拷贝-read？"><a href="#7-5-思考：dirty-能否不全量拷贝-read？" class="headerlink" title="7.5 思考：dirty 能否不全量拷贝 read？"></a>7.5 思考：dirty 能否不全量拷贝 read？</h2><p>正常思路，为了节省内存，<code>dirty</code> 里面只存增量数据，可以吗？反向推理下如果<code>dirty</code>只存增量的数据，那就不需要<code>read</code>到<code>dirty</code>的数据同步操作了，那也不需要<code>expunged</code>状态了。所以<code>read</code>的中元素<code>e.p=nil</code>的时候，表示删除了，由于没有了<code>read</code>到<code>dirty</code>的复制，所以需要定期滤掉<code>read</code>中删除的数据（<code>e.p = nil</code>）并重新给<code>read</code>赋值，那<code>Store</code>的时候，如果<code>read</code>的<code>e.p=nil</code>的话就不能再更新了。因为定期过滤掉<code>read</code>中删除的数据可能会把这个<code>entry</code>给删除掉，导致这个<code>key</code>对应的数据丢失了。所以<code>Store</code>和<code>Load</code>伪代码如下：</p>
+<pre><code>func (m *Map) Store(key, value interface{}) {
+    read, _ := m.read.Load().(readOnly)
+    if e, ok := read.m[key]; ok &amp;&amp; e.p != nil {
+        ok:= CAS(e.p, old, &amp;value) // 注意这里要是 old = nil 时候不能再继续尝试 CAS
+        if ok{
+            return
+        }
+        // cas 失败继续往下走
+    }
+
+    m.mu.Lock() // 加锁
+    read, _ = m.read.Load().(readOnly)
+    if e, ok := read.m[key]; ok {
+        if atomic.Load(e.p) != nil{
+           atomic.Store(e.p,&amp;value)
+            return
+        }
+
+    } else if e, ok := m.dirty[key]; ok {
+        e.storeLocked(&amp;value)
+    } 
+
+    // read 查到了 e 但是 e.p == nil
+    // read 和 dirty 都没查到
+    m.dirty[key] = newEntry(value)
+    noNilMap := fliterNilIFNeed(read.m) // 过滤掉read.m 中为空的数据，如果没有空数据直接返回nil
+    m.read.Store(readOnly{m: noNilMap, amended: true})
+
+    m.mu.Unlock()
+}
+
+
+func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+    read, _ := m.read.Load().(readOnly)
+    e, ok := read.m[key]
+    if !ok &amp;&amp; read.amended || (ok &amp;&amp; atomic.Load(e.p) == nil){
+        m.mu.Lock()
+
+        read, _ = m.read.Load().(readOnly)
+        e, ok = read.m[key]
+        if !ok &amp;&amp; read.amended || (ok &amp;&amp; atomic.Load(e.p) == nil){
+            e, ok = m.dirty[key]
+
+            m.misses++
+            if m.misses &gt;= len(m.dirty) {
+                noNilMap := fliterNilIFNeed(read.m) // 过滤掉read.m 中为空的数据，如果没有空数据直接返回nil
+                allDataMap := merge(noNilMap,m.dirty)
+                m.read.Store(readOnly{m: allDataMap})
+                m.dirty = nil
+                m.misses = 0
+            }
+        }
+        m.mu.Unlock()
+    }
+    if !ok {
+        return nil, false
+    }
+    return e.load()
+}
+</code></pre>
+<p>这样实现逻辑上好像也没有问题，不过每次<code>Load</code>和<code>Store</code>一个<code>read</code>中的<code>nil</code>，都需要加锁，然后会过滤<code>read</code>的<code>nil</code>数据，都有数据的拷贝操作。如果在删除以后立即读的场景性能可能会非常差。</p>
+<p><strong>总结：dirty 全量拷贝 read 数据，就是好一个空间换时间的操作。</strong></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2023/05/01/the-beauty-of-compilation-principle/" title="《编译原理之美》"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 《编译原理之美》</span></a><a class="button is-default" href="/2023/04/09/golang-context/" title="Golang Context 详解"><span class="has-text-weight-semibold">下一页: Golang Context 详解</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

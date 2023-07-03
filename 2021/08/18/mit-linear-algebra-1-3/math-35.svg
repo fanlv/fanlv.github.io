@@ -1,0 +1,93 @@
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="55.243ex" height="3.343ex" style="vertical-align: -1.171ex;" viewBox="0 -934.9 23785.2 1439.2" role="img" focusable="false" xmlns="http://www.w3.org/2000/svg" aria-labelledby="MathJax-SVG-1-Title">
+<title id="MathJax-SVG-1-Title">E_{21} ^ -1 E_{21} = I 或者 E_{21}E_{21} ^ -1 = I 此时E_{21} ^ -1 就是 E_{21}的逆矩阵</title>
+<defs aria-hidden="true">
+<path stroke-width="1" id="E1-MJMATHI-45" d="M492 213Q472 213 472 226Q472 230 477 250T482 285Q482 316 461 323T364 330H312Q311 328 277 192T243 52Q243 48 254 48T334 46Q428 46 458 48T518 61Q567 77 599 117T670 248Q680 270 683 272Q690 274 698 274Q718 274 718 261Q613 7 608 2Q605 0 322 0H133Q31 0 31 11Q31 13 34 25Q38 41 42 43T65 46Q92 46 125 49Q139 52 144 61Q146 66 215 342T285 622Q285 629 281 629Q273 632 228 634H197Q191 640 191 642T193 659Q197 676 203 680H757Q764 676 764 669Q764 664 751 557T737 447Q735 440 717 440H705Q698 445 698 453L701 476Q704 500 704 528Q704 558 697 578T678 609T643 625T596 632T532 634H485Q397 633 392 631Q388 629 386 622Q385 619 355 499T324 377Q347 376 372 376H398Q464 376 489 391T534 472Q538 488 540 490T557 493Q562 493 565 493T570 492T572 491T574 487T577 483L544 351Q511 218 508 216Q505 213 492 213Z"></path>
+<path stroke-width="1" id="E1-MJMAIN-2212" d="M84 237T84 250T98 270H679Q694 262 694 250T679 230H98Q84 237 84 250Z"></path>
+<path stroke-width="1" id="E1-MJMAIN-32" d="M109 429Q82 429 66 447T50 491Q50 562 103 614T235 666Q326 666 387 610T449 465Q449 422 429 383T381 315T301 241Q265 210 201 149L142 93L218 92Q375 92 385 97Q392 99 409 186V189H449V186Q448 183 436 95T421 3V0H50V19V31Q50 38 56 46T86 81Q115 113 136 137Q145 147 170 174T204 211T233 244T261 278T284 308T305 340T320 369T333 401T340 431T343 464Q343 527 309 573T212 619Q179 619 154 602T119 569T109 550Q109 549 114 549Q132 549 151 535T170 489Q170 464 154 447T109 429Z"></path>
+<path stroke-width="1" id="E1-MJMAIN-31" d="M213 578L200 573Q186 568 160 563T102 556H83V602H102Q149 604 189 617T245 641T273 663Q275 666 285 666Q294 666 302 660V361L303 61Q310 54 315 52T339 48T401 46H427V0H416Q395 3 257 3Q121 3 100 0H88V46H114Q136 46 152 46T177 47T193 50T201 52T207 57T213 61V578Z"></path>
+<path stroke-width="1" id="E1-MJMAIN-3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path>
+<path stroke-width="1" id="E1-MJMATHI-49" d="M43 1Q26 1 26 10Q26 12 29 24Q34 43 39 45Q42 46 54 46H60Q120 46 136 53Q137 53 138 54Q143 56 149 77T198 273Q210 318 216 344Q286 624 286 626Q284 630 284 631Q274 637 213 637H193Q184 643 189 662Q193 677 195 680T209 683H213Q285 681 359 681Q481 681 487 683H497Q504 676 504 672T501 655T494 639Q491 637 471 637Q440 637 407 634Q393 631 388 623Q381 609 337 432Q326 385 315 341Q245 65 245 59Q245 52 255 50T307 46H339Q345 38 345 37T342 19Q338 6 332 0H316Q279 2 179 2Q143 2 113 2T65 2T43 1Z"></path>
+</defs>
+<g stroke="currentColor" fill="currentColor" stroke-width="0" transform="matrix(1 0 0 -1 0 0)" aria-hidden="true">
+ <use xlink:href="#E1-MJMATHI-45" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-2212" x="1092" y="570"></use>
+<g transform="translate(738,-308)">
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-32"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-31" x="500" y="0"></use>
+</g>
+ <use xlink:href="#E1-MJMAIN-31" x="1546" y="0"></use>
+<g transform="translate(2046,0)">
+ <use xlink:href="#E1-MJMATHI-45" x="0" y="0"></use>
+<g transform="translate(738,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-32"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-MJMAIN-3D" x="3870" y="0"></use>
+ <use xlink:href="#E1-MJMATHI-49" x="4927" y="0"></use>
+<g transform="translate(5431,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">或</text>
+</g>
+<g transform="translate(6364,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">者</text>
+</g>
+<g transform="translate(7297,0)">
+ <use xlink:href="#E1-MJMATHI-45" x="0" y="0"></use>
+<g transform="translate(738,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-32"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+<g transform="translate(8843,0)">
+ <use xlink:href="#E1-MJMATHI-45" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-2212" x="1092" y="570"></use>
+<g transform="translate(738,-308)">
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-32"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-MJMAIN-31" x="10390" y="0"></use>
+ <use xlink:href="#E1-MJMAIN-3D" x="11168" y="0"></use>
+ <use xlink:href="#E1-MJMATHI-49" x="12224" y="0"></use>
+<g transform="translate(12729,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">此</text>
+</g>
+<g transform="translate(13661,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">时</text>
+</g>
+<g transform="translate(14594,0)">
+ <use xlink:href="#E1-MJMATHI-45" x="0" y="0"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-2212" x="1092" y="570"></use>
+<g transform="translate(738,-308)">
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-32"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+ <use xlink:href="#E1-MJMAIN-31" x="16141" y="0"></use>
+<g transform="translate(16641,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">就</text>
+</g>
+<g transform="translate(17574,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">是</text>
+</g>
+<g transform="translate(18507,0)">
+ <use xlink:href="#E1-MJMATHI-45" x="0" y="0"></use>
+<g transform="translate(738,-150)">
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-32"></use>
+ <use transform="scale(0.707)" xlink:href="#E1-MJMAIN-31" x="500" y="0"></use>
+</g>
+</g>
+<g transform="translate(20053,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">的</text>
+</g>
+<g transform="translate(20986,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">逆</text>
+</g>
+<g transform="translate(21919,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">矩</text>
+</g>
+<g transform="translate(22852,0)">
+<text font-family="monospace" stroke="none" transform="scale(71.759) matrix(1 0 0 -1 0 0)">阵</text>
+</g>
+</g>
+</svg>

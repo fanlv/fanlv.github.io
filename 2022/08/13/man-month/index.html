@@ -1,0 +1,363 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《人月神话》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="摘录与 《人月神话》
+什么是人月神话？
+一个项目有10人/月的工作量，把人增加到100人，所以只用3天就能开发完，这就是人月神话。
+一个谬误的思考方式是在估计和进度安排中使用的工作量单位：人月。成本的确随开发产品的人数和时间的不同，有着很大的变化，进度却不是如此。因此我认为用人月作为衡量一项工作的规模是一个危险和带有欺骗性的神话。它暗示着人员数量和时间是可以相互替换的。
+一、焦油坑（The Tar Pit）史前史中，没有别的场景比巨兽在焦油坑中垂死挣扎的场面更令人震撼。上帝见证着恐龙、猛犸象、剑齿虎在焦油中挣扎。它们挣扎得越是猛烈，焦油纠缠得越紧，没有任何猛兽足够强壮或具有足够的技巧，能够挣脱束缚，它们最后都沉到了坑底。
+过去几十年的大型系统开发就犹如这样一个焦油坑，很多大型和强壮的动物在其中剧烈地挣扎。他.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《人月神话》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%84%A6%E6%B2%B9%E5%9D%91%EF%BC%88The-Tar-Pit%EF%BC%89"><span class="toc-text">一、焦油坑（The Tar Pit）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BA%BA%E6%9C%88%E7%A5%9E%E8%AF%9D%EF%BC%88The-Mythical-Man-Month%EF%BC%89"><span class="toc-text">二、人月神话（The Mythical Man-Month）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%A4%96%E7%A7%91%E6%89%8B%E6%9C%AF%E9%98%9F%E4%BC%8D%EF%BC%88The-Surgical-Team%EF%BC%89"><span class="toc-text">三、外科手术队伍（The Surgical Team）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E8%B4%B5%E6%97%8F%E4%B8%93%E5%88%B6%E3%80%81%E6%B0%91%E4%B8%BB%E6%94%BF%E6%B2%BB%E5%92%8C%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%EF%BC%88Aristocracy-Democracy-and-System-Design%EF%BC%89"><span class="toc-text">四、贵族专制、民主政治和系统设计（Aristocracy, Democracy, and System Design）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E7%94%BB%E8%9B%87%E6%B7%BB%E8%B6%B3%EF%BC%88The-Second-System-Effect%EF%BC%89"><span class="toc-text">五、画蛇添足（The Second-System Effect）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E8%B4%AF%E5%BD%BB%E6%89%A7%E8%A1%8C%EF%BC%88Passing-the-Word%EF%BC%89"><span class="toc-text">六、贯彻执行（Passing the Word）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E5%B7%B4%E6%AF%94%E4%BC%A6%E5%A1%94%E4%BC%9A%E5%A4%B1%E8%B4%A5%EF%BC%9F%EF%BC%88Why-Did-theTower-of-Babel-Fail-%EF%BC%89"><span class="toc-text">七、为什么巴比伦塔会失败？（Why Did theTower of Babel Fail?）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E8%83%B8%E6%9C%89%E6%88%90%E7%AB%B9%EF%BC%88Calling-the-Shot%EF%BC%89"><span class="toc-text">八、胸有成竹（Calling the Shot）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%89%8A%E8%B6%B3%E9%80%82%E5%B1%A5%EF%BC%88Ten-Pounds-in-a-Five-Pound-Sack%EF%BC%89"><span class="toc-text">九、削足适履（Ten Pounds in a Five-Pound Sack）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E6%8F%90%E7%BA%B2%E6%8C%88%E9%A2%86%EF%BC%88The-Documentary-Hypothesis%EF%BC%89"><span class="toc-text">十、提纲挈领（The Documentary Hypothesis）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E6%9C%AA%E9%9B%A8%E7%BB%B8%E7%BC%AA%EF%BC%88Plan-to-Throw-One-Away%EF%BC%89"><span class="toc-text">十一、未雨绸缪（Plan to Throw One Away）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C%E3%80%81%E5%B9%B2%E5%B0%86%E8%8E%AB%E9%82%AA%EF%BC%88Sharp-Tools%EF%BC%89"><span class="toc-text">十二、干将莫邪（Sharp Tools）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%B8%89%E3%80%81%E6%95%B4%E4%BD%93%E9%83%A8%E5%88%86%EF%BC%88The-Whole-and-the-Parts%EF%BC%89"><span class="toc-text">十三、整体部分（The Whole and the Parts）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E5%9B%9B%E3%80%81%E7%A5%B8%E8%B5%B7%E8%90%A7%E5%A2%99%EF%BC%88Hatching-a-Catastrophe%EF%BC%89"><span class="toc-text">十四、祸起萧墙（Hatching a Catastrophe）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%BA%94%E3%80%81%E5%8F%A6%E5%A4%96%E4%B8%80%E9%9D%A2%EF%BC%88The-other-face%EF%BC%89"><span class="toc-text">十五、另外一面（The other face）</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E5%85%AD%E3%80%81%E6%B2%A1%E6%9C%89%E9%93%B6%E5%BC%B9%E2%80%94%E2%80%94%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B%E4%B8%AD%E7%9A%84%E6%A0%B9%E6%9C%AC%E5%92%8C%E6%AC%A1%E8%A6%81%E9%97%AE%E9%A2%98"><span class="toc-text">十六、没有银弹——软件工程中的根本和次要问题</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《人月神话》</h1><time class="has-text-grey" datetime="2022-08-13T08:06:19.000Z">2022-08-13</time><article class="mt-2 post-content"><p>摘录与 <a target="_blank" rel="noopener" href="https://book.douban.com/subject/26358448/">《人月神话》</a></p>
+<p>什么是人月神话？</p>
+<p><strong>一个项目有10人/月的工作量，把人增加到100人，所以只用3天就能开发完，这就是人月神话。</strong></p>
+<p><strong>一个谬误的思考方式是在估计和进度安排中使用的工作量单位：人月</strong>。成本的确随开发产品的人数和时间的不同，有着很大的变化，进度却不是如此。因此我认为用人月作为衡量一项工作的规模是一个危险和带有欺骗性的神话。它暗示着人员数量和时间是可以相互替换的。</p>
+<h1 id="一、焦油坑（The-Tar-Pit）"><a href="#一、焦油坑（The-Tar-Pit）" class="headerlink" title="一、焦油坑（The Tar Pit）"></a>一、焦油坑（The Tar Pit）</h1><p>史前史中，没有别的场景比巨兽在焦油坑中垂死挣扎的场面更令人震撼。上帝见证着恐龙、猛犸象、剑齿虎在焦油中挣扎。它们挣扎得越是猛烈，焦油纠缠得越紧，没有任何猛兽足够强壮或具有足够的技巧，能够挣脱束缚，它们最后都沉到了坑底。</p>
+<p><strong>过去几十年的大型系统开发就犹如这样一个焦油坑，</strong>很多大型和强壮的动物在其中剧烈地挣扎。他们中大多数开发出了可运行的系统–不过，其中只有非常少数的项目满足了目标、时间进度和预算的要求。各种团队，大型的和小型的，庞杂的和精干的，一个接一个淹没在了焦油坑中。</p>
+<p><strong>编程系统产品（Program System Product）</strong></p>
+<p>演化进程：程序-&gt;编程系统（接口、系统集成）-&gt;编程系统产品；程序-&gt;编程产品（通用化、测试、文档、维护）-&gt;编程系统产品。这两条线都节约了成本。</p>
+<p><strong>编程的乐趣</strong></p>
+<ul>
+<li>首先是一种创建事物的纯粹快乐。如同小孩在玩泥巴时感到愉快一样，成年人喜欢创建事物，特别是自己进行设计。我想这种快乐是上帝创造世界的折射，一种呈现在每片独特、崭新的树叶和雪花上的喜悦1。</li>
+<li>其次，快乐来自于开发对其他人有用的东西。内心深处，我们期望其他人使用我们的劳动成果，并能对他们有所帮助。从这个方面，这同小孩用粘土为”爸爸办公室”捏制铅笔盒没有本质的区别。</li>
+<li>第三是整个过程体现出魔术般的力量–将相互啮合的零部件组装在一起，看到它们精妙地运行，得到预先所希望的结果。比起弹珠游戏或点唱机所具有的迷人魅力，程序化的计算机毫不逊色。</li>
+<li>第四是学习的乐趣，来自于这项工作的非重复特性。人们所面临的问题，在某个或其它方面总有些不同。因而解决问题的人可以从中学习新的事物：有时是实践上的，有时是理论上的，或者兼而有之。</li>
+<li>最后，乐趣还来自于工作在如此易于驾驭的介质上。程序员，就像诗人一样，几乎仅仅工作在单纯的思考中。程序员凭空地运用自己的想象，来建造自己的”城堡”。很少有这样的介质–创造的方式如此得灵活，如此得易于精炼和重建，如此得容易实现概念上的设想。（不过我们将会看到，容易驾驭的特性也有它自己的问题）然而程序毕竟同诗歌不同，它是实实在在的东西；可以移动和运行，能独立产生可见的输出；能打印结果，绘制图形，发出声音，移动支架。神话和传说中的魔术在我们的时代已变成了现实。在键盘上键入正确的咒语，屏幕会活动、变幻，显示出前所未有的或是已经存在的事物。</li>
+</ul>
+<p><strong>编程的苦恼</strong></p>
+<ul>
+<li>首先，必须追求完美。因为计算机也是以这样的方式来变戏法：如果咒语中的一个字符、一个停顿，没有与正确的形式一致，魔术就不会出现。（现实中，很少的人类活动要求完美，所以人类对它本来就不习惯。）实际上，我认为学习编程的最困难部分，是将做事的方式往追求完美的方向调整。</li>
+<li>其次，是由他人来设定目标，供给资源，提供信息。编程人员很少能控制工作环境和工作目标。用管理的术语来说，个人的权威和他所承担的责任是不相配的。不过，似乎在所有的领域中，对要完成的工作，很少能提供与责任相一致的正式权威。而现实情况中，实际（相对于正式）的权威来自于每次任务的完成。</li>
+<li>概念性设计是有趣的，但寻找琐碎的bug却只是一项重复性的活动。</li>
+<li>人们发现调试和查错往往是线性收敛的，或者更糟糕的是，具有二次方的复杂度。结果，测试一拖再拖，寻找最后一个错误比第一个错误将花费更多的时间。</li>
+<li>当投入了大量辛苦的劳动，产品在即将完成或者终于完成的时候，却已显得陈旧过时。可能是同事和竞争对手已在追逐新的、更好的构思；也许替代方案不仅仅是在构思，而且已经在安排了。</li>
+</ul>
+<h1 id="二、人月神话（The-Mythical-Man-Month）"><a href="#二、人月神话（The-Mythical-Man-Month）" class="headerlink" title="二、人月神话（The Mythical Man-Month）"></a>二、人月神话（The Mythical Man-Month）</h1><p><strong>项目滞后的主要原因是缺乏进度的合理安排：</strong></p>
+<ul>
+<li>对估算技术缺乏有效研究。乐观主义，通常假设一切都将运作良好；</li>
+<li>混淆工作量和进度，以为人月可以互换；</li>
+<li>对自己的估算缺乏信心，项目经理不会耐心持续的进行估算；</li>
+<li>缺少进度跟踪和监督；</li>
+<li>进度偏移时，第一反应是协调人力。</li>
+</ul>
+<ol>
+<li>乐观主义，乐观主义是程序员的职业病。</li>
+<li>人月，人员之间的需要沟通交流，新派人手可能成为负担；而且任务还有先后顺序。</li>
+<li>系统测试，过程时间占比经验：<ul>
+<li>计划（1/3）：包含技术调研、概念设计（功能规格）</li>
+<li>编码（1/6）：最容易估计时间的部分</li>
+<li>构件测试和早起系统测试（1/4）：单元测试</li>
+<li>系统测试（1/4）：集成测试</li>
+</ul>
+</li>
+<li>空泛的估算，在外部的压力下，项目经理在估算时容易屈服。开发并推行生产率图表、缺陷率图表、估算规则等工具可以使得项目估计更有依据，相比经验也更能有说服力。</li>
+<li>重复产生的进度灾难，进度延迟后考虑的做法：<ul>
+<li>重新安排进度：注意在开发过程中及时重新估计和调整进度（不一定是延后，而是根据实际情况，部分任务缩减，部分任务延长），任务的粒度也需要注意，不需要太细，也不能太粗。</li>
+<li>削减任务：讨论功能的重要性和优先级，考虑分版本发布，先完成重要、紧急的功能。</li>
+</ul>
+</li>
+</ol>
+<p><strong>Brooks法则</strong>：想落后的项目中增加人手，只会使得进度更加落后。</p>
+<h1 id="三、外科手术队伍（The-Surgical-Team）"><a href="#三、外科手术队伍（The-Surgical-Team）" class="headerlink" title="三、外科手术队伍（The Surgical Team）"></a>三、外科手术队伍（The Surgical Team）</h1><ul>
+<li>优秀程序员的生产率是一般程序员的10倍</li>
+<li>小型精干的团队是最好的</li>
+<li>对于大型的系统，小型精干的团队速度太慢了</li>
+<li>类似外科手术的团队能很好解决大型系统开发的问题</li>
+</ul>
+<ol>
+<li>问题，小型精干队伍的人数一般在10人以内。但是对于大型系统，比如需要1000人年，完成项目的进度显得太长对于大型系统，需要划分模块来完成。而且概念设计部分需要由少而精的人员完成。</li>
+<li>Mills的建议（外科手术队伍）：<ul>
+<li>外科医生（架构师）：定义功能、性能技术说明书，设计程序，编写源代码，测试，写技术文档；</li>
+<li>副手（开发组长）：能完成任何一部分工作，但经验较少。设计的思考者、讨论者、评估人员；</li>
+<li>管理员（项目经理）：管理财务、人员、办公设备等，可以一个人管两个项目组；</li>
+<li>编辑：组织文档；</li>
+<li>两个文秘：管理员和编辑各一个（偶也想要啊）</li>
+<li>程序职员：维护所有团队的技术记录</li>
+</ul>
+</li>
+<li>如何运作，概念来自外科医生和副手，保证了完整性并节约了沟通成本，外科医生在金字塔顶端，可以统一分歧，其余人员分工专业化，更为高效</li>
+<li>团队的扩建，大型系统需要一个系统结构师自上而下的进行所有设计，也有利于协调。概念设计团队的人也要少而精。</li>
+</ol>
+<h1 id="四、贵族专制、民主政治和系统设计（Aristocracy-Democracy-and-System-Design）"><a href="#四、贵族专制、民主政治和系统设计（Aristocracy-Democracy-and-System-Design）" class="headerlink" title="四、贵族专制、民主政治和系统设计（Aristocracy, Democracy, and System Design）"></a>四、贵族专制、民主政治和系统设计（Aristocracy, Democracy, and System Design）</h1><ul>
+<li>概念完整性是系统设计中最重要的因素</li>
+<li>为了保证概念完整性，设计必须由一个人或一个小型的团队</li>
+<li>软件开发要实现设计和具体实现的分离</li>
+<li>限制和规则能激发创造性</li>
+<li>概念统一的系统能更快的开发和测试</li>
+</ul>
+<p><strong>概念完整性</strong></p>
+<p>概念完整性应该是系统设计最重要的考虑因素。保证概念完整性最好的方法是由一个人来完成设计，对于后来的设计者，则要求他们牺牲一些创意，以获得纯粹的设计。</p>
+<p><strong>获得概念完整性</strong></p>
+<p>系统设计的最终测试标准：易用性 = 功能 / 理解复杂度。</p>
+<p>软件不仅要功能越多越好，而且需要简洁、直接。简洁和直白来自概念完整性。</p>
+<p>设计的一致性是易用性的另一重要因素。设计一致性要求：每个部分必须反映相同的原理需求的一致平衡（语法上使用的技巧相同，语义上也要具有相似性）。</p>
+<p><strong>贵族专制和民主政治</strong></p>
+<p>概念的完整性要求设计必须由一个人，或者少数互有默契的人员来实现。但进度压力要求系统要由很多人来开发。解决这一矛盾的方法有两个：仔细对设计方法/体系结构与具体实现进行分工；第三章所述的团队的组建方式。</p>
+<p>系统的体系结构（achitecture）指的是完整和详细的用户接口说明。系统的结构师（架构师）需要运用专业技术知识来支持最终用户的利益。</p>
+<p>体系结构师（架构师）的贵族专制统治：体系结构师代表最终用户的利益；其产物的生命周期比实现人员更长；为了概念完整性，系统设计必须由少数人（架构师）控制。</p>
+<p>具体设计实现在创造性方面并不亚于体系结构设计工作：具体实现更大程度决定了产品的成本和性能；而结构设计偏向于易用性。但是具体实现需要依赖于结构设计。</p>
+<p><strong>在等待时，实现人员应该做什么</strong></p>
+<p>软件开发的三个阶段（Blaauw）：体系结构（achitecture）、设计实现（implementation）、物理实现（realization）。他们彼此存在依赖，但往往可以同时开始和并发进行。</p>
+<p>上述的划分是水平的划分，实际中再进行垂直的（功能）划分并不会在概念完整性等方面造成不利影响。上述的三个阶段确实存在一定的向上依赖，但是垂直的划分使得工作可以并行进行；另外各个阶段中都有部分工作是不存在向上依赖的。</p>
+<h1 id="五、画蛇添足（The-Second-System-Effect）"><a href="#五、画蛇添足（The-Second-System-Effect）" class="headerlink" title="五、画蛇添足（The Second-System Effect）"></a>五、画蛇添足（The Second-System Effect）</h1><ul>
+<li><p>不要过分设计</p>
+<p> 结构师的主要职责在于只能功能规格说明，他没有产品开发时间、成本方面的责任。理论上结构师的创造性可以是无限的，那么如何来约束这种热情呢？</p>
+</li>
+</ul>
+<p><strong>结构师的交互准则和机制</strong></p>
+<p>今早的交流和持续沟通：使得结构师有成本意识，也让开发人员对设计有信心，不会混淆责任分工。</p>
+<p>产生估算过高时，结构师有两个选择：削减设计；建议实现人员使用成本更低的实现方法。</p>
+<p><strong>交互准则：</strong></p>
+<ul>
+<li>牢记开发人员承担实现的责任，所以只能建议，不能支配；</li>
+<li>时刻准备为所指定的功能建议一种实现方法，同样准备接受其他任何能够达到目标的方法；</li>
+<li>对上述的建议保持低调和不公开；</li>
+<li>准备放弃坚持所做的改进建议；</li>
+<li>在体系结构上的修改往往会引起开发人员的反对——实现工作展开时，一些次要特性的修改会造成意想不到的成本开销。</li>
+</ul>
+<p><strong>自律——开发第二个系统所带来的后果</strong></p>
+<p>结构师设计的第二个系统往往是最危险的。</p>
+<p>由于对任务不够了解而产生的谨慎，结构师的第一个系统倾向于精炼和简洁；而第二个系统往往会被过分设计（太多的修饰功能、想法）；后面的项目会在之前的经验上形成对比总结，所以在简洁性和功能方面，比较容易达到平衡。避免过分设计的方法在于：自律和程序经理的监督。</p>
+<h1 id="六、贯彻执行（Passing-the-Word）"><a href="#六、贯彻执行（Passing-the-Word）" class="headerlink" title="六、贯彻执行（Passing the Word）"></a>六、贯彻执行（Passing the Word）</h1><ul>
+<li>设计必须由一个或两个人负责，确保设计的一致性</li>
+<li>具体精确的定义系统和功能</li>
+</ul>
+<p><strong>文档化的规格说明——手册</strong></p>
+<p>手册需要描述和规定用户所见的每一个细节，同时需要避免描述用户不可见的部分。结构师必须为自己描述的任何特性准备一种实现方法，但不应试图支配实现过程。</p>
+<p>手册（规格说明）的风格必须清晰、完整和准确。一致性很重要。</p>
+<p><strong>形式化定义</strong></p>
+<p>形式化（术语化、公式化）定义是精确的，倾向完整；但是不易理解，需要记叙性文字的辅助。注意在同一个手册中需要在谁主谁辅上保持一致。</p>
+<p>实现可以作为一种形式化定义方法（如）。实现作为形式化定义的优点：所有问题可以通过试验清晰的得到答案，快捷迅速、无需争辩商讨；缺点：实现作为定义时，体现了过多的内容，即不但描述了系统必须做什么，同时还声明了自己做了些什么（多余的要求）。</p>
+<p><strong>直接整合</strong></p>
+<p>设计好模块间接口的原型，要求在实现过程中按照原型开发。</p>
+<p><strong>会议和大会</strong></p>
+<p>周例会：每周半天，由首席结构师主持，所有结构师参加、实现人员代表和市场计划人员（代表用户）参与。参与人员都可以提出问题和修改意见，但需要提前准备并分发书面建议书。讨论通过的建议/问题解决方案由相关结构师进行修改，并纳入变更建议说明书中。问题结论由首席架构师发布。</p>
+<p>周例会优点：相同人员数月内每周交流一次，对项目内容都比较了解，无需额外培训；参与人员与产品密切相关，深刻理解所面对的问题，每个人都承担义务；出现问题时，在界线内部和外部同时寻求解决方案；正式的书面建议集中了注意力，强制了决策的制定和执行；明确授予首席结构师决策权力，避免妥协拖延。</p>
+<p>年度（或半年）大会，在功能规格制定前进行。出了周例会成员，程序经理、实现人员、市场人员都会参与，由项目经理主持。集中解决遗留的各种问题，耗时两周，每天需要通知前一天的各项决定。</p>
+<p>年度大会优点：解决了部分决策上的问题，同时使决策更容易被接受和理解。</p>
+<p><strong>多重实现</strong></p>
+<p>多重实现时，根据机器修改手册的消耗可能比根据手册修改机器要高。</p>
+<p><strong>电话日志</strong></p>
+<p>实现人员对规格说明容易理解不当或规格说明本身描述就不够精确，所以结构师鼓励实现人员电话沟通。在此条件下，结构师需要保存电话日志，记录每个问题和相应的解答，并每周进行合并整理，分发给用户和实现人员。</p>
+<p><strong>产品测试</strong></p>
+<p>测试组的工作是根据规格说明检查程序，需要由独立的技术监督部门完成，以保证公正性。</p>
+<h1 id="七、为什么巴比伦塔会失败？（Why-Did-theTower-of-Babel-Fail-）"><a href="#七、为什么巴比伦塔会失败？（Why-Did-theTower-of-Babel-Fail-）" class="headerlink" title="七、为什么巴比伦塔会失败？（Why Did theTower of Babel Fail?）"></a>七、为什么巴比伦塔会失败？（Why Did theTower of Babel Fail?）</h1><ul>
+<li>失败的原因：交流</li>
+<li>团队应该尽可能多的交流</li>
+<li>制定良好的工作手册</li>
+<li>每一个团队成员都应该能看到所有材料</li>
+<li>每个团队两个领导，技术负责人和产品负责人</li>
+</ul>
+<p>　巴比伦塔（圣经中的典故）：开始，人们使用的是同一种语言，他们建造房屋，并想着建造一个有高塔的城市，所有人都可以聚集在高塔里。上帝听说后，认为有必要让人类经历些挫折，于是他在人类的语言中制造了混淆，相互无法听懂。这样人类就不得不停止制造巴比伦塔。</p>
+<p><strong>巴比伦塔的管理教训</strong></p>
+<p>人类有清晰的目标、人力充足、材料齐全、时间充裕、技术完备。但失败的原因在于：缺乏交流以及交流的结果（组织）。</p>
+<p><strong>大型编程项目中的交流</strong></p>
+<p>团队之间的交流沟通需要利用所有可能的途径：</p>
+<ul>
+<li>非正式途径：电话、口头、即时通讯、邮件等；</li>
+<li>会议：各团队逐一进行简要的技术陈述。很容易澄清细小的误解；</li>
+<li>工作手册：在项目开始阶段即应该准备</li>
+</ul>
+<p><strong>项目工作手册</strong></p>
+<p>定义：对项目必须产出的一系列文档进行组织的一种结构，而非独立的一篇文档。即定义各类文档存放在什么位置。</p>
+<p>备忘录的管理：编号、整理，便于检索。</p>
+<p>当编程人员仅了解自己负责的部分，而非整个系统的开发细节时，工作效率最高。此方法的先决条件在于精确完整的定义所有接口。</p>
+<p><strong>大型变成项目的组织架构</strong></p>
+<p>团队组织的目的：减少所需的交流和合作的数量。</p>
+<p>减少交流的方法：人力划分和限定职责范围。</p>
+<p>树状组织架构是作为权力和责任的结构出现，不适合交流和沟通（网状）。</p>
+<p>树状编程队伍中，每颗子树必备的基本要素：任务（mission）；产品负责人（producer）；技术主管或结构师（techenical director or architecture）；进度（schedule）；人力划分（division of labor）；各部分间的接口定义（interface definitions among the parts）。</p>
+<p>产品负责人：组建团队、划分工作、制定进度表。争取和保证必要的资源（外部向上或水平沟通）；建立内部沟通/报告方式；确保进度目标的实现，根据环境变化调整资源和团队架构。</p>
+<p>技术主管：对设计进行构思，识别系统的字部分，设计内部结构和外部功能；提供整个设计的一致性和概念完整性；控制系统的复杂程度。提供复杂问题的解决方案，或根据需要调整系统设计。</p>
+<p>建议技术主管为主，产品负责人为辅的组织架构；产品负责人为主时需要预先声明技术主管在技术决策方面的权威（亦可通过办公条件等方面暗示）。</p>
+<h1 id="八、胸有成竹（Calling-the-Shot）"><a href="#八、胸有成竹（Calling-the-Shot）" class="headerlink" title="八、胸有成竹（Calling the Shot）"></a>八、胸有成竹（Calling the Shot）</h1><ul>
+<li>仅仅靠编码时间乘以系数是无法得到完成时间的</li>
+<li>小项目的数据不适用于大项目，开发时间随项目大小呈指数增长</li>
+<li>使用高级语言的效率是使用汇编语言5倍</li>
+</ul>
+<p>系统编程的时间估计，工作量估计方法：比率估算法（不能仅用编码阶段估计）；小型程序数据不适合编程系统产品。</p>
+<p>他发现他的编程队伍落后进度大约1/2，每项工作花费的时间大约是估计的两倍。这些估计通常是非常仔细的，由很多富有经验的团队完成。他们对PERT图上数百个子任务估算过（用人小时作单位）。当偏移出现时，他要求他们仔细地保存所使用时间的日志。日志显示事实上他的团队仅用了百分之五十的工作周，来进行实际的编程和调试，估算上的失误完全可以由该情况来解释。其余的时间包括机器的当机时间、高优先级的无关琐碎工作、会议、文字工作、公司业务、疾病、事假等等。简言之，项目估算对每个人年的技术工作时间数量做出了不现实的假设。我个人的经验也在相当程度上证实了他的结论6。</p>
+<h1 id="九、削足适履（Ten-Pounds-in-a-Five-Pound-Sack）"><a href="#九、削足适履（Ten-Pounds-in-a-Five-Pound-Sack）" class="headerlink" title="九、削足适履（Ten Pounds in a Five-Pound Sack）"></a>九、削足适履（Ten Pounds in a Five-Pound Sack）</h1><ul>
+<li>仅仅靠编码时间乘以系数是无法得到完成时间的</li>
+<li>小项目的数据不适用于大项目，开发时间随项目大小呈指数增长</li>
+<li>使用高级语言的效率是使用汇编语言5倍</li>
+</ul>
+<h1 id="十、提纲挈领（The-Documentary-Hypothesis）"><a href="#十、提纲挈领（The-Documentary-Hypothesis）" class="headerlink" title="十、提纲挈领（The Documentary Hypothesis）"></a>十、提纲挈领（The Documentary Hypothesis）</h1><p><strong>在一片文件的汪洋中，少数文档形成了关键的枢纽，每件项目管理的工作都围绕着它们运转。它们是经理们的主要个人工具。</strong></p>
+<ul>
+<li>文档的关键，目标，用户手册，内部文档，进度，预算，组织结构图和工作空间分配</li>
+<li>为每个关键文档提供状态监督和语境机制</li>
+<li>项目经理的职责是使每个人都朝着同一个方向前进</li>
+<li>项目经理的日常工作是沟通而不是做决定</li>
+</ul>
+<p>前提：在堆积如山的文档中，少数是关键枢纽，每一件项目管理工作都围绕着他们运转。这些文档是项目经理最重要的个人工具。</p>
+<p>技术、周边组织机构、行业传统等因素定义了项目必须准备的一些文书工作。这些文书工作看起来令人厌烦，但是他们往往包含了一些管理方面的内容：每份文档的准备工作是集中考虑，并使各种讨论意见明朗化的主要时刻；文档有利于明确工作阶段；文档的跟踪维护是项目监督和预警机制；文档本身可以作为检查列表、状态控制，也可以作为汇报的数据基础。</p>
+<p>任何管理任务的关注焦点都是：时间、地点、人员、项目内容、资金。</p>
+<ol>
+<li>软件项目文档</li>
+</ol>
+<p>内容：目标。定义待完成的目标、迫切需要的资源、约束和优先级；</p>
+<p>内容：产品技术说明。以建议书开始，用户手册和内部文档结束。性能说明是关键部分；</p>
+<p>时间：进度；</p>
+<p>资金：预算；</p>
+<p>地点：工作空间分配；</p>
+<p>人员：组织图。人员与接口说明相互依存。组织结构需要根据系统设计自由变化。</p>
+<ol start="2">
+<li>为什么要有正式的文档</li>
+</ol>
+<p>书面记录决策是必要的。记录文档可以作为同其他人沟通的渠道。项目经理的基本职责是使每个人都想着相同的方向前进，其主要工作是沟通，非决定。</p>
+<p>文档可以作为数据基础和检查列表。通过文档能够搞清项目所处状态，需要做的更改和调整。</p>
+<p>文档非常重要，但是不存在“完全信息管理系统”。因为管理人员80%的时间都用在沟通上：倾听、报告、讲授、规劝、讨论和鼓励。</p>
+<p>项目经理的任务是制定并实现计划，只有书面计划是精确和可沟通的。</p>
+<h1 id="十一、未雨绸缪（Plan-to-Throw-One-Away）"><a href="#十一、未雨绸缪（Plan-to-Throw-One-Away）" class="headerlink" title="十一、未雨绸缪（Plan to Throw One Away）"></a>十一、未雨绸缪（Plan to Throw One Away）</h1><p><strong>不变只是愿望，变化才是永恒。</strong></p>
+<ul>
+<li>开发人员交付的是用户满意度而不是实际的产品</li>
+<li>用户的实际需要会不断变化</li>
+<li>前进两步，后退一步，维护会增加系统的复杂性和引入新的Bug。</li>
+</ul>
+<ol>
+<li>试验性工厂和增大规模</li>
+</ol>
+<p>　　　　必须为舍弃而计划。第一个版本必然会存在很多问题，所以做好把其当做一个试验品的准备。要注意试验品是否应当发布给用户。</p>
+<ol start="2">
+<li>唯一不变的是变化本身</li>
+</ol>
+<p>　　　　接受变化，但并非客户所有的需求变更都应该整合到设计中。</p>
+<ol start="3">
+<li><p>为变更计划系统</p>
+<p> 技术手段：设计细致的模块化、可扩展的函数、精确完整的模块间接口设计和完备的文档。</p>
+<p> 变更的阶段化：版本号、日程表、冻结日期、变更内容。</p>
+</li>
+<li><p>为变更计划组织架构</p>
+<p> 选择高效的技术人员，解决各种技术问题；对技术人员进行培训；废除职位头衔，让成员能够接受职务变更。</p>
+</li>
+<li><p>前进两步，后退一步</p>
+<p> 缺陷修复总会以20%-50%的概率引入新的Bug；</p>
+<p> 回归测试的成本很高；</p>
+<p> 选择程序设计方法时，需要考虑其副作用，并指明。</p>
+</li>
+<li><p>前进一步，后退一步</p>
+<p> 在系统维护过程中，更多关注的是功能实现，系统原有设计日益被忽略，每次的修改都可能导致潜在的新问题，修改成本日益增加。必要时，需要考虑代码重构或重新设计。</p>
+</li>
+</ol>
+<h1 id="十二、干将莫邪（Sharp-Tools）"><a href="#十二、干将莫邪（Sharp-Tools）" class="headerlink" title="十二、干将莫邪（Sharp Tools）"></a>十二、干将莫邪（Sharp Tools）</h1><p><strong>巧匠因为他的工具而出名。</strong></p>
+<ul>
+<li>项目成员要使用通用开发工具</li>
+</ul>
+<p>工具要通用化，个性化的工具妨碍沟通。建议每个团队一个工具管理人员，工具小组方式则相对效率更低。</p>
+<p>考虑使用高级语言、成熟框架，性能测试工具，调试工具，测试用例生成工具等。</p>
+<h1 id="十三、整体部分（The-Whole-and-the-Parts）"><a href="#十三、整体部分（The-Whole-and-the-Parts）" class="headerlink" title="十三、整体部分（The Whole and the Parts）"></a>十三、整体部分（The Whole and the Parts）</h1><ul>
+<li>有时必须推翻顶层，重新开始</li>
+</ul>
+<p><strong>剔除Bug的设计</strong></p>
+<p>系统各个部分的开发者都会做出假设，这些假设的不匹配会导致致命或难以察觉的Bug。细致的功能定义、仔细的规格说明、规范化的功能描述说明很有必要。</p>
+<p>测试规格说明：完整性和明确性</p>
+<p>自上而下的设计，横向划分为：体系结构设计、设计实现、物理实现；纵向以模块划分，且模块从大到小不断细化。优点：</p>
+<ul>
+<li>清晰的结构和表达方式更容易对需求和模块功能进行精确的描述；</li>
+<li>模块分割和模块独立性避免了系统级Bug；</li>
+<li>细节的抑制使得结构上的缺陷容易暴露出来；</li>
+<li>设计在每个精化步骤上都是可测试的。</li>
+<li>遇到极端问题时，可能需要考虑逆转过程，直至推翻顶层设计，重新开始。</li>
+</ul>
+<p><strong>单元调试</strong></p>
+<p>程序调试过程在过去的二十年中有过很多反复，甚至在某些方面，它们又回到了出发的起点。整个调试过程有四个步骤，跟随这个过程来检验每个步骤各自的动机是一件很有趣的事情。　　</p>
+<p><strong>系统集成调试</strong></p>
+<p>需要在各个部分都能够正常运行之后开始。这个阶段耗费的时间往往比预计的要长。</p>
+<p>使用伪构件（dummy component，包含接口、可能的伪数据和一些小的测试用例）。</p>
+<p>控制变更。控制构件单元版本。</p>
+<p>一次添加一个构件。能够有利于问题定位。</p>
+<p>阶段化变更。定期进行大范围的构件更新等，周期不宜太短。</p>
+<h1 id="十四、祸起萧墙（Hatching-a-Catastrophe）"><a href="#十四、祸起萧墙（Hatching-a-Catastrophe）" class="headerlink" title="十四、祸起萧墙（Hatching a Catastrophe）"></a>十四、祸起萧墙（Hatching a Catastrophe）</h1><p><strong>带来坏消息的人不受欢迎。</strong></p>
+<ul>
+<li>项目进度的落后是潜移默化的，因此必须设置阶段目标</li>
+</ul>
+<p><strong>里程碑还是沉重的负担</strong></p>
+<p>里程碑澄清了划分的比较模糊的阶段，定义了确定时间点需要的完整的产物。里程碑的边界需要是明显的，无歧义的。里程碑需要能够正确的反应损失的时间，避免慢性进度偏离影响士气。</p>
+<p>建议活动之前开始估计，每两周对计划进行一次仔细的修订。</p>
+<p><strong>关键路径法（Pert图）</strong></p>
+<p>那些任务的滞后会影响最终的完成日期。非关键任务允许一定的落后时间。</p>
+<p>相对对每个任务估计完成时间，关键路径法更能够鼓励超前完成，也指明了补偿其他任务滞后时间的方法。</p>
+<p><strong>地毯的下面</strong></p>
+<p>程序经理发现计划偏离时，存在于老板的利益冲突：老板需要行动计划，分析的状态数据；程序经理会认为非致命性的进度偏离是可通过团队内部解决的，老板的行动可能会影响计划或个人威信。冲突（让程序经理公开信息）的解决方法：</p>
+<p>减少角色冲突：老板避免对程序经理能够解决的问题进行干预，绝不在检查状态报告时做安排。</p>
+<p>猛地拉开地毯：评审机制。每周小屏，每月大评。项目经理需要解释延迟原因，并指出应对方案和需要的帮助。</p>
+<h1 id="十五、另外一面（The-other-face）"><a href="#十五、另外一面（The-other-face）" class="headerlink" title="十五、另外一面（The other face）"></a>十五、另外一面（The other face）</h1><ul>
+<li>文档很重要，不论程序员还是用户</li>
+<li>自文档化技术，文档编写要和源代码结合起来，文档以注释的形式存在</li>
+</ul>
+<p>对开发人员光是介绍文档的重要性，并讲解写文档的技巧和要点，还不如做一份给他们看。</p>
+<p><strong>需要什么样的文档</strong></p>
+<p>使用程序的文档内容：</p>
+<ul>
+<li>目的（程序的主要功能是什么，解决了什么问题）；</li>
+<li>环境（机器、硬件配置、操作系统等）；</li>
+<li>输入范围，输出范围；</li>
+<li>实现功能和使用的算法；</li>
+<li>输入-输出格式（必须是确切完整的）；</li>
+<li>操作指令；</li>
+<li>功能选项；</li>
+<li>运行时间；</li>
+<li>精度和校验；</li>
+<li>精度及如何校验精度。</li>
+<li>验证程序的文档内容：</li>
+<li>测试用例。给程序使用者提供信心。</li>
+<li>修改程序文档内容：</li>
+<li>流程图或子系统的结构图；</li>
+<li>对所用算法的完整描述；</li>
+<li>对所有文件规划的解释；</li>
+<li>数据流处理的概要描述，以及每个处理过程中晚餐的操作；</li>
+<li>初始设计中，对已遇见修改的讨论；特性、功能回调以及出口的位置；原作者对可能会修改的地方及可能处理方案的一些意见。</li>
+</ul>
+<p><strong>流程图</strong></p>
+<p>从代码生成流程图非良好实践。</p>
+<p><strong>自文档化的程序</strong></p>
+<p>维护文档和代码的一致性是费力不讨好的事情。建议将注释以文字记录到代码头部，注意格式。维护记录也可记录其中。</p>
+<h1 id="十六、没有银弹——软件工程中的根本和次要问题"><a href="#十六、没有银弹——软件工程中的根本和次要问题" class="headerlink" title="十六、没有银弹——软件工程中的根本和次要问题"></a>十六、没有银弹——软件工程中的根本和次要问题</h1><p><strong>在未来十年内，无论是在技术还是管理方法上，都看不出有任何突破性的进步，能够独自保证在十年内大幅度地提高软件的生产率、可靠性和间接性</strong>。</p>
+<p>软件活动包括：</p>
+<ul>
+<li>根本任务，打造构成抽象软件实体的复杂概念结构</li>
+<li>次要任务，使用编程语言表达这些抽象实体，在空间和时间限制内将它们映射成机器语言。</li>
+</ul>
+<p>作者出于必要任务考虑的四点建议：</p>
+<ul>
+<li>仔细进行市场调研，避免开发已上市的产品；</li>
+<li>获取和制定软件需求时，将快速原型开发作为迭代计划的一部分；</li>
+<li>有机地更新软件，随着系统的运行、使用和测试，逐渐添加越来越多的功能；</li>
+<li>不断挑选和培养杰出的概念设计人员。</li>
+</ul>
+<p><strong>根本困难</strong></p>
+<p>软件开发困难的部分：规格说明、设计和测试这些概念结构，而非对概念进行表达和对实现逼真程度进行验证。</p>
+<p>软件内在特性：复杂度、一致性、可变性和不可见性。</p>
+<p><strong>次要问题上的突破</strong></p>
+<ul>
+<li>高级语言；</li>
+<li>统一的编程环境。</li>
+</ul>
+<p><strong>银弹的希望</strong></p>
+<ul>
+<li>高级语言；</li>
+<li>面向对象编程；</li>
+<li>人工智能；</li>
+<li>专家系统；</li>
+<li>“自动”编程；</li>
+<li>图形化编程；</li>
+<li>程序验证；</li>
+<li>环境和工具。</li>
+</ul>
+<p><strong>针对根本问题颇有前途的方法</strong></p>
+<ul>
+<li>购买而非自行开发</li>
+<li>需求精炼和快速原型</li>
+<li>增量开发——增长而非搭建系统。</li>
+<li>卓越的设计人员</li>
+<li>杰出设计人员的培养方法：</li>
+<li>尽可能早的，有系统的识别顶级的设计人员；</li>
+<li>为设计人员指派一位职业导师，负责他们技术方面的成长，仔细为他们规划职业生涯；</li>
+<li>为每个方面制定和维护一份职业计划，包括设计大师的精挑细选的学习过程，正式的高级教育和短期的课程；</li>
+<li>为成长中的设计人员提供相互交流和激励的机会。</li>
+</ul>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2022/09/03/go-custom-import-domain/" title="Go 自定义引用包的域名"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: Go 自定义引用包的域名</span></a><a class="button is-default" href="/2022/08/06/principle/" title="《原则：应对变化中的世界秩序》"><span class="has-text-weight-semibold">下一页: 《原则：应对变化中的世界秩序》</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

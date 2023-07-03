@@ -1,0 +1,549 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《ETCD实战》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="摘录与 《ETCD实战》
+背景ectd 常见问题
+etcd 基础
+etcd 实践
+etcd v2 功能
+etcd v2 存在的问题
+
+第一，etcd v2 不支持范围查询和分页。分页对于数据较多的场景是必不可少的。在 Kubernetes 中，在集群规模增大后，Pod、Event 等资源可能会出现数千个以上，但是 etcd v2 不支持分页，不支持范围查询，大包等 expensive request 会导致严重的性能乃至雪崩问题。
+第二，etcd v2 不支持多 key 事务。在实际转账等业务场景中，往往我们需要在一个事务中同时更新多个 key。
+然后是 Watch 机制可靠性问题。Kubernetes 项目严重依赖 etcd Watch 机制，然而 etcd v2 是内存型、不支持保存 key 历史版本的.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《ETCD实战》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#ectd-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98"><span class="toc-text">ectd 常见问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#etcd-%E5%9F%BA%E7%A1%80"><span class="toc-text">etcd 基础</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#etcd-%E5%AE%9E%E8%B7%B5"><span class="toc-text">etcd 实践</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#etcd-v2-%E5%8A%9F%E8%83%BD"><span class="toc-text">etcd v2 功能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#etcd-v2-%E5%AD%98%E5%9C%A8%E7%9A%84%E9%97%AE%E9%A2%98"><span class="toc-text">etcd v2 存在的问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#k8s-%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8-etcd"><span class="toc-text">k8s 为什么使用 etcd</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#etcd-v3-%E4%BC%98%E5%8C%96%E4%BA%86%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">etcd v3 优化了什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#etcd-v3-%E5%9F%BA%E7%A1%80%E6%9E%B6%E6%9E%84"><span class="toc-text">etcd v3  基础架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E8%87%B4%E6%80%A7%E8%AF%BB"><span class="toc-text">一致性读</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%B2%E8%A1%8C%E8%AF%BB-Serializable"><span class="toc-text">串行读(Serializable)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BA%BF%E6%80%A7%E8%AF%BB"><span class="toc-text">线性读</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MVCC"><span class="toc-text">MVCC</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#treeIndex"><span class="toc-text">treeIndex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Revision%E6%A6%82%E5%BF%B5"><span class="toc-text">Revision概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#buffer"><span class="toc-text">buffer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#boltdb"><span class="toc-text">boltdb</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#etcd%E4%B8%80%E4%B8%AA%E5%86%99%E8%AF%B7%E6%B1%82%E6%98%AF%E5%A6%82%E4%BD%95%E6%89%A7%E8%A1%8C%E7%9A%84%EF%BC%9F"><span class="toc-text">etcd一个写请求是如何执行的？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Quota-%E6%A8%A1%E5%9D%97"><span class="toc-text">Quota 模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#KVServer-%E6%A8%A1%E5%9D%97"><span class="toc-text">KVServer 模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Preflight-Check"><span class="toc-text">Preflight Check</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Propose"><span class="toc-text">Propose</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#WAL-%E6%A8%A1%E5%9D%97"><span class="toc-text">WAL 模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Apply-%E6%A8%A1%E5%9D%97"><span class="toc-text">Apply 模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVCC-%E6%A8%A1%E5%9D%97"><span class="toc-text">MVCC 模块</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#treeIndex-1"><span class="toc-text">treeIndex</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#boltdb-1"><span class="toc-text">boltdb</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%89%B4%E6%9D%83%EF%BC%9A%E5%A6%82%E4%BD%95%E4%BF%9D%E6%8A%A4%E4%BD%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E5%AE%89%E5%85%A8%EF%BC%9F"><span class="toc-text">鉴权：如何保护你的数据安全？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Lease"><span class="toc-text">Lease</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#key-%E5%A6%82%E4%BD%95%E5%85%B3%E8%81%94-Lease"><span class="toc-text">key 如何关联 Lease</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96-Lease-%E7%BB%AD%E6%9C%9F%E6%80%A7%E8%83%BD"><span class="toc-text">如何优化 Lease 续期性能</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E9%AB%98%E6%95%88%E6%B7%98%E6%B1%B0%E8%BF%87%E6%9C%9F-Lease"><span class="toc-text">如何高效淘汰过期 Lease</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#MVCC%EF%BC%9A%E5%A6%82%E4%BD%95%E5%AE%9E%E7%8E%B0%E5%A4%9A%E7%89%88%E6%9C%AC%E5%B9%B6%E5%8F%91%E6%8E%A7%E5%88%B6%EF%BC%9F"><span class="toc-text">MVCC：如何实现多版本并发控制？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#treeIndex-%E5%8E%9F%E7%90%86"><span class="toc-text">treeIndex 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVCC-%E6%9B%B4%E6%96%B0-key-%E5%8E%9F%E7%90%86"><span class="toc-text">MVCC 更新 key 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVCC-%E6%9F%A5%E8%AF%A2-key-%E5%8E%9F%E7%90%86"><span class="toc-text">MVCC 查询 key 原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MVCC-%E5%88%A0%E9%99%A4-key-%E5%8E%9F%E7%90%86"><span class="toc-text">MVCC 删除 key 原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Watche"><span class="toc-text">Watche</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3-vs-MVCC"><span class="toc-text">滑动窗口 vs MVCC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AF%E9%9D%A0%E7%9A%84%E4%BA%8B%E4%BB%B6%E6%8E%A8%E9%80%81%E6%9C%BA%E5%88%B6"><span class="toc-text">可靠的事件推送机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%82%E5%B8%B8%E5%9C%BA%E6%99%AF%E9%87%8D%E8%AF%95%E6%9C%BA%E5%88%B6"><span class="toc-text">异常场景重试机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%86%E5%8F%B2%E4%BA%8B%E4%BB%B6%E6%8E%A8%E9%80%81%E6%9C%BA%E5%88%B6"><span class="toc-text">历史事件推送机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%AB%98%E6%95%88%E7%9A%84%E4%BA%8B%E4%BB%B6%E5%8C%B9%E9%85%8D"><span class="toc-text">高效的事件匹配</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E5%AE%9E%E7%8E%B0"><span class="toc-text">事务实现</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8B%E5%8A%A1%E7%89%B9%E6%80%A7%E5%88%9D%E4%BD%93%E9%AA%8C%E5%8F%8A-API"><span class="toc-text">事务特性初体验及 API</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#boltdb%EF%BC%9A%E5%A6%82%E4%BD%95%E6%8C%81%E4%B9%85%E5%8C%96%E5%AD%98%E5%82%A8%E4%BD%A0%E7%9A%84key-value%E6%95%B0%E6%8D%AE%EF%BC%9F"><span class="toc-text">boltdb：如何持久化存储你的key-value数据？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#boltdb-%E7%A3%81%E7%9B%98%E5%B8%83%E5%B1%80"><span class="toc-text">boltdb 磁盘布局</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%9B%9E%E6%94%B6%E6%97%A7%E7%89%88%E6%9C%AC%E6%95%B0%E6%8D%AE%EF%BC%9F"><span class="toc-text">如何回收旧版本数据？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8E%8B%E7%BC%A9%E5%8E%9F%E7%90%86"><span class="toc-text">压缩原理</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#db%E5%A4%A7%E5%B0%8F%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88etcd%E7%A4%BE%E5%8C%BA%E5%BB%BA%E8%AE%AEdb%E5%A4%A7%E5%B0%8F%E4%B8%8D%E8%B6%85%E8%BF%878G%EF%BC%9F"><span class="toc-text">db大小：为什么etcd社区建议db大小不超过8G？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%BB%B6%E6%97%B6%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%A0%E7%9A%84etcd%E8%AF%B7%E6%B1%82%E4%BC%9A%E5%87%BA%E7%8E%B0%E8%B6%85%E6%97%B6%EF%BC%9F"><span class="toc-text">延时：为什么你的etcd请求会出现超时？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E5%AD%98%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%A0%E7%9A%84etcd%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E9%82%A3%E4%B9%88%E9%AB%98%EF%BC%9F"><span class="toc-text">内存：为什么你的etcd内存占用那么高？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96%E5%8F%8A%E6%89%A9%E5%B1%95etcd%E6%80%A7%E8%83%BD%EF%BC%9F"><span class="toc-text">如何优化及扩展etcd性能？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ZooKeeper-%E6%9E%B6%E6%9E%84%E5%8F%8A%E5%8E%9F%E7%90%86"><span class="toc-text">ZooKeeper 架构及原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Consul-%E6%9E%B6%E6%9E%84%E5%8F%8A%E5%8E%9F%E7%90%86"><span class="toc-text">Consul 架构及原理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#etcd-vs-ZooKeeper-vs-Consul"><span class="toc-text">etcd vs ZooKeeper vs Consul</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E5%8E%9F%E8%AF%AD"><span class="toc-text">并发原语</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%A5%E5%BA%B7%E6%A3%80%E6%9F%A5%E3%80%81%E6%9C%8D%E5%8A%A1%E5%8F%91%E7%8E%B0"><span class="toc-text">健康检查、服务发现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B%E6%AF%94%E8%BE%83"><span class="toc-text">数据模型比较</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Watch-%E7%89%B9%E6%80%A7%E6%AF%94%E8%BE%83"><span class="toc-text">Watch 特性比较</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E6%AF%94%E8%BE%83"><span class="toc-text">其他比较</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E6%9E%84%E5%BB%BA%E9%AB%98%E5%8F%AF%E9%9D%A0%E7%9A%84etcd%E9%9B%86%E7%BE%A4%E8%BF%90%E7%BB%B4%E4%BD%93%E7%B3%BB"><span class="toc-text">如何构建高可靠的etcd集群运维体系</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/ETCD"><i class="tag post-item-tag">ETCD</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《ETCD实战》</h1><time class="has-text-grey" datetime="2021-04-11T02:00:35.000Z">2021-04-11</time><article class="mt-2 post-content"><p>摘录与 <a target="_blank" rel="noopener" href="https://time.geekbang.org/column/intro/100069901">《ETCD实战》</a></p>
+<h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><h3 id="ectd-常见问题"><a href="#ectd-常见问题" class="headerlink" title="ectd 常见问题"></a>ectd 常见问题</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-6a4c12fdbe8c1b3d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="etcd-基础"><a href="#etcd-基础" class="headerlink" title="etcd 基础"></a>etcd 基础</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-7a51863c44d3fbbb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="etcd-实践"><a href="#etcd-实践" class="headerlink" title="etcd 实践"></a>etcd 实践</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-0045c746c46a13d7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="etcd-v2-功能"><a href="#etcd-v2-功能" class="headerlink" title="etcd v2 功能"></a>etcd v2 功能</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-846c8936494bfca4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="etcd-v2-存在的问题"><a href="#etcd-v2-存在的问题" class="headerlink" title="etcd v2 存在的问题"></a>etcd v2 存在的问题</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-4d41e6351ebb71e1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>第一，etcd v2 不支持范围查询和分页。分页对于数据较多的场景是必不可少的。在 Kubernetes 中，在集群规模增大后，Pod、Event 等资源可能会出现数千个以上，但是 etcd v2 不支持分页，不支持范围查询，大包等 expensive request 会导致严重的性能乃至雪崩问题。</li>
+<li>第二，etcd v2 不支持多 key 事务。在实际转账等业务场景中，往往我们需要在一个事务中同时更新多个 key。</li>
+<li>然后是 Watch 机制可靠性问题。Kubernetes 项目严重依赖 etcd Watch 机制，然而 etcd v2 是内存型、不支持保存 key 历史版本的数据库，只在内存中使用滑动窗口保存了最近的 1000 条变更事件，当 etcd server 写请求较多、网络波动时等场景，很容易出现事件丢失问题，进而又触发 client 数据全量拉取，产生大量 expensive request，甚至导致 etcd 雪崩。</li>
+<li>其次是性能瓶颈问题。etcd v2 早期使用了简单、易调试的 HTTP/1.x API，但是随着 Kubernetes 支撑的集群规模越来越大，HTTP/1.x 协议的瓶颈逐渐暴露出来。比如集群规模大时，由于 HTTP/1.x 协议没有压缩机制，批量拉取较多 Pod 时容易导致 APIServer 和 etcd 出现 CPU 高负载、OOM、丢包等问题。</li>
+<li>另一方面，etcd v2 client 会通过 HTTP 长连接轮询 Watch 事件，当 watcher 较多的时候，因 HTTP/1.x 不支持多路复用，会创建大量的连接，消耗 server 端过多的 socket 和内存资源。</li>
+<li>同时 etcd v2 支持为每个 key 设置 TTL 过期时间，client 为了防止 key 的 TTL 过期后被删除，需要周期性刷新 key 的 TTL。</li>
+<li>实际业务中很有可能若干 key 拥有相同的 TTL，可是在 etcd v2 中，即使大量 key TTL 一样，你也需要分别为每个 key 发起续期操作，当 key 较多的时候，这会显著增加集群负载、导致集群性能显著下降。</li>
+<li>最后是内存开销问题。etcd v2 在内存维护了一颗树来保存所有节点 key 及 value。在数据量场景略大的场景，如配置项较多、存储了大量 Kubernetes Events， 它会导致较大的内存开销，同时 etcd 需要定时把全量内存树持久化到磁盘。这会消耗大量的 CPU 和磁盘 I/O 资源，对系统的稳定性造成一定影响。</li>
+</ul>
+<h3 id="k8s-为什么使用-etcd"><a href="#k8s-为什么使用-etcd" class="headerlink" title="k8s 为什么使用 etcd"></a>k8s 为什么使用 etcd</h3><ul>
+<li>一方面当时包括 Consul 在内，没有一个开源项目是十全十美完全满足 Kubernetes 需求。而 CoreOS 团队一直在聆听社区的声音并积极改进，解决社区的痛点。用户吐槽 etcd 不稳定，他们就设计实现自动化的测试方案，模拟、注入各类故障场景，及时发现修复 Bug，以提升 etcd 稳定性。</li>
+<li>另一方面，用户吐槽性能问题，针对 etcd v2 各种先天性缺陷问题，他们从 2015 年就开始设计、实现新一代 etcd v3 方案去解决以上痛点，并积极参与 Kubernetes 项目，负责 etcd v2 到 v3 的存储引擎切换，推动 Kubernetes 项目的前进。同时，设计开发通用压测工具、输出 Consul、ZooKeeper、etcd 性能测试报告，证明 etcd 的优越性。</li>
+</ul>
+<h3 id="etcd-v3-优化了什么？"><a href="#etcd-v3-优化了什么？" class="headerlink" title="etcd v3 优化了什么？"></a>etcd v3 优化了什么？</h3><p>etcd v3 就是为了解决以上稳定性、扩展性、性能问题而诞生的。</p>
+<ul>
+<li>在内存开销、Watch 事件可靠性、功能局限上，它通过引入 B-tree、boltdb 实现一个 MVCC 数据库，数据模型从层次型目录结构改成扁平的 key-value，提供稳定可靠的事件通知，实现了事务，支持多 key 原子更新，同时基于 boltdb 的持久化存储，显著降低了 etcd 的内存占用、避免了 etcd v2 定期生成快照时的昂贵的资源开销。</li>
+<li>性能上，首先 etcd v3 使用了 gRPC API，使用 protobuf 定义消息，消息编解码性能相比 JSON 超过 2 倍以上，并通过 HTTP/2.0 多路复用机制，减少了大量 watcher 等场景下的连接数。</li>
+<li>其次使用 Lease 优化 TTL 机制，每个 Lease 具有一个 TTL，相同的 TTL 的 key 关联一个 Lease，Lease 过期的时候自动删除相关联的所有 key，不再需要为每个 key 单独续期。</li>
+<li>最后是 etcd v3 支持范围、分页查询，可避免大包等 expensive request。</li>
+</ul>
+<h3 id="etcd-v3-基础架构"><a href="#etcd-v3-基础架构" class="headerlink" title="etcd v3  基础架构"></a>etcd v3  基础架构</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-f43d1b5966e1970d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>Client 层：Client 层包括 client v2 和 v3 两个大版本 API 客户端库，提供了简洁易用的 API，同时支持负载均衡、节点间故障自动转移，可极大降低业务使用 etcd 复杂度，提升开发效率、服务可用性。</li>
+<li>API 网络层：API 网络层主要包括 client 访问 server 和 server 节点之间的通信协议。一方面，client 访问 etcd server 的 API 分为 v2 和 v3 两个大版本。v2 API 使用 HTTP/1.x 协议，v3 API 使用 gRPC 协议。同时 v3 通过 etcd grpc-gateway 组件也支持 HTTP/1.x 协议，便于各种语言的服务调用。另一方面，server 之间通信协议，是指节点间通过 Raft 算法实现数据复制和 Leader 选举等功能时使用的 HTTP 协议。</li>
+<li>Raft 算法层：Raft 算法层实现了 Leader 选举、日志复制、ReadIndex 等核心算法特性，用于保障 etcd 多个节点间的数据一致性、提升服务可用性等，是 etcd 的基石和亮点。</li>
+<li>功能逻辑层：etcd 核心特性实现层，如典型的 KVServer 模块、MVCC 模块、Auth 鉴权模块、Lease 租约模块、Compactor 压缩模块等，其中 MVCC 模块主要由 treeIndex 模块和 boltdb 模块组成。</li>
+<li>存储层：存储层包含预写日志 (WAL) 模块、快照 (Snapshot) 模块、boltdb 模块。其中 WAL 可保障 etcd crash 后数据不丢失，boltdb 则保存了集群元数据和用户写入的数据。</li>
+</ul>
+<h2 id="一致性读"><a href="#一致性读" class="headerlink" title="一致性读"></a>一致性读</h2><h3 id="串行读-Serializable"><a href="#串行读-Serializable" class="headerlink" title="串行读(Serializable)"></a>串行读(Serializable)</h3><p>这种直接读状态机数据返回、无需通过 Raft 协议与集群进行交互的模式，在 etcd 里叫做<strong>串行 (Serializable) 读</strong>，它具有低延时、高吞吐量的特点，适合对数据一致性要求不高的场景。</p>
+<p>这里为了帮助你更好的理解读流程，我先简单提下写流程。如下图所示，当 client 发起一个更新 hello 为 world 请求后，若 Leader 收到写请求，它会将此请求持久化到 WAL 日志，并广播给各个节点，若一半以上节点持久化成功，则该请求对应的日志条目被标识为已提交，etcdserver 模块异步从 Raft 模块获取已提交的日志条目，应用到状态机 (boltdb 等)。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ce8de03ddd7686eb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="线性读"><a href="#线性读" class="headerlink" title="线性读"></a>线性读</h3><p>前面我们聊到串行读时提到，它之所以能读到旧数据，主要原因是 Follower 节点收到 Leader 节点同步的写请求后，应用日志条目到状态机是个异步过程，那么我们能否有一种机制在读取的时候，确保最新的数据已经应用到状态机中？</p>
+<p>其实这个机制就是叫 ReadIndex，它是在 etcd 3.1 中引入的，我把简化后的原理图放在了上面。当收到一个线性读请求时，它首先会从 Leader 获取集群最新的已提交的日志索引 (committed index)，如上图中的流程二所示。</p>
+<p>Leader 收到 ReadIndex 请求时，为防止脑裂等异常场景，会向 Follower 节点发送心跳确认，一半以上节点确认 Leader 身份后才能将已提交的索引 (committed index) 返回给节点 C(上图中的流程三)。</p>
+<p>C 节点则会等待，直到状态机已应用索引 (applied index) 大于等于 Leader 的已提交索引时 (committed Index)(上图中的流程四)，然后去通知读请求，数据已赶上 Leader，你可以去状态机中访问数据了 (上图中的流程五)。</p>
+<p>以上就是线性读通过 ReadIndex 机制保证数据一致性原理， 当然还有其它机制也能实现线性读，如在早期 etcd 3.0 中读请求通过走一遍 Raft 协议保证一致性， 这种 Raft log read 机制依赖磁盘 IO， 性能相比 ReadIndex 较差。</p>
+<p>总体而言，KVServer 模块收到线性读请求后，通过架构图中流程三向 Raft 模块发起 ReadIndex 请求，Raft 模块将 Leader 最新的已提交日志索引封装在流程四的 ReadState 结构体，通过 channel 层层返回给线性读模块，线性读模块等待本节点状态机追赶上 Leader 进度，追赶完成后，就通知 KVServer 模块，进行架构图中流程五，与状态机中的 MVCC 模块进行进行交互了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3368ebb43c1137e0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="MVCC"><a href="#MVCC" class="headerlink" title="MVCC"></a>MVCC</h2><p>流程五中的多版本并发控制 (Multiversion concurrency control) 模块是为了解决上一讲我们提到 etcd v2 不支持保存 key 的历史版本、不支持多 key 事务等问题而产生的。</p>
+<p>它核心由内存树形索引模块 (treeIndex) 和嵌入式的 KV 持久化存储库 boltdb 组成。</p>
+<p>首先我们需要简单了解下 boltdb，它是个基于 B+ tree 实现的 key-value 键值库，支持事务，提供 Get/Put 等简易 API 给 etcd 操作。</p>
+<p>那么 etcd 如何基于 boltdb 保存一个 key 的多个历史版本呢?</p>
+<p>比如我们现在有以下方案：方案 1 是一个 key 保存多个历史版本的值；方案 2 每次修改操作，生成一个新的版本号 (revision)，以版本号为 key， value 为用户 key-value 等信息组成的结构体。</p>
+<p>很显然方案 1 会导致 value 较大，存在明显读写放大、并发冲突等问题，而方案 2 正是 etcd 所采用的。boltdb 的 key 是全局递增的版本号 (revision)，value 是用户 key、value 等字段组合成的结构体，然后通过 treeIndex 模块来保存用户 key 和版本号的映射关系。</p>
+<p>treeIndex 与 boltdb 关系如下面的读事务流程图所示，从 treeIndex 中获取 key hello 的版本号，再以版本号作为 boltdb 的 key，从 boltdb 中获取其 value 信息。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0655f1f122af857d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="treeIndex"><a href="#treeIndex" class="headerlink" title="treeIndex"></a>treeIndex</h3><p>treeIndex 模块是基于 Google 开源的内存版 btree 库实现的，为什么 etcd 选择上图中的 B-tree 数据结构保存用户 key 与版本号之间的映射关系，而不是哈希表、二叉树呢？在后面的课程中我会再和你介绍。</p>
+<p>treeIndex 模块只会保存用户的 key 和相关版本号信息，用户 key 的 value 数据存储在 boltdb 里面，相比 ZooKeeper 和 etcd v2 全内存存储，etcd v3 对内存要求更低。</p>
+<p>简单介绍了 etcd 如何保存 key 的历史版本后，架构图中流程六也就非常容易理解了， 它需要从 treeIndex 模块中获取 hello 这个 key 对应的版本号信息。treeIndex 模块基于 B-tree 快速查找此 key，返回此 key 对应的索引项 keyIndex 即可。索引项中包含版本号等信息。</p>
+<h3 id="Revision概念"><a href="#Revision概念" class="headerlink" title="Revision概念"></a>Revision概念</h3><p>etcd存储数据时，实际存储引擎中存放的key并不是我们实际PUT的KV中的K，而是以数据的revision作为key，value中存放的是数据的KV。</p>
+<p>revision由2部分组成：{main revision, sub revision}。每次事务main revision都会递增，同一个事务中，每次操作sub revision都会自增1。这两个结合就能保证每次key唯一而且是递增的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2ef64b1e6c19b3e8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>举个例子：比如通过批量接口两次更新两对键值，第一次写入数据时，写入&lt;key1,value1&gt;和&lt;key2,value2&gt;，在Etcd这边的存储看来，存放的数据就是这样的：</p>
+<p> revision={1,0}, key=key1, value=value1<br> revision={1,1}, key=key2, value=value2</p>
+<p>而在第二次更新写入数据&lt;key1,update1&gt;和&lt;key2,update2&gt;后，存储中又记录（注意不是覆盖前面的数据）了以下数据：</p>
+<p>revision={2,0}, key=key1, value=update1<br>revision={2,1}, key=key2, value=update2</p>
+<p>对于客户端来说，每次操作的时候是根据Key来进行操作的，所以这里就需要一个Key映射到当前revision的操作了，为了做到这个映射关系，Etcd引入了一个内存中的Btree索引，整个操作过程如下面的流程所示。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1656c71d0bd70123.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>查询时，先通过内存中的btree索引来查询该key对应的keyIndex结构体，然后再根据这个结构体才能去boltdb中查询真实的数据返回。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/etcd-io/etcd/blob/master/server/mvcc/key_index.go">keyIndex相关实现可参考源码</a></p>
+<h3 id="buffer"><a href="#buffer" class="headerlink" title="buffer"></a>buffer</h3><p>在获取到版本号信息后，就可从 boltdb 模块中获取用户的 key-value 数据了。不过有一点你要注意，并不是所有请求都一定要从 boltdb 获取数据。</p>
+<p>etcd 出于数据一致性、性能等考虑，在访问 boltdb 前，首先会从一个内存读事务 buffer 中，二分查找你要访问 key 是否在 buffer 里面，若命中则直接返回。</p>
+<h3 id="boltdb"><a href="#boltdb" class="headerlink" title="boltdb"></a>boltdb</h3><p>若 buffer 未命中，此时就真正需要向 boltdb 模块查询数据了，进入了流程七。</p>
+<p>我们知道 MySQL 通过 table 实现不同数据逻辑隔离，那么在 boltdb 是如何隔离集群元数据与用户数据的呢？答案是 bucket。boltdb 里每个 bucket 类似对应 MySQL 一个表，用户的 key 数据存放的 bucket 名字的是 key，etcd MVCC 元数据存放的 bucket 是 meta。</p>
+<p>因 boltdb 使用 B+ tree 来组织用户的 key-value 数据，获取 bucket key 对象后，通过 boltdb 的游标 Cursor 可快速在 B+ tree 找到 key hello 对应的 value 数据，返回给 client。</p>
+<h2 id="etcd一个写请求是如何执行的？"><a href="#etcd一个写请求是如何执行的？" class="headerlink" title="etcd一个写请求是如何执行的？"></a>etcd一个写请求是如何执行的？</h2><p>首先 client 端通过负载均衡算法选择一个 etcd 节点，发起 gRPC 调用。然后 etcd 节点收到请求后经过 gRPC 拦截器、Quota 模块后，进入 KVServer 模块，KVServer 模块向 Raft 模块提交一个提案，提案内容为“大家好，请使用 put 方法执行一个 key 为 hello，value 为 world 的命令”。</p>
+<p>随后此提案通过 RaftHTTP 网络模块转发、经过集群多数节点持久化后，状态会变成已提交，etcdserver 从 Raft 模块获取已提交的日志条目，传递给 Apply 模块，Apply 模块通过 MVCC 模块执行提案内容，更新状态机。</p>
+<p>与读流程不一样的是写流程还涉及 Quota、WAL、Apply 三个模块。crash-safe 及幂等性也正是基于 WAL 和 Apply 流程的 consistent index 等实现的，因此今天我会重点和你介绍这三个模块。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-751ba712a40e8ddd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="Quota-模块"><a href="#Quota-模块" class="headerlink" title="Quota 模块"></a>Quota 模块</h3><p>我们先从此模块的一个常见错误说起，你在使用 etcd 过程中是否遇到过”etcdserver: mvcc: database space exceeded”错误呢？</p>
+<p>哪些情况会触发这个错误呢？</p>
+<p>一方面默认 db 配额仅为 2G，当你的业务数据、写入 QPS、Kubernetes 集群规模增大后，你的 etcd db 大小就可能会超过 2G。</p>
+<p>另一方面我们知道 etcd v3 是个 MVCC 数据库，保存了 key 的历史版本，当你未配置压缩策略的时候，随着数据不断写入，db 大小会不断增大，导致超限。</p>
+<p>当 etcd server 收到 put/txn 等写请求的时候，会首先检查下当前 etcd db 大小加上你请求的 key-value 大小之和是否超过了配额（quota-backend-bytes）。</p>
+<p>如果超过了配额，它会产生一个告警（Alarm）请求，告警类型是 NO SPACE，并通过 Raft 日志同步给其它节点，告知 db 无空间了，并将告警持久化存储到 db 中。</p>
+<p>最终，无论是 API 层 gRPC 模块还是负责将 Raft 侧已提交的日志条目应用到状态机的 Apply 模块，都拒绝写入，集群只读。</p>
+<p>最后你需要注意配额（quota-backend-bytes）的行为，默认’0’就是使用 etcd 默认的 2GB 大小，你需要根据你的业务场景适当调优。如果你填的是个小于 0 的数，就会禁用配额功能，这可能会让你的 db 大小处于失控，导致性能下降，不建议你禁用配额。</p>
+<h3 id="KVServer-模块"><a href="#KVServer-模块" class="headerlink" title="KVServer 模块"></a>KVServer 模块</h3><p>通过流程二的配额检查后，请求就从 API 层转发到了流程三的 KVServer 模块的 put 方法，我们知道 etcd 是基于 Raft 算法实现节点间数据复制的，因此它需要将 put 写请求内容打包成一个提案消息，提交给 Raft 模块。不过 KVServer 模块在提交提案前，还有如下的一系列检查和限速。</p>
+<h3 id="Preflight-Check"><a href="#Preflight-Check" class="headerlink" title="Preflight Check"></a>Preflight Check</h3><p>为了保证集群稳定性，避免雪崩，任何提交到 Raft 模块的请求，都会做一些简单的限速判断。如下面的流程图所示，首先，如果 Raft 模块已提交的日志索引（committed index）比已应用到状态机的日志索引（applied index）超过了 5000，那么它就返回一个”etcdserver: too many requests”错误给 client。</p>
+<p>然后它会尝试去获取请求中的鉴权信息，若使用了密码鉴权、请求中携带了 token，如果 token 无效，则返回”auth: invalid auth token”错误给 client。</p>
+<p>其次它会检查你写入的包大小是否超过默认的 1.5MB， 如果超过了会返回”etcdserver: request is too large”错误给给 client。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9e6c8d27185e179d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="Propose"><a href="#Propose" class="headerlink" title="Propose"></a>Propose</h3><p>最后通过一系列检查之后，会生成一个唯一的 ID，将此请求关联到一个对应的消息通知 channel，然后向 Raft 模块发起（Propose）一个提案（Proposal），提案内容为“大家好，请使用 put 方法执行一个 key 为 hello，value 为 world 的命令”，也就是整体架构图里的流程四。</p>
+<p>向 Raft 模块发起提案后，KVServer 模块会等待此 put 请求，等待写入结果通过消息通知 channel 返回或者超时。etcd 默认超时时间是 7 秒（5 秒磁盘 IO 延时 +2*1 秒竞选超时时间），如果一个请求超时未返回结果，则可能会出现你熟悉的 etcdserver: request timed out 错误。</p>
+<h3 id="WAL-模块"><a href="#WAL-模块" class="headerlink" title="WAL 模块"></a>WAL 模块</h3><p>Raft 模块收到提案后，如果当前节点是 Follower，它会转发给 Leader，只有 Leader 才能处理写请求。Leader 收到提案后，通过 Raft 模块输出待转发给 Follower 节点的消息和待持久化的日志条目，日志条目则封装了我们上面所说的 put hello 提案内容。</p>
+<p>etcdserver 从 Raft 模块获取到以上消息和日志条目后，作为 Leader，它会将 put 提案消息广播给集群各个节点，同时需要把集群 Leader 任期号、投票信息、已提交索引、提案内容持久化到一个 WAL（Write Ahead Log）日志文件中，用于保证集群的一致性、可恢复性，也就是我们图中的流程五模块。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2d55dbd454774fb9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>上图是 WAL 结构，它由多种类型的 WAL 记录顺序追加写入组成，每个记录由类型、数据、循环冗余校验码组成。不同类型的记录通过 Type 字段区分，Data 为对应记录内容，CRC 为循环校验码信息。</p>
+<ul>
+<li>文件元数据记录包含节点 ID、集群 ID 信息，它在 WAL 文件创建的时候写入；</li>
+<li>日志条目记录包含 Raft 日志信息，如 put 提案内容；状态信息记录，包含集群的任期号、节点投票信息等，一个日志文件中会有多条，以最后的记录为准；</li>
+<li>CRC 记录包含上一个 WAL 文件的最后的 CRC（循环冗余校验码）信息， 在创建、切割 WAL 文件时，作为第一条记录写入到新的 WAL 文件， 用于校验数据文件的完整性、准确性等；</li>
+<li>快照记录包含快照的任期号、日志索引信息，用于检查快照文件的准确性。</li>
+</ul>
+<p>首先我们来看看 put 写请求如何封装在 Raft 日志条目里面。下面是 Raft 日志条目的数据结构信息，它由以下字段组成：</p>
+<ul>
+<li>Term 是 Leader 任期号，随着 Leader 选举增加；</li>
+<li>Index 是日志条目的索引，单调递增增加；</li>
+<li>Type 是日志类型，比如是普通的命令日志（EntryNormal）还是集群配置变更日志（EntryConfChange）；</li>
+<li>Data 保存我们上面描述的 put 提案内容。</li>
+</ul>
+<pre><code>    type Entry struct {
+       Term             uint64    `protobuf:"varint，2，opt，name=Term" json:"Term"`
+       Index            uint64    `protobuf:"varint，3，opt，name=Index" json:"Index"`
+       Type             EntryType `protobuf:"varint，1，opt，name=Type，enum=Raftpb.EntryType" json:"Type"`
+       Data             []byte    `protobuf:"bytes，4，opt，name=Data" json:"Data，omitempty"`
+    }
+    
+</code></pre>
+<p>了解完 Raft 日志条目数据结构后，我们再看 WAL 模块如何持久化 Raft 日志条目。它首先先将 Raft 日志条目内容（含任期号、索引、提案内容）序列化后保存到 WAL 记录的 Data 字段， 然后计算 Data 的 CRC 值，设置 Type 为 Entry Type， 以上信息就组成了一个完整的 WAL 记录。</p>
+<p>最后计算 WAL 记录的长度，顺序先写入 WAL 长度（Len Field），然后写入记录内容，调用 fsync 持久化到磁盘，完成将日志条目保存到持久化存储中。</p>
+<p>当一半以上节点持久化此日志条目后， Raft 模块就会通过 channel 告知 etcdserver 模块，put 提案已经被集群多数节点确认，提案状态为已提交，你可以执行此提案内容了。</p>
+<h3 id="Apply-模块"><a href="#Apply-模块" class="headerlink" title="Apply 模块"></a>Apply 模块</h3><p>执行 put 提案内容对应我们架构图中的流程七，其细节图如下。那么 Apply 模块是如何执行 put 请求的呢？若 put 请求提案在执行流程七的时候 etcd 突然 crash 了， 重启恢复的时候，etcd 是如何找回异常提案，再次执行的呢？</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-40611f161c5d582a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>核心就是我们上面介绍的 WAL 日志，因为提交给 Apply 模块执行的提案已获得多数节点确认、持久化，etcd 重启时，会从 WAL 中解析出 Raft 日志条目内容，追加到 Raft 日志的存储中，并重放已提交的日志提案给 Apply 模块执行。</p>
+<p>然而这又引发了另外一个问题，如何确保幂等性，防止提案重复执行导致数据混乱呢?</p>
+<p>我们在上一节课里讲到，etcd 是个 MVCC 数据库，每次更新都会生成新的版本号。如果没有幂等性保护，同样的命令，一部分节点执行一次，一部分节点遭遇异常故障后执行多次，则系统的各节点一致性状态无法得到保证，导致数据混乱，这是严重故障。</p>
+<p>因此 etcd 必须要确保幂等性。怎么做呢？Apply 模块从 Raft 模块获得的日志条目信息里，是否有唯一的字段能标识这个提案？</p>
+<p>答案就是我们上面介绍 Raft 日志条目中的索引（index）字段。日志条目索引是全局单调递增的，每个日志条目索引对应一个提案， 如果一个命令执行后，我们在 db 里面也记录下当前已经执行过的日志条目索引，是不是就可以解决幂等性问题呢？</p>
+<p>因此我们在实现上，还需要将两个操作作为原子性事务提交，才能实现幂等。正如我们上面的讨论的这样，etcd 通过引入一个 consistent index 的字段，来存储系统当前已经执行过的日志条目索引，实现幂等性。</p>
+<p>Apply 模块在执行提案内容前，首先会判断当前提案是否已经执行过了，如果执行了则直接返回，若未执行同时无 db 配额满告警，则进入到 MVCC 模块，开始与持久化存储模块打交道。</p>
+<h3 id="MVCC-模块"><a href="#MVCC-模块" class="headerlink" title="MVCC 模块"></a>MVCC 模块</h3><p>Apply 模块判断此提案未执行后，就会调用 MVCC 模块来执行提案内容。MVCC 主要由两部分组成，一个是内存索引模块 treeIndex，保存 key 的历史版本号信息，另一个是 boltdb 模块，用来持久化存储 key-value 数据。那么 MVCC 模块执行 put hello 为 world 命令时，它是如何构建内存索引和保存哪些数据到 db 呢？</p>
+<h4 id="treeIndex-1"><a href="#treeIndex-1" class="headerlink" title="treeIndex"></a>treeIndex</h4><p>首先我们来看 MVCC 的索引模块 treeIndex，当收到更新 key hello 为 world 的时候，此 key 的索引版本号信息是怎么生成的呢？需要维护、持久化存储一个全局版本号吗？</p>
+<p>版本号（revision）在 etcd 里面发挥着重大作用，它是 etcd 的逻辑时钟。etcd 启动的时候默认版本号是 1，随着你对 key 的增、删、改操作而全局单调递增。</p>
+<p>因为 boltdb 中的 key 就包含此信息，所以 etcd 并不需要再去持久化一个全局版本号。我们只需要在启动的时候，从最小值 1 开始枚举到最大值，未读到数据的时候则结束，最后读出来的版本号即是当前 etcd 的最大版本号 currentRevision。</p>
+<p>MVCC 写事务在执行 put hello 为 world 的请求时，会基于 currentRevision 自增生成新的 revision 如{2,0}，然后从 treeIndex 模块中查询 key 的创建版本号、修改次数信息。这些信息将填充到 boltdb 的 value 中，同时将用户的 hello key 和 revision 等信息存储到 B-tree，也就是下面简易写事务图的流程一，整体架构图中的流程八。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fd09e01bcc5f58e4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h4 id="boltdb-1"><a href="#boltdb-1" class="headerlink" title="boltdb"></a>boltdb</h4><p>MVCC 写事务自增全局版本号后生成的 revision{2,0}，它就是 boltdb 的 key，通过它就可以往 boltdb 写数据了，进入了整体架构图中的流程九。</p>
+<p>boltdb 上一篇我们提过它是一个基于 B+tree 实现的 key-value 嵌入式 db，它通过提供桶（bucket）机制实现类似 MySQL 表的逻辑隔离。</p>
+<p>在 etcd 里面你通过 put/txn 等 KV API 操作的数据，全部保存在一个名为 key 的桶里面，这个 key 桶在启动 etcd 的时候会自动创建。</p>
+<p>除了保存用户 KV 数据的 key 桶，etcd 本身及其它功能需要持久化存储的话，都会创建对应的桶。比如上面我们提到的 etcd 为了保证日志的幂等性，保存了一个名为 consistent index 的变量在 db 里面，它实际上就存储在元数据（meta）桶里面。</p>
+<p>写入 boltdb 的 value， 并不是简单的”world”，如果只存一个用户 value，索引又是保存在易失的内存上，那重启 etcd 后，我们就丢失了用户的 key 名，无法构建 treeIndex 模块了。</p>
+<p>因此为了构建索引和支持 Lease 等特性，etcd 会持久化以下信息:</p>
+<ul>
+<li>key 名称；</li>
+<li>key 创建时的版本号（create_revision）、最后一次修改时的版本号（mod_revision）、key 自身修改的次数（version）；</li>
+<li>value 值；</li>
+<li>租约信息（后面介绍）。</li>
+</ul>
+<p>boltdb value 的值就是将含以上信息的结构体序列化成的二进制数据，然后通过 boltdb 提供的 put 接口，etcd 就快速完成了将你的数据写入 boltdb，对应上面简易写事务图的流程二。</p>
+<p>事务提交的过程，包含 B+tree 的平衡、分裂，将 boltdb 的脏数据（dirty page）、元数据信息刷新到磁盘，因此事务提交的开销是昂贵的。如果我们每次更新都提交事务，etcd 写性能就会较差。</p>
+<p>那么解决的办法是什么呢？etcd 的解决方案是合并再合并。</p>
+<p>首先 boltdb key 是版本号，put/delete 操作时，都会基于当前版本号递增生成新的版本号，因此属于顺序写入，可以调整 boltdb 的 bucket.FillPercent 参数，使每个 page 填充更多数据，减少 page 的分裂次数并降低 db 空间。</p>
+<p>其次 etcd 通过合并多个写事务请求，通常情况下，是异步机制定时（默认每隔 100ms）将批量事务一次性提交（pending 事务过多才会触发同步提交）， 从而大大提高吞吐量，对应上面简易写事务图的流程三。</p>
+<p>但是这优化又引发了另外的一个问题， 因为事务未提交，读请求可能无法从 boltdb 获取到最新数据。</p>
+<p>为了解决这个问题，etcd 引入了一个 bucket buffer 来保存暂未提交的事务数据。在更新 boltdb 的时候，etcd 也会同步数据到 bucket buffer。因此 etcd 处理读请求的时候会优先从 bucket buffer 里面读取，其次再从 boltdb 读，通过 bucket buffer 实现读写性能提升，同时保证数据一致性。</p>
+<h2 id="鉴权：如何保护你的数据安全？"><a href="#鉴权：如何保护你的数据安全？" class="headerlink" title="鉴权：如何保护你的数据安全？"></a>鉴权：如何保护你的数据安全？</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-cddee559e8142793.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e98fff394c4715fe.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="Lease"><a href="#Lease" class="headerlink" title="Lease"></a>Lease</h2><p>我们今天的主题，Lease，正是基于主动型上报模式，提供的一种活性检测机制。Lease 顾名思义，client 和 etcd server 之间存在一个约定，内容是 etcd server 保证在约定的有效期内（TTL），不会删除你关联到此 Lease 上的 key-value。</p>
+<p>若你未在有效期内续租，那么 etcd server 就会删除 Lease 和其关联的 key-value。</p>
+<p>etcd 在启动的时候，创建 Lessor 模块的时候，它会启动两个常驻 goroutine，如上图所示，一个是 RevokeExpiredLease 任务，定时检查是否有过期 Lease，发起撤销过期的 Lease 操作。一个是 CheckpointScheduledLease，定时触发更新 Lease 的剩余到期时间的操作。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5a293b9ee062032d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="key-如何关联-Lease"><a href="#key-如何关联-Lease" class="headerlink" title="key 如何关联 Lease"></a>key 如何关联 Lease</h3><pre><code># 创建一个TTL为600秒的lease，etcd server返回LeaseID
+$ etcdctl lease grant 600
+lease 326975935f48f814 granted with TTL(600s)
+
+
+# 查看lease的TTL、剩余时间
+$ etcdctl lease timetolive 326975935f48f814
+lease 326975935f48f814 granted with TTL(600s)， remaining(590s)
+</code></pre>
+<p>很简单，KV 模块的 API 接口提供了一个”–lease”参数，你可以通过如下命令，将 key node 关联到对应的 LeaseID 上。然后你查询的时候增加 -w 参数输出格式为 json，就可查看到 key 关联的 LeaseID。</p>
+<pre><code>$ etcdctl put node healthy --lease 326975935f48f818
+OK
+$ etcdctl get node -w=json | python -m json.tool
+{
+    "kvs":[
+        {
+            "create_revision":24，
+            "key":"bm9kZQ=="，
+            "Lease":3632563850270275608，
+            "mod_revision":24，
+            "value":"aGVhbHRoeQ=="，
+            "version":1
+        }
+    ]
+}
+</code></pre>
+<h3 id="如何优化-Lease-续期性能"><a href="#如何优化-Lease-续期性能" class="headerlink" title="如何优化 Lease 续期性能"></a>如何优化 Lease 续期性能</h3><p>Lease 续期其实很简单，核心是将 Lease 的过期时间更新为当前系统时间加其 TTL。关键问题在于续期的性能能否满足业务诉求。</p>
+<p>etcd v3 版本为了解决以上问题，提出了 Lease 特性，TTL 属性转移到了 Lease 上， 同时协议从 HTTP/1.x 优化成 gRPC 协议。</p>
+<p>一方面不同 key 若 TTL 相同，可复用同一个 Lease， 显著减少了 Lease 数。另一方面，通过 gRPC HTTP/2 实现了多路复用，流式传输，同一连接可支持为多个 Lease 续期，大大减少了连接数。</p>
+<h3 id="如何高效淘汰过期-Lease"><a href="#如何高效淘汰过期-Lease" class="headerlink" title="如何高效淘汰过期 Lease"></a>如何高效淘汰过期 Lease</h3><p>etcd 早期的时候，淘汰 Lease 非常暴力。etcd 会直接遍历所有 Lease，逐个检查 Lease 是否过期，过期则从 Lease 关联的 key 集合中，取出 key 列表，删除它们，时间复杂度是 O(N)。</p>
+<p>然而这种方案随着 Lease 数增大，毫无疑问它的性能会变得越来越差。我们能否按过期时间排序呢？这样每次只需轮询、检查排在前面的 Lease 过期时间，一旦轮询到未过期的 Lease， 则可结束本轮检查。</p>
+<p>刚刚说的就是 etcd Lease 高效淘汰方案最小堆的实现方法。每次新增 Lease、续期的时候，它会插入、更新一个对象到最小堆中，对象含有 LeaseID 和其到期时间 unixnano，对象之间按到期时间升序排序。</p>
+<p>etcd Lessor 主循环每隔 500ms 执行一次撤销 Lease 检查（RevokeExpiredLease），每次轮询堆顶的元素，若已过期则加入到待淘汰列表，直到堆顶的 Lease 过期时间大于当前，则结束本轮轮询。</p>
+<p>相比早期 O(N) 的遍历时间复杂度，使用堆后，插入、更新、删除，它的时间复杂度是 O(Log N)，查询堆顶对象是否过期时间复杂度仅为 O(1)，性能大大提升，可支撑大规模场景下 Lease 的高效淘汰。</p>
+<p>Lessor 模块会将已确认过期的 LeaseID，保存在一个名为 expiredC 的 channel 中，而 etcd server 的主循环会定期从 channel 中获取 LeaseID，发起 revoke 请求，通过 Raft Log 传递给 Follower 节点。</p>
+<p>各个节点收到 revoke Lease 请求后，获取关联到此 Lease 上的 key 列表，从 boltdb 中删除 key，从 Lessor 的 Lease map 内存中删除此 Lease 对象，最后还需要从 boltdb 的 Lease bucket 中删除这个 Lease。</p>
+<h2 id="MVCC：如何实现多版本并发控制？"><a href="#MVCC：如何实现多版本并发控制？" class="headerlink" title="MVCC：如何实现多版本并发控制？"></a>MVCC：如何实现多版本并发控制？</h2><pre><code># 更新key hello为world1
+$ etcdctl put hello world1
+OK
+# 通过指定输出模式为json,查看key hello更新后的详细信息
+$ etcdctl get hello -w=json
+{
+    "kvs":[
+        {
+            "key":"aGVsbG8=",
+            "create_revision":2,
+            "mod_revision":2,
+            "version":1,
+            "value":"d29ybGQx"
+        }
+    ],
+    "count":1
+}
+# 再次修改key hello为world2
+$ etcdctl put hello world2
+OK
+# 确认修改成功,最新值为wolrd2
+$ etcdctl get hello
+hello
+world2
+# 指定查询版本号,获得了hello上一次修改的值
+$ etcdctl get hello --rev=2
+hello
+world1
+# 删除key hello
+$ etcdctl del  hello
+1
+# 删除后指定查询版本号3,获得了hello删除前的值
+$ etcdctl get hello --rev=3
+hello
+world2
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-983f7f459b1f3570.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>Apply 模块通过 MVCC 模块来执行 put 请求，持久化 key-value 数据。MVCC 模块将请求请划分成两个类别，分别是读事务（ReadTxn）和写事务（WriteTxn）。读事务负责处理 range 请求，写事务负责 put/delete 操作。读写事务基于 treeIndex、Backend/boltdb 提供的能力，实现对 key-value 的增删改查功能。</p>
+<p>treeIndex 模块基于内存版 B-tree 实现了 key 索引管理，它保存了用户 key 与版本号（revision）的映射关系等信息。</p>
+<p>Backend 模块负责 etcd 的 key-value 持久化存储，主要由 ReadTx、BatchTx、Buffer 组成，ReadTx 定义了抽象的读事务接口，BatchTx 在 ReadTx 之上定义了抽象的写事务接口，Buffer 是数据缓存区。</p>
+<p>etcd 设计上支持多种 Backend 实现，目前实现的 Backend 是 boltdb。boltdb 是一个基于 B+ tree 实现的、支持事务的 key-value 嵌入式数据库。</p>
+<p>treeIndex 与 boltdb 关系你可参考下图。当你发起一个 get hello 命令时，从 treeIndex 中获取 key 的版本号，然后再通过这个版本号，从 boltdb 获取 value 信息。boltdb 的 value 是包含用户 key-value、各种版本号、lease 信息的结构体。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a3a84c6e3b9c02e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="treeIndex-原理"><a href="#treeIndex-原理" class="headerlink" title="treeIndex 原理"></a>treeIndex 原理</h3><p>对于 etcd v2 来说，当你通过 etcdctl 发起一个 put hello 操作时，etcd v2 直接更新内存树，这就导致历史版本直接被覆盖，无法支持保存 key 的历史版本。在 etcd v3 中引入 treeIndex 模块正是为了解决这个问题，支持保存 key 的历史版本，提供稳定的 Watch 机制和事务隔离等能力。</p>
+<p>下面我就为你介绍下，etcd 保存用户 key 与版本号映射关系的数据结构 B-tree，为什么 etcd 使用它而不使用哈希表、平衡二叉树？</p>
+<p>从 etcd 的功能特性上分析， 因 etcd 支持范围查询，因此保存索引的数据结构也必须支持范围查询才行。所以哈希表不适合，而 B-tree 支持范围查询。</p>
+<pre><code>type keyIndex struct {
+   key         []byte //用户的key名称，比如我们案例中的"hello"
+   modified    revision //最后一次修改key时的etcd版本号,比如我们案例中的刚写入hello为world1时的，版本号为2
+   generations []generation //generation保存了一个key若干代版本号信息，每代中包含对key的多次修改的版本号列表
+}
+</code></pre>
+<p>keyIndex 中包含用户的 key、最后一次修改 key 时的 etcd 版本号、key 的若干代（generation）版本号信息，每代中包含对 key 的多次修改的版本号列表。那我们要如何理解 generations？为什么它是个数组呢?</p>
+<p>generations 表示一个 key 从创建到删除的过程，每代对应 key 的一个生命周期的开始与结束。当你第一次创建一个 key 时，会生成第 0 代，后续的修改操作都是在往第 0 代中追加修改版本号。当你把 key 删除后，它就会生成新的第 1 代，一个 key 不断经历创建、删除的过程，它就会生成多个代。</p>
+<pre><code>type generation struct {
+   ver     int64    //表示此key的修改次数
+   created revision //表示generation结构创建时的版本号
+   revs    []revision //每次修改key时的revision追加到此数组
+}
+</code></pre>
+<p>generation 结构中包含此 key 的修改次数、generation 创建时的版本号、对此 key 的修改版本号记录列表。</p>
+<p>你需要注意的是版本号（revision）并不是一个简单的整数，而是一个结构体。revision 结构及含义如下：</p>
+<pre><code>type revision struct {
+   main int64    // 一个全局递增的主版本号，随put/txn/delete事务递增，一个事务内的key main版本号是一致的
+   sub int64    // 一个事务内的子版本号，从0开始随事务内put/delete操作递增
+}
+</code></pre>
+<p>revision 包含 main 和 sub 两个字段，main 是全局递增的版本号，它是个 etcd 逻辑时钟，随着 put/txn/delete 等事务递增。sub 是一个事务内的子版本号，从 0 开始随事务内的 put/delete 操作递增。</p>
+<h3 id="MVCC-更新-key-原理"><a href="#MVCC-更新-key-原理" class="headerlink" title="MVCC 更新 key 原理"></a>MVCC 更新 key 原理</h3><p>当你通过 etcdctl 发起一个 put hello 操作时，如下面的 put 事务流程图流程一所示，在 put 写事务中，首先它需要从 treeIndex 模块中查询 key 的 keyIndex 索引信息，keyIndex 中存储了 key 的创建版本号、修改的次数等信息，这些信息在事务中发挥着重要作用，因此会存储在 boltdb 的 value 中。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ac5b5fa820818395.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>其次 etcd 会根据当前的全局版本号（空集群启动时默认为 1）自增，生成 put hello 操作对应的版本号 revision{2,0}，这就是 boltdb 的 key。</p>
+<p>boltdb 的 value 是 mvccpb.KeyValue 结构体，它是由用户 key、value、create_revision、mod_revision、version、lease 组成。它们的含义分别如下：</p>
+<ul>
+<li>create_revision 表示此 key 创建时的版本号。在我们的案例中，key hello 是第一次创建，那么值就是 2。当你再次修改 key hello 的时候，写事务会从 treeIndex 模块查询 hello 第一次创建的版本号，也就是 keyIndex.generations[i].created 字段，赋值给 create_revision 字段；</li>
+<li>mod_revision 表示 key 最后一次修改时的版本号，即 put 操作发生时的全局版本号加 1；</li>
+<li>version 表示此 key 的修改次数。每次修改的时候，写事务会从 treeIndex 模块查询 hello 已经历过的修改次数，也就是 keyIndex.generations[i].ver 字段，将 ver 字段值加 1 后，赋值给 version 字段。</li>
+</ul>
+<p>填充好 boltdb 的 KeyValue 结构体后，这时就可以通过 Backend 的写事务 batchTx 接口将 <strong>key{2,0},value 为 mvccpb.KeyValue</strong> 保存到 boltdb 的缓存中，并同步更新 buffer，如上图中的流程二所示。</p>
+<p>此时存储到 boltdb 中的 key、value 数据如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b98cc7e1e9988749.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>因为 key hello 是首次创建，treeIndex 模块它会生成 key hello 对应的 keyIndex 对象，并填充相关数据结构。</p>
+<p>keyIndex 填充后的结果如下所示：</p>
+<pre><code>key hello的keyIndex:
+key:     "hello"
+modified: &lt;2,0&gt;
+generations:
+[{ver:1,created:&lt;2,0&gt;,revisions: [&lt;2,0&gt;]} ]
+</code></pre>
+<ul>
+<li>key 为 hello，modified 为最后一次修改版本号 &lt;2,0&gt;，key hello 是首次创建的，因此新增一个 generation 代跟踪它的生命周期、修改记录；</li>
+<li>generation 的 ver 表示修改次数，首次创建为 1，后续随着修改操作递增；</li>
+<li>generation.created 表示创建 generation 时的版本号为 &lt;2,0&gt;；</li>
+<li>revision 数组保存对此 key 修改的版本号列表，每次修改都会将将相应的版本号追加到 revisions 数组中。</li>
+</ul>
+<p>但是此时数据还并未持久化，为了提升 etcd 的写吞吐量、性能，一般情况下（默认堆积的写事务数大于 1 万才在写事务结束时同步持久化），数据持久化由 Backend 的异步 goroutine 完成，它通过事务批量提交，定时将 boltdb 页缓存中的脏数据提交到持久化存储磁盘中，也就是下图中的黑色虚线框住的流程四。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5819f0fc04d4ecce.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="MVCC-查询-key-原理"><a href="#MVCC-查询-key-原理" class="headerlink" title="MVCC 查询 key 原理"></a>MVCC 查询 key 原理</h3><p>完成 put hello 为 world1 操作后，这时你通过 etcdctl 发起一个 get hello 操作，MVCC 模块首先会创建一个读事务对象（TxnRead），在 etcd 3.4 中 Backend 实现了 ConcurrentReadTx， 也就是并发读特性。</p>
+<p>并发读特性的核心原理是创建读事务对象时，它会全量拷贝当前写事务未提交的 buffer 数据，并发的读写事务不再阻塞在一个 buffer 资源锁上，实现了全并发读。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-511525a8d64a72b7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如上图所示，在读事务中，它首先需要根据 key 从 treeIndex 模块获取版本号，因我们未带版本号读，默认是读取最新的数据。treeIndex 模块从 B-tree 中，根据 key 查找到 keyIndex 对象后，匹配有效的 generation，返回 generation 的 revisions 数组中最后一个版本号{2,0}给读事务对象。</p>
+<p>读事务对象根据此版本号为 key，通过 Backend 的并发读事务（ConcurrentReadTx）接口，优先从 buffer 中查询，命中则直接返回，否则从 boltdb 中查询此 key 的 value 信息。</p>
+<h3 id="MVCC-删除-key-原理"><a href="#MVCC-删除-key-原理" class="headerlink" title="MVCC 删除 key 原理"></a>MVCC 删除 key 原理</h3><p>介绍完 MVCC 更新、查询 key 的原理后，我们接着往下看。当你执行 etcdctl del hello 命令时，etcd 会立刻从 treeIndex 和 boltdb 中删除此数据吗？还是增加一个标记实现延迟删除（lazy delete）呢？</p>
+<p>答案为 etcd 实现的是延期删除模式，原理与 key 更新类似。</p>
+<p>与更新 key 不一样之处在于，一方面，生成的 boltdb key 版本号{4,0,t}追加了删除标识（tombstone, 简写 t），boltdb value 变成只含用户 key 的 KeyValue 结构体。另一方面 treeIndex 模块也会给此 key hello 对应的 keyIndex 对象，追加一个空的 generation 对象，表示此索引对应的 key 被删除了。</p>
+<p>当你再次查询 hello 的时候，treeIndex 模块根据 key hello 查找到 keyindex 对象后，若发现其存在空的 generation 对象，并且查询的版本号大于等于被删除时的版本号，则会返回空。</p>
+<p>etcdctl hello 操作后的 keyIndex 的结果如下面所示：</p>
+<pre><code>key hello的keyIndex:
+key:     "hello"
+modified: &lt;4,0&gt;
+generations:
+[
+{ver:3,created:&lt;2,0&gt;,revisions: [&lt;2,0&gt;,&lt;3,0&gt;,&lt;4,0&gt;(t)]}，             
+{empty}
+]
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bd73ce3027334152.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>那么 key 打上删除标记后有哪些用途呢？什么时候会真正删除它呢？</p>
+<p>一方面删除 key 时会生成 events，Watch 模块根据 key 的删除标识，会生成对应的 Delete 事件。</p>
+<p>另一方面，当你重启 etcd，遍历 boltdb 中的 key 构建 treeIndex 内存树时，你需要知道哪些 key 是已经被删除的，并为对应的 key 索引生成 tombstone 标识。而真正删除 treeIndex 中的索引对象、boltdb 中的 key 是通过压缩 (compactor) 组件异步完成。</p>
+<h2 id="Watche"><a href="#Watche" class="headerlink" title="Watche"></a>Watche</h2><p>etcd 基于以上介绍的 HTTP/2 协议的多路复用等机制，实现了一个 client/TCP 连接支持多 gRPC Stream， 一个 gRPC Stream 又支持多个 watcher，如下图所示。同时事件通知模式也从 client 轮询优化成 server 流式推送，极大降低了 server 端 socket、内存等资源。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0501ac92c336b802.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="滑动窗口-vs-MVCC"><a href="#滑动窗口-vs-MVCC" class="headerlink" title="滑动窗口 vs MVCC"></a>滑动窗口 vs MVCC</h3><p>介绍完 etcd v2 的轮询机制和 etcd v3 的流式推送机制后，再看第二个问题，事件是如何存储的？ 会保留多久呢？watch 命令中的版本号具有什么作用？</p>
+<p>第二个问题的本质是历史版本存储，etcd 经历了从滑动窗口到 MVCC 机制的演变，滑动窗口是仅保存有限的最近历史版本到内存中，而 MVCC 机制则将历史版本保存在磁盘中，避免了历史版本的丢失，极大的提升了 Watch 机制的可靠性。</p>
+<p>etcd v2 滑动窗口是如何实现的？它有什么缺点呢？</p>
+<p>它使用的是如下一个简单的环形数组来存储历史事件版本，当 key 被修改后，相关事件就会被添加到数组中来。若超过 eventQueue 的容量，则淘汰最旧的事件。在 etcd v2 中，eventQueue 的容量是固定的 1000，因此它最多只会保存 1000 条事件记录，不会占用大量 etcd 内存导致 etcd OOM。</p>
+<pre><code>type EventHistory struct {
+   Queue      eventQueue
+   StartIndex uint64
+   LastIndex  uint64
+   rwl        sync.RWMutex
+}
+</code></pre>
+<p>但是它的缺陷显而易见的，固定的事件窗口只能保存有限的历史事件版本，是不可靠的。当写请求较多的时候、client 与 server 网络出现波动等异常时，很容易导致事件丢失，client 不得不触发大量的 expensive 查询操作，以获取最新的数据及版本号，才能持续监听数据。</p>
+<p>特别是对于重度依赖 Watch 机制的 Kubernetes 来说，显然是无法接受的。因为这会导致控制器等组件频繁的发起 expensive List Pod 等资源操作，导致 APIServer/etcd 出现高负载、OOM 等，对稳定性造成极大的伤害。</p>
+<p>etcd v3 的 MVCC 机制，正如上一节课所介绍的，就是为解决 etcd v2 Watch 机制不可靠而诞生。相比 etcd v2 直接保存事件到内存的环形数组中，etcd v3 则是将一个 key 的历史修改版本保存在 boltdb 里面。boltdb 是一个基于磁盘文件的持久化存储，因此它重启后历史事件不像 etcd v2 一样会丢失，同时你可通过配置压缩策略，来控制保存的历史版本数，在压缩篇我会和你详细讨论它。</p>
+<h3 id="可靠的事件推送机制"><a href="#可靠的事件推送机制" class="headerlink" title="可靠的事件推送机制"></a>可靠的事件推送机制</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-37750e426fa6a9c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="异常场景重试机制"><a href="#异常场景重试机制" class="headerlink" title="异常场景重试机制"></a>异常场景重试机制</h3><p>若出现 channel buffer 满了，etcd 为了保证 Watch 事件的高可靠性，并不会丢弃它，而是将此 watcher 从 synced watcherGroup 中删除，然后将此 watcher 和事件列表保存到一个名为受害者 victim 的 watcherBatch 结构中，通过异步机制重试保证事件的可靠性。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9cc922a788e4f495.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="历史事件推送机制"><a href="#历史事件推送机制" class="headerlink" title="历史事件推送机制"></a>历史事件推送机制</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-8a5b1669ee85cb73.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="高效的事件匹配"><a href="#高效的事件匹配" class="headerlink" title="高效的事件匹配"></a>高效的事件匹配</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-c91e3a1301791881.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="事务实现"><a href="#事务实现" class="headerlink" title="事务实现"></a>事务实现</h2><h3 id="事务特性初体验及-API"><a href="#事务特性初体验及-API" class="headerlink" title="事务特性初体验及 API"></a>事务特性初体验及 API</h3><p>etcd v3 为了解决多 key 的原子操作问题，提供了全新迷你事务 API，同时基于 MVCC 版本号，它可以实现各种隔离级别的事务。它的基本结构如下：</p>
+<pre><code>client.Txn(ctx).If(cmp1, cmp2, ...).Then(op1, op2, ...,).Else(op1, op2, …)
+</code></pre>
+<p>从上面结构中你可以看到，事务 API 由 If 语句、Then 语句、Else 语句组成，这与我们平时常见的 MySQL 事务完全不一样。</p>
+<p>那么 If 语句支持哪些检查项呢？</p>
+<p>首先是 key 的最近一次修改版本号 mod_revision，简称 mod。你可以通过它检查 key 最近一次被修改时的版本号是否符合你的预期。比如当你查询到 Alice 账号资金为 100 元时，它的 mod_revision 是 v1，当你发起转账操作时，你得确保 Alice 账号上的 100 元未被挪用，这就可以通过 mod(“Alice”) = “v1” 条件表达式来保障转账安全性。</p>
+<p>其次是 key 的创建版本号 create_revision，简称 create。你可以通过它检查 key 是否已存在。比如在分布式锁场景里，只有分布式锁 key(lock) 不存在的时候，你才能发起 put 操作创建锁，这时你可以通过 create(“lock”) = “0”来判断，因为一个 key 不存在的话它的 create_revision 版本号就是 0。</p>
+<p>接着是 key 的修改次数 version。你可以通过它检查 key 的修改次数是否符合预期。比如你期望 key 在修改次数小于 3 时，才能发起某些操作时，可以通过 version(“key”) &lt; “3”来判断。</p>
+<p>最后是 key 的 value 值。你可以通过检查 key 的 value 值是否符合预期，然后发起某些操作。比如期望 Alice 的账号资金为 200, value(“Alice”) = “200”。</p>
+<p>If 语句通过以上 MVCC 版本号、value 值、各种比较运算符 (等于、大于、小于、不等于)，实现了灵活的比较的功能，满足你各类业务场景诉求。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-571a74d40acf7c2a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="boltdb：如何持久化存储你的key-value数据？"><a href="#boltdb：如何持久化存储你的key-value数据？" class="headerlink" title="boltdb：如何持久化存储你的key-value数据？"></a>boltdb：如何持久化存储你的key-value数据？</h2><h3 id="boltdb-磁盘布局"><a href="#boltdb-磁盘布局" class="headerlink" title="boltdb 磁盘布局"></a>boltdb 磁盘布局</h3><p>在介绍一个 put 写请求在 boltdb 中执行原理前，我先给你从整体上介绍下平时你所看到的 etcd db 文件的磁盘布局，让你了解下 db 文件的物理存储结构。</p>
+<p>boltdb 文件指的是你 etcd 数据目录下的 member/snap/db 的文件， etcd 的 key-value、lease、meta、member、cluster、auth 等所有数据存储在其中。etcd 启动的时候，会通过 mmap 机制将 db 文件映射到内存，后续可从内存中快速读取文件中的数据。写请求通过 fwrite 和 fdatasync 来写入、持久化数据到磁盘。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-846346b1123f194f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>上图是我给你画的 db 文件磁盘布局，从图中的左边部分你可以看到，文件的内容由若干个 page 组成，一般情况下 page size 为 4KB。</p>
+<p>page 按照功能可分为元数据页 (meta page)、B+ tree 索引节点页 (branch page)、B+ tree 叶子节点页 (leaf page)、空闲页管理页 (freelist page)、空闲页 (free page)。</p>
+<p>文件最开头的两个 page 是固定的 db 元数据 meta page，空闲页管理页记录了 db 中哪些页是空闲、可使用的。索引节点页保存了 B+ tree 的内部节点，如图中的右边部分所示，它们记录了 key 值，叶子节点页记录了 B+ tree 中的 key-value 和 bucket 数据。</p>
+<p>boltdb 逻辑上通过 B+ tree 来管理 branch/leaf page， 实现快速查找、写入 key-value 数据。</p>
+<pre><code>// 打开boltdb文件，获取db对象
+db,err := bolt.Open("db"， 0600， nil)
+if err != nil {
+   log.Fatal(err)
+}
+defer db.Close()
+// 参数true表示创建一个写事务，false读事务
+tx,err := db.Begin(true)
+if err != nil {
+   return err
+}
+defer tx.Rollback()
+// 使用事务对象创建key bucket
+b,err := tx.CreatebucketIfNotExists([]byte("key"))
+if err != nil {
+   return err
+}
+// 使用bucket对象更新一个key
+if err := b.Put([]byte("r94"),[]byte("world")); err != nil {
+   return err
+}
+// 提交事务
+if err := tx.Commit(); err != nil {
+   return err
+}
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b392ead6bab445d2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0b9af91f9c9173f8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ba226a9d2a3b9240.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1678714314db2118.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="如何回收旧版本数据？"><a href="#如何回收旧版本数据？" class="headerlink" title="如何回收旧版本数据？"></a>如何回收旧版本数据？</h2><p>在07里，我们知道 etcd 中的每一次更新、删除 key 操作，treeIndex 的 keyIndex 索引中都会追加一个版本号，在 boltdb 中会生成一个新版本 boltdb key 和 value。也就是随着你不停更新、删除，你的 etcd 进程内存占用和 db 文件就会越来越大。很显然，这会导致 etcd OOM 和 db 大小增长到最大 db 配额，最终不可写。</p>
+<p>那么 etcd 是通过什么机制来回收历史版本数据，控制索引内存占用和 db 大小的呢？</p>
+<p>这就是我今天要和你分享的 etcd 压缩机制。希望通过今天的这节课，能帮助你理解 etcd 压缩原理，在使用 etcd 过程中能根据自己的业务场景，选择适合的压缩策略，避免 db 大小增长失控而不可写入，帮助你构建稳定的 etcd 服务。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-287671745c668ffc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在了解 etcd 压缩模块实现细节前，我先给你画了一幅压缩模块的整体架构图。从图中可知，你可以通过 client API 发起人工的压缩 (Compact) 操作，也可以配置自动压缩策略。在自动压缩策略中，你可以根据你的业务场景选择合适的压缩模式。目前 etcd 支持两种压缩模式，分别是时间周期性压缩和版本号压缩。</p>
+<p>当你通过 API 发起一个 Compact 请求后，KV Server 收到 Compact 请求提交到 Raft 模块处理，在 Raft 模块中提交后，Apply 模块就会通过 MVCC 模块的 Compact 接口执行此压缩任务。</p>
+<p>Compact 接口首先会更新当前 server 已压缩的版本号，并将耗时昂贵的压缩任务保存到 FIFO 队列中异步执行。压缩任务执行时，它首先会压缩 treeIndex 模块中的 keyIndex 索引，其次会遍历 boltdb 中的 key，删除已废弃的 key。</p>
+<p>以上就是压缩模块的一个工作流程。接下来我会首先和你介绍如何人工发起一个 Compact 操作，然后详细介绍周期性压缩模式、版本号压缩模式的工作原理，最后再给你介绍 Compact 操作核心的原理。</p>
+<p><strong>压缩的本质是回收历史版本，目标对象仅是历史版本，不包括一个 key-value 数据的最新版本，因此你可以放心执行压缩命令，不会删除你的最新版本数据</strong>。不过我在08介绍 Watch 机制时提到，Watch 特性中的历史版本数据同步，依赖于 MVCC 中是否还保存了相关数据，因此我建议你不要每次简单粗暴地回收所有历史版本。</p>
+<p>在生产环境中，我建议你精细化的控制历史版本数，那如何实现精细化控制呢？</p>
+<p>主要有两种方案，一种是使用 etcd server 的自带的自动压缩机制，根据你的业务场景，配置合适的压缩策略即可。</p>
+<p>另外一种方案是如果你觉得 etcd server 的自带压缩机制无法满足你的诉求，想更精细化的控制 etcd 保留的历史版本记录，你就可以基于 etcd 的 Compact API，在业务逻辑代码中、或定时任务中主动触发压缩操作。你需要确保发起 Compact 操作的程序高可用，压缩的频率、保留的历史版本在合理范围内，并最终能使 etcd 的 db 大小保持平稳，否则会导致 db 大小不断增长，直至 db 配额满，无法写入。</p>
+<p>在一般情况下，我建议使用 etcd 自带的压缩机制。它支持两种模式，分别是按时间周期性压缩和保留版本号的压缩，配置相应策略后，etcd 节点会自动化的发起 Compact 操作。</p>
+<h3 id="压缩原理"><a href="#压缩原理" class="headerlink" title="压缩原理"></a>压缩原理</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-3478a93864ada710.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fff634ecdd231637.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如上图所示，因此异步压缩任务的第一项工作，就是压缩 treeIndex 模块中的各 key 的历史版本、已删除的版本。为了避免压缩工作影响读写性能，首先会克隆一个 B-tree，然后通过克隆后的 B-tree 遍历每一个 keyIndex 对象，压缩历史版本号、清理已删除的版本。</p>
+<p>假设当前压缩的版本号是 CompactedRev， 它会保留 keyIndex 中最大的版本号，移除小于等于 CompactedRev 的版本号，并通过一个 map 记录 treeIndex 中有效的版本号返回给 boltdb 模块使用。</p>
+<p>为什么要保留最大版本号呢?</p>
+<p>因为最大版本号是这个 key 的最新版本，移除了会导致 key 丢失。而 Compact 的目的是回收旧版本。当然如果 keyIndex 中的最大版本号被打了删除标记 (tombstone)， 就会从 treeIndex 中删除这个 keyIndex，否则会出现内存泄露。</p>
+<p>Compact 任务执行完索引压缩后，它通过遍历 B-tree、keyIndex 中的所有 generation 获得当前内存索引模块中有效的版本号，这些信息将帮助 etcd 清理 boltdb 中的废弃历史版本。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-92ca3bf81e4b4eec.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>压缩任务的第二项工作就是删除 boltdb 中废弃的历史版本数据。如上图所示，它通过 etcd 一个名为 scheduleCompaction 任务来完成。</p>
+<p>scheduleCompaction 任务会根据 key 区间，从 0 到 CompactedRev 遍历 boltdb 中的所有 key，通过 treeIndex 模块返回的有效索引信息，判断这个 key 是否有效，无效则调用 boltdb 的 delete 接口将 key-value 数据删除。</p>
+<p>在这过程中，scheduleCompaction 任务还会更新当前 etcd 已经完成的压缩版本号 (finishedCompactRev)，将其保存到 boltdb 的 meta bucket 中。</p>
+<p>scheduleCompaction 任务遍历、删除 key 的过程可能会对 boltdb 造成压力，为了不影响正常读写请求，它在执行过程中会通过参数控制每次遍历、删除的 key 数（默认为 100，每批间隔 10ms），分批完成 boltdb key 的删除操作。</p>
+<h2 id="db大小：为什么etcd社区建议db大小不超过8G？"><a href="#db大小：为什么etcd社区建议db大小不超过8G？" class="headerlink" title="db大小：为什么etcd社区建议db大小不超过8G？"></a>db大小：为什么etcd社区建议db大小不超过8G？</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-7f36817e94d1f9da.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>最后我们来小结下今天的内容。大 db 文件首先会影响 etcd 启动耗时，因为 etcd 需要打开 db 文件，初始化 db 对象，并遍历 boltdb 中的所有 key-value 以重建内存 treeIndex。</p>
+<p>其次，较大 db 文件会导致 etcd 依赖更高配置的节点内存规格，etcd 通过 mmap 将 db 文件映射到内存中。etcd 启动后，正常情况下读 etcd 过程不涉及磁盘 IO，若节点内存不够，可能会导致缺页中断，引起延时抖动、服务性能下降。</p>
+<p>接着 treeIndex 维护了所有 key 的版本号信息，当 treeIndex 中含有百万级 key 时，在 treeIndex 中搜索指定范围的 key 的开销是不能忽略的，此开销可能高达上百毫秒。</p>
+<p>然后当 db 文件过大后，boltdb 本身连续空闲页的申请、释放、存储都会存在一定的开销。etcd 社区已通过新的 freelist 管理数据结构 hashmap 对其进行优化，将时间复杂度降低到了 O(1)，同时支持事务提交时不持久化 freelist，而是通过重启时扫描 page 重建，以提升 etcd 写性能、降低 db 大小。</p>
+<p>随后我给你介绍了 db 文件过大后，count only、limit、大包查询等 expensive request 对集群稳定性的影响。建议你的业务尽量避免任何 expensive request 请求。</p>
+<p>最后我们介绍了大 db 文件对快照功能的影响。大 db 文件意味着更长的备份时间，而更长的只读事务则可能会导致 db 文件增长。同时 Leader 发送快照与 Follower 基于快照重建都需要较长时间，在集群写请求较大的情况下，可能会陷入死循环，导致落后的 Follower 节点一直无法追赶上 Leader。</p>
+<h2 id="延时：为什么你的etcd请求会出现超时？"><a href="#延时：为什么你的etcd请求会出现超时？" class="headerlink" title="延时：为什么你的etcd请求会出现超时？"></a>延时：为什么你的etcd请求会出现超时？</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-7c9474f54e565512.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>网络质量，如节点之间 RTT 延时、网卡带宽满，出现丢包；</li>
+<li>磁盘 I/O 抖动，会导致 WAL 日志持久化、boltdb 事务提交出现抖动，Leader 出现切换等；</li>
+<li>expensive request，比如大包请求、涉及到大量 key 遍历、Authenticate 密码鉴权等操作；</li>
+<li>容量瓶颈，太多写请求导致线性读请求性能下降等；</li>
+<li>节点配置，CPU 繁忙导致请求处理延时、内存不够导致 swap 等。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7686a36ad76b6e72.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0424f966141eb847.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="内存：为什么你的etcd内存占用那么高？"><a href="#内存：为什么你的etcd内存占用那么高？" class="headerlink" title="内存：为什么你的etcd内存占用那么高？"></a>内存：为什么你的etcd内存占用那么高？</h2><p>在使用 etcd 的过程中，你是否被异常内存占用等现象困扰过？比如 etcd 中只保存了 1 个 1MB 的 key-value，但是经过若干次修改后，最终 etcd 内存可能达到数 G。它是由什么原因导致的？如何分析呢？</p>
+<p>下图是我以 etcd 写请求流程为例，给你总结的可能导致 etcd 内存占用较高的核心模块与其数据结构。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-15fefd6dd53d6e32.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6b0376246a5f18ed.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>首先是 raftLog。为了帮助 slow Follower 同步数据，它至少要保留 5000 条最近收到的写请求在内存中。若你的 key 非常大，你更新 5000 次会产生较大的内存开销。</p>
+<p>其次是 treeIndex。 每个 key-value 会在内存中保留一个索引项。索引项的开销跟 key 长度、保留的历史版本有关，你可以通过 compact 命令压缩。</p>
+<p>然后是 boltdb。etcd 启动的时候，会通过 mmap 系统调用，将文件映射到虚拟内存中。你可以通过 compact 命令回收旧版本，defrag 命令进行碎片整理。</p>
+<p>接着是 watcher。它的内存占用跟连接数、gRPC Watch Stream 数、watcher 数有关。watch 机制一个不可忽视的内存开销其实是事件堆积的占用缓存，你可以通过相关 metrics 及时发现堆积的事件以及 slow watcher。</p>
+<p>最后我介绍了一些典型的场景导致的内存异常，如大包查询等 expensive request，etcd 中存储了 v2 API 写入的 key， goroutines 泄露以及 etcd lease bug 等。</p>
+<p>希望今天的内容，能够帮助你从容应对 etcd 内存占用高的问题，合理配置你的集群，优化业务 expensive request，让 etcd 跑得更稳。</p>
+<h2 id="如何优化及扩展etcd性能？"><a href="#如何优化及扩展etcd性能？" class="headerlink" title="如何优化及扩展etcd性能？"></a>如何优化及扩展etcd性能？</h2><ul>
+<li>业务应用层，etcd 应用层的最佳实践；</li>
+<li>etcd 内核层，etcd 参数最佳实践；</li>
+<li>操作系统层，操作系统优化事项；</li>
+<li>硬件及网络层，不同的硬件设备对 etcd 性能有着非常大的影响；</li>
+<li>扩展性能，基于 gRPC proxy 扩展读、Watch、Lease 的性能。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-22d988789d96de7d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="ZooKeeper-架构及原理"><a href="#ZooKeeper-架构及原理" class="headerlink" title="ZooKeeper 架构及原理"></a>ZooKeeper 架构及原理</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-2cc163e33ffc5fbb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如下面架构图所示，你可以看到 ZooKeeper 中的节点与 etcd 类似，也划分为 Leader 节点、Follower 节点、Observer 节点（对应的 Raft 协议的 Learner 节点）。同时，写请求统一由 Leader 处理，读请求各个节点都能处理。</p>
+<p>不一样的是它们的读行为和共识算法。</p>
+<ul>
+<li>在读行为上，ZooKeeper 默认读可能会返回 stale data，而 etcd 使用的线性读，能确保读取到反应集群共识的最新数据。</li>
+<li>共识算法上，etcd 使用的是 Raft，ZooKeeper 使用的是 Zab。</li>
+</ul>
+<p>那什么是 Zab 协议呢？Zab 协议可以分为以下阶段：</p>
+<ul>
+<li>Phase 0，Leader 选举（Leader Election)。一个节点只要求获得半数以上投票，就可以当选为准 Leader；</li>
+<li>Phase 1，发现（Discovery）。准 Leader 收集其他节点的数据信息，并将最新的数据复制到自身；</li>
+<li>Phase 2，同步（Synchronization）。准 Leader 将自身最新数据复制给其他落后的节点，并告知其他节点自己正式当选为 Leader；</li>
+<li>Phase 3，广播（Broadcast）。Leader 正式对外服务，处理客户端写请求，对消息进行广播。当收到一个写请求后，它会生成 Proposal 广播给各个 Follower 节点，一半以上 Follower 节点应答之后，Leader 再发送 Commit 命令给各个 Follower，告知它们提交相关提案；</li>
+</ul>
+<p>ZooKeeper 在实现中并未严格按论文定义的分阶段实现，而是对部分阶段进行了整合，分别如下：</p>
+<ul>
+<li>Fast Leader Election。首先 ZooKeeper 使用了一个名为 Fast Leader Election 的选举算法，通过 Leader 选举安全规则限制，确保选举出来的 Leader 就含有最新数据， 避免了 Zab 协议的 Phase 1 阶段准 Leader 收集各个节点数据信息并复制到自身，也就是将 Phase 0 和 Phase 1 进行了合并。</li>
+<li>Recovery Phase。各个 Follower 发送自己的最新数据信息给 Leader，Leader 根据差异情况，选择发送 SNAP、DIFF 差异数据、Truncate 指令删除冲突数据等，确保 Follower 追赶上 Leader 数据进度并保持一致。</li>
+<li>Broadcast Phase。与 Zab 论文 Broadcast Phase 一致。</li>
+</ul>
+<h2 id="Consul-架构及原理"><a href="#Consul-架构及原理" class="headerlink" title="Consul 架构及原理"></a>Consul 架构及原理</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-caba82b37ababe0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>从图中你可以看到，它由 Client、Server、Gossip 协议、Raft 共识算法、两个数据中心组成。每个数据中心内的 Server 基于 Raft 共识算法复制日志，Server 节点分为 Leader、Follower 等角色。Client 通过 Gossip 协议发现 Server 地址、分布式探测节点健康状态等。</p>
+<p>那什么是 Gossip 协议呢？</p>
+<p>Gossip 中文名称叫流言协议，它是一种消息传播协议。它的核心思想其实源自我们生活中的八卦、闲聊。我们在日常生活中所看到的劲爆消息其实源于两类，一类是权威机构如国家新闻媒体发布的消息，另一类则是大家通过微信等社交聊天软件相互八卦，一传十，十传百的结果。</p>
+<p>Gossip 协议的基本工作原理与我们八卦类似，在 Gossip 协议中，如下图所示，各个节点会周期性地选择一定数量节点，然后将消息同步给这些节点。收到消息后的节点同样做出类似的动作，随机的选择节点，继续扩散给其他节点。</p>
+<p>最终经过一定次数的扩散、传播，整个集群的各个节点都能感知到此消息，各个节点的数据趋于一致。Gossip 协议被广泛应用在多个知名项目中，比如 Redis Cluster 集群版，Apache Cassandra，AWS Dynamo。</p>
+<p>你需要注意的是，虽然 Consul 天然支持多数据中心，但是多数据中心内的服务数据并不会跨数据中心同步，各个数据中心的 Server 集群是独立的。不过，Consul 提供了Prepared Query功能，它支持根据一定的策略返回多数据中心下的最佳的服务实例地址，使你的服务具备跨数据中心容灾。</p>
+<p>比如当你的 API 网关收到用户请求查询 A 服务，API 网关服务优先从缓存中查找 A 服务对应的最佳实例。若无缓存则向 Consul 发起一个 Prepared Query 请求查询 A 服务实例，Consul 收到请求后，优先返回本数据中心下的服务实例。如果本数据中心没有或异常则根据数据中心间 RTT 由近到远查询其它数据中心数据，最终网关可将用户请求转发给最佳的数据中心下的实例地址。</p>
+<p>了解完 Consul 的 Gossip 协议、多数据中心支持，我们再看看 Consul 是如何处理读请求的呢?</p>
+<ul>
+<li>默认（default）。默认是此模式，绝大部分场景下它能保证数据的强一致性。但在老的 Leader 出现网络分区被隔离、新的 Leader 被选举出来的一个极小时间窗口内，可能会导致 stale read。这是因为 Consul 为了提高读性能，使用的是基于 Lease 机制来维持 Leader 身份，避免了与其他节点进行交互确认的开销。</li>
+<li>强一致性（consistent）。强一致性读与 etcd 默认线性读模式一样，每次请求需要集群多数节点确认 Leader 身份，因此相比 default 模式读，性能会有所下降。</li>
+<li>弱一致性（stale)。任何节点都可以读，无论它是否 Leader。可能读取到陈旧的数据，类似 etcd 的串行读。这种读模式不要求集群有 Leader，因此当集群不可用时，只要有节点存活，它依然可以响应读请求。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-84bf50b2dc5edb80.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="etcd-vs-ZooKeeper-vs-Consul"><a href="#etcd-vs-ZooKeeper-vs-Consul" class="headerlink" title="etcd vs ZooKeeper vs Consul"></a>etcd vs ZooKeeper vs Consul</h2><h3 id="并发原语"><a href="#并发原语" class="headerlink" title="并发原语"></a>并发原语</h3><p>etcd 和 ZooKeeper、Consul 的典型应用场景都是分布式锁、Leader 选举，以上场景就涉及到并发原语控制。然而 etcd 和 ZooKeeper 并未提供原生的分布式锁、Leader 选举支持，只提供了核心的基本数据读写、并发控制 API，由应用上层去封装。</p>
+<p>为了帮助开发者更加轻松的使用 etcd 去解决分布式锁、Leader 选举等问题，etcd 社区提供了concurrency 包来实现以上功能。同时，在 etcdserver 中内置了 Lock 和 Election 服务，不过其也是基于 concurrency 包做了一层封装而已，clientv3 并未提供 Lock 和 Election 服务 API 给 Client 使用。 ZooKeeper 所属的 Apache 社区提供了Apache Curator Recipes库来帮助大家快速使用分布式锁、Leader 选举功能。</p>
+<p>相比 etcd、ZooKeeper 依赖应用层基于 API 上层封装，<a target="_blank" rel="noopener" href="https://www.consul.io/commands/lock">Consul 对分布式锁就提供了原生的支持</a>，可直接通过命令行使用。</p>
+<h3 id="健康检查、服务发现"><a href="#健康检查、服务发现" class="headerlink" title="健康检查、服务发现"></a>健康检查、服务发现</h3><p>分布式协调服务的另外一个核心应用场景是服务发现、健康检查。</p>
+<p>与并发原语类似，etcd 和 ZooKeeper 并未提供原生的服务发现支持。相反，Consul 在服务发现方面做了很多解放用户双手的工作，提供了服务发现的框架，帮助你的业务快速接入，并提供了 HTTP 和 DNS 两种获取服务方式。</p>
+<p>比如下面就是通过 DNS 的方式获取服务地址：</p>
+<pre><code>$ dig @127.0.0.1 -p 8600 redis.service.dc1.consul. ANY
+</code></pre>
+<p>最重要的是它还集成了分布式的健康检查机制。与 etcd 和 ZooKeeper 健康检查不一样的是，它是一种基于 client、Gossip 协议、分布式的健康检查机制，具备低延时、可扩展的特点。业务可通过 Consul 的健康检查机制，实现 HTTP 接口返回码、内存乃至磁盘空间的检测。</p>
+<p>Consul 提供了多种机制给你注册健康检查，如脚本、HTTP、TCP 等。</p>
+<p>比如你将如下脚本放在 Agent 相应目录下，当 Linux 机器内存使用率超过 70% 的时候，它会返回告警状态。</p>
+<pre><code>{
+  ​"check": 
+    ​"id": "mem-util"
+    ​"name": "Memory utilization"
+    ​"args": 
+      ​"/bin/sh"
+      ​"-c"
+      ​"/usr/bin/free | awk '/Mem/{printf($3/$2*100)}' | awk '{ print($0); if($1 &gt; 70) exit 1;}'
+    ​]
+    ​"interval": "10s"
+    ​"timeout": "1s
+  }​
+}
+</code></pre>
+<p>相比 Consul，etcd、ZooKeeper 它们提供的健康检查机制和能力就非常有限了。</p>
+<p>etcd 提供了 Lease 机制来实现活性检测。它是一种中心化的健康检查，依赖用户不断地发送心跳续租、更新 TTL。</p>
+<p>ZooKeeper 使用的是一种名为临时节点的状态来实现健康检查。当 client 与 ZooKeeper 节点连接断掉时，ZooKeeper 就会删除此临时节点的 key-value 数据。它比基于心跳机制更复杂，也给 client 带去了更多的复杂性，所有 client 必须维持与 ZooKeeper server 的活跃连接并保持存活。</p>
+<h3 id="数据模型比较"><a href="#数据模型比较" class="headerlink" title="数据模型比较"></a>数据模型比较</h3><p>从并发原语、健康检查、服务发现等维度了解完 etcd、ZooKeeper、Consul 的实现区别之后，我们再从数据模型上对比下三者。</p>
+<p>首先 etcd 正如我们在07节 MVCC 和10节 boltdb 所介绍的，它是个扁平的 key-value 模型，内存索引通过 B-tree 实现，数据持久化存储基于 B+ tree 的 boltdb，支持范围查询、适合读多写少，可容纳数 G 的数据。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f41d2a57ac8f3d34.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如上图所示，它是一种层次模型，你可能已经发现，etcd v2 的内存数据模型与它是一样的。ZooKeeper 作为分布式协调服务的祖师爷，早期 etcd v2 的确就是参考它而设计的。</p>
+<p>ZooKeeper 的层次模型中的每个节点叫 Znode，它分为持久性和临时型两种。</p>
+<ul>
+<li>持久性顾名思义，除非你通过 API 删除它，否则它将永远存在。</li>
+<li>临时型是指它与客户端会话绑定，若客户端会话结束或出现异常中断等，它都将被 ZooKeeper server 自动删除，被广泛应用于活性检测。</li>
+</ul>
+<p>同时你创建节点的时候，还可以指定一个顺序标识，这样节点名创建出来后就具有顺序性，一般应用于分布式选举等场景中。</p>
+<p>那 ZooKeeper 是如何实现以上层次模型的呢？</p>
+<p>ZooKeeper 使用的是内存 ConcurrentHashMap 来实现此数据结构，因此具有良好的读性能。但是受限于内存的瓶颈，一般 ZooKeeper 的数据库文件大小是几百 M 左右。</p>
+<p>Consul 的数据模型及存储是怎样的呢？</p>
+<p>它也提供了常用 key-value 操作，它的存储引擎是基于Radix Tree实现的go-memdb，要求 value 大小不能超过 512 个字节，数据库文件大小一般也是几百 M 左右。与 boltdb 类似，它也支持事务、MVCC。</p>
+<h3 id="Watch-特性比较"><a href="#Watch-特性比较" class="headerlink" title="Watch 特性比较"></a>Watch 特性比较</h3><p>正在我在 08 节 Watch 特性中所介绍的，etcd v3 的 Watch 是基于 MVCC 机制实现的，而 Consul 是采用滑动窗口实现的。Consul 存储引擎是基于Radix Tree实现的，因此它不支持范围查询和监听，只支持前缀查询和监听，而 etcd 都支持。</p>
+<p>相比 etcd、Consul，ZooKeeper 的 Watch 特性有更多的局限性，它是个一次性触发器。</p>
+<p>在 ZooKeeper 中，client 对 Znode 设置了 Watch 时，如果 Znode 内容发生改变，那么 client 就会获得 Watch 事件。然而此 Znode 再次发生变化，那 client 是无法收到 Watch 事件的，除非 client 设置了新的 Watch。</p>
+<h3 id="其他比较"><a href="#其他比较" class="headerlink" title="其他比较"></a>其他比较</h3><ul>
+<li>线性读。etcd 和 Consul 都支持线性读，而 ZooKeeper 并不具备。</li>
+<li>权限机制比较。etcd 实现了 RBAC 的权限校验，而 ZooKeeper 和 Consul 实现的 ACL。</li>
+<li>事务比较。etcd 和 Consul 都提供了简易的事务能力，支持对字段进行比较，而 ZooKeeper 只提供了版本号检查能力，功能较弱。</li>
+<li>多数据中心。在多数据中心支持上，只有 Consul 是天然支持的，虽然它本身不支持数据自动跨数据中心同步，但是它提供的服务发现机制、Prepared Query功能，赋予了业务在一个可用区后端实例故障时，可将请求转发到最近的数据中心实例。而 etcd 和 ZooKeeper 并不支持。</li>
+</ul>
+<h2 id="如何构建高可靠的etcd集群运维体系"><a href="#如何构建高可靠的etcd集群运维体系" class="headerlink" title="如何构建高可靠的etcd集群运维体系"></a>如何构建高可靠的etcd集群运维体系</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-02a0b48987cc4fd9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2021/07/05/sya-chip/" title="《说透芯片》"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 《说透芯片》</span></a><a class="button is-default" href="/2021/03/25/design-patterns/" title="《设计模式之美》"><span class="has-text-weight-semibold">下一页: 《设计模式之美》</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

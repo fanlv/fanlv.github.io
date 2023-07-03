@@ -1,0 +1,92 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>分布式id几种生成方案</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="一、UUIDUUID 是 通用唯一识别码（Universally Unique Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的，是让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。如此一来，每个人都可以创建不与其它人冲突的UUID。在这样的情况下，就不需考虑数据库创建时的名称重复问题。目前最广泛应用的UUID，是微软公司的全局唯一标识符（GUID），而其他重要的应用，则有Linux ext2/ext3文件系统、LUKS加密分区、GNOME、KDE、Mac OS X等等。另外我们也可以在e2fsprogs包中的UUID库找到实现。
+UUID的标准形式包含32个16进制数字，以连字号分为五段，形式为8-4-4.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">分布式id几种生成方案</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81UUID"><span class="toc-text">一、UUID</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93%E4%B8%BB%E9%94%AE%E8%87%AA%E5%A2%9E"><span class="toc-text">二、数据库主键自增</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Redis"><span class="toc-text">三、Redis</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Zookeeper"><span class="toc-text">四、Zookeeper</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%95%B0%E6%8D%AE%E5%BA%93%E5%88%86%E6%AE%B5-%E6%9C%8D%E5%8A%A1%E7%BC%93%E5%AD%98ID"><span class="toc-text">五、数据库分段+服务缓存ID</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%9B%AA%E8%8A%B1%E7%AE%97%E6%B3%95-Snowflake"><span class="toc-text">六、雪花算法-Snowflake</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-text">参考文章</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Idgen"><i class="tag post-item-tag">Idgen</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">分布式id几种生成方案</h1><time class="has-text-grey" datetime="2018-09-30T08:08:10.000Z">2018-09-30</time><article class="mt-2 post-content"><h2 id="一、UUID"><a href="#一、UUID" class="headerlink" title="一、UUID"></a>一、UUID</h2><p>UUID 是 通用唯一识别码（Universally Unique Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的，是让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。如此一来，每个人都可以创建不与其它人冲突的UUID。在这样的情况下，就不需考虑数据库创建时的名称重复问题。目前最广泛应用的UUID，是微软公司的全局唯一标识符（GUID），而其他重要的应用，则有Linux ext2/ext3文件系统、LUKS加密分区、GNOME、KDE、Mac OS X等等。另外我们也可以在e2fsprogs包中的UUID库找到实现。</p>
+<p>UUID的标准形式包含32个16进制数字，以连字号分为五段，形式为8-4-4-4-12的32个字符，如：550e8400-e19b-41d4-a716-446655440000。</p>
+<ul>
+<li><p>Version 1：基于时间的UUID基于时间的UUID通过计算当前时间戳、随机数和机器MAC地址得到。由于在算法中使用了MAC地址，这个版本的UUID可以保证在全球范围的唯一性。但与此同时，使用MAC地址会带来安全性问题，这就是这个版本UUID受到批评的地方。如果应用只是在局域网中使用，也可以使用退化的算法，以IP地址来代替MAC地址－－Java的UUID往往是这样实现的（当然也考虑了获取MAC的难度）。</p>
+</li>
+<li><p>Version 2：DCE安全的UUIDDCE（Distributed Computing Environment）安全的UUID和基于时间的UUID算法相同，但会把时间戳的前4位置换为POSIX的UID或GID。这个版本的UUID在实际中较少用到。</p>
+</li>
+<li><p>Version 3：基于名字的UUID（MD5）基于名字的UUID通过计算名字和名字空间的MD5散列值得到。这个版本的UUID保证了：相同名字空间中不同名字生成的UUID的唯一性；不同名字空间中的UUID的唯一性；相同名字空间中相同名字的UUID重复生成是相同的。</p>
+</li>
+<li><p>Version 4：随机UUID根据随机数，或者伪随机数生成UUID。这种UUID产生重复的概率是可以计算出来的，但随机的东西就像是买彩票：你指望它发财是不可能的，但狗屎运通常会在不经意中到来。</p>
+</li>
+<li><p>Version 5：基于名字的UUID（SHA1）和版本3的UUID算法类似，只是散列值计算使用SHA1（Secure<br>Hash Algorithm 1）算法。</p>
+</li>
+</ul>
+<hr>
+<p>UUID的优点:</p>
+<p>通过本地生成，没有经过网络I/O，性能较快</p>
+<p>无序，无法预测他的生成顺序。(当然这个也是他的缺点之一)</p>
+<p> UUID的缺点:</p>
+<p>128位二进制一般转换成36位的16进制，太长了只能用String存储，空间占用较多。</p>
+<p>不能生成递增有序的数字</p>
+<h2 id="二、数据库主键自增"><a href="#二、数据库主键自增" class="headerlink" title="二、数据库主键自增"></a>二、数据库主键自增</h2><p>优点：</p>
+<ol>
+<li>自增，趋势自增，作为聚集索引，提升查询效率。</li>
+<li>节省磁盘空间。500W数据，UUID占5.4G,自增ID占2.5G.</li>
+<li>查询，写入效率高：查询略优。写入效率自增ID是UUID的四倍。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>导入旧数据时，可能会ID重复，导致导入失败。</li>
+<li>分布式架构，多个Mysql实例可能会导致ID重复。</li>
+</ol>
+<p>PS：</p>
+<ol>
+<li>单实例，单节点，由于InnoDB的特性，自增ID效率大于UUID.</li>
+<li>20个节点一下小型分布式架构：为了实现快速部署，主键不重复，可以采用UUID</li>
+<li>20到200个节点：可以采用自增ID+步长的较快速方案。</li>
+<li>200个以上节点的分布式架构：可以采用twitter的雪花算法全局自增ID</li>
+</ol>
+<h2 id="三、Redis"><a href="#三、Redis" class="headerlink" title="三、Redis"></a>三、Redis</h2><p>当使用数据库来生成ID性能不够要求的时候，我们可以尝试使用Redis来生成ID。这主要依赖于Redis是单线程的，所以也可以用生成全局唯一的ID。可以用Redis的原子操作 INCR和INCRBY来实现。</p>
+<p>优点：</p>
+<ol>
+<li>不依赖于数据库，灵活方便，且性能优于数据库。</li>
+<li>数字ID天然排序，对分页或者需要排序的结果很有帮助。</li>
+</ol>
+<p>缺点：</p>
+<ol>
+<li>由于redis是内存的KV数据库，即使有AOF和RDB，但是依然会存在数据丢失，有可能会造成ID重复。</li>
+<li>依赖于redis，redis要是不稳定，会影响ID生成。</li>
+</ol>
+<h2 id="四、Zookeeper"><a href="#四、Zookeeper" class="headerlink" title="四、Zookeeper"></a>四、Zookeeper</h2><p> zookeeper做分布式一致性，没有啥好说的。</p>
+<h2 id="五、数据库分段-服务缓存ID"><a href="#五、数据库分段-服务缓存ID" class="headerlink" title="五、数据库分段+服务缓存ID"></a>五、数据库分段+服务缓存ID</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-04f4d4feb09b608e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="fenduan.jpg"></p>
+<p>优点:</p>
+<ul>
+<li><p>比主键递增性能高，能保证趋势递增。</p>
+</li>
+<li><p>如果DB宕机，proxServer由于有缓存依然可以坚持一段时间。</p>
+</li>
+</ul>
+<p>缺点:</p>
+<ul>
+<li><p>和主键递增一样，容易被人猜测。</p>
+</li>
+<li><p>DB宕机，虽然能支撑一段时间但是仍然会造成系统不可用。</p>
+</li>
+</ul>
+<p>适用场景:需要趋势递增，并且ID大小可控制的，可以使用这套方案。</p>
+<p>当然这个方案也可以通过一些手段避免被人猜测，把ID变成是无序的，比如把我们生成的数据是一个递增的long型，把这个Long分成几个部分，比如可以分成几组三位数，几组四位数，然后在建立一个映射表，将我们的数据变成无序。</p>
+<h2 id="六、雪花算法-Snowflake"><a href="#六、雪花算法-Snowflake" class="headerlink" title="六、雪花算法-Snowflake"></a>六、雪花算法-Snowflake</h2><p>Snowflake是Twitter提出来的一个算法，其目的是生成一个64bit的整数:</p>
+<p>雪花算法简单描述： </p>
+<ul>
+<li>最高位是符号位，始终为0，不可用。 </li>
+<li>41位的时间序列，精确到毫秒级，41位的长度可以使用69年。时间位还有一个很重要的作用是可以根据时间进行排序。 </li>
+<li>10位的机器标识，10位的长度最多支持部署1024个节点。 </li>
+<li>12位的计数序列号，序列号即一系列的自增id，可以支持同一节点同一毫秒生成多个ID序号，12位的计数序列号支持每个节点每毫秒产生4096个ID序号。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fea5834df99d0777.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Snowflake.jpg"></p>
+<h2 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/distance_nba/article/details/78967932">https://blog.csdn.net/distance_nba/article/details/78967932</a></p>
+<p><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/KfoLFClRwDXlcTDmhCEdaQ">https://mp.weixin.qq.com/s/KfoLFClRwDXlcTDmhCEdaQ</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/u011499747/article/details/78254990">https://blog.csdn.net/u011499747/article/details/78254990</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/tuzhihai/article/details/80988816">https://blog.csdn.net/tuzhihai/article/details/80988816</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2018/10/12/service-discovery-consul/" title="服务发现之Consul"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 服务发现之Consul</span></a><a class="button is-default" href="/2018/08/30/go-lua-js/" title="Go 执行Lua脚本和JS脚本测试"><span class="has-text-weight-semibold">下一页: Go 执行Lua脚本和JS脚本测试</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Linux0.11启动过程</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="零、概览首先申明，下面启动过程是基于 Linux 0.11 源码的分析的结果
+Linux 0.11 源码
+
+开机CPU的PC(x86也叫IP)寄存器内容固定初始化为0xFFFF0（地址为BIOS的ROM程序地址）。开机会首先执行ROM中的程序。 
+BIOS的ROM程序会读取硬盘启动区（第一扇区512字节）的bootscet程序到内存的0x7c00位置 
+把从bootscet程序从 0x7c00 到 0x90000，历史兼容原因只能先写到0x7c00，然后再复制到0x90000为什么主引导记录的内存地址是0x7C00？。 
+设置ds、es、ss 几个寄存器的基地址为0x9000，sp设置为0xFF00。 
+把操作系统setup和system两个程序加载到内存中。 
+把system代码复制到零地址处，覆盖掉0x.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Linux0.11启动过程</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%B6%E3%80%81%E6%A6%82%E8%A7%88"><span class="toc-text">零、概览</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%BC%80%E6%9C%BA%E5%90%8E%E6%9C%80%E5%BC%80%E5%A7%8B%E7%9A%84%E4%B8%A4%E8%A1%8C%E4%BB%A3%E7%A0%81%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">一、开机后最开始的两行代码是什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#1-1-%E5%BC%80%E6%9C%BA%E5%90%8E%E5%88%9D%E5%A7%8B%E5%8C%96%E6%8C%87%E5%90%91-BIOS"><span class="toc-text">1.1 开机后初始化指向 BIOS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-2-%E8%AF%BB%E5%8F%96%E7%A1%AC%E7%9B%98%E5%90%AF%E5%8A%A8%E5%8C%BA%EF%BC%88%E7%AC%AC%E4%B8%80%E6%89%87%E5%8C%BA%EF%BC%89"><span class="toc-text">1.2 读取硬盘启动区（第一扇区）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-3-%E5%8A%A0%E8%BD%BD%E5%88%B0%E5%86%85%E5%AD%98-0x7c00-%E4%BD%8D%E7%BD%AE%E5%B9%B6%E8%B7%B3%E8%BD%AC"><span class="toc-text">1.3 加载到内存 0x7c00 位置并跳转</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E4%BB%8E-0x7c00-%E5%88%B0-0x90000"><span class="toc-text">二、从 0x7c00 到 0x90000</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%81%9A%E5%A5%BD%E8%AE%BF%E9%97%AE%E5%86%85%E5%AD%98%E7%9A%84%E6%9C%80%E5%9F%BA%E7%A1%80%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-text">三、做好访问内存的最基础准备工作</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-CPU-%E8%AE%BF%E9%97%AE%E5%86%85%E5%AD%98%E7%9A%84%E4%B8%89%E7%A7%8D%E9%80%94%E5%BE%84"><span class="toc-text">3.1 CPU 访问内存的三种途径</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E6%80%8E%E4%B9%88%E6%8A%8A%E8%87%AA%E5%B7%B1%E4%BB%8E%E7%A1%AC%E7%9B%98%E6%90%AC%E8%BF%90%E5%88%B0%E5%86%85%E5%AD%98%EF%BC%9F"><span class="toc-text">四、操作系统怎么把自己从硬盘搬运到内存？</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-1-%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%9A%84%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B"><span class="toc-text">4.1 操作系统的编译过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-2-%E6%8A%8A%E5%89%A9%E4%B8%8B%E7%9A%84%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E4%BB%A3%E7%A0%81%E4%BB%8E%E7%A1%AC%E7%9B%98%E8%AF%B7%E5%88%B0%E5%86%85%E5%AD%98"><span class="toc-text">4.2 把剩下的操作系统代码从硬盘请到内存</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E9%87%8D%E8%A6%81%E4%BB%A3%E7%A0%81%E6%94%BE%E5%9C%A8%E9%9B%B6%E5%9C%B0%E5%9D%80%E5%A4%84"><span class="toc-text">五、重要代码放在零地址处</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#5-1-%E5%86%85%E5%AD%98%E6%8B%B7%E8%B4%9D"><span class="toc-text">5.1 内存拷贝</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-2-%E6%B4%97%E7%89%8C%E5%90%8E%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-text">5.2 洗牌后的内存布局</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E6%A8%A1%E5%BC%8F%E7%9A%84%E8%BD%AC%E6%8D%A2"><span class="toc-text">六、模式的转换</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#6-1-CPU%E7%9A%84%E4%B8%89%E7%A7%8D%E6%A8%A1%E5%BC%8F"><span class="toc-text">6.1 CPU的三种模式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#6-2-%E5%AE%9E%E6%A8%A1%E5%BC%8F%E5%AF%BB%E5%9D%80%E8%BF%87%E7%A8%8B"><span class="toc-text">6.2 实模式寻址过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-3-%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F%E4%B8%8B%E7%9A%84%E5%88%86%E6%AE%B5%E6%9C%BA%E5%88%B6%E5%AF%BB%E5%9D%80%E8%BF%87%E7%A8%8B"><span class="toc-text">6.3 保护模式下的分段机制寻址过程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%85%AD%E8%A1%8C%E4%BB%A3%E7%A0%81%E8%BF%9B%E5%85%A5%E4%BF%9D%E6%8A%A4%E6%A8%A1%E5%BC%8F"><span class="toc-text">七、六行代码进入保护模式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E9%87%8D%E6%96%B0%E8%AE%BE%E7%BD%AEidt%E3%80%81gdt"><span class="toc-text">八、重新设置idt、gdt</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D%E3%80%81Intel-%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E4%B8%A4%E6%9D%BF%E6%96%A7%EF%BC%9A%E5%88%86%E6%AE%B5%E4%B8%8E%E5%88%86%E9%A1%B5"><span class="toc-text">九、Intel 内存管理两板斧：分段与分页</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#9-1-%E9%80%BB%E8%BE%91%E5%9C%B0%E5%9D%80%E3%80%81%E7%BA%BF%E6%80%A7%E5%9C%B0%E5%9D%80%E3%80%81%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80"><span class="toc-text">9.1 逻辑地址、线性地址、物理地址</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-2-%E5%9C%B0%E5%9D%80%E5%88%86%E9%A1%B5%E6%9F%A5%E6%89%BE%E8%BF%87%E7%A8%8B"><span class="toc-text">9.2 地址分页查找过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-3-%E5%BC%80%E5%90%AF%E5%88%86%E9%A1%B5"><span class="toc-text">9.3 开启分页</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E8%BF%9B%E5%85%A5-main-%E5%87%BD%E6%95%B0%E5%89%8D%E7%9A%84%E6%9C%80%E5%90%8E%E4%B8%80%E8%B7%83"><span class="toc-text">十、进入 main 函数前的最后一跃</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Linux0.11启动过程</h1><time class="has-text-grey" datetime="2022-12-24T16:00:00.000Z">2022-12-25</time><article class="mt-2 post-content"><h1 id="零、概览"><a href="#零、概览" class="headerlink" title="零、概览"></a>零、概览</h1><p><strong>首先申明，下面启动过程是基于 Linux 0.11 源码的分析的结果</strong></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/karottc/linux-0.11/blob/master/boot/bootsect.s#L45">Linux 0.11 源码</a></p>
+<ol>
+<li>开机<code>CPU</code>的<code>PC</code>(<code>x86</code>也叫<code>IP</code>)寄存器内容固定初始化为<code>0xFFFF0</code>（地址为<code>BIOS</code>的<code>ROM</code>程序地址）。开机会首先执行<code>ROM</code>中的程序。<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-81391f43a2ab40ce.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li><code>BIOS</code>的<code>ROM</code>程序会读取硬盘启动区（第一扇区<code>512</code>字节）的<code>bootscet</code>程序到内存的<code>0x7c00</code>位置<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-16a7ccb2ce90f0e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>把从<code>bootscet</code>程序从 <code>0x7c00</code> 到 <code>0x90000</code>，历史兼容原因只能先写到<code>0x7c00</code>，然后再复制到<code>0x90000</code><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/09/0x7c00.html">为什么主引导记录的内存地址是0x7C00？</a>。<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-2ac0542ee2eadd9a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>设置<code>ds</code>、<code>es</code>、<code>ss</code> 几个寄存器的基地址为<code>0x9000</code>，<code>sp</code>设置为<code>0xFF00</code>。<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-61aff45ba841fd4c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>把操作系统<code>setup</code>和<code>system</code>两个程序加载到内存中。<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-14dc0de482abd9c6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>把<code>system</code>代码复制到零地址处，覆盖掉<code>0x7c00</code>处<code>bootesect</code>没用的代码。<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-d4acccc8d7c9bf21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>覆盖之后的内存布局如下：<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-bd0f81561ab15236.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>设置<code>idt</code>和<code>gdt</code><br> <img src="https://upload-images.jianshu.io/upload_images/12321605-53023ab8b3dff37b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>设置<code>CR0</code>寄存器的第<code>0</code>位，进入保护模式。<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-1006827d8674ee7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>复制<code>0x902000</code>位置的<code>idt</code>、<code>gdt</code>，到<code>system</code>程序的位置。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-8aca29bcd66b5c05.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>设置页目录和页表。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-b6fb779d42f2c3cf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>设置<code>CR3</code>寄存器。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-f5598b1345698d7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>设置<code>CR0</code>寄存器的最后<code>1</code>位，开启分页模式。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-5d4b4832362ff61d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li><code>main</code>函数入栈。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-4f82eeb49c583cdf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>启动完成。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-1e9d3e55bbb9e6de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+</ol>
+<h1 id="一、开机后最开始的两行代码是什么？"><a href="#一、开机后最开始的两行代码是什么？" class="headerlink" title="一、开机后最开始的两行代码是什么？"></a>一、开机后最开始的两行代码是什么？</h1><h2 id="1-1-开机后初始化指向-BIOS"><a href="#1-1-开机后初始化指向-BIOS" class="headerlink" title="1.1 开机后初始化指向 BIOS"></a>1.1 开机后初始化指向 BIOS</h2><p>首先，<code>CPU</code> 中有个 <code>PC</code> 寄存器，这里面存储着将要执行的指令在内存中的地址。当我们按下开机键后，<code>CPU</code> 就会有个初始化 <code>PC</code> 寄存器的过程，然后 <code>CPU</code> 就按照 <code>PC</code> 寄存器中的数值，去内存中对应的地址处寻找这条指令，然后进行执行。</p>
+<p>初始化的值是多少呢？<code>Intel</code> 手册规定，开机后 <code>PC</code> 寄存器要初始化为 <code>0xFFFF0</code>，也就是从这个内存地址开始，执行 <code>CPU</code> 的第一条指令。</p>
+<p><code>0xFFFF0</code>对应的地址对应<code>BIOS</code>的<code>ROM</code>。所以开机以后会先执行<code>BIOS</code>的<code>ROM</code>中的程序。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-81391f43a2ab40ce.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="1-2-读取硬盘启动区（第一扇区）"><a href="#1-2-读取硬盘启动区（第一扇区）" class="headerlink" title="1.2 读取硬盘启动区（第一扇区）"></a>1.2 读取硬盘启动区（第一扇区）</h2><p>那什么是启动区呢？启动区的定义非常简单，只要硬盘中的 <code>0</code> 盘 <code>0</code> 道 <code>1</code> 扇区（第一扇区）的 <code>512</code> 个字节的最后两个字节分别是 <code>0x55</code> 和 <code>0xaa</code>，那么 <code>BIOS</code> 就会认为它是个启动区。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1b624d2fbc4646ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="1-3-加载到内存-0x7c00-位置并跳转"><a href="#1-3-加载到内存-0x7c00-位置并跳转" class="headerlink" title="1.3 加载到内存 0x7c00 位置并跳转"></a>1.3 加载到内存 0x7c00 位置并跳转</h2><p>当我们把操作系统代码编译好后存放在硬盘的启动区中，开机后，<code>BIOS</code> 程序就会将代码搬运到内存的 <code>0x7c00</code> 位置，而 <code>CPU</code> 也会从这个位置开始，一条一条指令不断地往后执行下去。</p>
+<p> <code>BIOS</code> 只帮我们把启动区的这 <code>512</code> 字节加载到内存，可是仍在硬盘其他扇区的操作系统代码就得我们自己来处理了，所以你很快就会看到这个过程。</p>
+<p>就从用汇编语言写成的 <code>bootsect.s</code> 这个文件的前两行代码开始讲起吧！因为它会被编译并存储在启动区，然后搬运到内存 <code>0x7c00</code>，之后也会成为 <code>CPU</code> 执行的第一个指令，<a target="_blank" rel="noopener" href="https://github.com/karottc/linux-0.11/blob/master/boot/bootsect.s#L45">代码如下</a>：</p>
+<pre><code>mov ax,0x07c0  // ax = 0x07c0
+mov ds,ax      // ds = 0x07c0
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8af0639758203457.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>mov ax, [0x0001]</code> 等价<code>mov ax, [ds:0x0001]</code>，<code>ds</code> 是默认加上的，表示在 <code>ds</code> 这个段基址处，往后再偏移 <code>0x0001</code> 单位，将这个位置的内存数据复制到 <code>ax</code> 寄存器中。</p>
+<p>我们再看看，为什么这个 <code>ds</code> 寄存器的数值要赋值为 <code>0x07c0</code>？这里是有历史因素的，<code>x86</code> 为了让自己在 <code>16</code> 位的实模式下，能访问到 <code>20</code> 位的地址线，所以要把段基址先左移四位。 <code>0x07c0</code> 左移四位就是 <code>0x7c00</code>，这刚好就和这段代码被 <code>BIOS</code> 加载到的内存地址 <code>0x7c00</code> 一样了。</p>
+<p><strong>总结</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-16a7ccb2ce90f0e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol>
+<li>设置<code>PC</code>寄存器地址为<code>0xFFFF0</code>（<code>BIOS</code>的<code>ROM</code>程序）。</li>
+<li><code>BIOS</code>将磁盘第一扇区程序（<code>bootsect</code>）加载到内存 <code>0x7c00</code>。</li>
+<li>通过<code>mov</code>指令将默认的数据段寄存器<code>ds</code>的值改为<code>0x07c0</code>，方便以后的基址寻址方式。</li>
+</ol>
+<h1 id="二、从-0x7c00-到-0x90000"><a href="#二、从-0x7c00-到-0x90000" class="headerlink" title="二、从 0x7c00 到 0x90000"></a>二、从 0x7c00 到 0x90000</h1><p>接下来我们带着这两行代码，继续往下看<code>6</code>行，<a target="_blank" rel="noopener" href="https://github.com/karottc/linux-0.11/blob/master/boot/bootsect.s#L45">代码如下</a>：</p>
+<pre><code>mov ax,0x9000 // ax = 0x9000
+mov es,ax     // es = 0x9000
+mov cx,#256   // cx = 256
+sub si,si     // si = 0
+sub di,di        // di = 0
+rep movw      // 重复256次 mov 操作，每次复制 word 16位， 复制512字节的数据
+</code></pre>
+<p>其中 <code>rep</code> 表示重复执行后面的指令，而后面的指令 <code>movw</code> 表示复制一个字（<code>word 16</code>位），其实就是不断重复地复制一个字。</p>
+<ol>
+<li>重复执行多少次呢？答案是 <code>cx</code> 寄存器中的值，也就是 <code>256</code> 次。</li>
+<li>从哪复制到哪呢？答案是从 <code>ds:si</code> 处复制到 <code>es:di</code> 处，也就是从 <code>0x7c00</code> 复制到 <code>0x90000</code>。</li>
+<li>一次复制多少呢？刚刚说过了，复制一个字<code>16</code>位，也就是两个字节。那么。一共复制<code>256</code>次的两个字节，其实就是复制<code>512</code>个字节。</li>
+</ol>
+<p>好了，总结一下就是，将内存地址 <code>0x7c00</code> 处开始往后的 <code>512</code> 字节的数据，原封不动复制到 <code>0x90000</code> 处开始的后面 <code>512</code> 字节的地方，也就是下图的第二步：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2ac0542ee2eadd9a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<pre><code>jmpi go,0x9000
+go: 
+  mov ax,cs
+  mov ds,ax
+</code></pre>
+<p><code>jmpi</code> 是一个段间跳转指令，表示跳转到 <code>0x9000:go</code> 处执行。</p>
+<p>段基址仍然要先左移四位再加上偏移地址，段基址 <code>0x9000</code> 左移四位就是 <code>0x90000</code>，因此结论就是跳转到 <code>0x90000 + go</code>这个内存地址处执行。</p>
+<p>这里主要把<code>bootsect</code>程序从<code>0x7c00</code>复制了一份到<code>0x90000</code>。然后跳转到<code>0x90000 + go</code>这个内存地址处执行。</p>
+<h1 id="三、做好访问内存的最基础准备工作"><a href="#三、做好访问内存的最基础准备工作" class="headerlink" title="三、做好访问内存的最基础准备工作"></a>三、做好访问内存的最基础准备工作</h1><pre><code>jmpi go,0x9000 // cs = 0x9000, ip = go
+go: mov ax,cs
+    mov ds,ax
+    mov es,ax
+    mov ss,ax
+    mov sp,#0xFF00
+</code></pre>
+<p>这段代码的直接意思很容易理解，就是把 <code>cs</code> 寄存器的值分别复制给 <code>ds</code>、<code>es</code> 和 <code>ss</code> 寄存器，然后又把 <code>0xFF00</code> 给了 <code>sp</code> 寄存器。</p>
+<p><code>cs</code> 寄存器表示代码段寄存器，<code>CPU</code> 即将要执行的代码在内存中的位置，就是由 <code>cs:ip</code> 这组寄存器配合指向的，其中 <code>cs</code> 是基址，<code>ip</code> 是偏移地址。</p>
+<p><code>ds</code> 是数据段寄存器，作为访问内存数据时的基地址。之前我们说过了，当时它被赋值为 <code>0x07c0</code>，是因为之前的代码在 <code>0x7c00</code> 处，现在代码已经被挪到了 <code>0x90000</code> 处，所以现在自然又改赋值为 <code>0x9000</code> 了。</p>
+<p><code>es</code> 是扩展段寄存器。</p>
+<p><code>ss</code> 是栈段寄存器，后面要配合栈指针寄存器 <code>sp</code> 来表示此时的栈顶地址。而此时 <code>sp</code> 寄存器被赋值为 <code>0xFF00</code> 了，所以目前的栈顶地址，就是 <code>ss:sp</code> 所指向的地址 <code>0x9FF00</code> 处。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-61aff45ba841fd4c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="3-1-CPU-访问内存的三种途径"><a href="#3-1-CPU-访问内存的三种途径" class="headerlink" title="3.1 CPU 访问内存的三种途径"></a>3.1 CPU 访问内存的三种途径</h2><p><code>CPU</code> 访问内存有三种途径——访问代码的 <code>cs:ip</code>，访问数据的 <code>ds:XXX</code>，以及访问栈的 <code>ss:sp</code>。</p>
+<p>其中， <code>cs</code> 作为访问指令的代码段寄存器，被赋值为了 <code>0x9000</code>。<code>ds</code> 作为访问数据的数据段寄存器，也被赋值为了 <code>0x9000</code>。<code>ss</code> 和 <code>sp</code> 作为栈段寄存器和栈指针寄存器，分别被赋值为了 <code>0x9000</code> 和 <code>0xFF00</code>，由此计算出栈顶地址 <code>ss:sp</code> 为 <code>0x9FF00</code>，之后的压栈和出栈操作就以这个栈顶地址为基准。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-163cd99b175557f4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>总结</strong></p>
+<p><a target="_blank" rel="noopener" href="http://www.ruanyifeng.com/blog/2015/09/0x7c00.html">为什么主引导记录的内存地址是0x7C00？</a></p>
+<p>这一步主要初始化<code>es</code>、<code>cs</code>、<code>ds</code>、<code>ss</code>几个段寄存器。</p>
+<h1 id="四、操作系统怎么把自己从硬盘搬运到内存？"><a href="#四、操作系统怎么把自己从硬盘搬运到内存？" class="headerlink" title="四、操作系统怎么把自己从硬盘搬运到内存？"></a>四、操作系统怎么把自己从硬盘搬运到内存？</h1><h2 id="4-1-操作系统的编译过程"><a href="#4-1-操作系统的编译过程" class="headerlink" title="4.1 操作系统的编译过程"></a>4.1 操作系统的编译过程</h2><p>整个编译过程，就是通过 <code>Makefile</code> 和 <code>build.c</code> 配合完成的，最终达到这样一个效果：</p>
+<ol>
+<li>把 <code>bootsect.s</code> 编译成 <code>bootsect</code> 放在硬盘的 <code>1</code> 扇区；</li>
+<li>把 <code>setup.s</code> 编译成 <code>setup</code> 放在硬盘的 <code>2~5</code> 扇区；</li>
+<li>把剩下的全部代码（<code>head.s</code> 作为开头，与各种 <code>.c</code> 和其他 <code>.s</code> 等文件一起）编译并链接成 <code>system</code>，放在硬盘的随后 <code>240</code> 个扇区。（不同版本的系统，占用的空间大小/扇区数不同）</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-794b00c942adba17.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="4-2-把剩下的操作系统代码从硬盘请到内存"><a href="#4-2-把剩下的操作系统代码从硬盘请到内存" class="headerlink" title="4.2 把剩下的操作系统代码从硬盘请到内存"></a>4.2 把剩下的操作系统代码从硬盘请到内存</h2><pre><code>load_setup:
+    mov dx,#0x0000      ; drive 0, head 0
+    mov cx,#0x0002      ; sector 2, track 0
+    mov bx,#0x0200      ; address = 512, in 0x9000
+    mov ax,#0x0200+4    ; service 2, nr of sectors
+    int 0x13            ; read it
+    jnc ok_load_setup       ; ok - continue
+    mov dx,#0x0000
+    mov ax,#0x0000      ; reset the diskette
+    int 0x13
+    jmp load_setup
+
+ok_load_setup:
+    ...
+</code></pre>
+<p>本段代码的注释已经写的很明确了，直接说最终的作用吧——<strong>从硬盘的第 2 个扇区开始，把数据加载到内存 0x90200 处，共加载 4 个扇</strong>区。图示其实就是这样：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-186c4e9e721a3509.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<pre><code>ok_load_setup:
+    ...
+    mov ax,#0x1000
+    mov es,ax       ; segment of 0x10000
+    call read_it
+    ...
+    jmpi 0,0x9020
+</code></pre>
+<p>剩下的核心代码就都写在这里了，就这么几行，其作用是把从硬盘第 <code>6</code> 个扇区开始往后的 <code>240</code> 个扇区，加载到内存 <code>0x10000</code> 处，和之前的从硬盘复制到内存是一个道理。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-14dc0de482abd9c6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>至此，整个操作系统的全部代码，就已经全部从硬盘加载到内存中了。然后这些代码，又通过一个熟悉的段间跳转指令 <code>jmpi 0,0x9020</code>，跳转到 <code>0x90200</code> 处，就是硬盘第二个扇区开始处的内容。</p>
+<h1 id="五、重要代码放在零地址处"><a href="#五、重要代码放在零地址处" class="headerlink" title="五、重要代码放在零地址处"></a>五、重要代码放在零地址处</h1><h1 id="5-1-内存拷贝"><a href="#5-1-内存拷贝" class="headerlink" title="5.1 内存拷贝"></a>5.1 内存拷贝</h1><p>好，我们向下一个文件 <code>setup.s</code> 进发！现在程序跳转到了 <code>0x90200</code> 这个位置开始执行，这个位置处的代码就位于 <code>setup.s</code> 的开头，代码如下：</p>
+<pre><code>start:
+    mov ax,#0x9000  ; this is done in bootsect already, but...
+    mov ds,ax
+    mov ah,#0x03    ; read cursor pos
+    xor bh,bh
+    int 0x10        ; save it in known place, con_init fetches
+    mov [0],dx      ; it from 0x90000.
+    
+</code></pre>
+<p>这个 <code>int 0x10</code> 中断程序执行完毕并返回时，将会在 <code>dx</code> 寄存器里存储好光标的位置，具体说来其高八位 <code>dh</code> 存储了行号，低八位 <code>dl</code> 存储了列号。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4f801782157c9d28.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<blockquote>
+<p>计算机在加电自检后会自动初始化到文字模式，在这种模式下，一屏幕可以显示 25 行，每行 80 个字符，也就是 80 列。</p>
+</blockquote>
+<p>那下一步 <code>mov [0],dx</code> 就是把这个光标位置存储在 <code>[0]</code> 这个内存地址处。注意，前面我们说过，这个内存地址仅仅是偏移地址，还需要加上 <code>ds</code> 这个寄存器里存储的段基址，最终的内存地址是在 <code>0x90000</code> 处，这里存放着光标的位置，以便之后在初始化控制台的时候用到。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-66cddb1a33ab7af3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<pre><code>cli         ; no interrupts allowed ;
+</code></pre>
+<p>就一行 <code>cli</code>，表示关闭中断的意思。因为后面我们要覆盖掉原本 <code>BIOS</code> 写好的中断向量表，也就是破坏掉原有的表，写上我们自己的中断向量表，所以此时是不允许中断进来的。</p>
+<pre><code>; first we move the system to it's rightful place
+    mov ax,#0x0000
+    cld         ; 'direction'=0, movs moves forward
+do_move:
+    mov es,ax       ; destination segment
+    add ax,#0x1000
+    cmp ax,#0x9000
+    jz  end_move
+    mov ds,ax       ; source segment
+    sub di,di
+    sub si,si
+    mov cx,#0x8000
+    rep movsw
+    jmp do_move
+; then we load the segment descriptors
+end_move:
+    ...
+    
+</code></pre>
+<p>最终的结果是，把内存地址 <code>0x10000</code> 处开始往后一直到 <code>0x90000</code> 的内容，统统复制到内存的最开始的 <code>0</code> 位置，大概就是这么个效果。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d4acccc8d7c9bf21.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="5-2-洗牌后的内存布局"><a href="#5-2-洗牌后的内存布局" class="headerlink" title="5.2 洗牌后的内存布局"></a>5.2 洗牌后的内存布局</h2><p>栈顶地址仍然是 <code>0x9FF00</code> 没有改变。</p>
+<p>而 <code>0x90000</code> 开始往上的位置，原来是 <code>bootsect</code> 和 <code>setup</code> 程序的代码，而此时 <code>bootsect</code> 的代码现在已经被一些临时存放的数据，如内存、硬盘、显卡等信息，覆盖了一部分。</p>
+<p>内存最开始的 <code>0</code> 到 <code>0x80000</code> 这 <code>512K</code> 被 <code>system</code> 模块给占用了，之前讲过，这个 <code>system</code> 模块就是除了 <code>bootsect</code> 和 <code>setup</code> 之外的全部程序（<code>head.s</code> 作为开头，<code>main.c</code> 和其他文件紧随其后）链接在一起的结果，可以理解为操作系统的全部代码。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bd0f81561ab15236.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>system</code> 被放在了内存地址零位置处，之前的 <code>bootsect</code> 和现在所在的 <code>setup</code>，正逐步被其他数据所覆盖掉。</p>
+<p>由此也可以看出，<code>system</code> 才是真正被视为重要的操作系统代码，其他的都是作为前期的铺垫，用完就被无情抛弃了。而 <code>system</code> 真正的大头要在第二部分才会展开讲解，所以为什么我把第一部分称为进入内核前的苦力活，这下知道了吧？</p>
+<h1 id="六、模式的转换"><a href="#六、模式的转换" class="headerlink" title="六、模式的转换"></a>六、模式的转换</h1><p>接下来就要进行真正的第一项大工程了，那就是模式的转换，<strong>需要从现在的 16 位的实模式转变为之后 32 位的保护模式。</strong></p>
+<p>因为这是 <code>x86</code> 的历史包袱问题，现在的 <code>CPU</code> 几乎都是支持 <code>32</code> 位模式甚至 <code>64</code> 位模式了，很少有还仅仅停留在 <code>16</code> 位的实模式下的 <code>CPU</code>。</p>
+<p>所以，我们要为了这个历史包袱，<strong>写一段模式转换的代码</strong>，如果 <code>Intel CPU</code> 被重新设计而不用考虑兼容性，那么今天的代码将会减少很多，甚至不复存在。</p>
+<h1 id="6-1-CPU的三种模式"><a href="#6-1-CPU的三种模式" class="headerlink" title="6.1 CPU的三种模式"></a>6.1 CPU的三种模式</h1><p><img src="https://upload-images.jianshu.io/upload_images/12321605-44356407210de3c2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol>
+<li><strong>实模式</strong>：兼容<code>16</code>位<code>CPU</code>的模式，当前的<code>PC</code>系统处于实模式（<code>16</code>位模式）运行状态，在这种状态下软件可访问的物理内存空间不能超过<code>1MB</code>，且无法发挥<code>Intel 80386</code>以上级别的<code>32</code>位<code>CPU</code>的<code>4GB</code>内存管理能力。实模式将整个物理内存看成分段的区域，程序代码和数据位于不同区域，操作系统和用户程序并没有区别对待，而且每一个指针都是指向实际的物理地址。这样用户程序的一个指针如果指向了操作系统区域或其他用户程序区域，并修改了内容，那么其后果就很可能是灾难性的。</li>
+<li><strong>保护模式</strong>：操作系统所在模式，只有在保护模式下，<code>80386</code>的<code>32</code>根地址线有效，可以寻址高达<code>4G</code>字节的线性内存空间和物理内存空间，可访问<code>64TB</code>的逻辑地址空间（有<code>214</code>个段，每个段最大空间为<code>232</code>个字节），可采用分段管理存储机制和分页管理存储机制。这不仅为存储共享和保护提供了硬件支持，而且为实现虚拟存储提供了硬件支持。通过提供<code>4</code>个特权级（<code>R0 ~ R3</code>）和完善的特权级检查制，既能实现资源共享又能保证代码数据的安全及任务的隔离。保护模式下有两个段表：<code>GDT</code>和<code>LDT</code></li>
+<li><strong>虚拟8086模式</strong>：可以模拟多个<code>8086</code>执行多任务。</li>
+</ol>
+<h2 id="6-2-实模式寻址过程"><a href="#6-2-实模式寻址过程" class="headerlink" title="6.2 实模式寻址过程"></a>6.2 实模式寻址过程</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-4480754f1db8c920.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="6-3-保护模式下的分段机制寻址过程"><a href="#6-3-保护模式下的分段机制寻址过程" class="headerlink" title="6.3 保护模式下的分段机制寻址过程"></a>6.3 保护模式下的分段机制寻址过程</h2><p><strong>gdtr</strong>: 全局描述符表寄存器，前面提到，<code>CPU</code>现在使用的是段+分页结合的内存管理方式，那系统总共有那些分段呢？这就存储在一个叫全局描述符表（<code>GDT</code>）的表格中，并用<code>gdtr</code>寄存器指向这个表。这个表中的每一项都描述了一个内存段的信息。</p>
+<p><strong>ldtr</strong>: 局部描述符表寄存器，这个寄存器和上面的<code>gdtr</code>一样，同样指向的是一个段描述符表（<code>LDT</code>）。不同的是，<code>GDT</code>是全局唯一，<code>LDT</code>是局部使用的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c6d1b2e2c126e1d9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h1 id="七、六行代码进入保护模式"><a href="#七、六行代码进入保护模式" class="headerlink" title="七、六行代码进入保护模式"></a>七、六行代码进入保护模式</h1><pre><code>// setup.s
+mov al,#0xD1        ; command write
+out #0x64,al
+mov al,#0xDF        ; A20 on
+out #0x60,al
+</code></pre>
+<p>这段代码的意思是打开 <code>A20</code> 地址线。到底什么是 <code>A20</code> 地址线呢？</p>
+<p>简单来说，这一步就是为了突破地址信号线 <code>20</code> 位的宽度，变成 <code>32</code> 位可用。这是由于 <code>8086</code> <code>CPU</code> 只有 <code>20</code> 位的地址线，所以如果程序给出 <code>21</code> 位的内存地址数据，那多出的一位就被忽略了。</p>
+<pre><code>mov ax,#0x0001  ; protected mode (PE) bit
+lmsw ax      ; This is it;
+jmpi 0,8     ; jmp offset 0 of segment 8 (cs)
+</code></pre>
+<p>将 <code>cr0</code> 这个寄存器的位 <code>0</code> 置 <code>1</code>，模式就从实模式切换到保护模式了</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1006827d8674ee7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>jmpi</code>，后面的 <code>8</code> 表示 <code>cs</code> 寄存器的值，<code>0</code> 表示 <code>ip</code> 寄存器的值，换一种伪代码表示就等价于：</p>
+<pre><code>cs = 8
+ip = 0
+</code></pre>
+<p>可以知道描述符索引值是 <code>1</code>，也就是 <code>CPU</code> 要去全局描述符表（<code>gdt</code>）中找索引 <code>1</code> 的描述符。</p>
+<pre><code>gdt:
+    .word   0,0,0,0     ; dummy
+
+    .word   0x07FF      ; 8Mb - limit=2047 (2048*4096=8Mb)
+    .word   0x0000      ; base address=0
+    .word   0x9A00      ; code read/exec
+    .word   0x00C0      ; granularity=4096, 386
+
+    .word   0x07FF      ; 8Mb - limit=2047 (2048*4096=8Mb)
+    .word   0x0000      ; base address=0
+    .word   0x9200      ; data read/write
+    .word   0x00C0      ; granularity=4096, 386
+</code></pre>
+<p>所以，这里取的就是这个代码段描述符，段基址是 <code>0</code>，偏移也是 <code>0</code>，那加一块就还是 <code>0</code> 。那么最终这个跳转指令，就是跳转到内存地址的 <code>0</code> 地址处，开始执行。</p>
+<blockquote>
+<p>第二个和第三个段描述符的段基址都是 0，也就是之后在逻辑地址转换物理地址的时候，通过段选择子查找到无论是代码段还是数据段，取出的段基址都是 0，那么物理地址将直接等于程序员给出的逻辑地址（准确说是逻辑地址中的偏移地址）</p>
+</blockquote>
+<h1 id="八、重新设置idt、gdt"><a href="#八、重新设置idt、gdt" class="headerlink" title="八、重新设置idt、gdt"></a>八、重新设置idt、gdt</h1><pre><code>call setup_idt ;设置中断描述符表
+call setup_gdt ;设置全局描述符表
+mov eax,10h
+mov ds,ax
+mov es,ax
+mov fs,ax
+mov gs,ax
+lss esp,_stack_start
+
+
+
+_gdt:
+    DQ 0000000000000000h    ;/* NULL descriptor */
+    DQ 00c09a0000000fffh    ;/* 16Mb */
+    DQ 00c0920000000fffh    ;/* 16Mb */
+    DQ 0000000000000000h    ;/* TEMPORARY - don't use */
+    DQ 252 dup(0)
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8aca29bcd66b5c05.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h1 id="九、Intel-内存管理两板斧：分段与分页"><a href="#九、Intel-内存管理两板斧：分段与分页" class="headerlink" title="九、Intel 内存管理两板斧：分段与分页"></a>九、Intel 内存管理两板斧：分段与分页</h1><h2 id="9-1-逻辑地址、线性地址、物理地址"><a href="#9-1-逻辑地址、线性地址、物理地址" class="headerlink" title="9.1 逻辑地址、线性地址、物理地址"></a>9.1 逻辑地址、线性地址、物理地址</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-e640096093d5ad01.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>逻辑地址：我们程序员写代码时给出的地址叫逻辑地址，其中包含段选择子和偏移地址两部分。</li>
+<li>线性地址：通过分段机制，将逻辑地址转换后的地址，叫做线性地址。而这个线性地址是有个范围的，这个范围就叫做线性地址空间，32 位模式下，线性地址空间就是 4G。</li>
+<li>物理地址：就是真正在内存中的地址，它也是有范围的，叫做物理地址空间。那这个范围的大小，就取决于你的内存有多大了。</li>
+<li>虚拟地址：如果没有开启分页机制，那么线性地址就和物理地址是一一对应的，可以理解为两者相等。如果开启了分页机制，那么线性地址将被视为虚拟地址，这个虚拟地址将会通过分页机制的转换，最终转换成物理地址。</li>
+</ul>
+<h2 id="9-2-地址分页查找过程"><a href="#9-2-地址分页查找过程" class="headerlink" title="9.2 地址分页查找过程"></a>9.2 地址分页查找过程</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-16b2286da60c1b08.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ff93072e983e0e68.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-877f131a5206033e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h2 id="9-3-开启分页"><a href="#9-3-开启分页" class="headerlink" title="9.3 开启分页"></a>9.3 开启分页</h2><pre><code>setup_paging:
+    mov ecx,1024*5
+    xor eax,eax
+    xor edi,edi
+    pushf
+    cld
+    rep stosd
+    mov eax,_pg_dir
+    mov [eax],pg0+7
+    mov [eax+4],pg1+7
+    mov [eax+8],pg2+7
+    mov [eax+12],pg3+7
+    mov edi,pg3+4092
+    mov eax,00fff007h
+    std
+L3: stosd
+    sub eax,00001000h
+    jge L3
+    popf
+    xor eax,eax
+    mov cr3,eax
+    mov eax,cr0
+    or  eax,80000000h
+    mov cr0,eax
+    ret
+</code></pre>
+<p>之后再开启分页机制的开关。其实就是更改 cr0 寄存器中的一位（31 位），还记得我们开启保护模式么？也是改这个寄存器中的一位的值。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5d4b4832362ff61d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h1 id="十、进入-main-函数前的最后一跃"><a href="#十、进入-main-函数前的最后一跃" class="headerlink" title="十、进入 main 函数前的最后一跃"></a>十、进入 main 函数前的最后一跃</h1><p>来看看设置分页代码的那个地方（<code>head.s</code> 里），后面这个操作就是用来跳转到 <code>main.c</code> 的。</p>
+<pre><code>after_page_tables:
+    push 0
+    push 0
+    push 0
+    push L6
+    push _main
+    jmp setup_paging
+...
+setup_paging:
+    ...
+    ret
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4f82eeb49c583cdf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>除了 <code>main</code> 函数的地址压栈外，其他压入栈中的数据（比如 <code>L6</code>），是 <code>main</code> 函数返回时的跳转地址，但由于在操作系统层面的设计上，<code>main</code> 是绝对不会返回的，所以也就没用了。而其他的三个压栈的 <code>0</code>，本意是作为 <code>main</code> 函数的参数，但实际上似乎也没有用到，所以你也不必关心。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1e9d3e55bbb9e6de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f5598b1345698d7c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li><strong>cs:eip</strong> 表示了我们要执行哪里的代码。</li>
+<li><strong>ds:xxx</strong> 表示了我们要访问哪里的数据。</li>
+<li><strong>ss:esp</strong> 表示了我们的栈顶地址在哪里。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-736428ee85ce7166.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><a class="button is-default" href="/2023/01/15/master-of-learning/" title="《学习高手》- Part"><i class="iconfont icon-prev mr-2 has-text-grey"></i><span class="has-text-weight-semibold">上一页: 《学习高手》- Part</span></a><a class="button is-default" href="/2022/12/11/ten-minute-meditation/" title="《十分钟冥想》"><span class="has-text-weight-semibold">下一页: 《十分钟冥想》</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
