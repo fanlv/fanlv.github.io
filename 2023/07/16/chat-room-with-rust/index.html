@@ -1,0 +1,445 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《基于 Rust 实现一个加密的 IM 聊天室》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="一、背景最近在看Rust相关的东西，想找个项目用Rust练下手，熟悉一下Rust基本特性。然后聊天工具是我们日常最常用的一个软件，我一直想自己写个安全的聊天软件（程序员一般都不相信非开源的程序）。
+最终实现的效果图如下（项目地址）：
+
+
+
+二、技术选型说到IM软件，我们常常就会想到一些特性，比如实时性、安全性、可靠性、跨平台兼容性、消息有序等等，我们看下常见的一些IM的技术方案有哪些。
+2.1 HTTP 轮询Http 轮询顾名思义，通过不停轮询的方式来判断是否有收到新的消息。轮询还分为长轮询和短轮询两种。
+
+短轮询（Short Polling）： 短轮询是客户端定期向服务器发送请求，查询是否有新数据。通常，客户端会在每个请求之间设置一个固定时间间隔。以下是短轮询的基本工作流程：
+客户端向服务器发送HTTP请.."><meta name="generator" content="Hexo 5.4.0">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《基于 Rust 实现一个加密的 IM 聊天室》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%83%8C%E6%99%AF"><span class="toc-text">一、背景</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E6%8A%80%E6%9C%AF%E9%80%89%E5%9E%8B"><span class="toc-text">二、技术选型</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-HTTP-%E8%BD%AE%E8%AF%A2"><span class="toc-text">2.1 HTTP 轮询</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-HTTP-2-%E5%8F%8C%E5%90%91-Stream"><span class="toc-text">2.2 HTTP&#x2F;2 双向 Stream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-gRPC-%E5%8F%8C%E5%90%91-Stream"><span class="toc-text">2.3 gRPC 双向 Stream</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-XMPP"><span class="toc-text">2.4 XMPP</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-%E8%87%AA%E5%AE%9A%E4%B9%89%E5%8D%8F%E8%AE%AE"><span class="toc-text">2.5 自定义协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-6-QUIC"><span class="toc-text">2.6 QUIC</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81RUST%E5%AE%9E%E7%8E%B0"><span class="toc-text">三、RUST实现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-%E5%BC%82%E6%AD%A5%E8%BF%90%E8%A1%8C%E6%97%B6%E5%BA%93-Tokio"><span class="toc-text">3.1 异步运行时库 Tokio</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-RUST-%E7%9A%84-QUIC-%E5%BA%93%E9%80%89%E6%8B%A9"><span class="toc-text">3.2 RUST 的 QUIC 库选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%9E%B6%E6%9E%84%E9%80%89%E6%8B%A9"><span class="toc-text">3.3 客户端架构选择</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-%E6%B6%88%E6%81%AF%E5%AE%89%E5%85%A8%E6%80%A7"><span class="toc-text">3.4 消息安全性</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-1-%E6%96%B9%E6%A1%88%E4%B8%80%EF%BC%9A%E5%8A%A0%E8%A7%A3%E5%AF%86%E9%83%BD%E6%94%BE%E5%9C%A8%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-text">3.4.1 方案一：加解密都放在客户端</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-2-%E6%96%B9%E6%A1%88%E4%BA%8C%EF%BC%9AP2P%E5%8D%8F%E5%95%86%E5%85%AC%E9%92%A5"><span class="toc-text">3.4.2 方案二：P2P协商公钥</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-text">四、总结</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/ChatRoom"><i class="tag post-item-tag">ChatRoom</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《基于 Rust 实现一个加密的 IM 聊天室》</h1><time class="has-text-grey" datetime="2023-07-16T02:00:08.000Z">2023-07-16</time><article class="mt-2 post-content"><h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><p>最近在看<code>Rust</code>相关的东西，想找个项目用<code>Rust</code>练下手，熟悉一下<code>Rust</code>基本特性。然后聊天工具是我们日常最常用的一个软件，我一直想自己写个安全的聊天软件（程序员一般都不相信<strong>非开源</strong>的程序）。</p>
+<p>最终实现的效果图如下（<a target="_blank" rel="noopener" href="https://github.com/fanlv/chat-room">项目地址</a>）：</p>
+<img alt="cover" src="https://upload-images.jianshu.io/upload_images/12321605-18805b429d0a1bcd.png">
+
+
+<h1 id="二、技术选型"><a href="#二、技术选型" class="headerlink" title="二、技术选型"></a>二、技术选型</h1><p>说到<code>IM</code>软件，我们常常就会想到一些特性，比如<code>实时性</code>、<code>安全性</code>、<code>可靠性</code>、<code>跨平台兼容性</code>、<code>消息有序</code>等等，我们看下常见的一些<code>IM</code>的技术方案有哪些。</p>
+<h2 id="2-1-HTTP-轮询"><a href="#2-1-HTTP-轮询" class="headerlink" title="2.1 HTTP 轮询"></a>2.1 HTTP 轮询</h2><p><code>Http 轮询</code>顾名思义，通过不停轮询的方式来判断是否有收到新的消息。轮询还分为<code>长轮询</code>和<code>短轮询</code>两种。</p>
+<ul>
+<li>短轮询（<code>Short Polling</code>）： 短轮询是客户端定期向服务器发送请求，查询是否有新数据。通常，客户端会在每个请求之间设置一个固定时间间隔。以下是短轮询的基本工作流程：<ol>
+<li>客户端向服务器发送<code>HTTP</code>请求。</li>
+<li>服务器检查是否有新数据。</li>
+<li>如果服务器有新数据，立即将数据作为<code>HTTP</code>响应返回；如果没有新数据，则直接返回一个空响应或预定义的响应。</li>
+<li>客户端等待预定的时间间隔，然后再次向服务器发送<code>HTTP</code>请求（返回步骤<code>1</code>）。</li>
+</ol>
+</li>
+<li>长轮询（<code>Long Polling</code>）： 长轮询是短轮询的改进，可以减少服务器负载和网络流量。在长轮询中，客户端发送请求后，服务器会将连接保持打开，直到有新数据可用。以下是长轮询的基本工作流程：<ol>
+<li>客户端向服务器发送<code>HTTP</code>请求。</li>
+<li>服务器检查是否有新数据。</li>
+<li>如果服务器有新数据，立即将数据作为<code>HTTP</code>响应返回；如果没有新数据，<strong>服务器保持请求打开（一直Hold住）</strong>，并等待，直到有新数据可用。一旦有新数据，服务器将数据作为<code>HTTP</code>响应返回。</li>
+<li>客户端收到响应后，立即向服务器发送新的<code>HTTP</code>请求（返回步骤<code>1</code>）。</li>
+</ol>
+</li>
+</ul>
+<p><strong>优点</strong></p>
+<ul>
+<li><strong>简单易实现</strong>，相较于<code>TCP Server</code>，服务端不需要拆包，不需要关注粘包问题，读取<code>Request</code>、回复<code>Response</code>都很简单。</li>
+<li><strong>无需保持长链状态</strong>，轮询机制允许客户端和服务器之间在没有实时通信需求时断开连接，服务端也不需要维护链接状态，不需要<code>Ping</code>、<code>Pong</code>保持链接。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li><strong>延迟高</strong>，接受消息的延迟，取决于轮询的间隔。太慢了，延迟大。太快了，无效调用很多。</li>
+<li><strong>资源浪费</strong>，不管是否有消息，客户端都会不停请求服务端，对服务端资源是一种浪费。</li>
+</ul>
+<p>这个方案看上去很<code>low</code>，早些年还是有公司用这种方案快速搭建自己的<code>IM</code>软件。</p>
+<h2 id="2-2-HTTP-2-双向-Stream"><a href="#2-2-HTTP-2-双向-Stream" class="headerlink" title="2.2 HTTP/2 双向 Stream"></a>2.2 HTTP/2 双向 Stream</h2><p><code>HTTP/2</code>引入了<strong>二进制分帧传输</strong>、<strong>多路复用</strong>、首部压缩、服务器推送、请求优先级等特性。<code>HTTP2</code>的数据传输方式如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bb1e32f93ed11684.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7831c3d51a6a99a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>HTTP/2</code>的<a target="_blank" rel="noopener" href="https://httpwg.org/specs/rfc7540.html#FrameHeader">帧格式</a>如下：</p>
+<pre><code> +-----------------------------------------------+
+ |                 Length (24)                   |
+ +---------------+---------------+---------------+
+ |   Type (8)    |   Flags (8)   |
+ +-+-------------+---------------+-------------------------------+
+ |R|                 Stream Identifier (31)                      |
+ +=+=============================================================+
+ |                   Frame Payload (0...)                      ...
+ +---------------------------------------------------------------+
+</code></pre>
+<p>可以看下<code>Go</code>对<code>HTTP/2</code><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.21/src/net/http/h2_bundle.go#L1634">解码方式</a>如下：</p>
+<pre><code>func http2readFrameHeader(buf []byte, r io.Reader) (http2FrameHeader, error) {
+    _, err := io.ReadFull(r, buf[:http2frameHeaderLen])
+    if err != nil {
+        return http2FrameHeader{}, err
+    }
+    return http2FrameHeader{
+        Length:   (uint32(buf[0])&lt;&lt;16 | uint32(buf[1])&lt;&lt;8 | uint32(buf[2])),
+        Type:     http2FrameType(buf[3]),
+        Flags:    http2Flags(buf[4]),
+        StreamID: binary.BigEndian.Uint32(buf[5:]) &amp; (1&lt;&lt;31 - 1),
+        valid:    true,
+    }, nil
+}
+</code></pre>
+<p>由于<code>HTTP/2</code>支持了<code>二进制分帧</code>、<code>多路复用</code>，理论上我们可以直接基于<code>HTTP/2</code>的双向流（<code>Bidirectional Stream</code>）的特性来保证消息的实时性，通过<code>HTTPS</code>来保证消息安全性，还可以通过<code>流量控制</code>、<code>请求优先级</code>、来做一些其他更高级的的玩法。</p>
+<p>然后我就去找了下有没有<code>HTTP/2</code>的项目的<code>IM</code>的库，然后我就找到了一个<a target="_blank" rel="noopener" href="https://github.com/posener/h2conn">h2conn</a> 。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/posener/h2conn/blob/master/client.go#L25">客户端连接服务端的代码如下</a>：</p>
+<pre><code>// Connect establishes a full duplex communication with an HTTP2 server with custom client.
+func (c *Client) Connect(ctx context.Context, urlStr string) (*Conn, *http.Response, error) {
+    reader, writer := io.Pipe()
+
+    // "net/http"
+    // 这里传 reader 进去，通过writer写入，可以给服务端发送数据
+    req, err := http.NewRequest(c.Method, urlStr, reader)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    ......省略部分代码
+
+    // Perform the request
+    resp, err := httpClient.Do(req)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    // resp.Body 就是 Reader， 可以读到服务端发过来的数据。
+    // writer 可以给服务端发送数据
+    conn, ctx := newConn(req.Context(), resp.Body, writer)
+    
+    ......
+    
+    return conn, resp, nil
+}
+</code></pre>
+<p>服务端要做的就是，收到这个<code>Request</code>以后，我们<code>handle</code>函数，一直不返回。不停去读数据和写数据就行了，<a target="_blank" rel="noopener" href="https://github.com/posener/h2conn/blob/master/example/echo/server.go#L21">服务端测试代码如下</a>：</p>
+<pre><code>func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    conn, err := h2conn.Accept(w, r)
+    ......
+    defer conn.Close()
+    
+    for {
+        var msg string
+        err = in.Decode(&amp;msg)
+        .....
+        log.Printf("Got: %q", msg)
+    
+        err = out.Encode(msg)
+        .....
+        log.Printf("Sent: %q", msg)
+    }
+}
+</code></pre>
+<p>值得一提的是，这个例子里面，客户端和服务端两边传输的是<code>JSON</code>的数据流，数据传输的拆包工作是给<code>json.Decoder</code>去做了。具体代码如下：</p>
+<pre><code>// Create a json encoder and decoder to send json messages over the connection
+var (
+    in  = json.NewDecoder(conn)
+    out = json.NewEncoder(conn)
+)
+
+// in the decode or encode stages.
+for {
+
+    var msg string 
+    // {"msg": "a"}{"msg":"b"}
+    // 这里读到 JSON 字符串流的会自动返回一个完整的 msg
+    err = in.Decode(&amp;msg) 
+    if err != nil {
+        log.Printf("Failed decoding request: %v", err)
+        return
+    }
+
+    log.Printf("Got: %q", msg)
+    .......
+
+}
+</code></pre>
+<p>虽然说是多路复用，其实本质还是发起一个请求，然后服务端一直<code>Hold</code>这个请求，不去<code>Close</code>，然后基于<code>HTTP2</code>双向流的能力，来收发数据。</p>
+<p>这个实现有个缺点就是，如果有一个很大的<code>Request</code>，会阻塞其他的<code>Request</code>发送。并不能把这个<code>Request</code>切分成小块然后分别去发送。</p>
+<p>当然也可以专门起一个请求，来接受服务端的推送。但是如果是这样的话，本质就是<code>长轮询</code>，用<code>HTTP/1</code>也可以。</p>
+<h2 id="2-3-gRPC-双向-Stream"><a href="#2-3-gRPC-双向-Stream" class="headerlink" title="2.3 gRPC 双向 Stream"></a>2.3 gRPC 双向 Stream</h2><p>具体实现代码如下：</p>
+<pre><code>// proto
+service XXX {
+    rpc StreamTest(stream StreamTestReq) returns (stream StreamTestResp);
+}
+message StreamTestReq {
+    int64 i = 1;
+}
+message StreamTestResp {
+    int64 j = 1;
+}
+// server端代码
+func (s *XXXService) StreamTest(re v1pb.XXX_StreamTestServer ) (err error) {
+    for {
+        data, err := re.Recv()
+        if err != nil {
+            break
+        }
+             // 将客户端发送来的值乘以10再返回给它
+        err = re.Send(&amp;v1pb.StreamTestResp{J: data.I * 10 }) 
+    }
+    return
+}
+// client 端代码
+func TestStream(t *testing.T) {
+    c, _ := service2.daClient.StreamTest(context.TODO())
+    go func(){
+        for {
+            rec, err := c.Recv()
+            if err != nil {
+                break
+            }
+            fmt.Printf("resp: %v\n", rec.J)
+        }
+    }()
+    for _, x := range []int64{1,2,3,4,5,6,7,8,9}{
+        _ = c.Send(&amp;dav1.StreamTestReq{I: x})
+        time.Sleep(100*time.Millisecond)
+    }
+    _ = c.CloseSend()
+}
+// client端输出结果
+resp: 10
+resp: 20
+resp: 30
+resp: 40
+resp: 50
+resp: 60
+resp: 70
+resp: 80
+resp: 90
+</code></pre>
+<p><strong>优点</strong></p>
+<ul>
+<li><code>gRPC </code>本质底层还是基于<code>HTTP/2</code>传输，<code>HTTP/2</code>的优点，<code>gRPC </code>基本都有。</li>
+<li>强类型和一致的接口：<code>gRPC</code>定义了通信协议的标准化、一致且强类型接口。这有助于更好地组织代码，减少错误，并提高可读性和可维护性。</li>
+<li>有工具可以快速生成客户端和服务端脚手架代码。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li>浏览器支持不好。</li>
+<li>单个请求处理所有客户端服务端的通讯数据太重了。</li>
+</ul>
+<h2 id="2-4-XMPP"><a href="#2-4-XMPP" class="headerlink" title="2.4 XMPP"></a>2.4 XMPP</h2><p><code>XMPP</code>（<code>Extensible Messaging and Presence Protocol</code>，可扩展消息处理协议）和<code>Jabber</code>实际上是同一个概念的两个不同名称。技术上，它们都指的是<strong>同一种基于 XML 的实时通信协议</strong>。然而，它们的名称在历史上用于强调不同的方面：</p>
+<p><strong>Jabber</strong></p>
+<p><code>Jabber</code>这个名字来源于最早实现的开放源代码项目，这个项目在<code>1999</code>年由<code>Jeremie Miller</code>创建。这个项目旨在实现一种基于互联网且分布式的即时通信协议。当<code>Jabber</code>项目产生以后，<code>Jabber</code>这个名称逐渐成为广义上与该项目相关的实时通信协议、技术和工具群的代名词。</p>
+<p><strong>XMPP</strong></p>
+<p>为了将<code>Jabber</code>协议变得更加正式和标准化，项目的负责人在<code>2002</code>年将<code>Jabber</code>协议提交给了互联网工程任务组（<code>IETF</code>）。<code>IETF</code>将<code>Jabber</code>协议进一步扩展和完善，并最终将其命名为<code>XMPP</code>（可扩展消息处理协议）。自<code>2004</code>年起，<code>XMPP</code>成为了<code>IETF</code>正式的通信协议标准。</p>
+<p><code>XMPP IM</code>简单说就是用<code>TCP</code>传输<code>XML</code>流，定义了一个数据传输协议的标准，现在基本没有哪家做<code>IM</code>的公司会遵守这个，所以基本没人用<code>XMPP</code>了。找了一个开源的<code>Go</code>的<code>XMMP</code>的<a target="_blank" rel="noopener" href="https://github.com/jackal-xmpp/stravaganza">jackal-xmpp</a>。</p>
+<p>服务端读取数据的测试代码如下：</p>
+<pre><code>//    "github.com/jackal-xmpp/stravaganza/parser"
+func handleClient(conn net.Conn) {
+    iq, err := stravaganza.NewBuilder("iq").
+        WithValidateJIDs(true).
+        WithAttribute("id", "zid615d9").
+        WithAttribute("from", "ortuman@jackal.im/yard").
+        WithAttribute("to", "noelia@jackal.im/balcony").
+        WithAttribute("type", "get").
+        WithChild(
+            stravaganza.NewBuilder("ping").
+                WithAttribute("xmlns", "urn:xmpp:ping").
+                Build(),
+        ).
+        BuildIQ()
+    if err != nil {
+        _, _ = fmt.Fprint(os.Stderr, err.Error())
+        return
+    }
+    _ = iq.ToXML(conn, true) // 发送给客户端。
+
+    p := xmppparser.New(conn, xmppparser.SocketStream, 1024)
+
+    for {    
+        
+        elem, err := p.Parse() 
+        if err != nil {    
+            contine
+        }
+
+        fmt.Println("elem = ", elem.String())
+    }
+
+}
+</code></pre>
+<h2 id="2-5-自定义协议"><a href="#2-5-自定义协议" class="headerlink" title="2.5 自定义协议"></a>2.5 自定义协议</h2><p>早期写<code>TCP Server</code>的时候，很多时候都是自己去定义数据格式，然后自己读取数据流，然后拆包。</p>
+<p>比如斗鱼的弹幕协议：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-cf00bbcf9f982462.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>数据部分用的是自定义的<code>STT</code>序列化和反序列化。</p>
+<ol>
+<li>键<code>key</code>和值<code>value</code>直接采用<code>@=</code>分割</li>
+<li>数组采用<code>/</code>分割</li>
+<li>如果<code>key</code>或者<code>value</code>中含有字符<code>/</code>，则使用<code>@S</code>转义</li>
+<li>如果<code>key</code>或者<code>value</code>中含有字符<code>@</code>，使用<code>@A</code>转义</li>
+</ol>
+<p>举例:</p>
+<ol>
+<li>多个键值对数据: <code>key1@=value1/key2@=value2/key3@=value3/</code></li>
+<li><code>value1/value2/value3/</code></li>
+</ol>
+<p>比如登录请求<code>type@=loginreq/roomid@=58839/</code></p>
+<p>最早的是时候还做过类似 <a target="_blank" rel="noopener" href="https://baike.baidu.com/item/PPP/6660214?fr=ge_ala">PPP（Point-to-Point Protocol）</a> 帧格式，具体编码信息如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-cb95c2672cda549d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="2-6-QUIC"><a href="#2-6-QUIC" class="headerlink" title="2.6 QUIC"></a>2.6 QUIC</h2><p><code>QUIC（Quick UDP Internet Connections）</code> 在<code>2012</code>年由<code>Google</code>开发，它基于<code>UDP（User Datagram Protocol）</code>而不是<code>TCP</code>，使用多路复用、内置拥塞控制、低延迟连接建立等技术，为应用提供更快、安全、稳定的端到端传输。</p>
+<p><code>HTTP/2</code> 的一些特性，<code>QUIC</code>基本上都有。</p>
+<p><strong>优点：</strong></p>
+<ul>
+<li><strong>0-RTT 连接建立</strong>，<code>0-RTT（Zero Round Trip Time）</code>连接建立是一种特殊的握手机制，允许客户端在<strong>重新连接至服务器</strong>时（例如在前一次连接中已经与服务器成功建立过<code>TLS</code>握手的情况下），不需要进行额外的往返时间即可建立新的安全连接。 <a target="_blank" rel="noopener" href="https://fanlv.fun/2023/04/02/quic-hello/">Quic 加密握手的过程</a></li>
+<li><strong>避免线头阻塞</strong>：与<code>HTTP/2</code>多路复用不同，<code>QUIC</code>的流在<strong>独立的连接中（UDP包）</strong>，因此可以避免线头阻塞问题。与<code>TCP</code>传输中存在的<strong>因串行处理和线头阻塞</strong>导致的潜在延时相比，<code>QUIC</code>具有更好的吞吐量和时延性能。</li>
+<li><strong>切换网络时的连接保持</strong>，跟上面<code>0-RTT</code>一个意思，因为记录了链接密钥和状态（<code>Session Ticket</code>），所以网络切换（<code>IP</code>变更）的时候，不需要重新建连。</li>
+</ul>
+<p><strong>缺点</strong></p>
+<ul>
+<li><strong>兼容性</strong>：虽然<code>QUIC</code>在现代网络环境和浏览器中逐渐被接受，但它的部署和支持相较于<code>HTTP/2</code>仍有局限性。由于<code>QUIC</code>依赖于<code>UDP</code>，一些代理设备、防火墙或者<code>ISP</code>可能限制了<code>UDP</code>传输。这可能导致部署和配置的挑战。</li>
+</ul>
+<p><code>QUIC</code>的帧格式如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-137b58720f112999.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="7cda8380bdd5669d0d07b0d97d9e23f6.png"></p>
+<p>我说下我使用<code>QUIC</code>的时候，我的感受。</p>
+<ol>
+<li><p><strong>不需要手工维护 Ping-Pong</strong>，<code>QUIC</code>自己做了保活机制，我们只用配置一个<code>Keep-Alive</code>的<a target="_blank" rel="noopener" href="https://github.com/quic-go/quic-go/blob/v0.36.2/interface.go#L312">时间间隔就好了</a>。</p>
+</li>
+<li><p><strong>不需要对数据流做拆包操作</strong>，发送数据的流程跟<code>Http</code>请求类似，每个<code>Request</code>和<code>Response</code>属于不同的<code>StreamID</code>，在<code>QUIC</code>中已经帮我们把拆包合包的逻辑做了。我们直接把字节流读出来，转换为<code>Request</code>或者<code>Response</code>就行了。</p>
+<p> <img src="https://upload-images.jianshu.io/upload_images/12321605-4a60b752dd4a0d28.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</li>
+</ol>
+<ol start="3">
+<li><p><strong>避免线头阻塞</strong>，由于<code>QUIC</code>是基于<code>UDP</code>传输的，所以没有<code>TCP</code>单管道导致的<code>线头阻塞</code>的问题，如下图所示：</p>
+<p> <img src="https://upload-images.jianshu.io/upload_images/12321605-26ac36553fc54bbf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</li>
+<li><p><strong>没有 UDP 的大包问题</strong>，<code>UDP</code>长度只有<code>16</code>位，一般如果超过了<code>65535</code>，就会被丢弃或者截断。<code>QUIC</code>会自动帮我去做包拆分，我们写业务层代码的时候，发送数据和使用<code>TCP</code>写数据流一样，不用<code>Care</code>发送的数据大小，<code>QUIC</code>内部会去帮我们做拆包合包。 <code>UDP</code> 包结构如下：</p>
+<pre><code> +---------------------+----------------------+----------------------+
+ |   Source Port (16)  |  Destination Port (16) |   Length (16)       |   
+ +---------------------+----------------------+----------------------+
+ |   Checksum (16)     |                      Data                    |
+ +---------------------+-----------------------------------------------+
+</code></pre>
+</li>
+</ol>
+<p><code>QUIC</code>已经是<code>HTTP/3</code>的标准了，总体来说<code>QUIC</code>做<code>IM</code>的传输是一个很好的选择。所以最后准备用<code>QUIC</code>来做数据传输协议。</p>
+<h1 id="三、RUST实现"><a href="#三、RUST实现" class="headerlink" title="三、RUST实现"></a>三、RUST实现</h1><h2 id="3-1-异步运行时库-Tokio"><a href="#3-1-异步运行时库-Tokio" class="headerlink" title="3.1 异步运行时库 Tokio"></a>3.1 异步运行时库 Tokio</h2><p><code>Tokio</code>是<code>Rust</code>编程语言中的一个异步运行时库，它充分利用<code>Rust</code>的安全性和并发特性，为开发人员提供高性能、可伸缩的异步<code>I/O</code>和事件驱动编程能力。简单来说，<code>Tokio</code>是一个框架，<strong>用于通过异步编程构建高效、可伸缩的网络应用程序</strong>。</p>
+<p><code>Tokio</code>的主要特性和组件：</p>
+<ol>
+<li><strong>运行时</strong>: <code>Tokio</code>提供了一个运行时，它处理任务调度、执行异步任务和管理操作系统资源。它包含一个高效的事件循环，可以根据输入事件（如：网络数据到达、计时器触发等）执行相应的任务。</li>
+<li><strong>定时器、任务和工作窃取</strong>: <code>Tokio</code>提供了定时器功能，允许在指定时间后执行任务；它还包含任务组件，用于创建、管理和在运行时中调度异步任务。为提高性能，<code>Tokio</code>采用了一个称为“工作窃取”的高效调度策略。</li>
+<li><strong>I/O</strong>: <code>Tokio</code>库包含对异步<code>I/O</code>（如<code>TCP</code>, <code>UDP</code>, 文件<code>I/O</code>等）的支持，使您能够轻松构建高性能服务器和客户端。</li>
+<li><strong>中间件和底层库支持:</strong> <code>Tokio</code>还配备了一系列中间件和底层库支持，它们提供了常见网络编程任务的便利功能。例如：<code>HTTP</code>、<code>WebSocket</code>、加密等。</li>
+</ol>
+<p>PS：是不是跟<code>Go</code>的<code>Runtime</code>功能有一点点相似。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.rs/tokio/latest/tokio/">tokio</a> 应该是<code>RUST</code>最流行的异步运行时库，看的很多<code>RUST</code>教程都是直接用的<code>Tokio</code>。所以我基本上也没调研其他运行时库，选择直接用了<code>Tokio</code>。</p>
+<h2 id="3-2-RUST-的-QUIC-库选择"><a href="#3-2-RUST-的-QUIC-库选择" class="headerlink" title="3.2 RUST 的 QUIC 库选择"></a>3.2 RUST 的 QUIC 库选择</h2><p>找了<code>RUST</code>相关的一些<code>QUIC</code>库 ：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/mozilla/neqo">mozilla/neqo</a>，<code>mozilla</code>搞的<code>QUIC</code>库，依赖<code>NSS/NSPR</code>两个网络安全库，没有下载<code>NSS/NSPR</code>直接编译的话，我编译了一个多小时，这个库太重了，直接放弃。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/cloudflare/quiche">cloudflare/quiche</a> 一个跨平台的<code>QUIC</code>库，很多<code>Low-Level</code>的<code>API</code>，扩展性高，但是对新手使用不友好，所以也<code>pass</code>了。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/aws/s2n-quic">aws/s2n-quic</a>，这个是<code>ASW</code>的<code>QUIC</code>库，<code>API</code>使用也比较简单，不过里面使用了很多<code>宏编程</code>，对新手来说有一些生涩。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/quinn-rs/quinn">quinn-rs/quinn</a>，相较于其他几个库，<code>quinn</code>的<code>API</code>简单易用，对新手比较友好。所以，最终使用<a target="_blank" rel="noopener" href="https://github.com/quinn-rs/quinn">quinn-rs/quinn</a>这个库。</li>
+</ul>
+<p>使用 <a target="_blank" rel="noopener" href="https://github.com/quinn-rs/quinn">quinn-rs/quinn</a> <code>API</code>比较简单，代码如下：</p>
+<pre><code>// 发送请求
+pub async fn send(&amp;self, request: Request) -&gt; Result&lt;Response&gt; {
+    let (mut send, mut recv) = self.conn.open_bi().await?;
+    // 1. read request -&gt; json
+    let serialized = serde_json::to_vec(&amp;request)?;
+    // 2. send json data
+    send.write_all(&amp;serialized).await?;
+    send.finish().await?;
+    // 3. read json data
+    let vec_u8 = recv.read_to_end(MAX_SIZE).await?;
+    // 4. json data -&gt; Response
+    let resp: Response = serde_json::from_slice(&amp;vec_u8)?;
+    Ok(resp)
+}
+
+// 接受请求
+pub async fn accept_request_loop&lt;F&gt;(&amp;self, callback: F) -&gt; Result&lt;()&gt;
+    where
+        F: Fn(Request) -&gt; Result&lt;Response&gt; + Send + Sync + Clone + 'static
+{
+    loop {
+        let stream = self.conn.accept_bi().await;
+        let stream = match stream {
+            Err(e) =&gt; {
+                return Err(SError::Error(format!("Accept stream ,err = {}", e.to_string())));
+            }
+            Ok(s) =&gt; s,
+        };
+
+        let callback_copy = callback.clone();
+        let res = handle_request(stream.0, stream.1, callback_copy);
+        tokio::spawn(async move {
+            if let Err(e) = res.await {
+                println!("handle_request failed = {}", e);
+            }
+        });
+    }
+}
+
+
+async fn handle_request&lt;F&gt;(mut send: quinn::SendStream, mut recv: quinn::RecvStream, callback: F) -&gt; Result&lt;()&gt;
+    where
+        F: Fn(Request) -&gt; Result&lt;Response&gt; + Send + Sync + Clone
+{
+    // 1. read request json data
+    let vec_u8 = recv.read_to_end(MAX_SIZE).await?;
+    // 2. json data -&gt; Request
+    let request: Request = serde_json::from_slice(&amp;vec_u8).unwrap();
+    // 3. get response
+    let resp = callback(request)?;
+    // 4. response -&gt; json data
+    let serialized = serde_json::to_vec(&amp;resp)?;
+    // 5. send response json data
+    send.write_all(&amp;serialized).await?;
+    send.finish().await?;
+
+    Ok(())
+}
+</code></pre>
+<h2 id="3-3-客户端架构选择"><a href="#3-3-客户端架构选择" class="headerlink" title="3.3 客户端架构选择"></a>3.3 客户端架构选择</h2><p>早期准备本地启动一个<code>HTTP Server</code>，然后做一个简单的<code>Web</code>界面通过<code>HTTP</code>接口来收发数据。大致流程如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-58cc351733ff324b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>后面去调研了下<code>Rust</code>命令行的<code>UI</code>库，找到了一个找到了一个还不错的<code>UI</code>库 <a target="_blank" rel="noopener" href="https://github.com/fdehau/tui-rs">fdehau/tui-rs</a>，所以最终决定做成一个命令行的<code>UI</code>程序。</p>
+<p>客户端代码组织的结构，使用了之前做<code>IOS</code>的<code>MVVM（Model-View-ViewModel）</code>架构。<code>MVVM</code>架构是一种针对用户界面(<code>UI</code>)开发的设计模式。<code>MVVM</code>旨在将程序中的各个部分分开，以实现关注点分离，从而提高代码的可维护性、可读性和可测试性。<code>MVVM</code>架构主要由三个核心组件组成：<code>Model</code>（模型）、<code>View</code>（视图）和<code>ViewModel</code>（视图模型）。</p>
+<ul>
+<li><code>Model</code>（模型）：模型表示应用程序的数据和业务逻辑。它暴露了获取数据和执行操作所需的属性和方法。模型是程序的核心，负责实现关键功能和存储业务数据。模型通常与后端服务（如：数据库、<code>APIs</code>等）进行交互，以读取和持久化数据。</li>
+<li><code>View</code>（视图）：视图表示用户界面(<code>UI</code>)，是用户与应用程序进行交互的部分。视图包括屏幕上的所有可见元素和用户可以与之交互的组件（如：文本框、按钮、列表等）。视图一般不包含业务逻辑，它主要负责绑定<code>ViewModel</code>暴露出的数据和命令，以展示数据和提供交互。</li>
+<li><code>ViewModel</code>（视图模型）：视图模型作为模型和视图之间的桥梁，负责在它们之间进行数据转换和通信。视图模型提供了公开要显示在视图上的数据的属性，以及负责处理用户交互的命令。这些命令可以触发业务逻辑的执行（通常在模型层）并更新视图上的数据。视图绑定到视图模型，当视图模型的数据发生变更时，视图会自动更新以反映这些变更。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-74c2a16836ee7813.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="3-4-消息安全性"><a href="#3-4-消息安全性" class="headerlink" title="3.4 消息安全性"></a>3.4 消息安全性</h2><p>在一个消息的收发流程中，通讯链路是是通过<code>TLS</code>加密过的，理论上是安全的，但是我们的消息是存储在服务端的（即使服务端是加密存储的，服务端自己也可以解密），服务端其实是可以随意查看客户端消息内容的。流程如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f27525740425d58c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="3-4-1-方案一：加解密都放在客户端"><a href="#3-4-1-方案一：加解密都放在客户端" class="headerlink" title="3.4.1 方案一：加解密都放在客户端"></a>3.4.1 方案一：加解密都放在客户端</h3><p><img src="https://upload-images.jianshu.io/upload_images/12321605-4f016294a682aa80.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol>
+<li>所有客户端上传自己的公钥到服务端。</li>
+<li><code>Client1</code>要给 <code>Client2</code>、<code>Client3</code>发送消息的话，需要先请求服务端，拿到<code>Client2</code>、<code>Client3</code>的<code>公钥</code>。</li>
+<li><code>Client1</code>分别使用<code>Client2</code>和<code>Client3</code>的公钥对要发送的内容加密，然后把数据发送给服务端。服务端分别把对应的数据转发给对应的客户端。</li>
+<li><code>Client2</code> 和 <code>Client3</code> 用自己的私钥对收到的密文解密，得到对应的明文。</li>
+</ol>
+<p>在这个方案中，我们加密解密都是在客户端做的，所以相较于之前服务度做加密解密会更安全一些。但是服务端这个时候还是可以通过<code>中间人攻击</code>的方式来<code>Hack</code>相关的消息内容。具体流程如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a9575d0ac01ba0aa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol>
+<li><code>Client1</code>请求<code>Client2</code>的公钥，但是服务端返回的是一个自己的公钥。</li>
+<li><code>Client1</code>在不知情的情况下，使用了服务端的公钥加密，然后把密文发送给服务端。</li>
+<li>服务端这个时候可以拿自己的私钥解密对应的密文，得到<strong>明文</strong>。</li>
+<li>服务端使用<code>Client2</code>的公钥，对<strong>明文</strong>进行加密，然后发送给<code>Client2</code>。</li>
+<li><code>Client2</code>收到密文以后，正常使用自己的私钥解密。</li>
+</ol>
+<p>整个功能对<code>Client</code>来说都是正常的，但是服务端已经拿到了消息的明文。</p>
+<h3 id="3-4-2-方案二：P2P协商公钥"><a href="#3-4-2-方案二：P2P协商公钥" class="headerlink" title="3.4.2 方案二：P2P协商公钥"></a>3.4.2 方案二：P2P协商公钥</h3><p>这个方案一的本质问题还是因为依赖了服务端去交换各种的公钥，所以服务端可以作为中间人用假的公钥去替换客户端的公钥。我们可以基于<code>P2P（Peer-to-Peer）</code>点对点通讯的方式去互相交换公钥就可以了。 具体流程如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-413ca240b4cc1001.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol>
+<li>客户端链接服务端。服务端记录所有客户端的<code>IP</code>地址。</li>
+<li>客户端请求服务端，获取当前群中所有<code>Client</code>的<code>IP</code>地址。</li>
+<li>客户端互相发送<code>Ping-Pong</code>的<code>UDP</code>消息来打通双发链路信息（这一步就是<code>打洞</code>）。</li>
+<li><code>P2P</code>的链路通了以后，就可以互相交换公钥了。</li>
+<li>使用交换以后公钥来加密消息，通过服务端转发消息。（走服务端发送消息的好处是，服务端可以存储消息，部分客户端离线以后再上线还能收到之前的消息）</li>
+</ol>
+<p>值得一提的是<code>P2P</code>打洞不是所有网络环境都能成功，跟路由的<code>NAT</code>类型有关，路由器的<code>NAT</code>类型可以分为几类：</p>
+<ul>
+<li>全锥 NAT(<code>Full Cone NAT</code>)</li>
+<li>限制性锥 NAT（<code>Restricted Cone NAT</code>）</li>
+<li>端口限制性锥 NAT( <code>Port Restricted Cone NAT</code>)</li>
+<li>对称 NAT (<code>Symmetric NAT</code>)</li>
+</ul>
+<p>在<code>对称NAT</code>的情况下（很少有这种类型的路由器），是会打洞失败的。这种情况应该兜底走方案一。<code>P2P</code>的穿透/打洞原理，这里就不过多赘述，感兴趣的朋友可以自己去搜索相关文章。</p>
+<p>笔者之前做<code>P2P</code>项目的时候，分别测试过电信和联通的路由器：</p>
+<ul>
+<li>电信的更多是<code>全锥NAT</code>型路由器，只要知道了客户端的<code>IP:Prot</code>, 任何一个外部主机均可通过该<code>IP：Port</code>发送数据包到该主机。</li>
+<li>联通的更多是<code>端口限制性锥NAT</code>：即只有内部主机先向外部<code>IP:Prot</code>发送数据包,该外部主机才能使用特定的端口号向内部主机发送数据包。</li>
+</ul>
+<h1 id="四、总结"><a href="#四、总结" class="headerlink" title="四、总结"></a>四、总结</h1><p>做了个简单聊天室功能， 熟悉了一下<code>Rust</code>一些的基本特性。 Always Exploring…</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em><a class="button is-default" href="/2023/06/23/mysql-eight-legged-essay/" title="MySQL 基础"><span class="has-text-weight-semibold">下一页: MySQL 基础</span><i class="iconfont icon-next ml-2 has-text-grey"></i></a></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2023</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
