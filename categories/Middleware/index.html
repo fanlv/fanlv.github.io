@@ -14,7 +14,13 @@ s.parentNode.insertBefore(hm, s);
 TRANSACTION 2404187192, ACTIVE 0 sec inserting
 mysql tables in use 1, locked 1
 LOCK WAIT 8 lock struct(s), heap size 1136, 2 row lock(s)
-MySQL thread id 118913019, OS thread handle 140411115681..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/11/mysql-insert-lock/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/06/23/mysql-eight-legged-essay/">MySQL 基础</a></h2><time class="has-text-grey" datetime="2023-06-23T04:08:00.000Z">2023-06-23</time><p class="is-flex-grow-2 mt-2">一、基础1.1 常用索引有哪些普通索引、唯一索引、主键索引、组合索引、全文索引
+MySQL thread id 118913019, OS thread handle 140411115681..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/11/mysql-insert-lock/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/06/23/mysql-eight-legged-essay/">MySQL 基础</a></h2><time class="has-text-grey" datetime="2023-06-23T04:08:00.000Z">2023-06-23</time><p class="is-flex-grow-2 mt-2">其他 MySQL 相关技术沉淀文章
+
+MySQL Insert 死锁问题研究
+MySQL 自增列 Duplicate Error 问题分析
+MySQL DateTime和Timestamp时区问题
+
+一、基础1.1 常用索引有哪些普通索引、唯一索引、主键索引、组合索引、全文索引
 1.2 聚集索引和非聚集索引区别聚集索引（Clustered Index）和非聚集索引（Non-clustered Index）是两种不同类型的数据库索引，它们的区别如下：
 
 聚集索引（Clustered Index）：
@@ -22,34 +28,25 @@ MySQL thread id 118913019, OS thread handle 140411115681..</p><a class="button i
 聚集索引中的数据行和索引的顺序相同，即它将数据行本身和索引按照相同的排序方式存储在一起。
 一个表只能有一个聚集索引，因为数据行只能以一种顺序存储。
 聚集索引通常用主键建立，但也可以使用其他具有唯一约束的列。
-数据的物理存储顺序与索引的顺序相同，所以聚集索引通常提供较快的数据检索。
+数据..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/06/23/mysql-eight-legged-essay/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/06/22/cahce-eight-legged-essay/">缓存基础技术</a></h2><time class="has-text-grey" datetime="2023-06-22T01:00:08.000Z">2023-06-22</time><p class="is-flex-grow-2 mt-2">
 
 
-非聚集索引（Non-clustered Index）：
+其他 Redis 相关技术沉淀文章
 
-非聚集索引与聚集索引分开存储，数据行的顺序与索引的顺序无关。
-一个表..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/06/23/mysql-eight-legged-essay/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/06/22/cahce-eight-legged-essay/">缓存基础技术</a></h2><time class="has-text-grey" datetime="2023-06-22T01:00:08.000Z">2023-06-22</time><p class="is-flex-grow-2 mt-2">
-
+Redis 源码分析(一) ：sds
+Redis 源码分析(二) ：ADList
+Redis 源码分析(三) ：dict
+Redis 源码分析(四) ：intset
+Redis 源码分析(五) ：ziplist
+Redis 源码分析(六) ：quciklist
+Redis 源码分析(七) ：skiplist
+Redis 高可用解决方案总结
 
 基础1.1 Redis 常用的数据结构Redis支持五种数据类型：string（字符串），hash（哈希），list（列表），set（集合）及zset(sorted set：有序集合)。
 
 Sting 、SDS(embstr、raw)
 List  qucklist （ziplist、linklist）
-Set  （dict、 intset）
-Zset  （ziplist 、 skiplist）
-Hash  （ziplist、 dict）
-BitMap
-Hyperloglog
-Geo编码
-
-1.2 Redis为什么速度快？
-基于内存实现
-数据都存储在内存里，减少了一些不必要的`I/O 操作，操作速率很快。
-
-
-高效的数据结构
-底层多种数据结构支持不同的数据类型，支持Redis存储不同的数据；
-不同数据结..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/06/22/cahce-eight-legged-essay/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/05/25/mysql-insert-auto-incre/">MySQL 自增列 Duplicate Error 问题分析</a></h2><time class="has-text-grey" datetime="2022-05-25T04:30:56.000Z">2022-05-25</time><p class="is-flex-grow-2 mt-2">一、背景最近我们在做线上的数据迁移测试（可以理解就是把A数据中心的数据迁移到B数据中心，A和B数据中心的MySQL是同构的，迁移过程中，A、B的MySQL都有正常的业务数据写入。每次我们触发迁移的时候，就有业务方反馈他们写入数据的时候就会有Error 1062: Duplicate entry 'xxx' for key 'PRIMARY'这样的错误。业务方同学还反馈他们写数据的时候并没有指定ID，所以他们对这样的报错比较困惑，具体他们的数据写入的伪代码如下：
+Set  （dict、 ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/06/22/cahce-eight-legged-essay/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/05/25/mysql-insert-auto-incre/">MySQL 自增列 Duplicate Error 问题分析</a></h2><time class="has-text-grey" datetime="2022-05-25T04:30:56.000Z">2022-05-25</time><p class="is-flex-grow-2 mt-2">一、背景最近我们在做线上的数据迁移测试（可以理解就是把A数据中心的数据迁移到B数据中心，A和B数据中心的MySQL是同构的，迁移过程中，A、B的MySQL都有正常的业务数据写入。每次我们触发迁移的时候，就有业务方反馈他们写入数据的时候就会有Error 1062: Duplicate entry 'xxx' for key 'PRIMARY'这样的错误。业务方同学还反馈他们写数据的时候并没有指定ID，所以他们对这样的报错比较困惑，具体他们的数据写入的伪代码如下：
 type Data struct {
     ID           int64     `gorm:&quot;primaryKey;column:id&quot;`
     PageID       string    `gorm:&quot;column:page_id`..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/05/25/mysql-insert-auto-incre/">更多</a></section></article><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-5a4f15ef8cd7c7b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/11/28/mysql-time/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-5a4f15ef8cd7c7b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/11/28/mysql-time/">MySQL DateTime和Timestamp时区问题</a></h2><time class="has-text-grey" datetime="2021-11-27T17:00:00.000Z">2021-11-28</time><p class="is-flex-grow-2 mt-2">
