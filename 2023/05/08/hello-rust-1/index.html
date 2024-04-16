@@ -560,12 +560,44 @@ fn main() {
 <p>如果我们把 <code>strtok()</code> 函数的签名写成这样，会发生什么问题？为什么它会发生这个问题？你可以试着编译一下看看。</p>
 <pre><code>pub fn strtok&lt;'a&gt;(s: &amp;'a mut &amp;str, delimiter: char) -&gt; &amp;'a str {...}
 </code></pre>
-<p>直接运行代码,在编译器的提示下,就会添加标注如下:</p>
-<pre><code>pub fn strtok&lt;'a&gt;(s: &amp;'a mut &amp;str, delimiter: char) -&gt; &amp;'a str {...}
+<p>再运行,就会提示<code>s1</code>,同时存在可变和不可变引用。原来是<code>s1</code>的可变引用的周期和返回值绑定了.在<code>hello</code>使用结束前,编译器认为<code>s1</code>的可变引用一直存在.</p>
+<pre><code>error[E0502]: cannot borrow `s1` as immutable because it is also borrowed as mutable
+   --&gt; src/main.rs:384:52
+    |
+382 |     let hello = strtok(&amp;mut s1, ' ');
+    |                        ------- mutable borrow occurs here
+383 |     // hello is: hello, s1: world, s: hello world
+384 |     println!("hello is: {}, s1: {}, s: {}", hello, s1, s);
+    |     -----------------------------------------------^^----
+    |     |                                              |
+    |     |                                              immutable borrow occurs here
+    |     mutable borrow later used here
+    |
+    = note: this error originates in the macro `$crate::format_args_nl` which comes from the expansion of the macro `println` (in Nightly builds, run with -Z macro-backtrace for more info)
 </code></pre>
-<p>再运行,就会提示<code>s1</code>,同时存在可变和不可变引用。原来是<code>s1</code>的可变引用的周期和返回值绑定了.在<code>hello</code>使用结束前,编译器认为<code>s1</code>的可变引用一直存在.<br>那么根据这个理解,其实这样标注也可以.只要把打印拆开就行了.</p>
-<pre><code>fn main() {
-    ...
+<p><code>Rust</code>的借用规则要求在同一时间内，不能有一个变量的可变和不可变引用同时存在。在这个代码中，<code>strtok</code>函数创建了一个<code>s1</code>的可变引用，并返回了一个这个可变引用生命周期的不可变引用<code>hello</code>。而在<code>println!</code>宏里，尝试同时使用这两个引用：<code>hello</code>（不可变引用）和<code>s1</code>的可变引用。</p>
+<p>那么根据这个理解,其实这样标注也可以.只要把打印拆开就行了.</p>
+<pre><code>pub fn strtok&lt;'a&gt;(s: &amp;'a mut &amp;str, delimiter: char) -&gt; &amp;'a str {
+    if let Some(i) = s.find(delimiter) {
+        let prefix = &amp;s[..i];
+        // 由于 delimiter 可以是 utf8，所以我们需要获得其 utf8 长度，
+        // 直接使用 len 返回的是字节长度，会有问题
+        let suffix = &amp;s[(i + delimiter.len_utf8())..];
+        *s = suffix;
+        prefix
+    } else { // 如果没找到，返回整个字符串，把原字符串指针 s 指向空串
+        let prefix = *s;
+        *s = "";
+        prefix
+    }
+}
+
+fn demo17() {
+    let s = "hello world".to_owned();
+    let mut s1 = s.as_str();
+    let hello = strtok(&amp;mut s1, ' ');
+    // hello is: hello, s1: world, s: hello world
+    // println!("hello is: {}, s1: {}, s: {}", hello, s1, s);
     println!("hello is: {}, s: {}", hello, s);
     println!("s1: {}", s1);
 }
@@ -596,7 +628,7 @@ fn main() {
 <li>每个域的起始位置要和其对齐长度对齐，如果无法对齐，则添加<code>padding</code>直至对齐。</li>
 <li>结构体的对齐大小和其最大域的对齐大小相同，而结构体的长度则四舍五入到其对齐的倍数。</li>
 </ul>
-<p>而<code>Rust</code>编译器替我们自动完成了这个优化，这就是为什么<code>Rust</code>会<strong>自动重排你定义的结构体</strong>，来达到最高效率。我们看同样的代码，在<code>Rust</code>下，<code>S1</code>和<code>S2</code>大小都是<code>4</code>：</p>
+<p>而<code>Rust</code>编译器替我们自动完成了这个优化，这就是为什么<code>Rust</code>会<strong>自动重排你定义的结构体</strong>，来达到最高效率。我们看同样的代码，在<code>Rust</code>下，<code>S1</code>和<code>S2</code>大小都是<code>4</code></p>
 <pre><code>use std::mem::{align_of, size_of};
 
 struct S1 {
