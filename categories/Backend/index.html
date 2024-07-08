@@ -7,7 +7,78 @@ var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
 })();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.2">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>分类 · Backend</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Idgen"><i class="tag post-item-tag">Idgen</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/09/30/idgenerator/">分布式id几种生成方案</a></h2><time class="has-text-grey" datetime="2018-09-30T08:08:10.000Z">2018-09-30</time><p class="is-flex-grow-2 mt-2">一、UUIDUUID 是 通用唯一识别码（Universally Unique Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的，是让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。如此一来，每个人都可以创建不与其它人冲突的UUID。在这样的情况下，就不需考虑数据库创建时的名称重复问题。目前最广泛应用的UUID，是微软公司的全局唯一标识符（GUID），而其他重要的应用，则有Linux ext2/ext3文件系统、LUKS加密分区、GNOME、KDE、Mac OS X等等。另外我们也可以在e2fsprogs包中的UUID库找到实现。
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>分类 · Backend</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Compiler"><i class="tag post-item-tag">Compiler</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/05/01/the-beauty-of-compilation-principle/">《编译原理之美》</a></h2><time class="has-text-grey" datetime="2023-05-01T02:00:00.000Z">2023-05-01</time><p class="is-flex-grow-2 mt-2">
+
+0、为什么你要学习编译原理？
+1、理解代码：编译器的前端技术
+1.1 词法分析Lexical Analysis
+通常，编译器的第一项工作叫做词法分析。就像阅读文章一样，文章是由一个个的中文单词组成的。程序处理也一样，只不过这里不叫单词，而是叫做词法记号，英文叫 Token。
+也可以用词法分析器的生成工具来生成，比如 Lex（或其 GNU 版本，Flex）。这些生成工具是基于一些规则来工作的，这些规则用正则文法表达，符合正则文法的表达式称为正则表达式。生成工具可以读入正则表达式，生成一种叫有限自动机的算法，来完成具体的词法分析工作。
+不要被正则文法（Regular Grammar）和有限自动机（Finite-state Automaton，FSA，or Finite Automaton）吓到。正则文法是一..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/05/01/the-beauty-of-compilation-principle/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/02/26/mastering-regular-expressions/">《精通正则表达式》</a></h2><time class="has-text-grey" datetime="2023-02-26T02:38:53.000Z">2023-02-26</time><p class="is-flex-grow-2 mt-2">摘录与 《精通正则表达式》
+一、正则表达式入门正则表达式（Regular Expression）是强大、便捷、高效的文本处理工具。正则表达式本身，加上如同一门袖珍编程语言的通用模式表示法（general pattern notation），赋予使用者描述和分析文本的能力。配合上特定工具提供的额外支持，正则表达式能够添加、删除、分离、叠加、插入和修整各种类型的文本和数据。
+1.1 检索文本文件：Egrep
+
+egrep -i  '^func' cache.go  // 匹配 func 开头的
+egrep -i  '^$' cache.go | wc -l // 计算文件 空行数
+egrep '\&amp;lt;ctx' cache.go // 含有 ctx 开头单词的行
+egrep 'Get\&amp;gt;' cache...</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/02/26/mastering-regular-expressions/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/02/25/hello-regular-expr/">《正则表达式必知必会》</a></h2><time class="has-text-grey" datetime="2023-02-25T10:00:00.000Z">2023-02-25</time><p class="is-flex-grow-2 mt-2">摘录与 《正则表达式必知必会》
+零、快速上手
+[abc] 匹配单个字符a、b、c
+
+. 匹配除换行符（\n、\r）之外的任何单个字符。
+
+[0-9]等价[0123456789] 含义是匹配一个数字，输入 123。 匹配三个结果 1、2、3。-（连字符）是一个特殊的元字符，它只有出现在[和]之间的时候才是元字符
+
+\d 等价上面的[0-9]\w 匹配字母、数字、下划线。等价于[A-Za-z0-9_]。^[0-9]表示匹配一个非数字。^有取反的意思[A-Za-z0-9]等价[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789].
+
+*  匹配前面的子表达式零次或多次。例如，zo* 能匹配z以及zoo。* 等价于{0,}。
+
++ 匹配前面的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/02/25/hello-regular-expr/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Compiler"><i class="tag post-item-tag">Compiler</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/11/27/study-llvm/">LLVM编译器基础知识</a></h2><time class="has-text-grey" datetime="2022-11-27T08:53:48.000Z">2022-11-27</time><p class="is-flex-grow-2 mt-2">一、基础概念1.1 Interpreter 和 Compile
+
+
+
+Interpreter 解释器
+Compile 编译器
+
+
+
+程序步骤
+1、创建代码 2、没有文件链接或机器代码生成3、源语句在执行过程中逐行执行
+1、创建代码2、将解析或分析所有语言语句的正确性3、将把源代码转换为机器码4、链接到可运行程序5、运行程序
+
+
+Input
+每次读取一行
+整个程序
+
+
+Output
+不产生任何的中间代码
+生成中间目标代码
+
+
+工作机制
+编译和执行同时进行
+编译在执行之前完成
+
+
+存储
+不保存任何机器代码
+存储编译后的机器代码在机器上
+
+
+执行
+程序执行是解释过程的一部分，因此是逐行执行的
+程序执行与编译是分开的，它只在整个输出程序编译后执行
+
+
+生成程序
+不生成输出程序，所以他们在每次执行过程中都要..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/11/27/study-llvm/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Note"></a><a href="/tags/Raft"><i class="tag post-item-tag">Raft</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/03/08/raft-introduction/">《Raft-分布式共识算法》</a></h2><time class="has-text-grey" datetime="2022-03-08T15:00:00.000Z">2022-03-08</time><p class="is-flex-grow-2 mt-2">
+
+ 
+一、背景在分布式系统中，一致性算法至关重要。在所有一致性算法中，Paxos最负盛名，它由莱斯利·兰伯特（Leslie Lamport）于1990年提出，是一种基于消息传递的一致性算法，被认为是类似算法中最有效的。
+Paxos算法虽然很有效，但复杂的原理使它实现起来非常困难，截止目前，实现Paxos算法的开源软件很少，比较出名的有Chubby、LibPaxos。此外，Zookeeper采用的 ZAB（Zookeeper Atomic Broadcast）协议也是基于Paxos算法实现的，不过ZAB对Paxos进行了很多改进与优化，两者的设计目标也存在差异——ZAB协议主要用于构建一个高可用的分布式数据主备系统，而Paxos 算法则是用于构建一个分布式的一致性状态机系统。
+由于Paxos算法过于复杂、实..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/03/08/raft-introduction/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Idgen"><i class="tag post-item-tag">Idgen</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/09/30/idgenerator/">分布式id几种生成方案</a></h2><time class="has-text-grey" datetime="2018-09-30T08:08:10.000Z">2018-09-30</time><p class="is-flex-grow-2 mt-2">一、UUIDUUID 是 通用唯一识别码（Universally Unique Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的，是让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。如此一来，每个人都可以创建不与其它人冲突的UUID。在这样的情况下，就不需考虑数据库创建时的名称重复问题。目前最广泛应用的UUID，是微软公司的全局唯一标识符（GUID），而其他重要的应用，则有Linux ext2/ext3文件系统、LUKS加密分区、GNOME、KDE、Mac OS X等等。另外我们也可以在e2fsprogs包中的UUID库找到实现。
 UUID的标准形式包含32个16进制数字，以连字号分为五段，形式为8-4-4..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/09/30/idgenerator/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Protobuf"><i class="tag post-item-tag">Protobuf</i></a><a href="/tags/Net"><i class="tag post-item-tag">Net</i></a><a href="/tags/HTPP"><i class="tag post-item-tag">HTPP</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/19/protobuf-on-http/">测试Protobuf在Http传输测试</a></h2><time class="has-text-grey" datetime="2018-08-19T10:08:37.000Z">2018-08-19</time><p class="is-flex-grow-2 mt-2">Demo：https://github.com/fanlv/ProtobufOnHttpGo
 一、编写Proto文件syntax = &quot;proto3&quot;;
 
@@ -59,7 +130,7 @@ Demo地址：https://github.com/fanlv/ProtobufOnHttpGo
 一、背景现在客户端与服务器通讯主要通过Json来做数据交互，本次调研主要比较Protobuf项目中使用的优缺点，和可行性。
 二、Protobuf说明2.1 什么是ProtobufProtocolBuffer(以下简称PB)是google 的一种数据交换的格式，它独立于语言，独立于平台。大部分IM通讯协议都是使用PB来传输。具体代表性的有支付宝、微信等App。
 说白了，PB就是一种序列化协议，我们开发中想在什么场景中使用Protobuf做为数据交换的序列化协议，取决于自己的业务。
-2.2 Pro..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/03/protobuf-on-http-study/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Compiler/">Compiler</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Distributed/">Distributed</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Regular/">Regular</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+2.2 Pro..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/03/protobuf-on-http-study/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">15</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">21</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
 
 window.addEventListener('resize', $claudia.throttle(function () {
     var images = document.querySelectorAll('.js-img-fadeIn')
