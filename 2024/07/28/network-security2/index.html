@@ -20,7 +20,7 @@ ITU（International Telecommunication Union）：负责信息和通信技术（I
 <p>IEC（International Electrotechnical Commission）：负责制定和发布电工电子技术领域的国际标准，包括电气设备、电子元件、可再生能源等。</p>
 <p>除了 ISO、IEC 和 ITU 这三个国际标准化组织外，IETF、IEEE、W3C 和 ANSI 也是重要的国际标准化组织。</p>
 </blockquote>
-<p>数字证书和<code>X.509</code>之间的关系可以总结为：<code>X.509</code>是<code>ITU-T</code>指定的证书标准，它定义了数字证书的格式和内容。大多数现代数字证书都是基于<code>X.509</code>标准的。<code>X.509</code>证书已应用在包括<code>TLS/SSL</code>在内的众多网络协议里，同时它也用在很多非在线应用场景里，比如电子签名服务。<code>X.509</code>证书里含有公钥、身份信息（比如网络主机名，组织的名称或个体名称等）和签名信息（可以是证书签发机构<code>CA</code>的签名，也可以是自签名）。</p>
+<p>数字证书和<code>X.509</code>之间的关系可以总结为：<code>X.509</code>是<code>ITU-T</code>制定的证书标准，它定义了数字证书的格式和内容。大多数现代数字证书都是基于<code>X.509</code>标准的。<code>X.509</code>证书已应用在包括<code>TLS/SSL</code>在内的众多网络协议里，同时它也用在很多非在线应用场景里，比如电子签名服务。<code>X.509</code>证书里含有公钥、身份信息（比如网络主机名，组织的名称或个体名称等）和签名信息（可以是证书签发机构<code>CA</code>的签名，也可以是自签名）。</p>
 <p><code>X.509</code>还附带了证书吊销列表和用于从最终对证书进行签名的证书签发机构直到最终可信点为止的证书合法性验证算法。<code>X.509</code>是<code>ITU-T</code>标准化部门基于他们之前的<code>ASN.1</code>定义的一套证书标准。</p>
 <h2 id="2-1、X-509-证书内容"><a href="#2-1、X-509-证书内容" class="headerlink" title="2.1、X.509 证书内容"></a>2.1、X.509 证书内容</h2><p>证书信息主要分为三类：</p>
 <ul>
