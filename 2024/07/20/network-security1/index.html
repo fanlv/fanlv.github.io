@@ -383,7 +383,7 @@ AES（Advanced Encryption Standard）
 <li>M 是一个明文，比如 ASCII 256， 由于 p, q 都是一个很大的质数，所以 n 也是一个远大于 M 的数据。</li>
 <li>所以只用证明 (M<sup>φ(n)</sup>)<sup>k</sup> mod n = 1 就行了</li>
 <li>根据指数模运算得  (M<sup>φ(n)</sup>)<sup>k</sup> mod n = (M<sup>φ(n)</sup> mod n )<sup>k</sup> mod n </li>
-<li>M &lt; p and M &lt; q and n = pq 的话，那 M 就一定跟 n 会质了 </li>
+<li>M &lt; p and M &lt; q and n = pq 的话，那 M 就一定跟 n 互质了 </li>
 <li>根据欧拉定理我们知道，M 和 n 互质的话就有: M<sup>φ(n)</sup> ≡ 1 (mod n）</li>
 <li>所以 M<sup>φ(n)</sup> mod n = 1</li>
 <li>所以 (1)<sup>k</sup> = 1</li>
