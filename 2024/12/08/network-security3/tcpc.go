@@ -67,7 +67,7 @@ var httpInfoList = []ReverseProxyInfo{
 var tcpInfoList = []ReverseProxyInfo{
 	{
 		Type:            "ssh",
-		ReverseAddress:  "192.168.1.68:22",
+		ReverseAddress:  "192.168.2.201:22",
 		Port:            "8082",
 		LocalServerType: SSH,
 	},
