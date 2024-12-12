@@ -35,21 +35,21 @@ s.parentNode.insertBefore(hm, s);
 <li><code>端口多路复用（Port address Translation,PAT）</code>是指改变外出数据包的源端口并进行端口转换，即端口地址转换（<code>PAT，Port Address Translation</code>）.采用端口多路复用方式。内部网络的所有主机均可共享一个合法外部<code>IP</code>地址实现对<code>Internet</code>的访问，从而可以最大限度地节约<code>IP</code>地址资源。同时，又可隐藏网络内部的所有主机，有效避免来自<code>Internet</code>的攻击。因此，网络中应用最多的就是端口多路复用方式。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-3e86c3e7326084ad.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
 </ul>
 <p>前面基本不是本文讨论重点，宽带运营商基本上都是<code>PAT</code>类型的<code>NAT</code>。</p>
-<p>从实现的技术角度，又可以将<code>NAT</code>分成如下几类：<code>全锥 NAT (Full Cone NAT)</code> 、<code>限制性锥 NAT（Restricted Cone NAT）</code>、<code>端口限制性锥 NAT(Port Restricted Cone NAT)</code> 、<code>对称 NAT ( Symmetric NAT)</code> 。</p>
+<p>从实现的技术角度，又可以将<code>NAT</code>分成如下几类：<code>限制性锥NAT（Restricted Cone NAT）</code> 、<code>全锥NAT (Full Cone NAT)</code>、<code>端口限制性锥NAT(Port Restricted Cone NAT)</code> 、<code>对称NAT ( Symmetric NAT)</code> 。</p>
 <ol>
-<li><p><code>全锥 NAT (Full Cone NAT)</code>，限制最小的<code>NAT</code>，两个内网设备，只要一个设备是<code>全锥 NAT</code>，那就可以穿透。</p>
+<li><p><code>全锥NAT (Full Cone NAT)</code>，限制最小的<code>NAT</code>，两个内网设备，只要一个设备是<code>全锥 NAT</code>，那就可以穿透。</p>
 <ul>
 <li>内网主机使用一个固定的内网<code>IP</code>和<code>Port</code>对外通信，这个内网<code>IP</code>和<code>Port</code>会固定对应一个外网<code>IP</code>和<code>Port</code>。</li>
 <li>任何外部主机只要知道这个公网<code>IP</code>和<code>Port</code>，就能向内网主机发送数据。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-a2c2ee6fab15adc1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
 </ul>
 </li>
-<li><p><code>IP 限制性锥 NAT（Restricted Cone NAT）</code>，相比<code>全锥 NAT</code>，<code>IP限制性锥 NAT</code>加上了<code>IP</code>的限制。</p>
+<li><p><code>IP 限制性锥NAT（Restricted Cone NAT）</code>，相比<code>全锥 NAT</code>，<code>IP限制性锥 NAT</code>加上了<code>IP</code>的限制。</p>
 <ul>
 <li>内网主机使用一个固定的内网<code>IP</code>和<code>Port</code>对外通信，这个内网<code>IP</code>和<code>Port</code>会固定对应一个外网<code>IP</code>和<code>Port</code>。</li>
 <li>只有内网主机曾向某外部主机（<code>IP</code>）发送过数据，该外部主机（<code>IP</code>）才能向内网主机发送数据。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-bdc42191aa894927.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
 </ul>
 </li>
-<li><p><code>端口限制性锥 NAT(Port Restricted Cone NAT)</code> ：类似<code>IP 受限圆锥形 NAT</code>，但还有端口限制。</p>
+<li><p><code>端口限制性锥NAT(Port Restricted Cone NAT)</code> ：类似<code>IP 受限圆锥形 NAT</code>，但还有端口限制。</p>
 <ul>
 <li>内网主机使用一个固定的内网<code>IP</code>和<code>Port</code>对外通信，这个内网<code>IP</code>和<code>Port</code>会固定对应一个外网<code>IP</code>和<code>Port</code>。</li>
 <li>只有内网主机曾向某外部主机的特定IP和端口发送过数据，该外部主机才能向内网主机发送数据。<br><img src="https://upload-images.jianshu.io/upload_images/12321605-6eddf2498d021201.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
@@ -62,7 +62,12 @@ s.parentNode.insertBefore(hm, s);
 </ul>
 </li>
 </ol>
-<p>所以两个设备都在<code>对称NAT</code>下，或者一个在<code>对称 NAT</code>下一个在<code>端口限制性锥 NAT</code>，这种情况是没办法做内网穿透的，可以思考下为什么。</p>
+<p>不能穿透的两种场景：</p>
+<ol>
+<li>所以两个设备都在<code>对称NAT</code>下。</li>
+<li>或者一个在<code>对称 NAT</code>下一个在<code>端口限制性锥 NAT</code>。</li>
+</ol>
+<p>可以思考下为什么。</p>
 <h2 id="SO-REUSEADDR"><a href="#SO-REUSEADDR" class="headerlink" title="SO_REUSEADDR"></a>SO_REUSEADDR</h2><p><code>SO_REUSEADDR</code> 是一个套接字选项，在网络编程中经常使用。它的主要作用是允许在<code>bind()</code>操作中复用本地地址。</p>
 <pre><code>int opt = 1;
 setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &amp;opt, sizeof(opt));
@@ -71,12 +76,13 @@ setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &amp;opt, sizeof(opt));
 <h2 id="NAT-类型检查"><a href="#NAT-类型检查" class="headerlink" title="NAT 类型检查"></a>NAT 类型检查</h2><p>方法一（推荐）：</p>
 <pre><code>pip install pystun3
 ➜  ~ pystun3
-NAT Type: Full Cone
-External IP: 183.95.62.73
-External Port: 25305
+NAT Type: Restric Port NAT
+External IP: None
+External Port: None
 </code></pre>
 <p>方法二：</p>
-<pre><code>https://mao.fan/mynat
+<pre><code>// 检查效果不如第一个准确
+https://mao.fan/mynat
 </code></pre>
 <h1 id="三、具体方案"><a href="#三、具体方案" class="headerlink" title="三、具体方案"></a>三、具体方案</h1><h2 id="服务器转发"><a href="#服务器转发" class="headerlink" title="服务器转发"></a>服务器转发</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-9a8cfcf75d363c73.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
 <p>这个方案整个链路比较简单，所有流量都走我的阿里云服务器，在通过<code>frp</code>程序转发给我内网的设备。</p>
@@ -314,190 +320,28 @@ func splitIPAndPort(address string) (string, int, error) {
     return ip, port, nil
 }
 </code></pre>
-<h2 id="TCP-穿透"><a href="#TCP-穿透" class="headerlink" title="TCP 穿透"></a>TCP 穿透</h2><p><code>TCP</code>整体代码流程跟<code>UDP</code>差不多。具体代码如下：</p>
-<pre><code>const localListenTcpIPPort = "0.0.0.0:9000"
-const localListenHttpIPPort = "0.0.0.0:9001"
-
-func main() {
-    go startTcpServer()
-    startListenHttpSever()
-}
-
-func startTcpServer() {
-    listener, err := net.Listen("tcp", localListenTcpIPPort)
-    if err != nil {
-        fmt.Println("Error starting TCP server:", err)
-        return
-    }
-    defer listener.Close()
-
-    fmt.Println("Server is listening on ", localListenTcpIPPort)
-
-    for {
-        conn, err := listener.Accept()
-        if err != nil {
-            fmt.Println("Error accepting connection:", err)
-            continue
-        }
-
-        SafeGo(func() {
-            handleConnection(conn)
-        })
-    }
-}
-
-type clientInfo struct {
-    UpdateTime time.Time
-    Port       string
-    Type       string
-}
-
-var look = sync.RWMutex{}
-var clients = map[string]clientInfo{}
-
-func handleConnection(conn net.Conn) {
-    defer conn.Close()
-
-    for {
-        buf := make([]byte, 1024)
-        n, err := conn.Read(buf)
-        if err != nil {
-            fmt.Println("Error reading data:", err)
-            return
-        }
-
-        const layout = "2006-01-02 15:04:05"
-        receivedMsg := string(buf[:n])
-        now := time.Now().Format(layout)
-        fmt.Printf("[%s Received %s]: %s\n", now, conn.RemoteAddr(), receivedMsg)
-        if len(receivedMsg) &gt; 4 {
-            fmt.Println("receive long message ", receivedMsg)
-            return
-        }
-
-        _, prot, err := net.SplitHostPort(conn.RemoteAddr().String())
-        if err != nil {
-            fmt.Println("Error net.SplitHostPort:", err)
-
-            continue
-        }
-
-        info := clientInfo{
-            UpdateTime: time.Now(),
-            Port:       prot,
-            Type:       receivedMsg,
-        }
-
-        look.Lock()
-        clients[info.Type] = info
-        look.Unlock()
-
-        message := []byte(conn.RemoteAddr().String())
-        _, err = conn.Write(message)
-        if err != nil {
-            fmt.Println("Error sending response:", err)
-            continue
-        }
-    }
-}
-
-func startListenHttpSever() {
-    http.HandleFunc("/", handlerGetClientInfo)
-    fmt.Printf("Starting http server at port %s...\n", localListenHttpIPPort)
-    if err := http.ListenAndServe(localListenHttpIPPort, nil); err != nil {
-        fmt.Printf("Error starting server: %s\n", err)
-    }
-}
-
-func handlerGetClientInfo(w http.ResponseWriter, r *http.Request) {
-    look.RLock()
-    defer look.RUnlock()
-    data, err := json.Marshal(clients)
-
-    _, err = w.Write(data)
-    if err != nil {
-        fmt.Println("Error sending response:", err)
-        return
-    }
-
-    return
-}
-
-func Recovery() {
-    e := recover()
-    if e == nil {
-        return
-    }
-
-    err := fmt.Errorf("%v", e)
-    fmt.Printf("【catch panic】err = %v \n stacktrace:\n%s \n", err, debug.Stack())
-}
-
-func SafeGo(fn func()) {
-    go func() {
-        defer Recovery()
-        fn()
-    }()
-}
-</code></pre>
-<p>客户端代码：</p>
-<pre><code>package main
-
-import (
-    "time"
-
-    "github.com/gin-gonic/gin"
-    reuse "github.com/libp2p/go-reuseport"
-)
-
-const localAddress = "0.0.0.0:8080"
-const serverIP = "xx.xx.xx.xx:9000"
-
-func main() {
-    go func() {
-        // httpserver 底层其实也是 tcp server
-        l1, err := reuse.Listen("tcp", localAddress)
-        if err != nil {
-            panic(err)
-        }
-        r := gin.Default()
-        r.GET("/", func(context *gin.Context) {
-            context.JSON(200, gin.H{
-                "msg": "ok",
-            })
-        })
-        if err := r.RunListener(l1); err != nil {
-            panic(err)
-        }
-    }()
-
-    c, err := reuse.Dial("tcp", localAddress, serverIP)
-    if err != nil {
-        panic(err)
-    }
-    for {
-        _, err := c.Write([]byte("ping"))
-        if err != nil {
-            panic(err)
-        }
-        time.Sleep(time.Second * 30)
-    }
-
-    // TODO 获取其他Client IP
-    // TODO 尝试连接其他 IP
-    // reuse.Dial("tcp", localAddress, otherClientIP)
-}
-</code></pre>
-<p>但是实际上我在<code>端口限制性锥 NAT(Port Restricted Cone NAT)</code>下测试是不成功的（<code>UDP</code>测试是可以成功的）。</p>
-<p>我家里的具体网络环境大致如下：</p>
+<h2 id="TCP-穿透"><a href="#TCP-穿透" class="headerlink" title="TCP 穿透"></a>TCP 穿透</h2><p><code>TCP</code>穿透和<code>UDP</code>穿透有个很大的不同就是，<code>TCP</code>需要一方作为<code>Server</code>端，我在<code>端口限制性锥NAT(Port Restricted Cone NAT)</code>的网络环境下做了各种测试，把<code>Server</code>放在<code>端口限制性锥 NAT</code>穿透是没有成功过（<code>UDP</code>穿透没有问题）。</p>
+<p>我的家庭网络环境大致如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/12321605-91e731b5e28511e6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
-<p>这个时候，我登录我家里光猫改了下两个配置：</p>
+<p>这个时候其实我是有点怀疑<code>TCP</code>服务端能否在<code>端口限制性锥NAT(Port Restricted Cone NAT)</code>下做穿透。然后就试了下市面上的<code>P2P</code>软件，比较有代表性的是<code>zerotier</code>，<code>zerotier</code>的具体实现是新建一个<code>NetworkID</code>，然后设备<code>Join</code>这<code>NetworkID</code>，设备之间会尝试互相打洞，如果可以打洞就是走<code>P2P</code>逻辑，如果不能打洞就是走服务器转发逻辑。<code>zerotier</code>需要装<code>Client</code>，<code>Client</code>能够走<code>VPN</code>方式来发送流量，猜测是类似用的<code>VXLAN</code>的技术，点对点通讯还是走的<code>UDP</code>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6d7883d907cc86ca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0a8010c77ce90958.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>也加深了我对<code>端口限制性锥NAT(Port Restricted Cone NAT)</code>不能做<code>TCP</code>打洞的想法，不过<code>端口限制性锥NAT(Port Restricted Cone NAT)</code>不行，那我有没有办法改变我的<code>NAT</code>设置。我抱着试试的心态折腾了下我的光猫，先破解了我家里光猫的超级管理员账号，登录下光猫测试了下各种配置，最终修改了下面两个配置以后成功了：</p>
 <ol>
 <li>在上网拨号的界面里面，把<code>NAT</code>类型改成了<code>完全锥型NAT</code><br> <img src="https://upload-images.jianshu.io/upload_images/12321605-fc99d9841f85e383.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
-<li>在<code>NAT 设置</code>里面做了一个端口映射。<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-f1f752d7ff97f99d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
-<li>在内部主机的防火墙里面白名单里面加上，上面客户端的代理程序以后。就能正常穿透了。</li>
+<li>在<code>NAT 设置</code>里面做了一个端口映射<br> <img src="https://upload-images.jianshu.io/upload_images/12321605-f1f752d7ff97f99d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
 </ol>
-<p>由于我的光猫把<code>NAT</code>改成了<code>完全锥型NAT</code>，所以我只要知道<code>IP</code>和<code>Port</code>就能正常访问。完整代码: <a href="./tcpc.go">tcpc.go</a></p>
-<p>不过运行了一段时间发现，这个端口每隔一段时间会变一次。所以自己写了<code>App</code>程序实时去查询最新的穿透端口是多少。最终实现效果如下：</p>
+<p>最后我们在内部主机的防火墙里面白名单里面加上，上面客户端口的代理程序以后（在 <code>MacOS</code> 上这一步必须得，不要就走不通）。</p>
+<p>经过上面的配置，这个时候，我们主机的网络环境其实已经变成<code>全锥NAT (Full Cone NAT)</code>网络了，可以执行<code>pystun3</code>查看，如下：</p>
+<pre><code>➜  ~ pystun3
+NAT Type: Full Cone
+External IP: xx.xx.xx.xx
+External Port: 25305
+</code></pre>
+<p><code>全锥NAT (Full Cone NAT)</code>其实穿透就很简单了。</p>
+<p><code>TCP</code>整体代码流程跟<code>UDP</code>差不多。具体代码如下：</p>
+<p>服务端完整代码:  <a href="./tcps.go">tcps.go</a></p>
+<p>客户端完整代码:  <a href="./tcpc.go">tcpc.go</a></p>
+<p>不过运行了一段时间发现，这个端口每隔一段时间会变一次。所以自己写了个<code>App</code>程序能实时去查询最新的穿透端口是多少。最终实现效果如下：</p>
 <p><img src="https://upload-images.jianshu.io/upload_images/12321605-d7a1c4dd89b18d1b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
 </article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2024</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
