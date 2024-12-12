@@ -87,7 +87,7 @@ https://mao.fan/mynat
 <h1 id="三、具体方案"><a href="#三、具体方案" class="headerlink" title="三、具体方案"></a>三、具体方案</h1><h2 id="服务器转发"><a href="#服务器转发" class="headerlink" title="服务器转发"></a>服务器转发</h2><p><img src="https://upload-images.jianshu.io/upload_images/12321605-9a8cfcf75d363c73.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
 <p>这个方案整个链路比较简单，所有流量都走我的阿里云服务器，在通过<code>frp</code>程序转发给我内网的设备。</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/fatedier/frp">frp</a> 是一个反向代理的程序，原理很简单，就是一个<code>TCP</code>程序，<code>frpc</code>和<code>frps</code>会保持长链，所以所有转发给<code>frps</code>的流量都能转发到内网<code>frpc</code>，<code>frpc</code>再把请求转发给内网的任意<code>IP</code>和任意端口。</p>
-<p>举个<code>frpc</code>配置的例子，下面这个配置，表示把公网端口<code>8999</code>的所有请求都会转发到内网<code>192.168.31.100:22</code>端口，如果<code>192.168.31.100</code>开启了<code>ssh</code>，我只用在外面使用<code>ssh -o Port=8999 nas.fanlv.fun</code>，就能<code>ssh</code>登录到内网的<code>192.168.31.100</code>这台机器。</p>
+<p>举个<code>frpc</code>配置的例子，下面这个配置，表示把公网端口<code>8999</code>的所有请求都会转发到内网<code>192.168.31.100:22</code>端口，如果<code>192.168.31.100</code>开启了<code>ssh</code>，我只用在外面使用<code>ssh -o Port=8999 xx.xx.xx.xx</code>，就能<code>ssh</code>登录到内网的<code>192.168.31.100</code>这台机器。</p>
 <pre><code>[[proxies]]
 name = "ssh"
 type = "tcp"
