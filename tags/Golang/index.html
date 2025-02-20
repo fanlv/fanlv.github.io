@@ -5,40 +5,55 @@ var hm = document.createElement("script");
 hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.2">
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
 </head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>标签 · Golang</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-7bac65b41e38666d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/12/18/golang-complier-optimize/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-7bac65b41e38666d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/Compiler"><i class="tag post-item-tag">Compiler</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/12/18/golang-complier-optimize/">Golang 编译器优化那些事</a></h2><time class="has-text-grey" datetime="2021-12-18T04:13:14.000Z">2021-12-18</time><p class="is-flex-grow-2 mt-2">
-
-
-
-一、背景去年写了一篇 Golang Memory Model 文章。当时在文章里面贴了验证一个线程可见性问题Demo，具体代码如下：
+ 一、背景
+去年写了一篇 Golang Memory Model 文章。当时在文章里面贴了验证一个线程可见性问题Demo，具体代码如下：
 func main() {
-    running := true
-    go func() {
-        println(&quot;start thread1&quot;)
-        count := 1
-        for running {
-            count++
-        }
-        println(&quot;end thread1: count =&quot;, count) // 这句代码永远执行不到为什么？
-    }()
-    go func() {
-        println(&quot;start thread2&quot;)
-        for..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/12/18/golang-complier-optimize/">更多</a></section></article><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-0feac2eb12658cfb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2020/06/09/golang-memory-model/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-0feac2eb12658cfb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/06/09/golang-memory-model/">Golang Memory Model</a></h2><time class="has-text-grey" datetime="2020-06-08T17:32:00.000Z">2020-06-09</time><p class="is-flex-grow-2 mt-2">
+	running := true
+	go func() {
+		println(&quot;start thread1&quot;)
+		count := 1
+		for running {
+			count++
+		}
+		println(&quot;end thread1: count =&quot;, count) // 这句代码永远执行不到为什么？
+	}()
+	go func() {
+		println(&quot;start thread2&quot;)
+		for {
+			running = false
+		}
+	}()
+	time.Sleep(time.Hour)
+}
 
-一、背景1.1 一个 Code Review 引发的思考一个同学在 Golang 项目里面用 Double Check（不清楚的同学可以去百度搜下，Java中比较常见）的方式实现了一个单例。具体实现如下：
+今年8月份的时..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/12/18/golang-complier-optimize/">更多</a></section></article><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-0feac2eb12658cfb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2020/06/09/golang-memory-model/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-0feac2eb12658cfb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/06/09/golang-memory-model/">Golang Memory Model</a></h2><time class="has-text-grey" datetime="2020-06-08T17:32:00.000Z">2020-06-09</time><p class="is-flex-grow-2 mt-2">
+ 一、背景
+ 1.1 一个 Code Review 引发的思考
+一个同学在 Golang 项目里面用 Double Check（不清楚的同学可以去百度搜下，Java中比较常见）的方式实现了一个单例。具体实现如下：
 var (
-    lock     sync.Mutex
-    instance *UserInfo
+	lock     sync.Mutex
+	instance *UserInfo
 )
 
 func getInstance() (*UserInfo, error) {
-    if instance == nil {
-        //---Lock
-        lock.Lock()
-        defer lock.Unlock()
-        if instance == nil {
-            instance = &amp;amp;UserInfo{..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/06/09/golang-memory-model/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/04/15/golang-mutex/">Golang “锁”事</a></h2><time class="has-text-grey" datetime="2023-04-15T01:28:58.000Z">2023-04-15</time><p class="is-flex-grow-2 mt-2">一、 Go 同步原语
+	if instance == nil {
+		//---Lock
+		lock.Lock()
+		defer lock.Unlock()
+		if instance == nil {
+			instance = &amp;amp;UserInfo{
+				Name: &quot;fan&quot;,
+			}
+		}
+	}//---Unloc..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/06/09/golang-memory-model/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/04/15/golang-mutex/">Golang “锁”事</a></h2><time class="has-text-grey" datetime="2023-04-15T01:28:58.000Z">2023-04-15</time><p class="is-flex-grow-2 mt-2"> 一、 Go 同步原语
+
 
 sync.Cond -&amp;gt; notifyList -&amp;gt; runtime.mutex、atomic
 sync.WaitGroup -&amp;gt; atomic、 runtime.sema
@@ -48,74 +63,100 @@ sync.RWMutex -&amp;gt; sync.Mutex、atomic
 sync.Mutex -&amp;gt; runtime.sema
 channel -&amp;gt; runtime.mutex
 
-sync.Mutex和runtime.mutext区别：简单说就是sync.Mutex是用户层的锁，Lock抢锁失败会造成goroutine阻塞（会调用gopark）。run..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/04/15/golang-mutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/04/09/golang-context/">Golang Context 详解</a></h2><time class="has-text-grey" datetime="2023-04-09T04:47:26.000Z">2023-04-09</time><p class="is-flex-grow-2 mt-2">基于 Go 1.18 源码分析
-一、引言1.1 什么是 Context？Context是Go 1.7引入的一个标准库，官方 blog 里面介绍，最早是Google内部使用的一个库，主要用于在一个Request对应的多个Goroutine中传递数据，数据主要分为两种：
+**sync.Mutex和runtime.mutext区别：**简单说就是sync.Mutex是用户层的锁，Lock抢锁失败会造成goroutine阻塞（会调用gopar..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/04/15/golang-mutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/04/09/golang-context/">Golang Context 详解</a></h2><time class="has-text-grey" datetime="2023-04-09T04:47:26.000Z">2023-04-09</time><p class="is-flex-grow-2 mt-2">基于 Go 1.18 源码分析
+ 一、引言
+ 1.1 什么是 Context？
+Context是Go 1.7引入的一个标准库，官方 blog 里面介绍，最早是Google内部使用的一个库，主要用于在一个Request对应的多个Goroutine中传递数据，数据主要分为两种：
 
 请求的基本信息，比如用户鉴权信息、请求的Request-ID等等。
 请求的Deadline，如果请求被Cancel或者Timeout，能够控制多个Goroutine会返回。
 
 整个 context.go 加上注释也就600行左右。核心就是Context type ：
 type Context interface {
-    // 获取 DeadLine 时间，使用 WithDeadline 和 WithTimeout 才有
-    Deadl..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/04/09/golang-context/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/22/go-generics/">Go 泛型初窥</a></h2><time class="has-text-grey" datetime="2022-10-22T11:28:40.000Z">2022-10-22</time><p class="is-flex-grow-2 mt-2">一、基础知识1.1 形参和实参func min(a, b int) int {
-    if a &amp;gt; b {
-        return b
-    }
-    return a
+	// 获取 DeadLine 时间，使用 WithDeadline 和 WithTimeout 才有
+	Deadlin..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/04/09/golang-context/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/22/go-generics/">Go 泛型初窥</a></h2><time class="has-text-grey" datetime="2022-10-22T11:28:40.000Z">2022-10-22</time><p class="is-flex-grow-2 mt-2"> 一、基础知识
+ 1.1 形参和实参
+func min(a, b int) int {
+	if a &amp;gt; b {
+		return b
+	}
+	return a
 }
 
 func main() {
-    minNum := min(100, 200)
+	minNum := min(100, 200)
 }
 
 如上a、b叫形参(parameter)，100和200叫实参(argument)。
-1.2 类型形参、类型实参、类型约束、类型形参列表func sumNum[T int32 | float32](n []T) T {
-    var s T
-    for _, item := range n {
-        s += item
-    }
-    return s
+ 1.2 类型形参、类型实参、类型约束、类型形参列表
+func sumNum[T int32 | float32](n []T) T {
+	var s T
+	for _, item := range n {
+		s += item
+	}
+	return s
 }
 
 func main() {
-    data1 :=..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/22/go-generics/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/08/sync-mutex/">Go源码——Sync.Mutex</a></h2><time class="has-text-grey" datetime="2022-10-08T02:26:22.000Z">2022-10-08</time><p class="is-flex-grow-2 mt-2">一、背景sync.Mutex是我们常用到的一把锁。网上讲这个锁的文章也比较多，这里面主要是为了简单做个自我总结。
+	data1 := []int32{10, 20, 30, 40, 50}
+	dat..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/22/go-generics/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/08/sync-mutex/">Go源码——Sync.Mutex</a></h2><time class="has-text-grey" datetime="2022-10-08T02:26:22.000Z">2022-10-08</time><p class="is-flex-grow-2 mt-2"> 一、背景
+sync.Mutex是我们常用到的一把锁。网上讲这个锁的文章也比较多，这里面主要是为了简单做个自我总结。
 Sync.Mutex 慢路径底层依赖的是runtime_SemacquireMutex和runtime_Semrelease，对这个不了解可以先去看下 runtime.semaphore 。
-二、Sync.Mutex 源码2.1 发展历史sync.Mutex第一版 代码 是2008年的时候 @rsc 提交的。最早的实现比较简单，是通过简单的CAS加信号量的方式来实现的。信号量具体可以参考 runtime-sema 这篇文章。
-@dvyukov 2011年的时候，提交了第一次优化了 sync: improve Mutex to allow successive acquisitions，这一版中加..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/08/sync-mutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/06/runtime-sema/">Go源码——runtime.semaphore</a></h2><time class="has-text-grey" datetime="2022-10-06T12:08:29.000Z">2022-10-06</time><p class="is-flex-grow-2 mt-2">一、背景sync.Mutex里面用了runtime_SemacquireMutex和runtime_Semrelease，所以看下这个runtime的信号量是如何实现的。
-二、基础知识2.1 信号量信号量（英语：semaphore）又称为信号标，是一个同步对象，用于保持在0至指定最大值之间的一个计数值。当线程完成一次对该semaphore对象的等待（wait）时，该计数值减一；当线程完成一次对semaphore对象的释放（release）时，计数值加一。当计数值为0，则线程等待该semaphore对象不再能成功直至该semaphore对象变成signaled状态。semaphore对象的计数值大于0，为signaled状态；计数值等于0，为nonsignaled状态。
-信号量的概念是由荷兰计算机科学家艾兹赫..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/06/runtime-sema/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/05/runtime-mutex/">Go源码——runtime.mutex</a></h2><time class="has-text-grey" datetime="2022-10-05T02:45:14.000Z">2022-10-05</time><p class="is-flex-grow-2 mt-2">一、背景在Go的runtime包中封装了一个 mutux ，这个mutex被runtime包中大量组件使用，比如 channel、netpoll、检查活跃的定时器 等等。
-sync.Mutex和runtime.mutext区别：简单说就是sync.Mutex是用户层的锁，Lock抢锁失败会造成goroutine阻塞（会调用gopark）。runtime.mutex 是给 runtime使用的锁，Lock抢锁失败，会造成m阻塞（线程阻塞，底层调用的futex）。
-二、基础知识2.1 MutexMutex 全称是Mutual Exclusion ，俗称互斥体或者互斥锁。是一种用于多线程编程中，防止两条线程同时对同一公共资源（比如全局变量）进行读写的机制。
-2.2 mmap 函数mmap它的主要功能是将一个虚拟内..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/05/runtime-mutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/01/sync-map/">Go源码——Sync.Map的前生今世</a></h2><time class="has-text-grey" datetime="2022-09-30T16:22:26.000Z">2022-10-01</time><p class="is-flex-grow-2 mt-2">一、背景前段时间有个朋友来问我Go的Sync.Map性能怎么样，一般什么场景推荐使用。一句话介绍的话，就是Sync.Map底层有两个map，一个是read，一个是dirty，读写read中数据不需要加锁，读写dirty不用需要加锁，适用于读多写少的场景。
-碎碎念其实2020年的时候Go源码里面一些比较常用的包都大致看了一遍，当时跟槊槊、大飞哥、周老板空闲时间天天讨论各种技术细节，包括但不仅限于操作系统、MySQL、Redis、分布式、Go、项目架构方法论等。很多时候观点不合还会争的面红耳赤，最后还会上升到人生攻击，你不服我，我也不服你（实际上互有对错，我也被打过几次脸）。因为有的东西，网上有很多错误的资料，导致我养成了一个习惯，找资料的时候我一般都是去看一些权威的技术书或者直接去看开源组件源码，能用代码说的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/01/sync-map/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/09/12/unsafe-pointer/">GO非类型安全指针-Unsafe.Pointer</a></h2><time class="has-text-grey" datetime="2022-09-12T09:11:12.000Z">2022-09-12</time><p class="is-flex-grow-2 mt-2">一、背景朋友发了一段测试代码里面不正确的使用了atomic.StorePointer，导致GC的时候程序Panic了。
+ 二、Sync.Mutex 源码
+ 2.1 发展历史
+sync.Mutex第一版 代码 是2008年的时候 @rsc 提交的。最早的实现比较简单，是通过简单的CAS加信号量的方式来实现的。信号量具体可以参考 runtime-sema 这篇文章。
+@dvyukov 2011年的时候，提交了第一次优化了 sync: improve Mutex to allow successive acquisitions..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/08/sync-mutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/06/runtime-sema/">Go源码——runtime.semaphore</a></h2><time class="has-text-grey" datetime="2022-10-06T12:08:29.000Z">2022-10-06</time><p class="is-flex-grow-2 mt-2"> 一、背景
+sync.Mutex里面用了runtime_SemacquireMutex和runtime_Semrelease，所以看下这个runtime的信号量是如何实现的。
+ 二、基础知识
+ 2.1 信号量
+信号量（英语：semaphore）又称为信号标，是一个同步对象，用于保持在0至指定最大值之间的一个计数值。当线程完成一次对该semaphore对象的等待（wait）时，该计数值减一；当线程完成一次对semaphore对象的释放（release）时，计数值加一。当计数值为0，则线程等待该semaphore对象不再能成功直至该semaphore对象变成signaled状态。semaphore对象的计数值大于0，为signaled状态；计数值等于0，为nonsignaled状态。
+信号量的概念是由荷兰计算机..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/06/runtime-sema/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/05/runtime-mutex/">Go源码——runtime.mutex</a></h2><time class="has-text-grey" datetime="2022-10-05T02:45:14.000Z">2022-10-05</time><p class="is-flex-grow-2 mt-2"> 一、背景
+在Go的runtime包中封装了一个 mutux ，这个mutex被runtime包中大量组件使用，比如 channel、netpoll、检查活跃的定时器 等等。
+**sync.Mutex和runtime.mutext区别：**简单说就是sync.Mutex是用户层的锁，Lock抢锁失败会造成goroutine阻塞（会调用gopark）。runtime.mutex 是给 runtime使用的锁，Lock抢锁失败，会造成m阻塞（线程阻塞，底层调用的futex）。
+ 二、基础知识
+ 2.1 Mutex
+Mutex 全称是Mutual Exclusion ，俗称互斥体或者互斥锁。是一种用于多线程编程中，防止两条线程同时对同一公共资源（比如全局变量）进行读写的机制。
+ 2.2 mmap 函数
+mmap它..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/05/runtime-mutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/10/01/sync-map/">Go源码——Sync.Map的前生今世</a></h2><time class="has-text-grey" datetime="2022-09-30T16:22:26.000Z">2022-10-01</time><p class="is-flex-grow-2 mt-2"> 一、背景
+前段时间有个朋友来问我Go的Sync.Map性能怎么样，一般什么场景推荐使用。一句话介绍的话，就是Sync.Map底层有两个map，一个是read，一个是dirty，读写read中数据不需要加锁，读写dirty不用需要加锁，适用于读多写少的场景。
+ 碎碎念
+其实2020年的时候Go源码里面一些比较常用的包都大致看了一遍，当时跟槊槊、大飞哥、周老板空闲时间天天讨论各种技术细节，包括但不仅限于操作系统、MySQL、Redis、分布式、Go、项目架构方法论等。很多时候观点不合还会争的面红耳赤，最后还会上升到人生攻击，你不服我，我也不服你（实际上互有对错，我也被打过几次脸）。因为有的东西，网上有很多错误的资料，导致我养成了一个习惯，找资料的时候我一般都是去看一些权威的技术书或者直接去看开源组件源码，能用..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/10/01/sync-map/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/09/12/unsafe-pointer/">GO非类型安全指针-Unsafe.Pointer</a></h2><time class="has-text-grey" datetime="2022-09-12T09:11:12.000Z">2022-09-12</time><p class="is-flex-grow-2 mt-2"> 一、背景
+朋友发了一段测试代码里面不正确的使用了atomic.StorePointer，导致GC的时候程序Panic了。
 var current int64
 atomic.StorePointer((*unsafe.Pointer)(unsafe.Pointer(&amp;amp;current)), unsafe.Pointer(&amp;amp;latest))
 
 为什么会Panic这里先按下不表。之前对 unsafe.Pointer 用的并不多，也没有系统了解过。所以就想系统看下。看了下 unsafe.Pointer 官方文档还挺详细的，可能只之前使用出错的人太多了，所以 rsc 单独提了一个 CR 来说明unsafe.Pointer的用法。
-二、unsafe.Pointerunsafe.Pointer表示指向任意类型..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/09/12/unsafe-pointer/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/09/03/go-custom-import-domain/">Go 自定义引用包的域名</a></h2><time class="has-text-grey" datetime="2022-09-03T15:58:00.000Z">2022-09-03</time><p class="is-flex-grow-2 mt-2">一、 背景最近在看 Go源码的时候，发下部分库最早是在 x-pkg 里面的，经过一段时间迭代才进了runtime包里面。
- x-pkg 里面介绍了用途和源码地址。
- golang.org/x 文档
+ 二、unsafe.Pointer
+unsafe.Pointer表示指向..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/09/12/unsafe-pointer/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/09/03/go-custom-import-domain/">Go 自定义引用包的域名</a></h2><time class="has-text-grey" datetime="2022-09-03T15:58:00.000Z">2022-09-03</time><p class="is-flex-grow-2 mt-2"> 一、 背景
+最近在看 Go源码的时候，发下部分库最早是在 x-pkg 里面的，经过一段时间迭代才进了runtime包里面。
+x-pkg 里面介绍了用途和源码地址。
+golang.org/x 文档
 我发现 x-pkg 的源码地址都在 https://go.googlesource.com， 但是我们项目里面导入某个x-pkg库的路径确是
 import &quot;golang.org/x/sync/semaphore&quot;
 
 比较好奇，这import的别名是在哪里做的，感觉是个挺冷门的知识，于是搜了下相关资料。
-二、实现步骤找到了官网相关资料： hdr-Remote_import_paths
+ 二、实现步骤
+找到了官网相关资料： hdr-Remote_import_paths
 简单说就是在你的网址里面加入如下信息。
-&amp;lt;meta name=&quot;go-import&quot; content=&quot;example.or..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/09/03/go-custom-import-domain/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/06/02/golang-pprof-mem/">一次线上内存使用率异常问题排查</a></h2><time class="has-text-grey" datetime="2022-06-02T01:00:00.000Z">2022-06-02</time><p class="is-flex-grow-2 mt-2">一、背景朋友的一个服务，某个集群内存的RSS使用率一直在80%左右，他用的是8核16G, 双机房一共206个实例。
+&amp;lt;meta name=&quot;go-import&quot; content=&quot;example...</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/09/03/go-custom-import-domain/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/06/02/golang-pprof-mem/">一次线上内存使用率异常问题排查</a></h2><time class="has-text-grey" datetime="2022-06-02T01:00:00.000Z">2022-06-02</time><p class="is-flex-grow-2 mt-2"> 一、背景
+朋友的一个服务，某个集群内存的RSS使用率一直在80%左右，他用的是8核16G, 双机房一共206个实例。
 
 但是在pprof里面查的堆内存才使用了6.3G左右，程序里面主要用了6G的LocalCache所以heap用了6.3G是符合预期的。
 
-
 朋友让我帮忙看下，额外的内存到底是被啥占用了。
-二、基础知识2.1 TCMalloc 算法Thread-Caching Malloc 是Google开发的内存分配算法库，最开始它是作为Google的一个性能工具库perftools的一部分。
+ 二、基础知识
+ 2.1 TCMalloc 算法
+Thread-Caching Malloc 是Google开发的内存分配算法库，最开始它是作为Google的一个性能工具库perftools的一部分。
 TCMalloc是用来替代传统的malloc内存分配函数。它有减少内存碎片，适用于多核，更好的并行性支持等特性。
-2.2 mmap 函数mmap它的主要功能是将一个虚拟内存区域与一个磁盘上的文件关联起来，以初始化这个虚..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/06/02/golang-pprof-mem/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/05/20/go-for-range/">Go for-range 的奇技淫巧</a></h2><time class="has-text-grey" datetime="2022-05-20T01:01:26.000Z">2022-05-20</time><p class="is-flex-grow-2 mt-2">背景朋友发了两个代码片段给我看，让我猜输出的内容是啥。具体代码如下：
+ 2.2 mmap 函数
+mmap它的主要功能是将一个虚拟内存区域与一个磁盘上的文件关联起来，..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/06/02/golang-pprof-mem/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/05/20/go-for-range/">Go for-range 的奇技淫巧</a></h2><time class="has-text-grey" datetime="2022-05-20T01:01:26.000Z">2022-05-20</time><p class="is-flex-grow-2 mt-2"> 背景
+朋友发了两个代码片段给我看，让我猜输出的内容是啥。具体代码如下：
 // Demo1 
 // 1. 这个循环是否能停下来？
 // 2. 如果能停下来，打印的 arr 内容是什么？
 arr := []int{1, 2, 3}
 for _, v := range arr {
-    arr = append(arr, v)
+	arr = append(arr, v)
 }
 
 fmt.Println(arr)
@@ -126,23 +167,21 @@ fmt.Println(arr)
 // 2. 输出几行？
 str := &quot;你好&quot;
 for idx, v := range str {
-    fmt.Printf(&quot;idx = %d , value = %c\n&quot;, idx, v)
+	fmt.Printf(&quot;idx = %d , value = %c\n&quot;, idx, v)
 }
 
 不卖关子，先说下第一个Demo输出的是：
 [1 2 3 1 2 3]
 
-第二..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/05/20/go-for-range/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/01/golang-stack/">深入理解 Golang Stack</a></h2><time class="has-text-grey" datetime="2021-07-31T17:50:20.000Z">2021-08-01</time><p class="is-flex-grow-2 mt-2">
+第二个Dem..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/05/20/go-for-range/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/01/golang-stack/">深入理解 Golang Stack</a></h2><time class="has-text-grey" datetime="2021-07-31T17:50:20.000Z">2021-08-01</time><p class="is-flex-grow-2 mt-2">
+
+ 一、基础知识
+ 1.1 Linux 虚拟地址空间布局
+我们知道CPU有实模式和保护模式，系统刚刚启动的时候是运行在实模式下，然后经过一系列初始化工作以后，Linux会把CPU的实模式改为保护模式（具体就是修改CPU的CR0寄存器相关标记位），在保护模式下，CPU访问的地址都是虚拟地址(逻辑地址)。Linux 为了每个进程维护了一个单独的虚拟地址空间，虚拟地址空间又分为“用户空间”和“内核空间”。 虚拟地址空间更多相关可以看Linux内核虚拟地址空间这篇文章。
 
 
-
-
-
-一、基础知识1.1 Linux 虚拟地址空间布局我们知道CPU有实模式和保护模式，系统刚刚启动的时候是运行在实模式下，然后经过一系列初始化工作以后，Linux会把CPU的实模式改为保护模式（具体就是修改CPU的CR0寄存器相关标记位），在保护模式下，CPU访问的地址都是虚拟地址(逻辑地址)。Linux 为了每个进程维护了一个单独的虚拟地址空间，虚拟地址空间又分为“用户空间”和“内核空间”。 虚拟地址空间更多相关可以看Linux内核虚拟地址空间这篇文章。
-
-
-
-1.2 Golang 栈和虚拟地址空间栈的区别Golang 的内存管理是用的 TCMalloc（Thread-Caching Malloc）算法, 简单点说就是 Golang 是使用 mmap 函数去操作系统申请一大块内存，然后把内存按照 ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/01/golang-stack/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/06/06/golang-rmmutex/">Golang RWMutext 代码走读</a></h2><time class="has-text-grey" datetime="2020-06-06T14:20:56.000Z">2020-06-06</time><p class="is-flex-grow-2 mt-2">type RWMutex struct {
+ 1.2 Golang 栈和虚拟地址空间栈的区别
+Golang 的内存管理是用的 TCMalloc（Thread-Caching Malloc）算法, 简单点说就是 Golang 是使用 mmap 函数去操作系统申请一大块内存，然后把内存按照..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/01/golang-stack/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/06/06/golang-rmmutex/">Golang RWMutext 代码走读</a></h2><time class="has-text-grey" datetime="2020-06-06T14:20:56.000Z">2020-06-06</time><p class="is-flex-grow-2 mt-2">type RWMutex struct {
    w           Mutex  // held if there are pending writers
    writerSem   uint32 // 写的信号量
    readerSem   uint32 // 读的信号量
@@ -156,25 +195,31 @@ for idx, v := range str {
 // 然后看 readerCount是不是小于0
 // 小于0表示 正在加写锁，然后阻塞到rw.readerSem 这个信号上。
 func (rw *RWMutex) RLock() {
-   if atomic.AddInt32(..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/06/06/golang-rmmutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/16/data-struct-alignment/">Golang 内存对齐问题</a></h2><time class="has-text-grey" datetime="2018-10-16T12:52:07.000Z">2018-10-16</time><p class="is-flex-grow-2 mt-2">什么是内存对齐？CPU把内存当成是一块一块的，块的大小可以是2，4，8，16字节大小，因此CPU在读取内存时是一块一块进行读取的。块大小成为memory access granularity（粒度）。
+   if atomic.AddInt32(..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/06/06/golang-rmmutex/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/16/data-struct-alignment/">Golang 内存对齐问题</a></h2><time class="has-text-grey" datetime="2018-10-16T12:52:07.000Z">2018-10-16</time><p class="is-flex-grow-2 mt-2"> 什么是内存对齐？
+CPU把内存当成是一块一块的，块的大小可以是2，4，8，16字节大小，因此CPU在读取内存时是一块一块进行读取的。块大小成为memory access granularity（粒度）。
 
 假设CPU访问粒度是4，也就是一次性可以读取内存中的四个字节内容；当我们不采用内存对齐策略，如果需要访问A中的b元素，CPU需要先取出0-3四个字节的内容，发现没有读取完，还需要再次读取，一共需要进行两次访问内存的操作；而有了内存对齐，参考左图，可一次性取出4-7四个字节的元素也即是b，这样就只需要进行一次访问内存的操作。所以操作系统这样做的原因也就是所谓的拿空间换时间，提高效率。
-为什么要内存对齐？会了关于结构体内存大小的计算，可是为什么系统要对于结构体数据进行内存对齐呢，很明显所占用的空间大小要更多。原..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/16/data-struct-alignment/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/Lua"><i class="tag post-item-tag">Lua</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/30/go-lua-js/">Go 执行Lua脚本和JS脚本测试</a></h2><time class="has-text-grey" datetime="2018-08-30T09:08:12.000Z">2018-08-30</time><p class="is-flex-grow-2 mt-2">最近有个需求需要在Go项目里面执行动态脚本，github上有好几个lua执行解释器，但是有很多要不就很久没维护了，要不就没有什么文档，经过几个对比我最后用的是 https://github.com/yuin/gopher-lua。JS解析器用的github.com/robertkrimen/otto。
+ 为什么要内存对齐？
+会了关于结构体内存大小的计算，可是为什么系统要对于结构体数据进行内存对齐呢，很明显所占用的空间大小要..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/16/data-struct-alignment/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/Lua"><i class="tag post-item-tag">Lua</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/30/go-lua-js/">Go 执行Lua脚本和JS脚本测试</a></h2><time class="has-text-grey" datetime="2018-08-30T09:08:12.000Z">2018-08-30</time><p class="is-flex-grow-2 mt-2">最近有个需求需要在Go项目里面执行动态脚本，github上有好几个lua执行解释器，但是有很多要不就很久没维护了，要不就没有什么文档，经过几个对比我最后用的是 https://github.com/yuin/gopher-lua。JS解析器用的github.com/robertkrimen/otto。
 具体测试代码如下，给有需求的朋友参考。
 github地址
 package main
 
 import (
-    &quot;fmt&quot;
-    &quot;github.com/robertkrimen/otto&quot;
-    &quot;github.com/yuin/gluamapper&quot;
-    &quot;github.com/yuin/gopher-lua&quot;
-    &quot;time&quot;
+	&quot;fmt&quot;
+	&quot;github.com/robertkrimen/otto&quot;
+	&quot;github.com/yuin/gluamapper&quot;
+	&quot;github.com/yuin/gopher-lua&quot;
+	&quot;time&quot;
 )
 
 //function add(a, b)
-//return..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/30/go-lua-js/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/12/csrf/">跨域请求的几种解决方案</a></h2><time class="has-text-grey" datetime="2018-07-12T08:24:18.000Z">2018-07-12</time><p class="is-flex-grow-2 mt-2">需求背景最近做的Apigate优化，前端的同学要求能在配置后台页面上加上一键测试接口的功能，但是由于浏览器的同源策略防止跨域攻击，所以前端的页面默认是不能请求其他域名的接口。
-方案一 Nginx配置代理location /proxy {
+//return a+b
+//end
+var ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/30/go-lua-js/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/12/csrf/">跨域请求的几种解决方案</a></h2><time class="has-text-grey" datetime="2018-07-12T08:24:18.000Z">2018-07-12</time><p class="is-flex-grow-2 mt-2"> 需求背景
+最近做的Apigate优化，前端的同学要求能在配置后台页面上加上一键测试接口的功能，但是由于浏览器的同源策略防止跨域攻击，所以前端的页面默认是不能请求其他域名的接口。
+ 方案一 Nginx配置代理
+location /proxy {
    if ($arg_url) {
       proxy_pass $arg_url?;
     }
@@ -184,7 +229,7 @@ import (
 http://nginxserver/proxy?url=http://10.23.39.140:8080/app/list
 
 这样前端需要什么测试什么接口只需要通过url传过来，Nginx会方向代理到对应的url上返回结果。
-但是这个方法有个问题，url中的地址支持IP访问，不支持域名的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/12/csrf/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container tag-widget is-in-tag-page"><h3>标签</h3><section><a href="/tags/Note"></a><a href="/tags/Book"><span class="tag post-item-tag" style="margin-bottom: 5px;">Book</span></a><a href="/tags/DataStructure"><span class="tag post-item-tag" style="margin-bottom: 5px;">DataStructure</span></a><a href="/tags/iOS"><span class="tag post-item-tag" style="margin-bottom: 5px;">iOS</span></a><a href="/tags/Calculus"><span class="tag post-item-tag" style="margin-bottom: 5px;">Calculus</span></a><a href="/tags/ele"><span class="tag post-item-tag" style="margin-bottom: 5px;">ele</span></a><a href="/tags/ChatRoom"><span class="tag post-item-tag" style="margin-bottom: 5px;">ChatRoom</span></a><a href="/tags/Golang"><span class="tag post-item-tag" style="margin-bottom: 5px;">Golang</span></a><a href="/tags/HTTP"><span class="tag post-item-tag" style="margin-bottom: 5px;">HTTP</span></a><a href="/tags/DA"><span class="tag post-item-tag" style="margin-bottom: 5px;">DA</span></a><a href="/tags/Eng-Practices"><span class="tag post-item-tag" style="margin-bottom: 5px;">Eng-Practices</span></a><a href="/tags/Envoy"><span class="tag post-item-tag" style="margin-bottom: 5px;">Envoy</span></a><a href="/tags/ETCD"><span class="tag post-item-tag" style="margin-bottom: 5px;">ETCD</span></a><a href="/tags/Lua"><span class="tag post-item-tag" style="margin-bottom: 5px;">Lua</span></a><a href="/tags/Compiler"><span class="tag post-item-tag" style="margin-bottom: 5px;">Compiler</span></a><a href="/tags/Rust"><span class="tag post-item-tag" style="margin-bottom: 5px;">Rust</span></a><a href="/tags/Idgen"><span class="tag post-item-tag" style="margin-bottom: 5px;">Idgen</span></a><a href="/tags/GRPC"><span class="tag post-item-tag" style="margin-bottom: 5px;">GRPC</span></a><a href="/tags/Linux"><span class="tag post-item-tag" style="margin-bottom: 5px;">Linux</span></a><a href="/tags/Memory"><span class="tag post-item-tag" style="margin-bottom: 5px;">Memory</span></a><a href="/tags/LinearAlgebra"><span class="tag post-item-tag" style="margin-bottom: 5px;">LinearAlgebra</span></a><a href="/tags/MySQL"><span class="tag post-item-tag" style="margin-bottom: 5px;">MySQL</span></a><a href="/tags/Security"><span class="tag post-item-tag" style="margin-bottom: 5px;">Security</span></a><a href="/tags/Net"><span class="tag post-item-tag" style="margin-bottom: 5px;">Net</span></a><a href="/tags/Algorithm"><span class="tag post-item-tag" style="margin-bottom: 5px;">Algorithm</span></a><a href="/tags/Probability"><span class="tag post-item-tag" style="margin-bottom: 5px;">Probability</span></a><a href="/tags/HTPP"><span class="tag post-item-tag" style="margin-bottom: 5px;">HTPP</span></a><a href="/tags/Protobuf"><span class="tag post-item-tag" style="margin-bottom: 5px;">Protobuf</span></a><a href="/tags/Raft"><span class="tag post-item-tag" style="margin-bottom: 5px;">Raft</span></a><a href="/tags/Quic"><span class="tag post-item-tag" style="margin-bottom: 5px;">Quic</span></a><a href="/tags/Redis"><span class="tag post-item-tag" style="margin-bottom: 5px;">Redis</span></a><a href="/tags/GoSourceCode"><span class="tag post-item-tag" style="margin-bottom: 5px;">GoSourceCode</span></a><a href="/tags/Consul"><span class="tag post-item-tag" style="margin-bottom: 5px;">Consul</span></a><a href="/tags/IO"><span class="tag post-item-tag" style="margin-bottom: 5px;">IO</span></a><a href="/tags/Statistics"><span class="tag post-item-tag" style="margin-bottom: 5px;">Statistics</span></a><a href="/tags/Sort"><span class="tag post-item-tag" style="margin-bottom: 5px;">Sort</span></a><a href="/tags/ebpf"><span class="tag post-item-tag" style="margin-bottom: 5px;">ebpf</span></a><a href="/tags/Chip"><span class="tag post-item-tag" style="margin-bottom: 5px;">Chip</span></a></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+但是这个方法有个问题，url中的地址支持IP访问，不支..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/12/csrf/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container tag-widget is-in-tag-page"><h3>标签</h3><section><a href="/tags/Book"><span class="tag post-item-tag" style="margin-bottom: 5px;">Book</span></a><a href="/tags/iOS"><span class="tag post-item-tag" style="margin-bottom: 5px;">iOS</span></a><a href="/tags/Note"></a><a href="/tags/DataStructure"><span class="tag post-item-tag" style="margin-bottom: 5px;">DataStructure</span></a><a href="/tags/Calculus"><span class="tag post-item-tag" style="margin-bottom: 5px;">Calculus</span></a><a href="/tags/ChatRoom"><span class="tag post-item-tag" style="margin-bottom: 5px;">ChatRoom</span></a><a href="/tags/ele"><span class="tag post-item-tag" style="margin-bottom: 5px;">ele</span></a><a href="/tags/Golang"><span class="tag post-item-tag" style="margin-bottom: 5px;">Golang</span></a><a href="/tags/HTTP"><span class="tag post-item-tag" style="margin-bottom: 5px;">HTTP</span></a><a href="/tags/DA"><span class="tag post-item-tag" style="margin-bottom: 5px;">DA</span></a><a href="/tags/Eng-Practices"><span class="tag post-item-tag" style="margin-bottom: 5px;">Eng-Practices</span></a><a href="/tags/Envoy"><span class="tag post-item-tag" style="margin-bottom: 5px;">Envoy</span></a><a href="/tags/ETCD"><span class="tag post-item-tag" style="margin-bottom: 5px;">ETCD</span></a><a href="/tags/Lua"><span class="tag post-item-tag" style="margin-bottom: 5px;">Lua</span></a><a href="/tags/Compiler"><span class="tag post-item-tag" style="margin-bottom: 5px;">Compiler</span></a><a href="/tags/Rust"><span class="tag post-item-tag" style="margin-bottom: 5px;">Rust</span></a><a href="/tags/Idgen"><span class="tag post-item-tag" style="margin-bottom: 5px;">Idgen</span></a><a href="/tags/GRPC"><span class="tag post-item-tag" style="margin-bottom: 5px;">GRPC</span></a><a href="/tags/Linux"><span class="tag post-item-tag" style="margin-bottom: 5px;">Linux</span></a><a href="/tags/AI"><span class="tag post-item-tag" style="margin-bottom: 5px;">AI</span></a><a href="/tags/Memory"><span class="tag post-item-tag" style="margin-bottom: 5px;">Memory</span></a><a href="/tags/LinearAlgebra"><span class="tag post-item-tag" style="margin-bottom: 5px;">LinearAlgebra</span></a><a href="/tags/MySQL"><span class="tag post-item-tag" style="margin-bottom: 5px;">MySQL</span></a><a href="/tags/Net"><span class="tag post-item-tag" style="margin-bottom: 5px;">Net</span></a><a href="/tags/Security"><span class="tag post-item-tag" style="margin-bottom: 5px;">Security</span></a><a href="/tags/Algorithm"><span class="tag post-item-tag" style="margin-bottom: 5px;">Algorithm</span></a><a href="/tags/HTPP"><span class="tag post-item-tag" style="margin-bottom: 5px;">HTPP</span></a><a href="/tags/Protobuf"><span class="tag post-item-tag" style="margin-bottom: 5px;">Protobuf</span></a><a href="/tags/Probability"><span class="tag post-item-tag" style="margin-bottom: 5px;">Probability</span></a><a href="/tags/Quic"><span class="tag post-item-tag" style="margin-bottom: 5px;">Quic</span></a><a href="/tags/Raft"><span class="tag post-item-tag" style="margin-bottom: 5px;">Raft</span></a><a href="/tags/Redis"><span class="tag post-item-tag" style="margin-bottom: 5px;">Redis</span></a><a href="/tags/GoSourceCode"><span class="tag post-item-tag" style="margin-bottom: 5px;">GoSourceCode</span></a><a href="/tags/Consul"><span class="tag post-item-tag" style="margin-bottom: 5px;">Consul</span></a><a href="/tags/IO"><span class="tag post-item-tag" style="margin-bottom: 5px;">IO</span></a><a href="/tags/Sort"><span class="tag post-item-tag" style="margin-bottom: 5px;">Sort</span></a><a href="/tags/Statistics"><span class="tag post-item-tag" style="margin-bottom: 5px;">Statistics</span></a><a href="/tags/ebpf"><span class="tag post-item-tag" style="margin-bottom: 5px;">ebpf</span></a><a href="/tags/Chip"><span class="tag post-item-tag" style="margin-bottom: 5px;">Chip</span></a></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
 
 window.addEventListener('resize', $claudia.throttle(function () {
     var images = document.querySelectorAll('.js-img-fadeIn')

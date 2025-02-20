@@ -1,0 +1,112 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Ryo's blog</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>分类 · AI</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/AI"><i class="tag post-item-tag">AI</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2025/02/16/machine-learning7/">《机器学习》笔记七 - 贝叶斯分类器</a></h2><time class="has-text-grey" datetime="2025-02-16T02:00:58.000Z">2025-02-16</time><p class="is-flex-grow-2 mt-2">
+ 7.1 贝叶斯决策论
+贝叶斯决策论是一种基于概率的方法，用于在分类任务中根据已知的概率信息和误判损失选择最优类别。它的核心思想是通过最小化决策风险来达到最佳决策效果。
+
+ 1. 基本概念
+1.1 类别标记
+
+假设有 NNN 种可能的类别，记为
+Y={c1,c2,…,cN}\mathcal{Y} = \{c_1, c_2, \ldots, c_N\}Y={c1​,c2​,…,cN​}。
+
+1.2 误判损失
+
+定义 λij\lambda_{ij}λij​ 为将真实类别为 cjc_jcj​ 的样本误分为 cic_ici​ 时的损失。
+
+1.3 后验概率
+
+P(ci∣x)P(c_i \mid \boldsymbol{x})P(ci​∣x) 表示在给定样本 x\boldsymbol{x}x 的情况下，样本属于类别..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2025/02/16/machine-learning7/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/AI"><i class="tag post-item-tag">AI</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2025/02/16/machine-learning5/">《机器学习》笔记五 - 神经网络</a></h2><time class="has-text-grey" datetime="2025-02-16T01:00:58.000Z">2025-02-16</time><p class="is-flex-grow-2 mt-2"> 5.1 神经元模型
+神经网络是一门多学科交叉的研究领域，它由大量简单而具适应性的单元（即神经元）构成，这些神经元通过复杂的并行连接组成网络。我们在机器学习中讨论的神经网络，实际上是数学模型和学习算法的交汇点。
+
+ 1. 神经元模型：基本单元
+生物神经元的工作原理：
+
+互联与传递信号： 在生物神经系统中，每个神经元都与其他神经元相连。当一个神经元被激活（或称“兴奋”）时，它会向与之连接的神经元传递化学信号，这些信号会改变接收神经元的电位。
+阈值触发： 如果一个神经元接收到的总信号使其电位超过某个预设的“阈值”，它就会被激活，进而向其他神经元传递信号。
+
+M-P神经元模型：
+
+提出背景： 1943年，[McCulloch and Pitts, 1943] 把生物神经元的工作方式抽象为一个数学模型，这就是经典的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2025/02/16/machine-learning5/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/AI"><i class="tag post-item-tag">AI</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2025/02/15/machine-learning4/">《机器学习》笔记四 - 决策树</a></h2><time class="has-text-grey" datetime="2025-02-15T02:00:58.000Z">2025-02-15</time><p class="is-flex-grow-2 mt-2">
+ 4.1 基本流程
+决策树是一种直观、类似“问答式”的分类方法，其基本思想就是通过一系列简单的判断（例如“这个瓜的颜色是不是青绿？”、“这个瓜的根蒂形状如何？”）一步步把样本分类。
+
+ 4.1.1 决策树的基本概念
+
+
+树结构：决策树由“结点”和“分支”组成。
+
+根结点：放着所有的样本，表示开始决策的起点。
+内部结点：每个内部结点对应一个“属性测试”，例如“色泽是否青绿？”。
+叶结点：当经过一系列属性测试后到达的结点，叶结点直接给出最终的分类结果，比如“好瓜”或“坏瓜”。
+
+
+
+决策过程：从根结点开始，根据样本在各个属性上的取值，沿着相应的分支不断向下走，直到到达叶结点，这一路上问的问题就构成了一个“测试序列”。
+
+
+
+ 4.1.2 决策树如何“学习”
+决策树学习的目标是从训练数据中自动生成这样一棵树，使..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2025/02/15/machine-learning4/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/AI"><i class="tag post-item-tag">AI</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2025/02/09/machine-learning3/">《机器学习》笔记三 - 线性模型</a></h2><time class="has-text-grey" datetime="2025-02-09T02:00:58.000Z">2025-02-09</time><p class="is-flex-grow-2 mt-2">
+ 3.1 基本形式
+1. 线性模型的基本形式
+
+
+问题背景：假设每个示例由 ddd 个属性描述，记为
+x=(x1,x2,…,xd)\boldsymbol{x} = (x_1, x_2, \ldots, x_d)
+x=(x1​,x2​,…,xd​)
+其中 xix_ixi​ 是示例在第 iii 个属性上的取值。
+
+
+模型定义：线性模型试图通过属性的线性组合来进行预测，其形式为
+f(x)=w1x1+w2x2+⋯+wdxd+b(3.1)f(\boldsymbol{x}) = w_1x_1 + w_2x_2 + \cdots + w_dx_d + b \quad (3.1)
+f(x)=w1​x1​+w2​x2​+⋯+wd​xd​+b(3.1)
+这里，w1,w2,…,wdw_1, w_2, \ldots, w_dw1..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2025/02/09/machine-learning3/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/AI"><i class="tag post-item-tag">AI</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2025/02/03/machine-learning2/">《机器学习》笔记二 - 模型评估与选择</a></h2><time class="has-text-grey" datetime="2025-02-03T02:00:58.000Z">2025-02-03</time><p class="is-flex-grow-2 mt-2">
+ 2.1 经验误差与过拟合
+
+误差相关概念
+
+错误率与精度：在分类任务里，错误率是指分类错误的样本数在样本总数中所占的比例。假设样本总数为mmm，其中分类错误的样本数为  ，那么错误率  。而精度则是分类正确的样本数占样本总数的比例，即精度 = 1 - 错误率，通常会以百分比的形式呈现，如  。
+经验误差与泛化误差：学习器在训练集上所产生的误差被称为经验误差或者训练误差，而在新样本上的误差则叫做泛化误差。我们的目标是获得泛化误差小的学习器，因为这意味着它在面对未知数据时也能有较好的表现。然而，在实际操作中，由于我们事先并不清楚新样本的具体情况，所以往往只能尽力使经验误差最小化。
+
+
+过拟合与欠拟合
+
+过拟合：当学习器把训练样本学得过于透彻，以至于将训练样本特有的一些非普遍特性也当作所有潜在样本都具备的一般..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2025/02/03/machine-learning2/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/AI"><i class="tag post-item-tag">AI</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2025/02/01/machine-learning1/">《机器学习》笔记一</a></h2><time class="has-text-grey" datetime="2025-02-01T02:00:58.000Z">2025-02-01</time><p class="is-flex-grow-2 mt-2">
+ 一、绪论
+ 1.1、什么是机器学习？
+机器学习是人工智能（AI）的一个分支，其核心目标是让计算机能够从数据中自动“学习”——也就是说，不需要人为编写每一个规则，而是通过算法和统计模型提取数据中的规律，从而对未知数据进行预测或做出决策。
+深度学习：神经网络类的机器学习算法。
+人工智能 &amp;gt; 机器学习 &amp;gt; 深度学习
+
+ 1.2、机器学习中的一些基本概念
+ 算法
+算法是指从数据中学得模型的具体方法，例如线性回归、对数几率回归、决策树等。算法的输出称为模型，通常可以看作具体的函数或抽象函数。例如一元线性回归算法产出的模型可表示为
+f(x)=wx+bf(x) = wx + b
+f(x)=wx+b
+
+ 样本
+样本（Sample）指数据集中单个、具体的实例或观测值。每个样本代表一个独立个体（如图片、文本、交..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2025/02/01/machine-learning1/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Note/">Note</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+
+window.addEventListener('resize', $claudia.throttle(function () {
+    var images = document.querySelectorAll('.js-img-fadeIn')
+
+    images.forEach($claudia.blurBackdropImg)
+}, 150))</script></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+
+window.addEventListener('resize', $claudia.throttle(function () {
+    var images = document.querySelectorAll('.js-img-fadeIn')
+
+    images.forEach($claudia.blurBackdropImg)
+}, 150))</script></body></html>

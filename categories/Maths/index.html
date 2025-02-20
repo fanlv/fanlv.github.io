@@ -5,9 +5,14 @@ var hm = document.createElement("script");
 hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.2">
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>分类 · Maths</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Algorithm"><i class="tag post-item-tag">Algorithm</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/04/02/newton-sqrt/">牛顿迭代法求开方</a></h2><time class="has-text-grey" datetime="2023-04-02T10:11:45.000Z">2023-04-02</time><p class="is-flex-grow-2 mt-2">求一个数的开平方我们假设这个数是a，如何先快速求出√a的值？
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>分类 · Maths</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Algorithm"><i class="tag post-item-tag">Algorithm</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/04/02/newton-sqrt/">牛顿迭代法求开方</a></h2><time class="has-text-grey" datetime="2023-04-02T10:11:45.000Z">2023-04-02</time><p class="is-flex-grow-2 mt-2"> 求一个数的开平方
+我们假设这个数是a，如何先快速求出√a的值？
 我们可以把这个题目转化成一个几何问题。如下图：
 
 可以转换为，求公式Y = X^2 - a，（√a,0）的值。
@@ -17,8 +22,11 @@ s.parentNode.insertBefore(hm, s);
 带入到切线的方程可以得 Y = 2 * x0 * X + b
 因为切线经过点（x0，x0^2 - a），带入切线方程，就有 x0^2 - a = 2 * x0^2 + b
 转而得到b = -x0^2 - a
+
 然后带入到之前的切线的方程 Y = 2 * x0 * X + b 可得 Y = 2 * x0 * X - x0^2 - a，把。
-把（x1, 0）..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/04/02/newton-sqrt/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/LinearAlgebra"><i class="tag post-item-tag">LinearAlgebra</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/18/mit-linear-algebra-1-3/">MIT - 线性代数</a></h2><time class="has-text-grey" datetime="2021-08-18T12:25:30.000Z">2021-08-18</time><p class="is-flex-grow-2 mt-2">一、Lesson 11.1 方程组的几何解释
+把（x1,..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/04/02/newton-sqrt/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/LinearAlgebra"><i class="tag post-item-tag">LinearAlgebra</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/18/mit-linear-algebra-1-3/">MIT - 线性代数</a></h2><time class="has-text-grey" datetime="2021-08-18T12:25:30.000Z">2021-08-18</time><p class="is-flex-grow-2 mt-2"> 一、Lesson 1
+ 1.1 方程组的几何解释
+
 上面方程组我们可以写成矩阵形式
 
 上面的矩阵可以看成 Ax = b的形式 :
@@ -27,44 +35,58 @@ s.parentNode.insertBefore(hm, s);
 未知向量(x)：将方程未知数提取出来，按列构成一个向量。
 向量(b) ：将等号右侧结果按列提取，构成一个向量
 
-1.1.1 行图像在坐标系上画出“行图像”，可以知两个线交点就是我们要求的解
+ 1.1.1 行图像
+在坐标系上画出“行图像”，可以知两个线交点就是我们要求的解
 
-1.1.2 列图像从列图像的角度，我们再求这个方程可以看成矩阵：
+ 1.1.2 列图像
+从列图像的角度，我们再求这个方程可以看成矩阵：
 
 
 
-1.2 方程组的几何形式推广1.2.1 高维行图像我们将方程维数推广，从三维开始，如果我们继续做行图像求解，那么会的到一个很复杂的图像。
+ 1.2 方程组的几何形式推广
+ 1.2.1 高维行图像
+我们将方程维数推广，从三维开始，如果我们继续做行图像求解，那么会的到一个很复杂的图像。
 
 矩阵如下：
 
 
-如果绘制行图像，很明显这是一个三个平面相交得到一点，我们想直接看出 这个点的性质可谓是难上加难，比较靠谱的思路是先联..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/18/mit-linear-algebra-1-3/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Probability"><i class="tag post-item-tag">Probability</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/23/probability/">概率论基础</a></h2><time class="has-text-grey" datetime="2018-06-23T03:36:37.000Z">2018-06-23</time><p class="is-flex-grow-2 mt-2">样本空间与事件A⊂B 事件 B 包含了事件 A，A 被包含于 B
+如果绘制行图像，很明显这是一个三个平面相交得到一点，我们想直接看出 这个点的性质可谓是难上加..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/18/mit-linear-algebra-1-3/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Probability"><i class="tag post-item-tag">Probability</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/23/probability/">概率论基础</a></h2><time class="has-text-grey" datetime="2018-06-23T03:36:37.000Z">2018-06-23</time><p class="is-flex-grow-2 mt-2"> 样本空间与事件
+A⊂B 事件 B 包含了事件 A，A 被包含于 B
 A∩B A 与 B 的交集，表示事件 A 和事件 B 同时发生
 A∪B A 与 B 的并集，表示事件 A 或事件 B 或他们二者同事发生
 P(A|B) 在事件 B 发生下，事件 A 发生的概率
 
-对偶公式
-随机事件运算（1）交换律：A∪B=B∪A、AB=BA
+ 对偶公式
+
+ 随机事件运算
+（1）交换律：A∪B=B∪A、AB=BA
 （2）结合律：( A∪B )∪C=A∪( B∪C )
 （3）分配律：A∪( BC )=( A∪B )( A∪C )A( B∪C )=( AB )∪( AC )
 （4）摩根律：A B=A∪B、A ∪ B=A B
-概率的三个基本性质
-二项系数
-蒙特卡罗（Monte Carlo）
-乘法公式P(AB)=P(B)P(A|B) = P(A)P(B|A)
-全概率公式
-贝叶斯公式（Bayes）
-</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/23/probability/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Calculus"><i class="tag post-item-tag">Calculus</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/22/calculus/">微积分基础</a></h2><time class="has-text-grey" datetime="2018-06-22T09:15:26.000Z">2018-06-22</time><p class="is-flex-grow-2 mt-2">导数(Derivatives)
+ 概率的三个基本性质
+
+ 二项系数
+
+ 蒙特卡罗（Monte Carlo）
+
+ 乘法公式
+P(AB)=P(B)P(A|B) = P(A)P(B|A)
+ 全概率公式
+
+ ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/23/probability/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Calculus"><i class="tag post-item-tag">Calculus</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/22/calculus/">微积分基础</a></h2><time class="has-text-grey" datetime="2018-06-22T09:15:26.000Z">2018-06-22</time><p class="is-flex-grow-2 mt-2"> 导数(Derivatives)
+
 导数是函数的局部性质。一个函数在某一点的导数描述了这个函数在这一点附近的变化率。如果函数的自变量和取值都是实数的话，函数在某一点的导数就是该函数所代表的曲线在这一点上的切线斜率。导数的本质是通过极限的概念对函数进行局部的线性逼近。例如在运动学中，物体的位移对于时间的导数就是物体的瞬时速度。
 
 一阶导数为 0 的时候，对应的值不是最大值（局部）就是最小值（局部）。
-求导规则加（减）法则：（f+g)'=f'+g'
+ 求导规则
+加（减）法则：（f+g)'=f'+g'
 乘法法则：（f*g)'=f'*g+g'*f
 除法法则：（f/g)'=(f'*g-g'*f)/g^2
 y = x^n =&amp;gt; dy/dx = nx^n-1
 y = sin(x) =&amp;gt; dy/dx = cos(x)
-y = e^x =&amp;gt; dy/dx = e^..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/22/calculus/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Statistics"><i class="tag post-item-tag">Statistics</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/19/statistics/">统计学基础</a></h2><time class="has-text-grey" datetime="2018-06-19T07:00:09.000Z">2018-06-19</time><p class="is-flex-grow-2 mt-2">最近休息在家无聊，整理下之前看的统计学的一些基础知识，方便以后查阅吧。
-基础名词
+y = e^x =&amp;gt; dy/dx ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/22/calculus/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Statistics"><i class="tag post-item-tag">Statistics</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/19/statistics/">统计学基础</a></h2><time class="has-text-grey" datetime="2018-06-19T07:00:09.000Z">2018-06-19</time><p class="is-flex-grow-2 mt-2">最近休息在家无聊，整理下之前看的统计学的一些基础知识，方便以后查阅吧。
+ 基础名词
+
 均值 （Mean），所有数相加出去数量。
 中位数 （Median）， 中间一个数，或者是中间的两个数相加除以 2
 众数 （Mode），出现次数最多的数。
@@ -77,8 +99,10 @@ y = e^x =&amp;gt; dy/dx = e^..</p><a class="button is-default mt-2 has-text-weig
 总体方差 （variance of a population）
 样本方差（Sample variance）
 
-基础概念和公式基础概念对应的数学符号：
-总体均值（Population Mea..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/19/statistics/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Note/">Note</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+ 基础概念和公式
+ 基础概念对应的数学符号：
+
+ 总体均值（Populat..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/19/statistics/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Note/">Note</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
 
 window.addEventListener('resize', $claudia.throttle(function () {
     var images = document.querySelectorAll('.js-img-fadeIn')

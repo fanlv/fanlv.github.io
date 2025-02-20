@@ -5,57 +5,81 @@ var hm = document.createElement("script");
 hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.2">
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
-</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>归档 · 2018</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/11/08/memory-page-and-addressing/">内存管理、寻址方式那些事</a></h2><time class="has-text-grey" datetime="2018-11-08T06:05:56.000Z">2018-11-08</time><p class="is-flex-grow-2 mt-2">一、内存1.1 什么是内存　　简单地说，内存就是一个数据货架。内存有一个最小的存储单位，大多数都是一个字节。内存用内存地址（memory address）来为每个字节的数据顺序编号。因此，内存地址说明了数据在内存中的位置。内存地址从0开始，每次增加1。这种线性增加的存储器地址称为线性地址（linear address）。
-　　内存地址的编号有上限。地址空间的范围和地址总线（address bus）的位数直接相关。CPU通过地址总线来向内存说明想要存取数据的地址。以英特尔32位的80386型CPU为例，这款CPU有32个针脚可以传输地址信息。每个针脚对应了一位。如果针脚上是高电压，那么这一位是1。如果是低电压，那么这一位是0。32位的电压高低信息通过地址总线传到内存的32个针脚，内存就能把电压高低信息转换成3..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/11/08/memory-page-and-addressing/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/11/06/b-tree/">B-Tree、B+Tree、B*Tree</a></h2><time class="has-text-grey" datetime="2018-11-06T10:18:53.000Z">2018-11-06</time><p class="is-flex-grow-2 mt-2">一、B-Tree1.1 什么是B-Tree 1970年，R.Bayer和E.mccreight提出了一种适用于外查找的树，它是一种平衡的多叉树，称为B树，其定义如下
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>归档 · 2018</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/11/08/memory-page-and-addressing/">内存管理、寻址方式那些事</a></h2><time class="has-text-grey" datetime="2018-11-08T06:05:56.000Z">2018-11-08</time><p class="is-flex-grow-2 mt-2"> 一、内存
+ 1.1 什么是内存
+简单地说，内存就是一个数据货架。内存有一个最小的存储单位，大多数都是一个字节。内存用内存地址（memory address）来为每个字节的数据顺序编号。因此，内存地址说明了数据在内存中的位置。内存地址从0开始，每次增加1。这种线性增加的存储器地址称为线性地址（linear address）。
+内存地址的编号有上限。地址空间的范围和地址总线（address bus）的位数直接相关。CPU通过地址总线来向内存说明想要存取数据的地址。以英特尔32位的80386型CPU为例，这款CPU有32个针脚可以传输地址信息。每个针脚对应了一位。如果针脚上是高电压，那么这一位是1。如果是低电压，那么这一位是0。32位的电压高低信息通过地址总线传到内存的32个针脚，内存就能把电压高低信息转换成3..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/11/08/memory-page-and-addressing/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/11/06/b-tree/">B-Tree、B+Tree、B*Tree</a></h2><time class="has-text-grey" datetime="2018-11-06T10:18:53.000Z">2018-11-06</time><p class="is-flex-grow-2 mt-2"> 一、B-Tree
+ 1.1 什么是B-Tree
+1970年，R.Bayer和E.mccreight提出了一种适用于外查找的树，它是一种平衡的多叉树，称为B树，其定义如下
+
 
 根结点至少有两个子女。
 
+
 每个中间节点都包含k-1个元素和k个孩子，其中 m/2 &amp;lt;= k &amp;lt;= m
+
 
 每一个叶子节点都包含k-1个元素，其中 m/2 &amp;lt;= k &amp;lt;= m
 
+
 所有的叶子结点都位于同一层。
+
 
 每个节点中的元素从小到大排列，节点当中k-1个元素正好是k个孩子包含的元素的值域分划。
 
 
 M = 3
 
-1.2 B-Tree 查找假设我们要查找的数据是 5
+ 1.2 B-Tree 查找
+假设我们要查找的数据是 5
 
-二、B+Tree2.1 什么是B+TreeB+ 树是一种树数据结构，是一个n叉树，每个节点通常有多个孩子，一棵B+树包含根节点、内部节点和叶子节点。根节点可..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/11/06/b-tree/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/26/mysql-engine/">MyISAM和InnoDB区别和应用场景</a></h2><time class="has-text-grey" datetime="2018-10-26T08:36:00.000Z">2018-10-26</time><p class="is-flex-grow-2 mt-2">什么是MyISAM 和InnoDB
+ 二、B+Tree
+ 2.1 什么是B+Tree
+B+ 树是一种树数据结构，是一个n叉树，每个节点通常有多个孩子，一棵B+树包含根节点、..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/11/06/b-tree/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/26/mysql-engine/">MyISAM和InnoDB区别和应用场景</a></h2><time class="has-text-grey" datetime="2018-10-26T08:36:00.000Z">2018-10-26</time><p class="is-flex-grow-2 mt-2"> 什么是MyISAM 和InnoDB
+
 MyISAM是MySQL的默认数据库引擎（5.5版之前），由早期的ISAM所改良。虽然性能极佳，但却有一个缺点：不支持事务处理（transaction）。
 InnoDB，是MySQL的数据库引擎之一，为MySQL AB发行binary的标准之一。InnoDB由Innobase Oy公司所开发，2006年五月时由甲骨文公司并购。与传统的ISAM与MyISAM相比，InnoDB的最大特色就是支持了ACID兼容的事务（Transaction）功能，类似于PostgreSQL。
 
-MyISAM：它是基于传统的ISAM类型，ISAM是Indexed Sequential Access Method (有索引的顺序访问方法) 的缩写，它是存储记录和文件的标准方法。不是事务安全的，而且..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/26/mysql-engine/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/16/data-struct-alignment/">Golang 内存对齐问题</a></h2><time class="has-text-grey" datetime="2018-10-16T12:52:07.000Z">2018-10-16</time><p class="is-flex-grow-2 mt-2">什么是内存对齐？CPU把内存当成是一块一块的，块的大小可以是2，4，8，16字节大小，因此CPU在读取内存时是一块一块进行读取的。块大小成为memory access granularity（粒度）。
+MyISAM：它是基于传统的ISAM类型，ISAM是Indexed Sequential Access Method (有索引的顺序访问方法) 的缩写，它是存储记录和文件的标准方法。不是事务安全的，..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/26/mysql-engine/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/16/data-struct-alignment/">Golang 内存对齐问题</a></h2><time class="has-text-grey" datetime="2018-10-16T12:52:07.000Z">2018-10-16</time><p class="is-flex-grow-2 mt-2"> 什么是内存对齐？
+CPU把内存当成是一块一块的，块的大小可以是2，4，8，16字节大小，因此CPU在读取内存时是一块一块进行读取的。块大小成为memory access granularity（粒度）。
 
 假设CPU访问粒度是4，也就是一次性可以读取内存中的四个字节内容；当我们不采用内存对齐策略，如果需要访问A中的b元素，CPU需要先取出0-3四个字节的内容，发现没有读取完，还需要再次读取，一共需要进行两次访问内存的操作；而有了内存对齐，参考左图，可一次性取出4-7四个字节的元素也即是b，这样就只需要进行一次访问内存的操作。所以操作系统这样做的原因也就是所谓的拿空间换时间，提高效率。
-为什么要内存对齐？会了关于结构体内存大小的计算，可是为什么系统要对于结构体数据进行内存对齐呢，很明显所占用的空间大小要更多。原..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/16/data-struct-alignment/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Consul"><i class="tag post-item-tag">Consul</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/12/service-discovery-consul/">服务发现之Consul</a></h2><time class="has-text-grey" datetime="2018-10-12T07:18:18.000Z">2018-10-12</time><p class="is-flex-grow-2 mt-2">consul是一个可以提供服务发现，健康检查，多数据中心，Key/Value存储等功能的分布式服务框架
-用于实现分布式系统的服务发现与配置。与其他分布式服务注册与发现的方案，Consul的方案更”一站式”，内置了服务注册与发现框架、分布一致性协议实现、健康检查、Key/Value存储、多数据中心方案，不再需要依赖其他工具（比如ZooKeeper等）。使用起来也较为简单。Consul用Golang实现，因此具有天然可移植性(支持Linux、Windows和Mac OS X)；安装包仅包含一个可执行文件，方便部署，与Docker等轻量级容器可无缝配合。
-Consul 的使用场景
+ 为什么要内存对齐？
+会了关于结构体内存大小的计算，可是为什么系统要对于结构体数据进行内存对齐呢，很明显所占用的空间大小要..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/16/data-struct-alignment/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Consul"><i class="tag post-item-tag">Consul</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/10/12/service-discovery-consul/">服务发现之Consul</a></h2><time class="has-text-grey" datetime="2018-10-12T07:18:18.000Z">2018-10-12</time><p class="is-flex-grow-2 mt-2">consul是一个可以提供服务发现，健康检查，多数据中心，Key/Value存储等功能的分布式服务框架
+用于实现分布式系统的服务发现与配置。与其他分布式服务注册与发现的方案，Consul的方案更&quot;一站式&quot;，内置了服务注册与发现框架、分布一致性协议实现、健康检查、Key/Value存储、多数据中心方案，不再需要依赖其他工具（比如ZooKeeper等）。使用起来也较为简单。Consul用Golang实现，因此具有天然可移植性(支持Linux、Windows和Mac OS X)；安装包仅包含一个可执行文件，方便部署，与Docker等轻量级容器可无缝配合。
+ Consul 的使用场景
+
 docker 实例的注册与配置共享
 coreos 实例的注册与配置共享
 vitess 集群
 SaaS 应用的配置共享
-与 confd ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/12/service-discovery-consul/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Idgen"><i class="tag post-item-tag">Idgen</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/09/30/idgenerator/">分布式id几种生成方案</a></h2><time class="has-text-grey" datetime="2018-09-30T08:08:10.000Z">2018-09-30</time><p class="is-flex-grow-2 mt-2">一、UUIDUUID 是 通用唯一识别码（Universally Unique Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的，是让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。如此一来，每个人都可以创建不与其它人冲突的UUID。在这样的情况下，就不需考虑数据库创建时的名称重复问题。目前最广泛应用的UUID，是微软公司的全局唯一标识符（GUID），而其他重要的应用，则有Linux ext2/ext3文件系统、LUKS加密分区、GNOME、KDE、Mac OS X等等。另外我们也可以在e2fsprogs包中的UUID库找到实现。
-UUID的标准形式包含32个16进制数字，以连字号分为五段，形式为8-4-4..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/09/30/idgenerator/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/Lua"><i class="tag post-item-tag">Lua</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/30/go-lua-js/">Go 执行Lua脚本和JS脚本测试</a></h2><time class="has-text-grey" datetime="2018-08-30T09:08:12.000Z">2018-08-30</time><p class="is-flex-grow-2 mt-2">最近有个需求需要在Go项目里面执行动态脚本，github上有好几个lua执行解释器，但是有很多要不就很久没维护了，要不就没有什么文档，经过几个对比我最后用的是 https://github.com/yuin/gopher-lua。JS解析器用的github.com/robertkrimen/otto。
+与 conf..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/10/12/service-discovery-consul/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Idgen"><i class="tag post-item-tag">Idgen</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/09/30/idgenerator/">分布式id几种生成方案</a></h2><time class="has-text-grey" datetime="2018-09-30T08:08:10.000Z">2018-09-30</time><p class="is-flex-grow-2 mt-2"> 一、UUID
+UUID 是 通用唯一识别码（Universally Unique Identifier）的缩写，是一种软件建构的标准，亦为开放软件基金会组织在分布式计算环境领域的一部分。其目的，是让分布式系统中的所有元素，都能有唯一的辨识信息，而不需要通过中央控制端来做辨识信息的指定。如此一来，每个人都可以创建不与其它人冲突的UUID。在这样的情况下，就不需考虑数据库创建时的名称重复问题。目前最广泛应用的UUID，是微软公司的全局唯一标识符（GUID），而其他重要的应用，则有Linux ext2/ext3文件系统、LUKS加密分区、GNOME、KDE、Mac OS X等等。另外我们也可以在e2fsprogs包中的UUID库找到实现。
+UUID的标准形式包含32个16进制数字，以连字号分为五段，形式为8-4..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/09/30/idgenerator/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/Lua"><i class="tag post-item-tag">Lua</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/30/go-lua-js/">Go 执行Lua脚本和JS脚本测试</a></h2><time class="has-text-grey" datetime="2018-08-30T09:08:12.000Z">2018-08-30</time><p class="is-flex-grow-2 mt-2">最近有个需求需要在Go项目里面执行动态脚本，github上有好几个lua执行解释器，但是有很多要不就很久没维护了，要不就没有什么文档，经过几个对比我最后用的是 https://github.com/yuin/gopher-lua。JS解析器用的github.com/robertkrimen/otto。
 具体测试代码如下，给有需求的朋友参考。
 github地址
 package main
 
 import (
-    &quot;fmt&quot;
-    &quot;github.com/robertkrimen/otto&quot;
-    &quot;github.com/yuin/gluamapper&quot;
-    &quot;github.com/yuin/gopher-lua&quot;
-    &quot;time&quot;
+	&quot;fmt&quot;
+	&quot;github.com/robertkrimen/otto&quot;
+	&quot;github.com/yuin/gluamapper&quot;
+	&quot;github.com/yuin/gopher-lua&quot;
+	&quot;time&quot;
 )
 
 //function add(a, b)
-//return..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/30/go-lua-js/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Net"><i class="tag post-item-tag">Net</i></a><a href="/tags/HTPP"><i class="tag post-item-tag">HTPP</i></a><a href="/tags/Protobuf"><i class="tag post-item-tag">Protobuf</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/19/protobuf-on-http/">测试Protobuf在Http传输测试</a></h2><time class="has-text-grey" datetime="2018-08-19T10:08:37.000Z">2018-08-19</time><p class="is-flex-grow-2 mt-2">Demo：https://github.com/fanlv/ProtobufOnHttpGo
-一、编写Proto文件syntax = &quot;proto3&quot;;
+//return a+b
+//end
+var ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/30/go-lua-js/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Net"><i class="tag post-item-tag">Net</i></a><a href="/tags/HTPP"><i class="tag post-item-tag">HTPP</i></a><a href="/tags/Protobuf"><i class="tag post-item-tag">Protobuf</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/19/protobuf-on-http/">测试Protobuf在Http传输测试</a></h2><time class="has-text-grey" datetime="2018-08-19T10:08:37.000Z">2018-08-19</time><p class="is-flex-grow-2 mt-2">Demo：https://github.com/fanlv/ProtobufOnHttpGo
+ 一、编写Proto文件
+syntax = &quot;proto3&quot;;
 
 // 生成go代码
 //protoc --go_out=. user.proto
@@ -79,26 +103,36 @@ message BaseResponse{
 
 message User{
     string uid = 1;
-    string..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/19/protobuf-on-http/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/12/binary-tree/">二叉树、2-3 树、红黑树</a></h2><time class="has-text-grey" datetime="2018-08-12T07:29:52.000Z">2018-08-12</time><p class="is-flex-grow-2 mt-2">
+    stri..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/19/protobuf-on-http/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/08/12/binary-tree/">二叉树、2-3 树、红黑树</a></h2><time class="has-text-grey" datetime="2018-08-12T07:29:52.000Z">2018-08-12</time><p class="is-flex-grow-2 mt-2">
 有序数组的优势在于二分查找，链表的优势在于数据项的插入和数据项的删除。但是在有序数组中插入数据就会很慢，同样在链表中查找数据项效率就很低。综合以上情况，二叉树可以利用链表和有序数组的优势，同时可以合并有序数组和链表的优势，二叉树也是一种常用的数据结构。
 
-一、满二叉树一个二叉树，如果每一个层的结点数都达到最大值，则这个二叉树就是满二叉树。也就是说，如果一个二叉树的层数为 K，且结点总数是(2^k) -1 ，则它就是满二叉树。
+ 一、满二叉树
+一个二叉树，如果每一个层的结点数都达到最大值，则这个二叉树就是满二叉树。也就是说，如果一个二叉树的层数为 K，且结点总数是(2^k) -1 ，则它就是满二叉树。
 
-二、完全二叉树若设二叉树的深度为 h，除第 h 层外，其它各层 (1 ～ h-1) 的结点数都达到最大个数，第 h 层所有的结点都连续集中在最左边，这就是完全二叉树。
+ 二、完全二叉树
+若设二叉树的深度为 h，除第 h 层外，其它各层 (1 ～ h-1) 的结点数都达到最大个数，第 h 层所有的结点都连续集中在最左边，这就是完全二叉树。
 
-三、二叉查找树二叉查找树（Binary Search Tree），（又：二叉搜索树，二叉排序树）它或者是一棵空树..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/12/binary-tree/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/IO"><i class="tag post-item-tag">IO</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/15/server-io-model/">高并发服务器IO模型</a></h2><time class="has-text-grey" datetime="2018-07-15T12:20:04.000Z">2018-07-15</time><p class="is-flex-grow-2 mt-2">服务端IO模型总结 草稿
-网络框架视角零、Nginx
-一、Netty（主从Reactor）MainReactor负责客户端的连接请求，并将请求转交给SubReactor
+ 三、二叉查找树
+二叉查找树（Binary Search Tree），（又：二叉搜索树，二叉排序树）它或..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/08/12/binary-tree/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/IO"><i class="tag post-item-tag">IO</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/15/server-io-model/">高并发服务器IO模型</a></h2><time class="has-text-grey" datetime="2018-07-15T12:20:04.000Z">2018-07-15</time><p class="is-flex-grow-2 mt-2">服务端IO模型总结 草稿
+ 网络框架视角
+ 零、Nginx
+
+ 一、Netty（主从Reactor）
+MainReactor负责客户端的连接请求，并将请求转交给SubReactor
 SubReactor负责相应通道的IO读写请求
 非IO请求（具体逻辑处理）的任务则会直接写入队列，等待worker threads进行处理
 
 
 
-二、GRPC-GO （Goroutine Per Connection）net.Listen -&amp;gt; Serve() -&amp;gt; lis.Accept() net库的accept 
+
+ 二、GRPC-GO （Goroutine Per Connection）
+net.Listen -&amp;gt; Serve() -&amp;gt; lis.Accept() net库的accept 
 -&amp;gt; 一个连接开个一个goroutine -&amp;gt; s.handleRawConn(rawConn) 
--&amp;gt; newHTTP2Transport(conn, authInfo) -&amp;gt;  newH..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/15/server-io-model/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/iOS"><i class="tag post-item-tag">iOS</i></a><a href="/tags/GRPC"><i class="tag post-item-tag">GRPC</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/13/ios-grpc/">iOS之GRPC 测试（附代码）</a></h2><time class="has-text-grey" datetime="2018-07-13T13:30:25.000Z">2018-07-13</time><p class="is-flex-grow-2 mt-2">背景最近在用gRPC框架测试，想起去年调研Protocol Buffer在HTTP的时候传输，了解过这个框架，当时没深入。这次做gRPC服务器端，随便看下iOS这边实现方式，附上测试代码。
+-&amp;gt; newHTTP2Transport(conn, authInfo) -&amp;..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/15/server-io-model/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/iOS"><i class="tag post-item-tag">iOS</i></a><a href="/tags/GRPC"><i class="tag post-item-tag">GRPC</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/13/ios-grpc/">iOS之GRPC 测试（附代码）</a></h2><time class="has-text-grey" datetime="2018-07-13T13:30:25.000Z">2018-07-13</time><p class="is-flex-grow-2 mt-2"> 背景
+最近在用gRPC框架测试，想起去年调研Protocol Buffer在HTTP的时候传输，了解过这个框架，当时没深入。这次做gRPC服务器端，随便看下iOS这边实现方式，附上测试代码。
 demo地址： https://github.com/fanlv/gRPCDemo
-proto文件package user;
+ proto文件
+package user;
 
 message LoginRequest {
   string username = 1;
@@ -113,8 +147,10 @@ message BaseResponse{
 message User{
     string uid = 1;
     string name = 2;
-    string ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/13/ios-grpc/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/12/csrf/">跨域请求的几种解决方案</a></h2><time class="has-text-grey" datetime="2018-07-12T08:24:18.000Z">2018-07-12</time><p class="is-flex-grow-2 mt-2">需求背景最近做的Apigate优化，前端的同学要求能在配置后台页面上加上一键测试接口的功能，但是由于浏览器的同源策略防止跨域攻击，所以前端的页面默认是不能请求其他域名的接口。
-方案一 Nginx配置代理location /proxy {
+    str..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/13/ios-grpc/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/07/12/csrf/">跨域请求的几种解决方案</a></h2><time class="has-text-grey" datetime="2018-07-12T08:24:18.000Z">2018-07-12</time><p class="is-flex-grow-2 mt-2"> 需求背景
+最近做的Apigate优化，前端的同学要求能在配置后台页面上加上一键测试接口的功能，但是由于浏览器的同源策略防止跨域攻击，所以前端的页面默认是不能请求其他域名的接口。
+ 方案一 Nginx配置代理
+location /proxy {
    if ($arg_url) {
       proxy_pass $arg_url?;
     }
@@ -124,33 +160,43 @@ message User{
 http://nginxserver/proxy?url=http://10.23.39.140:8080/app/list
 
 这样前端需要什么测试什么接口只需要通过url传过来，Nginx会方向代理到对应的url上返回结果。
-但是这个方法有个问题，url中的地址支持IP访问，不支持域名的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/12/csrf/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Probability"><i class="tag post-item-tag">Probability</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/23/probability/">概率论基础</a></h2><time class="has-text-grey" datetime="2018-06-23T03:36:37.000Z">2018-06-23</time><p class="is-flex-grow-2 mt-2">样本空间与事件A⊂B 事件 B 包含了事件 A，A 被包含于 B
+但是这个方法有个问题，url中的地址支持IP访问，不支..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/07/12/csrf/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Probability"><i class="tag post-item-tag">Probability</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/23/probability/">概率论基础</a></h2><time class="has-text-grey" datetime="2018-06-23T03:36:37.000Z">2018-06-23</time><p class="is-flex-grow-2 mt-2"> 样本空间与事件
+A⊂B 事件 B 包含了事件 A，A 被包含于 B
 A∩B A 与 B 的交集，表示事件 A 和事件 B 同时发生
 A∪B A 与 B 的并集，表示事件 A 或事件 B 或他们二者同事发生
 P(A|B) 在事件 B 发生下，事件 A 发生的概率
 
-对偶公式
-随机事件运算（1）交换律：A∪B=B∪A、AB=BA
+ 对偶公式
+
+ 随机事件运算
+（1）交换律：A∪B=B∪A、AB=BA
 （2）结合律：( A∪B )∪C=A∪( B∪C )
 （3）分配律：A∪( BC )=( A∪B )( A∪C )A( B∪C )=( AB )∪( AC )
 （4）摩根律：A B=A∪B、A ∪ B=A B
-概率的三个基本性质
-二项系数
-蒙特卡罗（Monte Carlo）
-乘法公式P(AB)=P(B)P(A|B) = P(A)P(B|A)
-全概率公式
-贝叶斯公式（Bayes）
-</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/23/probability/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Calculus"><i class="tag post-item-tag">Calculus</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/22/calculus/">微积分基础</a></h2><time class="has-text-grey" datetime="2018-06-22T09:15:26.000Z">2018-06-22</time><p class="is-flex-grow-2 mt-2">导数(Derivatives)
+ 概率的三个基本性质
+
+ 二项系数
+
+ 蒙特卡罗（Monte Carlo）
+
+ 乘法公式
+P(AB)=P(B)P(A|B) = P(A)P(B|A)
+ 全概率公式
+
+ ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/23/probability/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Calculus"><i class="tag post-item-tag">Calculus</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/22/calculus/">微积分基础</a></h2><time class="has-text-grey" datetime="2018-06-22T09:15:26.000Z">2018-06-22</time><p class="is-flex-grow-2 mt-2"> 导数(Derivatives)
+
 导数是函数的局部性质。一个函数在某一点的导数描述了这个函数在这一点附近的变化率。如果函数的自变量和取值都是实数的话，函数在某一点的导数就是该函数所代表的曲线在这一点上的切线斜率。导数的本质是通过极限的概念对函数进行局部的线性逼近。例如在运动学中，物体的位移对于时间的导数就是物体的瞬时速度。
 
 一阶导数为 0 的时候，对应的值不是最大值（局部）就是最小值（局部）。
-求导规则加（减）法则：（f+g)'=f'+g'
+ 求导规则
+加（减）法则：（f+g)'=f'+g'
 乘法法则：（f*g)'=f'*g+g'*f
 除法法则：（f/g)'=(f'*g-g'*f)/g^2
 y = x^n =&amp;gt; dy/dx = nx^n-1
 y = sin(x) =&amp;gt; dy/dx = cos(x)
-y = e^x =&amp;gt; dy/dx = e^..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/22/calculus/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Statistics"><i class="tag post-item-tag">Statistics</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/19/statistics/">统计学基础</a></h2><time class="has-text-grey" datetime="2018-06-19T07:00:09.000Z">2018-06-19</time><p class="is-flex-grow-2 mt-2">最近休息在家无聊，整理下之前看的统计学的一些基础知识，方便以后查阅吧。
-基础名词
+y = e^x =&amp;gt; dy/dx ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/22/calculus/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Statistics"><i class="tag post-item-tag">Statistics</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/19/statistics/">统计学基础</a></h2><time class="has-text-grey" datetime="2018-06-19T07:00:09.000Z">2018-06-19</time><p class="is-flex-grow-2 mt-2">最近休息在家无聊，整理下之前看的统计学的一些基础知识，方便以后查阅吧。
+ 基础名词
+
 均值 （Mean），所有数相加出去数量。
 中位数 （Median）， 中间一个数，或者是中间的两个数相加除以 2
 众数 （Mode），出现次数最多的数。
@@ -163,20 +209,30 @@ y = e^x =&amp;gt; dy/dx = e^..</p><a class="button is-default mt-2 has-text-weig
 总体方差 （variance of a population）
 样本方差（Sample variance）
 
-基础概念和公式基础概念对应的数学符号：
-总体均值（Population Mea..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/19/statistics/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/08/simple-http/">深入浅出HTTP</a></h2><time class="has-text-grey" datetime="2018-06-08T08:19:47.000Z">2018-06-08</time><p class="is-flex-grow-2 mt-2">深入浅出HTTP一、什么是Http和TCP
+ 基础概念和公式
+ 基础概念对应的数学符号：
+
+ 总体均值（Populat..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/19/statistics/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/08/simple-http/">深入浅出HTTP</a></h2><time class="has-text-grey" datetime="2018-06-08T08:19:47.000Z">2018-06-08</time><p class="is-flex-grow-2 mt-2"> 深入浅出HTTP
+ 一、什么是Http和TCP
+
 HTTP（HyperText Transfer Protocol)超文本传输协议，是互联网上应用最为广泛的一种网络协议。所有的WWW文件都必须遵守这个标准。设计HTTP最初的目的是为了提供一种发布和接收HTML页面的方法。1960年美国人Ted Nelson构思了一种通过计算机处理文本信息的方法，并称之为超文本（hypertext）,这成为了HTTP超文本传输协议标准架构的发展根基。Ted Nelson组织协调万维网协会（World Wide Web Consortium）和互联网工程工作小组（Internet Engineering Task Force ）共同合作研究，最终发布了一系列的RFC，其中著名的RFC 2616定义了HTTP 1.1。
 
 
-TCP（T..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/08/simple-http/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a><a href="/tags/Net"><i class="tag post-item-tag">Net</i></a><a href="/tags/Protobuf"><i class="tag post-item-tag">Protobuf</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/03/protobuf-on-http-study/">Protobuf On HTTP 技术预研 （附代码）</a></h2><time class="has-text-grey" datetime="2018-06-03T13:01:29.000Z">2018-06-03</time><p class="is-flex-grow-2 mt-2">Protobuf 技术预研Demo地址：https://github.com/fanlv/ProtobufOnHttp
+T..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/08/simple-http/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/HTTP"><i class="tag post-item-tag">HTTP</i></a><a href="/tags/Net"><i class="tag post-item-tag">Net</i></a><a href="/tags/Protobuf"><i class="tag post-item-tag">Protobuf</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/03/protobuf-on-http-study/">Protobuf On HTTP 技术预研 （附代码）</a></h2><time class="has-text-grey" datetime="2018-06-03T13:01:29.000Z">2018-06-03</time><p class="is-flex-grow-2 mt-2"> Protobuf 技术预研
+Demo地址：https://github.com/fanlv/ProtobufOnHttp
 Demo地址：https://github.com/fanlv/ProtobufOnHttpGo
-一、背景现在客户端与服务器通讯主要通过Json来做数据交互，本次调研主要比较Protobuf项目中使用的优缺点，和可行性。
-二、Protobuf说明2.1 什么是ProtobufProtocolBuffer(以下简称PB)是google 的一种数据交换的格式，它独立于语言，独立于平台。大部分IM通讯协议都是使用PB来传输。具体代表性的有支付宝、微信等App。
-说白了，PB就是一种序列化协议，我们开发中想在什么场景中使用Protobuf做为数据交换的序列化协议，取决于自己的业务。
-2.2 Pro..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/03/protobuf-on-http-study/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/iOS"><i class="tag post-item-tag">iOS</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/02/ios-cookie/">iOS Cookie 存储相关技术</a></h2><time class="has-text-grey" datetime="2018-06-02T15:22:09.000Z">2018-06-02</time><p class="is-flex-grow-2 mt-2">iOS Cookie 存储相关技术一、什么是Cookie
- Cookie，有时也用其复数形式 Cookies，指某些网站为了辨别用户身份、进行 session 跟踪而储存在用户本地终端上的数据（通常经过加密）。定义于 RFC2109 和 2965 中的都已废弃，最新取代的规范是 RFC6265 [1]  。（可以叫做浏览器缓存）来自百度百科
+ 一、背景
+现在客户端与服务器通讯主要通过Json来做数据交互，本次调研主要比较Protobuf项目中使用的优缺点，和可行性。
+ 二、Protobuf说明
+ 2.1 什么是Protobuf
+ProtocolBuffer(以下简称PB)是google 的一种数据交换的格式，它独立于语言，独立于平台。
+大部分IM通讯协议都是使用PB来传输。具体代表性的有支付宝、微信等App。
+说白了，PB就是一种序列化协议，我们开发中想在什么场景中使用Protobuf做为数据交换的序列化协议，取决于自己的业务..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/03/protobuf-on-http-study/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/iOS"><i class="tag post-item-tag">iOS</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/06/02/ios-cookie/">iOS Cookie 存储相关技术</a></h2><time class="has-text-grey" datetime="2018-06-02T15:22:09.000Z">2018-06-02</time><p class="is-flex-grow-2 mt-2"> iOS Cookie 存储相关技术
+ 一、什么是Cookie
 
-说白了Cookie就是提供服务器存储相关数据到客户端的一种解决方案，服务器通过返回的Http头中告知客户端，我设置了Cookie，客户端收到请求以后，会读出Http响应的Header里面把对应的Cookie的key、value值持久化存到本地的Cookie文件，下次再请求服务器相关域名的接口中，会自动带上Cookie相关数据。当然客户端也可以主动设置、读取、删除这些C..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/02/ios-cookie/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container archives-widget is-in-archive-page"><h3>归档</h3><section><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/10/">十月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/08/">八月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/07/">七月 2024</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/02/">二月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/09/">九月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">7</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+Cookie，有时也用其复数形式 Cookies，指某些网站为了辨别用户身份、进行 session 跟踪而储存在用户本地终端上的数据（通常经过加密）。定义于 RFC2109 和 2965 中的都已废弃，最新取代的规范是 RFC6265 [1]  。（可以叫做浏览器缓存）来自百度百科
+
+说白了Cookie就是提供服务器存储相关数据到客户端的一种解决方案，服务器通过返回的Http头中告知客户端，我设置了Cookie，客户端收到请求以后，会读出Http响应的Header里面把对应的Cookie的key、value值持久化存到本地的Cookie文件，下次再请求服务器相关域名的接口中，会自动带上Cookie相关数据。当然客户端也可以主动设置、读取、删除..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/06/02/ios-cookie/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container archives-widget is-in-archive-page"><h3>归档</h3><section><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">二月 2025</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/10/">十月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/08/">八月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/07/">七月 2024</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/02/">二月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/09/">九月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">7</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
 
 window.addEventListener('resize', $claudia.throttle(function () {
     var images = document.querySelectorAll('.js-img-fadeIn')

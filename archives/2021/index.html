@@ -5,73 +5,82 @@ var hm = document.createElement("script");
 hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.2">
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
 </head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>归档 · 2021</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-7bac65b41e38666d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/12/18/golang-complier-optimize/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-7bac65b41e38666d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/Compiler"><i class="tag post-item-tag">Compiler</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/12/18/golang-complier-optimize/">Golang 编译器优化那些事</a></h2><time class="has-text-grey" datetime="2021-12-18T04:13:14.000Z">2021-12-18</time><p class="is-flex-grow-2 mt-2">
-
-
-
-一、背景去年写了一篇 Golang Memory Model 文章。当时在文章里面贴了验证一个线程可见性问题Demo，具体代码如下：
+ 一、背景
+去年写了一篇 Golang Memory Model 文章。当时在文章里面贴了验证一个线程可见性问题Demo，具体代码如下：
 func main() {
-    running := true
-    go func() {
-        println(&quot;start thread1&quot;)
-        count := 1
-        for running {
-            count++
-        }
-        println(&quot;end thread1: count =&quot;, count) // 这句代码永远执行不到为什么？
-    }()
-    go func() {
-        println(&quot;start thread2&quot;)
-        for..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/12/18/golang-complier-optimize/">更多</a></section></article><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-0ad11f9320e5eaf9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/07/25/linux-mem/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-0ad11f9320e5eaf9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/25/linux-mem/">Linux内核虚拟地址空间</a></h2><time class="has-text-grey" datetime="2021-07-25T13:16:01.000Z">2021-07-25</time><p class="is-flex-grow-2 mt-2">
+	running := true
+	go func() {
+		println(&quot;start thread1&quot;)
+		count := 1
+		for running {
+			count++
+		}
+		println(&quot;end thread1: count =&quot;, count) // 这句代码永远执行不到为什么？
+	}()
+	go func() {
+		println(&quot;start thread2&quot;)
+		for {
+			running = false
+		}
+	}()
+	time.Sleep(time.Hour)
+}
 
-x86-32位虚拟地址空间就我们所知，Linux内核一般将处理器的虚拟地址空间划分为两个部分。底部比较大的部分用于用户进程，顶部则专用于内核。虽然（在两个用户进程之间的）上下文切换期间会改变下半部分，但虚拟地址空间的内核部分总是保持不变。
-
+今年8月份的时..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/12/18/golang-complier-optimize/">更多</a></section></article><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-0ad11f9320e5eaf9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/07/25/linux-mem/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-0ad11f9320e5eaf9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/25/linux-mem/">Linux内核虚拟地址空间</a></h2><time class="has-text-grey" datetime="2021-07-25T13:16:01.000Z">2021-07-25</time><p class="is-flex-grow-2 mt-2">
+ x86-32位虚拟地址空间
+就我们所知，Linux内核一般将处理器的虚拟地址空间划分为两个部分。底部比较大的部分用于用户进程，顶部则专用于内核。虽然（在两个用户进程之间的）上下文切换期间会改变下半部分，但虚拟地址空间的内核部分总是保持不变。
 
 Linux将虚拟地址空间划分为：0~3G为用户空间，3~4G为内核空间
 
 
 
-
-
-
-
 点我查看原图
 
+ 用户地址空间
 
-用户地址空间
-
-保留区 - 0x08048000位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况。
-它并不是一个单一的内存区域，而是对地址空间中受到操作系统保护而禁止用户进程访问的地址区域的总称。大多数操作系统中，极小的地址通常都是不允许访问的，如NULL。C语言将无效指针赋值为0也是出于这..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/25/linux-mem/">更多</a></section></article><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-5a4f15ef8cd7c7b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/11/28/mysql-time/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-5a4f15ef8cd7c7b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/11/28/mysql-time/">MySQL DateTime和Timestamp时区问题</a></h2><time class="has-text-grey" datetime="2021-11-27T17:00:00.000Z">2021-11-28</time><p class="is-flex-grow-2 mt-2">
-
-
-一、背景最近负责一个数据传输的项目，其中一个需求就是能把一个DB里面的数据拉出来 ，然后回放到另外一个同构的DB。两个DB的服务不在一个时区（其实这不是重点），可能配置不同。之前有过类似的项目，当时是基建的同事负责做数据同步，同步过去以后DateTime、Timestamp字段的时区信息都丢了。老板让我调研下问题根因，不要踩之前的坑。
-最早的时候看了下同事写的当时MySQL时区信息丢失的问题总结文档，文档里面当时把DateTime和Timestamp两个时区问题混为一起了，也没分析本质原因，导致我当时没看太明白，然后的武断的认为，之所以时区丢失了，是因为基础组件同步DateTime和Timestamp的时候同步的是字符串，比如2021-11-27 10:49:35.857969这种信息，我们传输的时候..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/11/28/mysql-time/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/12/post-order/">遍历二叉树的几种思路</a></h2><time class="has-text-grey" datetime="2021-08-12T02:43:05.000Z">2021-08-12</time><p class="is-flex-grow-2 mt-2">一、背景最近在公司面试（一面、二面）候选人的时候，大多数候选人基本都能正确的写出非递归版的前序遍历和中序遍历二叉树，但是大多数人都不能正确的写出非递归版的后续遍历。跟一个曾经拿过NOI银牌同事私下讨论了下后续遍历算法到底难不难。结论是，说难也难说不难也不难，说不难是因为，如果你看过相关解法，你可以很快就就理解解法的思路。说难，是如果你没看过，或者看了过了很久又忘了，要在15分钟左右写个Bug free的版本还是有点难的。
+ 保留区 - 0x08048000
+位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况。
+它并不是一个单一的内存区域，而是对地址空间中受到操作系统保护而禁止用户进程访问的地址区域的总称。大多数操作系统中，极小的地址通常都是不允许访问的，如NULL。C语言将无效指针赋值为0也是出于这种考..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/25/linux-mem/">更多</a></section></article><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-5a4f15ef8cd7c7b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/11/28/mysql-time/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-5a4f15ef8cd7c7b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/11/28/mysql-time/">MySQL DateTime和Timestamp时区问题</a></h2><time class="has-text-grey" datetime="2021-11-27T17:00:00.000Z">2021-11-28</time><p class="is-flex-grow-2 mt-2">
+ 一、背景
+最近负责一个数据传输的项目，其中一个需求就是能把一个DB里面的数据拉出来 ，然后回放到另外一个同构的DB。两个DB的服务不在一个时区（其实这不是重点），可能配置不同。之前有过类似的项目，当时是基建的同事负责做数据同步，同步过去以后DateTime、Timestamp字段的时区信息都丢了。老板让我调研下问题根因，不要踩之前的坑。
+最早的时候看了下同事写的当时MySQL时区信息丢失的问题总结文档，文档里面当时把DateTime和Timestamp两个时区问题混为一起了，也没分析本质原因，导致我当时没看太明白，然后的武断的认为，之所以时区丢失了，是因为基础组件同步DateTime和Timestamp的时候同步的是字符串，比如2021-11-27 10:49:35.857969这种信息，我们传输的时候..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/11/28/mysql-time/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/12/post-order/">遍历二叉树的几种思路</a></h2><time class="has-text-grey" datetime="2021-08-12T02:43:05.000Z">2021-08-12</time><p class="is-flex-grow-2 mt-2"> 一、背景
+最近在公司面试（一面、二面）候选人的时候，大多数候选人基本都能正确的写出非递归版的前序遍历和中序遍历二叉树，但是大多数人都不能正确的写出非递归版的后续遍历。跟一个曾经拿过NOI银牌同事私下讨论了下后续遍历算法到底难不难。结论是，说难也难说不难也不难，说不难是因为，如果你看过相关解法，你可以很快就就理解解法的思路。说难，是如果你没看过，或者看了过了很久又忘了，要在15分钟左右写个Bug free的版本还是有点难的。
 跟同事讨论下二叉树遍历的几种写法，所以就有了这篇文章。
-二、二叉树几种解法的思考2.1 递归版前序遍历递归
+ 二、二叉树几种解法的思考
+ 2.1 递归版
+前序遍历递归
 func preOrderRecursion(node *TreeNode, ans *[]int) {
-    if node == nil {
-        return
-  ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/12/post-order/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/21/hackers-and-painters/">《黑客与画家》</a></h2><time class="has-text-grey" datetime="2021-09-21T05:23:17.000Z">2021-09-21</time><p class="is-flex-grow-2 mt-2">摘录与 《黑客与画家》
+	if node == nil {
+		return
+	}
 
+	..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/12/post-order/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/21/hackers-and-painters/">《黑客与画家》</a></h2><time class="has-text-grey" datetime="2021-09-21T05:23:17.000Z">2021-09-21</time><p class="is-flex-grow-2 mt-2">摘录与 《黑客与画家》
 
-第一章节：为什么书呆子不受欢迎首先这里“书呆子”指的“高智商”的人。
+ 第一章节：为什么书呆子不受欢迎
+首先这里“书呆子”指的“高智商”的人。
 解开这个谜的关键是把问题换一种提法。为什么聪明的小孩没有让自己变得受欢迎？如果他们真的很聪明，为什么找不到受欢迎的诀窍呢？他们在标准化测试中表现得这么好，为什么就不能在这方面也大获成功呢？
 有一种观点认为，其他小孩妒忌聪明学生，所以聪明的学生不可能受到欢迎。我倒希望这种解释是对的。回想起来，要是初中里真的有人妒忌我，那么他们一定费了很大力气才把这种妒忌隐藏得无法发现。而且，在任何情况下，如果聪明真的令他人妒忌，这反而会招来女生。因为女生喜欢被其他男生妒忌的男生。
-在我就读过的学校，聪明根本就是无足轻重的一样东西。同学们既不看重它，也不唾弃它。如果别的事情都相同，那么大家还是愿意自己变得聪明一点，因为这总比做个笨..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/21/hackers-and-painters/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/18/the-art-of-thinking-clearly/">《清醒思考的艺术》</a></h2><time class="has-text-grey" datetime="2021-09-17T16:00:00.000Z">2021-09-18</time><p class="is-flex-grow-2 mt-2">摘录与 《清醒思考的艺术》
+在我就读过的学校，聪明根本就是无足轻重的一样东西。同学们既不看重它，也不唾弃它。如果别的事情都相同，那么大家还是愿意自己变得聪明一点，因为这总比做个..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/21/hackers-and-painters/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/18/the-art-of-thinking-clearly/">《清醒思考的艺术》</a></h2><time class="has-text-grey" datetime="2021-09-17T16:00:00.000Z">2021-09-18</time><p class="is-flex-grow-2 mt-2">摘录与 《清醒思考的艺术》
 
-
-
-1. 幸存偏误为什么你该去逛逛墓地
+ 1. 幸存偏误
+为什么你该去逛逛墓地
 幸存偏误是指：由于日常生活中更容易看到成功、看不到失败，你会系统性地高估成功的希望。不了解现实的你（与雷托一样）对成功抱有一种幻想，认识不到成功的概率有多微弱。每位成功的作家背后都有100个作品卖不出去的作家，每个作品卖不出去的作家背后又有100个找不到出版社的作者，每个找不到出版社的作者背后又有数百个抽屉里沉睡着刚动笔的手稿的写作爱好者。而我们总是听到成功者的故事，认识不到作家的成功概率有多小。摄影师、企业家、艺术家、运动员、建筑师、诺贝尔奖得主、电视制作人和选美冠军的情况也是一样。媒体没兴趣去刨挖失败者的墓地，这事也不归他们负责。这意味着：要想缓解幸存偏误，你就得了解这些。
 幸存偏误意味着：你系统性地高估了成功概率。解决办法：尽可能常..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/18/the-art-of-thinking-clearly/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/09/11/the-courage-to-be-disliked/">《被讨厌的勇气》</a></h2><time class="has-text-grey" datetime="2021-09-11T12:39:35.000Z">2021-09-11</time><p class="is-flex-grow-2 mt-2">摘录与 《被讨厌的勇气》
 
-
-引言提出论点：“人可以改变，而且人人都可以获得幸福。”
+ 引言
+提出论点：“人可以改变，而且人人都可以获得幸福。”
 青年：世界是简单的，人生也是如此。假若这种命题中含有几分真理，那也是对于孩子的世界而言。孩子的世界没有劳动或纳税之类的现实义务，他们每天都在父母或社会的呵护下自由自在地生活，未来充满无限希望，自己也似乎无所不能。孩子们的眼睛被遮盖了，不必去面对丑恶的现实。的确，孩子眼中的世界呈现出简单的姿态。
 但是，随着年龄的增长，世界便逐渐露出真面目。人们不得不接受“我只不过如此”之类的现实，原以为等候在人生路上的一切“可能”都会变成“不可能”。幸福的浪漫主义季节转瞬即逝，残酷的现实主义时代终将到来。
-人一旦长大，就会被复杂的人际关系所困扰，被诸多的责任所牵绊。工作、家庭或者社会责任，一切都是。当然，孩提时代无法理解的歧视、战争或阶级之..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/11/the-courage-to-be-disliked/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/LinearAlgebra"><i class="tag post-item-tag">LinearAlgebra</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/18/mit-linear-algebra-1-3/">MIT - 线性代数</a></h2><time class="has-text-grey" datetime="2021-08-18T12:25:30.000Z">2021-08-18</time><p class="is-flex-grow-2 mt-2">一、Lesson 11.1 方程组的几何解释
+人一旦长大，就会被复杂的人际关系所困扰，被诸多的责任所牵绊。工作、家庭或者社会责任，一切都是。当然，孩提时代无法理解的歧视、战争或阶级..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/09/11/the-courage-to-be-disliked/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/LinearAlgebra"><i class="tag post-item-tag">LinearAlgebra</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/18/mit-linear-algebra-1-3/">MIT - 线性代数</a></h2><time class="has-text-grey" datetime="2021-08-18T12:25:30.000Z">2021-08-18</time><p class="is-flex-grow-2 mt-2"> 一、Lesson 1
+ 1.1 方程组的几何解释
+
 上面方程组我们可以写成矩阵形式
 
 上面的矩阵可以看成 Ax = b的形式 :
@@ -80,21 +89,25 @@ func preOrderRecursion(node *TreeNode, ans *[]int) {
 未知向量(x)：将方程未知数提取出来，按列构成一个向量。
 向量(b) ：将等号右侧结果按列提取，构成一个向量
 
-1.1.1 行图像在坐标系上画出“行图像”，可以知两个线交点就是我们要求的解
+ 1.1.1 行图像
+在坐标系上画出“行图像”，可以知两个线交点就是我们要求的解
 
-1.1.2 列图像从列图像的角度，我们再求这个方程可以看成矩阵：
+ 1.1.2 列图像
+从列图像的角度，我们再求这个方程可以看成矩阵：
 
 
 
-1.2 方程组的几何形式推广1.2.1 高维行图像我们将方程维数推广，从三维开始，如果我们继续做行图像求解，那么会的到一个很复杂的图像。
+ 1.2 方程组的几何形式推广
+ 1.2.1 高维行图像
+我们将方程维数推广，从三维开始，如果我们继续做行图像求解，那么会的到一个很复杂的图像。
 
 矩阵如下：
 
 
-如果绘制行图像，很明显这是一个三个平面相交得到一点，我们想直接看出 这个点的性质可谓是难上加难，比较靠谱的思路是先联..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/18/mit-linear-algebra-1-3/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/10/linux-45-lesson/">《操作系统实战 45 讲》</a></h2><time class="has-text-grey" datetime="2021-08-10T02:00:00.000Z">2021-08-10</time><p class="is-flex-grow-2 mt-2">
-
+如果绘制行图像，很明显这是一个三个平面相交得到一点，我们想直接看出 这个点的性质可谓是难上加..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/18/mit-linear-algebra-1-3/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/10/linux-45-lesson/">《操作系统实战 45 讲》</a></h2><time class="has-text-grey" datetime="2021-08-10T02:00:00.000Z">2021-08-10</time><p class="is-flex-grow-2 mt-2">
 摘录与 《操作系统45讲》
-操作系统实战 45 讲
+ 操作系统实战 45 讲
+
 
 
 
@@ -142,19 +155,20 @@ func preOrderRecursion(node *TreeNode, ans *[]int) {
 
 </p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/10/linux-45-lesson/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/01/golang-stack/">深入理解 Golang Stack</a></h2><time class="has-text-grey" datetime="2021-07-31T17:50:20.000Z">2021-08-01</time><p class="is-flex-grow-2 mt-2">
 
+ 一、基础知识
+ 1.1 Linux 虚拟地址空间布局
+我们知道CPU有实模式和保护模式，系统刚刚启动的时候是运行在实模式下，然后经过一系列初始化工作以后，Linux会把CPU的实模式改为保护模式（具体就是修改CPU的CR0寄存器相关标记位），在保护模式下，CPU访问的地址都是虚拟地址(逻辑地址)。Linux 为了每个进程维护了一个单独的虚拟地址空间，虚拟地址空间又分为“用户空间”和“内核空间”。 虚拟地址空间更多相关可以看Linux内核虚拟地址空间这篇文章。
 
 
+ 1.2 Golang 栈和虚拟地址空间栈的区别
+Golang 的内存管理是用的 TCMalloc（Thread-Caching Malloc）算法, 简单点说就是 Golang 是使用 mmap 函数去操作系统申请一大块内存，然后把内存按照..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/01/golang-stack/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Envoy"><i class="tag post-item-tag">Envoy</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/16/envoy-debug/">Envoy 编译调试</a></h2><time class="has-text-grey" datetime="2021-07-16T12:09:00.000Z">2021-07-16</time><p class="is-flex-grow-2 mt-2"> Debian9 上编译调试
+主要参考Envoy官方的Bazel编译文档
 
-
-一、基础知识1.1 Linux 虚拟地址空间布局我们知道CPU有实模式和保护模式，系统刚刚启动的时候是运行在实模式下，然后经过一系列初始化工作以后，Linux会把CPU的实模式改为保护模式（具体就是修改CPU的CR0寄存器相关标记位），在保护模式下，CPU访问的地址都是虚拟地址(逻辑地址)。Linux 为了每个进程维护了一个单独的虚拟地址空间，虚拟地址空间又分为“用户空间”和“内核空间”。 虚拟地址空间更多相关可以看Linux内核虚拟地址空间这篇文章。
-
-
-
-1.2 Golang 栈和虚拟地址空间栈的区别Golang 的内存管理是用的 TCMalloc（Thread-Caching Malloc）算法, 简单点说就是 Golang 是使用 mmap 函数去操作系统申请一大块内存，然后把内存按照 ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/01/golang-stack/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Envoy"><i class="tag post-item-tag">Envoy</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/16/envoy-debug/">Envoy 编译调试</a></h2><time class="has-text-grey" datetime="2021-07-16T12:09:00.000Z">2021-07-16</time><p class="is-flex-grow-2 mt-2">Debian9 上编译调试主要参考Envoy官方的Bazel编译文档
 
 下载bazelisk-linux-amd64
  sudo wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64
  sudo chmod +x /usr/local/bin/bazel
+
 
 
 安装依赖
@@ -167,50 +181,88 @@ func preOrderRecursion(node *TreeNode, ans *[]int) {
     make \
     ninja-build \
     patch \
-    ..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/16/envoy-debug/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/ETCD"><i class="tag post-item-tag">ETCD</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/04/11/etcd/">《ETCD实战》</a></h2><time class="has-text-grey" datetime="2021-04-11T02:00:35.000Z">2021-04-11</time><p class="is-flex-grow-2 mt-2">摘录与 《ETCD实战》
-背景ectd 常见问题
-etcd 基础
-etcd 实践
-etcd v2 功能
-etcd v2 存在的问题
+..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/16/envoy-debug/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/ETCD"><i class="tag post-item-tag">ETCD</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/04/11/etcd/">《ETCD实战》</a></h2><time class="has-text-grey" datetime="2021-04-11T02:00:35.000Z">2021-04-11</time><p class="is-flex-grow-2 mt-2">摘录与 《ETCD实战》
+ 背景
+ ectd 常见问题
+
+ etcd 基础
+
+ etcd 实践
+
+ etcd v2 功能
+
+ etcd v2 存在的问题
+
 
 第一，etcd v2 不支持范围查询和分页。分页对于数据较多的场景是必不可少的。在 Kubernetes 中，在集群规模增大后，Pod、Event 等资源可能会出现数千个以上，但是 etcd v2 不支持分页，不支持范围查询，大包等 expensive request 会导致严重的性能乃至雪崩问题。
 第二，etcd v2 不支持多 key 事务。在实际转账等业务场景中，往往我们需要在一个事务中同时更新多个 key。
-然后是 Watch 机制可靠性问题。Kubernetes 项目严重依赖 etcd Watch 机制，然而 etcd v2 是内存型、不支持保存 key 历史版本的..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/04/11/etcd/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/25/design-patterns/">《设计模式之美》</a></h2><time class="has-text-grey" datetime="2021-03-25T08:05:51.000Z">2021-03-25</time><p class="is-flex-grow-2 mt-2">摘录与 《设计模式之美》
-前言什么是设计模式设计模式讲的是如何写出可扩展、可读、可维护的高质量代码，所以，它们跟平时的编码会有直接的关系，也会直接影响到你的开发能力。
-为什么要学习设计模式
+然后是 Watch 机制可靠性问题。Kubernetes 项目严重依赖 etcd Watch 机制，然而 etcd v2 是内存型、不支持..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/04/11/etcd/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/25/design-patterns/">《设计模式之美》</a></h2><time class="has-text-grey" datetime="2021-03-25T08:05:51.000Z">2021-03-25</time><p class="is-flex-grow-2 mt-2">摘录与 《设计模式之美》
+ 前言
+ 什么是设计模式
+设计模式讲的是如何写出可扩展、可读、可维护的高质量代码，所以，它们跟平时的编码会有直接的关系，也会直接影响到你的开发能力。
+ 为什么要学习设计模式
+
 应对面试中的设计模式相关问题。学习设计模式和算法一样，最功利、最直接的目的，可能就是应对面试了。
-告别写被人吐槽的烂代码，代码能力是一个程序员最基础的能力，是基本功，是展示一个程序员基础素养的最直接的衡量标准。你写的代码，实际上就是你名片。我见过太多的烂代码，比如命名不规范、类设计不合理、分层不清晰、没有模块化概念、代码结构混乱、高度耦合等等。这样的代码维护起来非常费劲，添加或者修改一个功能，常常会牵一发而动全身，让你无从下手，恨不得将全部的代码删掉重写！当然，在这些年的工作经历中，我也看到过很多让我眼前一亮的代码。每当..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/25/design-patterns/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/11/clean-code/">《Clean Code》</a></h2><time class="has-text-grey" datetime="2021-03-11T15:50:08.000Z">2021-03-11</time><p class="is-flex-grow-2 mt-2">摘录与 《代码整洁之道》
-什么是整洁代码
+告别写被人吐槽的烂代码，代码能力是一个程序员最基础的能力，是基本功，是展示一个程序员基础素养的最直接的衡量标准。你写的代码，实际上就是你名片。我见过太多的烂代码，比如命名不规范、类设计不合理、分层不清晰、没有模块化概念、代码结构混乱、高度耦合等等。这样的代码维护起来非常费劲，添加或者修改一个功能，常常会牵一发而动全身，让你无从下手，恨不得将全部的代码删掉重写！当然，在这些年的工作经历中，我也看到过很多让我眼前一亮..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/25/design-patterns/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/11/clean-code/">《Clean Code》</a></h2><time class="has-text-grey" datetime="2021-03-11T15:50:08.000Z">2021-03-11</time><p class="is-flex-grow-2 mt-2">摘录与 《代码整洁之道》
+ 什么是整洁代码
+
 能通过所有测试；
 没有重复代码；
 体现系统中的全部设计理念；
 包括尽量少的实体，比如类、方法、函数等。
 
-童子军军规光把代码写好可不够。必须时时保持代码整洁。我们都见过代码随时间流逝而腐坏。我们应当更积极地阻止腐坏的发生。
+ 童子军军规
+光把代码写好可不够。必须时时保持代码整洁。我们都见过代码随时间流逝而腐坏。我们应当更积极地阻止腐坏的发生。
 让营地比你来时更干净。
-有意义的命名名副其实名副其实说起来简单。我们想要强调，这事很严肃。选个好名字要花时间，但省下来的时间比花掉的多。注意命名，而且一旦发现有更好的名称，就换掉旧的。这么做，读你代码的人（包括你自己）都会更开心。
+ 有意义的命名
+ 名副其实
+名副其实说起来简单。我们想要强调，这事很严肃。选个好名字要花时间，但省下来的时间比花掉的多。注意命名，而且一旦发现有更好的名称，就换掉旧的。这么做，读你代码的人（包括你自己）都会更开心。
 变量、函数或类的名称应该已经答复了所有的大问题。它该告诉你，它为什么会存在，它做什么事，应该怎么用。如果名称需要注释来补充，那就不算是名副其实。
-避免误导程序员必须避免留下掩藏代码本意的错误线索。应当避免使用与本意相悖..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/11/clean-code/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/10/30day-os/">《30天自制操作系统》</a></h2><time class="has-text-grey" datetime="2021-03-10T02:35:59.000Z">2021-03-10</time><p class="is-flex-grow-2 mt-2">30天自制操作系统启动区（boot sector）软盘第一个的扇区称为启动区。那么什么是扇区呢？计算机读写软盘的时候，并不是一个字节一个字节地读写的，而是以512字节为一个单位进行读写。因此,软盘的512字节就称为一个扇区。一张软盘的空间共有1440KB，也就是1474560字节，除以512得2880，这也就是说一张软盘共有2880个扇区。那为什么第一个扇区称为启动区呢？那是因为计算机首先从最初一个扇区开始读软盘，然后去检查这个扇区最后2个字节的内容。如果这最后2个字节不是0x55 AA，计算机会认为这张盘上没有所需的启动程序，就会报一个不能启动的错误。（也许有人会问为什么一定是0x55 AA呢？那是当初的设计者随便定的，笔者也没法解释）。如果计算机确认了第一个扇区的最后两个字节正好是0x55 AA，那它就..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/10/30day-os/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/26/clean-architecture/">《Clean Architecture》</a></h2><time class="has-text-grey" datetime="2021-02-26T15:50:08.000Z">2021-02-26</time><p class="is-flex-grow-2 mt-2">零、概述软件架构设计是一件非常困难的事情，这通常需要大多数程序员所不具备的经验和技能。同时，也不是所有人都愿意花时间来学习和钻研这个方向。做一个好的软件架构师所需要的自律和专注程度可能会让大部分程序员始料未及，更别提软件架构师这个职业本身的社会认同感与人们投身其中的热情了。
+ 避免误导
+程序员必须避免留下掩藏代码本意的错误线索。应..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/11/clean-code/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/10/30day-os/">《30天自制操作系统》</a></h2><time class="has-text-grey" datetime="2021-03-10T02:35:59.000Z">2021-03-10</time><p class="is-flex-grow-2 mt-2"> 30天自制操作系统
+ 启动区
+（boot sector）软盘第一个的扇区称为启动区。那么什么是扇区呢？计算机读写软
+盘的时候，并不是一个字节一个字节地读写的，而是以512字节为一个单位进行读
+写。因此,软盘的512字节就称为一个扇区。一张软盘的空间共有1440KB，也就是
+1474560字节，除以512得2880，这也就是说一张软盘共有2880个扇区。那为什么
+第一个扇区称为启动区呢？那是因为计算机首先从最初一个扇区开始读软盘，然
+后去检查这个扇区最后2个字节的内容。
+如果这最后2个字节不是0x55 AA，计算机会认为这张盘上没有所需的启动程序，就
+会报一个不能启动的错误。（也许有人会问为什么一定是0x55 AA呢？那是当初的
+设计者随便定的，笔者也没法解释）。如果计算机确认了第一个扇区的最后两个字
+节正..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/10/30day-os/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/26/clean-architecture/">《Clean Architecture》</a></h2><time class="has-text-grey" datetime="2021-02-26T15:50:08.000Z">2021-02-26</time><p class="is-flex-grow-2 mt-2"> 零、概述
+软件架构设计是一件非常困难的事情，这通常需要大多数程序员所不具备的经验和技能。同时，也不是所有人都愿意花时间来学习和钻研这个方向。做一个好的软件架构师所需要的自律和专注程度可能会让大部分程序员始料未及，更别提软件架构师这个职业本身的社会认同感与人们投身其中的热情了。
 采用好的软件架构可以大大节省软件项目构建与维护的人力成本。让每次变更都短小简单，易于实施，并且避免缺陷，用最小的成本，最大程度地满足功能性和灵活性的要求。
-0.1 设计与架构究竟是什么？一直以来，设计（Design）与架构（Architecture）这两个概念让大多数人十分迷惑——什么是设计？什么是架构？二者究竟有什么区别？
-本书的一个重要目标就是要清晰、明确地对二者进行定义。首先我要明确地说，二者没有任何区别。一丁点区别都没有！
-“架..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/26/clean-architecture/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/11/mysql-insert-lock/">MySQL Insert 死锁问题研究</a></h2><time class="has-text-grey" datetime="2021-02-10T17:36:27.000Z">2021-02-11</time><p class="is-flex-grow-2 mt-2">背景不想看废话的，建议直接去最后看死锁的本质原因。
-问题背景线上一个很简单结构的表，报insert死锁，这个表基本上只有insert操作，所以引出一个问题insert 和insert之间为什么会死锁？
+ 0.1 设计与架构究竟是什么？
+一直以来，设计（Design）与架构（Architecture）这两个概念让大多数人十分迷惑——什么是设计？什么是架构？二者究竟有什么区别？
+本书的一个重要目标就是要清晰、明确地对二者进行定义。首先我要明确地说，二者没有任何区别。一丁点区别都没有..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/26/clean-architecture/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/MySQL"><i class="tag post-item-tag">MySQL</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/11/mysql-insert-lock/">MySQL Insert 死锁问题研究</a></h2><time class="has-text-grey" datetime="2021-02-10T17:36:27.000Z">2021-02-11</time><p class="is-flex-grow-2 mt-2"> 背景
+不想看废话的，建议直接去最后看死锁的本质原因。
+ 问题背景
+线上一个很简单结构的表，报insert死锁，这个表基本上只有insert操作，所以引出一个问题insert 和insert之间为什么会死锁？
 顺便说下我们线上库的隔离级别都是RC，日志格式是ROW，我下面所有测试都是在RC下。
 *** (1) TRANSACTION:
 TRANSACTION 2404187192, ACTIVE 0 sec inserting
 mysql tables in use 1, locked 1
 LOCK WAIT 8 lock struct(s), heap size 1136, 2 row lock(s)
-MySQL thread id 118913019, OS thread handle 140411115681..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/11/mysql-insert-lock/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Redis"><i class="tag post-item-tag">Redis</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/10/reids-action/">《Redis核心技术与实战》</a></h2><time class="has-text-grey" datetime="2021-02-10T10:32:31.000Z">2021-02-10</time><p class="is-flex-grow-2 mt-2">数据结构Redis数据结构简单来说，底层数据结构一共有 6 种，分别是简单动态字符串、双向链表、压缩列表、哈希表、跳表和整数数组。它们和数据类型的对应关系如下图所示：
+MySQL thread id 118913019, OS thread handle 14041111..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/11/mysql-insert-lock/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Redis"><i class="tag post-item-tag">Redis</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/10/reids-action/">《Redis核心技术与实战》</a></h2><time class="has-text-grey" datetime="2021-02-10T10:32:31.000Z">2021-02-10</time><p class="is-flex-grow-2 mt-2"> 数据结构
+ Redis数据结构
+简单来说，底层数据结构一共有 6 种，分别是简单动态字符串、双向链表、压缩列表、哈希表、跳表和整数数组。它们和数据类型的对应关系如下图所示：
 
-全局哈希表
+ 全局哈希表
+
 因为这个哈希表保存了所有的键值对，所以，我也把它称为全局哈希表。哈希表的最大好处很明显，就是让我们可以用 O(1) 的时间复杂度来快速查找到键值对——我们只需要计算键的哈希值，就可以知道它所对应的哈希桶位置，然后就可以访问相应的 entry 元素。
-渐进式 rehash简单来说就是在第二步拷贝数据时，Redis 仍然正常处理客户端请求，每处理一个请求时，从哈希表 1 中的第一个索引位置开始，顺带着将这个索引位置上的所有 entries 拷贝到哈希表 2 中；等处理下一个请求时，再顺带拷贝哈希表 1 中的下一个索引位置的 entr..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/10/reids-action/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Eng-Practices"><i class="tag post-item-tag">Eng-Practices</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/08/ddd/">DDD-领域驱动设计</a></h2><time class="has-text-grey" datetime="2021-02-08T07:56:00.000Z">2021-02-08</time><p class="is-flex-grow-2 mt-2">一、DDD的基础概念1.1 什么是 DDD
-2004 年埃里克·埃文斯（Eric Evans）发表了《领域驱动设计》（Domain-Driven Design –Tackling Complexity in the Heart of Software）这本书，从此领域驱动设计（Domain Driven Design，简称 DDD）诞生。DDD 核心思想是通过领域驱动设计方法定义领域模型，从而确定业务和应用边界，保证业务模型与代码模型的一致性。领域驱动设计，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。领域驱动设计这个概念并不新颖，早在 2004 年就被提出了，到现在已经有十几年的历史了。不过，它被大众熟知，还是基于另一个概念的兴起，那就是微服务。不过，我个人觉得，领域驱动设计有点..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/08/ddd/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Chip"><i class="tag post-item-tag">Chip</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/05/sya-chip/">《说透芯片》</a></h2><time class="has-text-grey" datetime="2021-07-05T02:00:00.000Z">2021-07-05</time><p class="is-flex-grow-2 mt-2">基础知识晶体管想了解晶体管，你得先了解它的“前身”——电子管。电子管是中文翻译后的名称，英文原文其实是真空管。从这个名字，你可以想象，它其实是把参与工作的金属薄片，也就是电极，封装在一个真空的容器内，真空容器一般指的是玻璃瓶。
+ 渐进式 rehash
+简单来说就是在第二步拷贝数据时，Redis 仍然正常处理客户端请求，每处理一个请求时，从哈希表 1 中的第一个索引位置开始，顺带着将这个索引位置上的所有 entries 拷贝到哈希表 2 中；等处理下一个请求时，再顺带拷贝哈希表 1 中的下一个索引..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/10/reids-action/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Eng-Practices"><i class="tag post-item-tag">Eng-Practices</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/08/ddd/">DDD-领域驱动设计</a></h2><time class="has-text-grey" datetime="2021-02-08T07:56:00.000Z">2021-02-08</time><p class="is-flex-grow-2 mt-2"> 一、DDD的基础概念
+ 1.1 什么是 DDD
+
+2004 年埃里克·埃文斯（Eric Evans）发表了《领域驱动设计》（Domain-Driven Design –Tackling Complexity in the Heart of Software）这本书，从此领域驱动设计（Domain Driven Design，简称 DDD）诞生。DDD 核心思想是通过领域驱动设计方法定义领域模型，从而确定业务和应用边界，保证业务模型与代码模型的一致性。
+领域驱动设计，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。领域驱动设计这个概念并不新颖，早在 2004 年就被提出了，到现在已经有十几年的历史了。不过，它被大众熟知，还是基于另一个概念的兴起，那就是微服务。
+不过，我个人觉得，领域..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/08/ddd/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Chip"><i class="tag post-item-tag">Chip</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/05/sya-chip/">《说透芯片》</a></h2><time class="has-text-grey" datetime="2021-07-05T02:00:00.000Z">2021-07-05</time><p class="is-flex-grow-2 mt-2"> 基础知识
+ 晶体管
+想了解晶体管，你得先了解它的“前身”——电子管。电子管是中文翻译后的名称，英文原文其实是真空管。从这个名字，你可以想象，它其实是把参与工作的金属薄片，也就是电极，封装在一个真空的容器内，真空容器一般指的是玻璃瓶。
 整个电子行业，并不是从芯片开始的，而是从电子管开始。电子管最鼎盛时期的代表作，就是世界上的第一台电子计算机。这台 1946 年诞生的电子计算机，占地 150 平方米，重达 30 吨，里面的电路使用了 17468 只电子管、7200 只电阻、10000 只电容、50 万条线。
 这台计算机虽然运算速度不快，但基本具备了现代计算机的主要结构和功能，这也是电子管能达到的最高成就了。其实从上图你也可以看出来，电子管最大的缺点就是，真空容器对于电子产品来说体积太大了。
-如果人类停留在电子管技术上..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/05/sya-chip/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container archives-widget is-in-archive-page"><h3>归档</h3><section><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/10/">十月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/08/">八月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/07/">七月 2024</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/02/">二月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/09/">九月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">7</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+如果人类停留在电子..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/05/sya-chip/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container archives-widget is-in-archive-page"><h3>归档</h3><section><ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/02/">二月 2025</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/12/">十二月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/10/">十月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/09/">九月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/08/">八月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/07/">七月 2024</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/06/">六月 2024</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2024/02/">二月 2024</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/09/">九月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/07/">七月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/06/">六月 2023</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/05/">五月 2023</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/04/">四月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/03/">三月 2023</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/02/">二月 2023</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2023/01/">一月 2023</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/12/">十二月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/11/">十一月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/10/">十月 2022</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/09/">九月 2022</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/08/">八月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/07/">七月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/06/">六月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/05/">五月 2022</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/03/">三月 2022</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/12/">十二月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/11/">十一月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/09/">九月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/08/">八月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/07/">七月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/02/">二月 2021</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/12/">十二月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/08/">八月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/06/">六月 2020</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/01/">一月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">十月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">九月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">八月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">七月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">7</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
 
 window.addEventListener('resize', $claudia.throttle(function () {
     var images = document.querySelectorAll('.js-img-fadeIn')

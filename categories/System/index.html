@@ -5,55 +5,62 @@ var hm = document.createElement("script");
 hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.2">
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
 </head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>分类 · System</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><header class="is-relative is-flex"><div class="post-cover-backdrop is-hidden"><img src="https://upload-images.jianshu.io/upload_images/12321605-0ad11f9320e5eaf9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.."></div><a class="post-cover-link has-text-centered skeleton" href="/2021/07/25/linux-mem/"><img class="post-cover-img js-img-fadeIn" src="https://upload-images.jianshu.io/upload_images/12321605-0ad11f9320e5eaf9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="loading.." data-backdrop="true"></a></header><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/25/linux-mem/">Linux内核虚拟地址空间</a></h2><time class="has-text-grey" datetime="2021-07-25T13:16:01.000Z">2021-07-25</time><p class="is-flex-grow-2 mt-2">
-
-x86-32位虚拟地址空间就我们所知，Linux内核一般将处理器的虚拟地址空间划分为两个部分。底部比较大的部分用于用户进程，顶部则专用于内核。虽然（在两个用户进程之间的）上下文切换期间会改变下半部分，但虚拟地址空间的内核部分总是保持不变。
-
+ x86-32位虚拟地址空间
+就我们所知，Linux内核一般将处理器的虚拟地址空间划分为两个部分。底部比较大的部分用于用户进程，顶部则专用于内核。虽然（在两个用户进程之间的）上下文切换期间会改变下半部分，但虚拟地址空间的内核部分总是保持不变。
 
 Linux将虚拟地址空间划分为：0~3G为用户空间，3~4G为内核空间
 
 
 
-
-
-
-
 点我查看原图
 
+ 用户地址空间
 
-用户地址空间
-
-保留区 - 0x08048000位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况。
-它并不是一个单一的内存区域，而是对地址空间中受到操作系统保护而禁止用户进程访问的地址区域的总称。大多数操作系统中，极小的地址通常都是不允许访问的，如NULL。C语言将无效指针赋值为0也是出于这..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/25/linux-mem/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/06/23/os-eight-legged-essay/">操作系统基础</a></h2><time class="has-text-grey" datetime="2023-06-23T02:00:18.000Z">2023-06-23</time><p class="is-flex-grow-2 mt-2">其他 OS 相关技术沉淀文章
+ 保留区 - 0x08048000
+位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况。
+它并不是一个单一的内存区域，而是对地址空间中受到操作系统保护而禁止用户进程访问的地址区域的总称。大多数操作系统中，极小的地址通常都是不允许访问的，如NULL。C语言将无效指针赋值为0也是出于这种考..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/25/linux-mem/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/06/23/os-eight-legged-essay/">操作系统基础</a></h2><time class="has-text-grey" datetime="2023-06-23T02:00:18.000Z">2023-06-23</time><p class="is-flex-grow-2 mt-2">其他 OS 相关技术沉淀文章
 
 Linux内核虚拟地址空间
 Linux0.11启动过程
 
-一、基础1.1 进程、线程、协程区别
+ 一、基础
+ 1.1 进程、线程、协程区别
+
 进程：进程是操作系统管理和调度的基本单位，拥有独立的内存空间和系统资源，通常适用于不同程序的并发执行。
 线程：进程内的执行单位，共享相同的内存空间和资源，适用于一个程序内部的并发和多任务处理。
 协程：编程语言实现的轻量级线程，在单个线程上实现多任务的协作式并发，适用于高并发场景和异步任务处理。
 
-1.2 进程、线程上下文切换进程上下文切换开销：
-进程上下文切换涉及保存当前运行进程的CPU寄存器状态、程序计数器、堆栈指针、内存管理信息（如页表）等，并恢复新进程的上下文信息。这些操作会带来很大的开销，因为：
+ 1.2 进程、线程上下文切换
+进程上下文切换开销：
+进程上下文切换涉及保存当前运行进程的**CPU寄存器状态、程序计数器、堆栈指针、内存管理信息（如页表）**等，并恢复新进程的上下文信息。这些操作会带来很大的开销，因为：
 
-上下文切换需要CPU从用户态切换到内核态，导致额外的运行时间。
-需要保存和恢..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/06/23/os-eight-legged-essay/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/12/25/linux-start-up/">Linux0.11启动过程</a></h2><time class="has-text-grey" datetime="2022-12-24T16:00:00.000Z">2022-12-25</time><p class="is-flex-grow-2 mt-2">零、概览首先申明，下面启动过程是基于 Linux 0.11 源码的分析的结果
+上下文切换需要CPU从用户态切换到内核态，导致额外的运行..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/06/23/os-eight-legged-essay/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/12/25/linux-start-up/">Linux0.11启动过程</a></h2><time class="has-text-grey" datetime="2022-12-24T16:00:00.000Z">2022-12-25</time><p class="is-flex-grow-2 mt-2"> 零、概览
+首先申明，下面启动过程是基于 Linux 0.11 源码的分析的结果
 Linux 0.11 源码
 
-开机CPU的PC(x86也叫IP)寄存器内容固定初始化为0xFFFF0（地址为BIOS的ROM程序地址）。开机会首先执行ROM中的程序。 
-BIOS的ROM程序会读取硬盘启动区（第一扇区512字节）的bootscet程序到内存的0x7c00位置 
-把从bootscet程序从 0x7c00 到 0x90000，历史兼容原因只能先写到0x7c00，然后再复制到0x90000为什么主引导记录的内存地址是0x7C00？。 
-设置ds、es、ss 几个寄存器的基地址为0x9000，sp设置为0xFF00。 
-把操作系统setup和system两个程序加载到内存中。 
-把system代码复制到零地址处，覆盖掉0x..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/12/25/linux-start-up/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/ebpf"><i class="tag post-item-tag">ebpf</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/11/05/study-ebpf/">《eBPF 核心技术与实战》</a></h2><time class="has-text-grey" datetime="2022-11-05T02:32:28.000Z">2022-11-05</time><p class="is-flex-grow-2 mt-2">概览eBPF 是什么呢？ 从它的全称“扩展的伯克利数据包过滤器 (Extended Berkeley Packet Filter)” 来看，它是一种数据包过滤技术，是从 BPF (Berkeley Packet Filter) 技术扩展而来的。
+开机CPU的PC(x86也叫IP)寄存器内容固定初始化为0xFFFF0（地址为BIOS的ROM程序地址）。开机会首先执行ROM中的程序。
+
+BIOS的ROM程序会读取硬盘启动区（第一扇区512字节）的bootscet程序到内存的0x7c00位置
+
+把从bootscet程序从 0x7c00 到 0x90000，历史兼容原因只能先写到0x7c00，然后再复制到0x90000为什么主引导记录的内存地址是0x7C00？。
+
+设置ds、es、ss 几个寄存器的基地址为0x9000，sp设置为0xFF00。
+
+把操作系统setup和system两个程序加载到内存中。
+
+把system代码复制到零地址处，覆盖掉..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/12/25/linux-start-up/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/ebpf"><i class="tag post-item-tag">ebpf</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2022/11/05/study-ebpf/">《eBPF 核心技术与实战》</a></h2><time class="has-text-grey" datetime="2022-11-05T02:32:28.000Z">2022-11-05</time><p class="is-flex-grow-2 mt-2"> 概览
+eBPF 是什么呢？ 从它的全称“扩展的伯克利数据包过滤器 (Extended Berkeley Packet Filter)” 来看，它是一种数据包过滤技术，是从 BPF (Berkeley Packet Filter) 技术扩展而来的。
 BPF 提供了一种在内核事件和用户程序事件发生时安全注入代码的机制，这就让非内核开发人员也可以对内核进行控制。随着内核的发展，BPF 逐步从最初的数据包过滤扩展到了网络、内核、安全、跟踪等，而且它的功能特性还在快速发展中，这种扩展后的 BPF 被简称为 eBPF（相应的，早期的 BPF 被称为经典 BPF，简称 cBPF）。实际上，现代内核所运行的都是 eBPF，如果没有特殊说明，内核和开源社区中提到的 BPF 等同于 eBPF。
-tcpdump 和 BCC 之所以..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/11/05/study-ebpf/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/10/linux-45-lesson/">《操作系统实战 45 讲》</a></h2><time class="has-text-grey" datetime="2021-08-10T02:00:00.000Z">2021-08-10</time><p class="is-flex-grow-2 mt-2">
-
+tcpdump 和 BCC 之..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2022/11/05/study-ebpf/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/08/10/linux-45-lesson/">《操作系统实战 45 讲》</a></h2><time class="has-text-grey" datetime="2021-08-10T02:00:00.000Z">2021-08-10</time><p class="is-flex-grow-2 mt-2">
 摘录与 《操作系统45讲》
-操作系统实战 45 讲
+ 操作系统实战 45 讲
 
 
 
@@ -99,7 +106,21 @@ tcpdump 和 BCC 之所以..</p><a class="button is-default mt-2 has-text-weight-
 
 
 
-</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/10/linux-45-lesson/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/10/30day-os/">《30天自制操作系统》</a></h2><time class="has-text-grey" datetime="2021-03-10T02:35:59.000Z">2021-03-10</time><p class="is-flex-grow-2 mt-2">30天自制操作系统启动区（boot sector）软盘第一个的扇区称为启动区。那么什么是扇区呢？计算机读写软盘的时候，并不是一个字节一个字节地读写的，而是以512字节为一个单位进行读写。因此,软盘的512字节就称为一个扇区。一张软盘的空间共有1440KB，也就是1474560字节，除以512得2880，这也就是说一张软盘共有2880个扇区。那为什么第一个扇区称为启动区呢？那是因为计算机首先从最初一个扇区开始读软盘，然后去检查这个扇区最后2个字节的内容。如果这最后2个字节不是0x55 AA，计算机会认为这张盘上没有所需的启动程序，就会报一个不能启动的错误。（也许有人会问为什么一定是0x55 AA呢？那是当初的设计者随便定的，笔者也没法解释）。如果计算机确认了第一个扇区的最后两个字节正好是0x55 AA，那它就..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/10/30day-os/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-in-action/">《Linux内核技术实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2">Page Cache什么是 Page Cache？
+
+</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/08/10/linux-45-lesson/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/10/30day-os/">《30天自制操作系统》</a></h2><time class="has-text-grey" datetime="2021-03-10T02:35:59.000Z">2021-03-10</time><p class="is-flex-grow-2 mt-2"> 30天自制操作系统
+ 启动区
+（boot sector）软盘第一个的扇区称为启动区。那么什么是扇区呢？计算机读写软
+盘的时候，并不是一个字节一个字节地读写的，而是以512字节为一个单位进行读
+写。因此,软盘的512字节就称为一个扇区。一张软盘的空间共有1440KB，也就是
+1474560字节，除以512得2880，这也就是说一张软盘共有2880个扇区。那为什么
+第一个扇区称为启动区呢？那是因为计算机首先从最初一个扇区开始读软盘，然
+后去检查这个扇区最后2个字节的内容。
+如果这最后2个字节不是0x55 AA，计算机会认为这张盘上没有所需的启动程序，就
+会报一个不能启动的错误。（也许有人会问为什么一定是0x55 AA呢？那是当初的
+设计者随便定的，笔者也没法解释）。如果计算机确认了第一个扇区的最后两个字
+节正..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/10/30day-os/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-in-action/">《Linux内核技术实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2"> Page Cache
+ 什么是 Page Cache？
+
 通过这张图片你可以清楚地看到，红色的地方就是 Page Cache，很明显，Page Cache 是内核管理的内存，也就是说，它属于内核不属于用户。
 $ cat /proc/meminfo
 ...
@@ -111,17 +132,25 @@ Inactive:         979432 kB
 Active(anon):    6173036 kB
 Inactive(anon):   927932 kB
 Active(file):      51196 kB
-Inactive(..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-in-action/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-optimize/">《Linux性能优化实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2">CPU性能篇uptime 什么是平均负载？简单来说，平均负载是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。这里我先解释下，可运行状态和不可中断状态这俩词儿。
+Inact..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-in-action/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/13/linux-optimize/">《Linux性能优化实战》</a></h2><time class="has-text-grey" datetime="2020-09-13T02:00:00.000Z">2020-09-13</time><p class="is-flex-grow-2 mt-2"> CPU性能篇
+ uptime 什么是平均负载？
+简单来说，平均负载是指单位时间内，系统处于可运行状态和不可中断状态的平均进程数，也就是平均活跃进程数，它和 CPU 使用率并没有直接关系。这里我先解释下，可运行状态和不可中断状态这俩词儿。
 所谓可运行状态的进程，是指正在使用 CPU 或者正在等待 CPU 的进程，也就是我们常用 ps 命令看到的，处于 R 状态（Running 或 Runnable）的进程。
 不可中断状态的进程则是正处于内核态关键流程中的进程，并且这些流程是不可打断的，比如最常见的是等待硬件设备的 I/O 响应，也就是我们在 ps 命令中看到的 D 状态（Uninterruptible Sleep，也称为 Disk Sleep）的进程。
-比如，当一个进程向磁盘读写数据时，为了保证数据的一致性，在得到..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-optimize/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/07/16/computer-organization/">《深入浅出计算机组成原理》</a></h2><time class="has-text-grey" datetime="2020-07-16T02:00:00.000Z">2020-07-16</time><p class="is-flex-grow-2 mt-2">基础篇计算机的基本硬件组成
+比如，当一个进程向磁盘读写数据时，为了保证数据的一致性..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/13/linux-optimize/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/07/16/computer-organization/">《深入浅出计算机组成原理》</a></h2><time class="has-text-grey" datetime="2020-07-16T02:00:00.000Z">2020-07-16</time><p class="is-flex-grow-2 mt-2"> 基础篇
+ 计算机的基本硬件组成
+
 第一，广。组成原理中的概念非常多，每个概念的信息量也非常大。比如想要理解 CPU 中的算术逻辑单元（也就是 ALU）是怎么实现加法的，需要牵涉到如何把整数表示成二进制，还需要了解这些表示背后的电路、逻辑门、CPU 时钟、触发器等知识。
 第二，深。组成原理中的很多概念，阐述开来就是计算机学科的另外一门核心课程。比如，计算机的指令是怎么从你写的 C、Java 这样的高级语言，变成计算机可以执行的机器码的？如果我们展开并深入讲解这个问题，就会变成《编译原理》这样一门核心课程。
-第三，学不能致用。学东西是要拿来用的，但因为这门课本身的属性，很多人在学习时，常常沉溺于概念和理论中，无法和自己日常的开发工作联系起来，以此来解决工作中遇到的问题，所以，学习往往没有成就感，就很难有动力坚持下去。..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/07/16/computer-organization/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Chip"><i class="tag post-item-tag">Chip</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/05/sya-chip/">《说透芯片》</a></h2><time class="has-text-grey" datetime="2021-07-05T02:00:00.000Z">2021-07-05</time><p class="is-flex-grow-2 mt-2">基础知识晶体管想了解晶体管，你得先了解它的“前身”——电子管。电子管是中文翻译后的名称，英文原文其实是真空管。从这个名字，你可以想象，它其实是把参与工作的金属薄片，也就是电极，封装在一个真空的容器内，真空容器一般指的是玻璃瓶。
+第三，学不能致用。学东西是要拿来用的，但因为这门课本身的属性，很多人在学习时，常常沉溺于概念和理论中，无法和自己日常的开发工作联系起来，以此来解决工作中遇到的问题，所以，学习往往没有成就感，就很难有动力坚..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/07/16/computer-organization/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Chip"><i class="tag post-item-tag">Chip</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/07/05/sya-chip/">《说透芯片》</a></h2><time class="has-text-grey" datetime="2021-07-05T02:00:00.000Z">2021-07-05</time><p class="is-flex-grow-2 mt-2"> 基础知识
+ 晶体管
+想了解晶体管，你得先了解它的“前身”——电子管。电子管是中文翻译后的名称，英文原文其实是真空管。从这个名字，你可以想象，它其实是把参与工作的金属薄片，也就是电极，封装在一个真空的容器内，真空容器一般指的是玻璃瓶。
 整个电子行业，并不是从芯片开始的，而是从电子管开始。电子管最鼎盛时期的代表作，就是世界上的第一台电子计算机。这台 1946 年诞生的电子计算机，占地 150 平方米，重达 30 吨，里面的电路使用了 17468 只电子管、7200 只电阻、10000 只电容、50 万条线。
 这台计算机虽然运算速度不快，但基本具备了现代计算机的主要结构和功能，这也是电子管能达到的最高成就了。其实从上图你也可以看出来，电子管最大的缺点就是，真空容器对于电子产品来说体积太大了。
-如果人类停留在电子管技术上..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/05/sya-chip/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/11/08/memory-page-and-addressing/">内存管理、寻址方式那些事</a></h2><time class="has-text-grey" datetime="2018-11-08T06:05:56.000Z">2018-11-08</time><p class="is-flex-grow-2 mt-2">一、内存1.1 什么是内存　　简单地说，内存就是一个数据货架。内存有一个最小的存储单位，大多数都是一个字节。内存用内存地址（memory address）来为每个字节的数据顺序编号。因此，内存地址说明了数据在内存中的位置。内存地址从0开始，每次增加1。这种线性增加的存储器地址称为线性地址（linear address）。
-　　内存地址的编号有上限。地址空间的范围和地址总线（address bus）的位数直接相关。CPU通过地址总线来向内存说明想要存取数据的地址。以英特尔32位的80386型CPU为例，这款CPU有32个针脚可以传输地址信息。每个针脚对应了一位。如果针脚上是高电压，那么这一位是1。如果是低电压，那么这一位是0。32位的电压高低信息通过地址总线传到内存的32个针脚，内存就能把电压高低信息转换成3..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/11/08/memory-page-and-addressing/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Note/">Note</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+如果人类停留在电子..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/07/05/sya-chip/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/Memory"><i class="tag post-item-tag">Memory</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2018/11/08/memory-page-and-addressing/">内存管理、寻址方式那些事</a></h2><time class="has-text-grey" datetime="2018-11-08T06:05:56.000Z">2018-11-08</time><p class="is-flex-grow-2 mt-2"> 一、内存
+ 1.1 什么是内存
+简单地说，内存就是一个数据货架。内存有一个最小的存储单位，大多数都是一个字节。内存用内存地址（memory address）来为每个字节的数据顺序编号。因此，内存地址说明了数据在内存中的位置。内存地址从0开始，每次增加1。这种线性增加的存储器地址称为线性地址（linear address）。
+内存地址的编号有上限。地址空间的范围和地址总线（address bus）的位数直接相关。CPU通过地址总线来向内存说明想要存取数据的地址。以英特尔32位的80386型CPU为例，这款CPU有32个针脚可以传输地址信息。每个针脚对应了一位。如果针脚上是高电压，那么这一位是1。如果是低电压，那么这一位是0。32位的电压高低信息通过地址总线传到内存的32个针脚，内存就能把电压高低信息转换成3..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2018/11/08/memory-page-and-addressing/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Note/">Note</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
 
 window.addEventListener('resize', $claudia.throttle(function () {
     var images = document.querySelectorAll('.js-img-fadeIn')

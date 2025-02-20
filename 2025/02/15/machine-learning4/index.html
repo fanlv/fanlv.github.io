@@ -1,0 +1,524 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《机器学习》笔记四 - 决策树</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+ 4.1 基本流程
+决策树是一种直观、类似“问答式”的分类方法，其基本思想就是通过一系列简单的判断（例如“这个瓜的颜色是不是青绿？”、“这个瓜的根蒂形状如何？”）一步步把样本分类。
+
+ 4.1.1 决策树的基本概念
+
+
+树结构：决策树由“结点”和“分支”组成。
+
+根结点：放着所有的样本，表示开始决策的起点。
+内部结点：每个内部结点对应一个“属性测试”，例如“色泽是否青绿？”。
+叶结点：当经过一系列属性测试后到达的结点，叶结点直接给出最终的分类结果，比如“好瓜”或“坏瓜”。
+
+
+
+决策过程：从根结点开始，根据样本在各个属性上的取值，沿着相应的分支不断向下走，直到到达叶结点，这一路上问的问题就构成了一个“测试序列”。
+
+
+
+ 4.1.2 决策树如何“学习”
+决策树学习的目标是从训练数据中自动生成这样一棵树，使.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+<style>mjx-container[jax="SVG"] {
+  direction: ltr;
+}
+
+mjx-container[jax="SVG"] > svg {
+  overflow: visible;
+}
+
+mjx-container[jax="SVG"][display="true"] {
+  display: block;
+  text-align: center;
+  margin: 1em 0;
+}
+
+mjx-container[jax="SVG"][justify="left"] {
+  text-align: left;
+}
+
+mjx-container[jax="SVG"][justify="right"] {
+  text-align: right;
+}
+
+g[data-mml-node="merror"] > g {
+  fill: red;
+  stroke: red;
+}
+
+g[data-mml-node="merror"] > rect[data-background] {
+  fill: yellow;
+  stroke: none;
+}
+
+g[data-mml-node="mtable"] > line[data-line] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > rect[data-frame] {
+  stroke-width: 70px;
+  fill: none;
+}
+
+g[data-mml-node="mtable"] > .mjx-dashed {
+  stroke-dasharray: 140;
+}
+
+g[data-mml-node="mtable"] > .mjx-dotted {
+  stroke-linecap: round;
+  stroke-dasharray: 0,140;
+}
+
+g[data-mml-node="mtable"] > svg {
+  overflow: visible;
+}
+
+[jax="SVG"] mjx-tool {
+  display: inline-block;
+  position: relative;
+  width: 0;
+  height: 0;
+}
+
+[jax="SVG"] mjx-tool > mjx-tip {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+mjx-tool > mjx-tip {
+  display: inline-block;
+  padding: .2em;
+  border: 1px solid #888;
+  font-size: 70%;
+  background-color: #F8F8F8;
+  color: black;
+  box-shadow: 2px 2px 5px #AAAAAA;
+}
+
+g[data-mml-node="maction"][data-toggle] {
+  cursor: pointer;
+}
+
+mjx-status {
+  display: block;
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  min-width: 25%;
+  padding: .2em .4em;
+  border: 1px solid #888;
+  font-size: 90%;
+  background-color: #F8F8F8;
+  color: black;
+}
+
+foreignObject[data-mjx-xml] {
+  font-family: initial;
+  line-height: normal;
+  overflow: visible;
+}
+
+.MathJax path {
+  stroke-width: 3;
+}
+
+mjx-container[display="true"] {
+  overflow: auto hidden;
+}
+
+mjx-container[display="true"] + br {
+  display: none;
+}
+</style></head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《机器学习》笔记四 - 决策树</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#41-%E5%9F%BA%E6%9C%AC%E6%B5%81%E7%A8%8B"><span class="toc-text"> 4.1 基本流程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#411-%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="toc-text"> 4.1.1 决策树的基本概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#412-%E5%86%B3%E7%AD%96%E6%A0%91%E5%A6%82%E4%BD%95%E5%AD%A6%E4%B9%A0"><span class="toc-text"> 4.1.2 决策树如何“学习”</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E8%BF%87%E7%A8%8B%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%AD%A5%E9%AA%A4"><span class="toc-text"> 学习过程的基本步骤：</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#413-%E9%80%92%E5%BD%92%E4%B8%8E%E5%88%86%E8%80%8C%E6%B2%BB%E4%B9%8B"><span class="toc-text"> 4.1.3 递归与“分而治之”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#414-%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="toc-text"> 4.1.4 一个简单的例子</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-%E5%88%92%E5%88%86%E9%80%89%E6%8B%A9"><span class="toc-text"> 4.2 划分选择</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#421-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E9%80%89%E6%8B%A9%E5%88%92%E5%88%86%E5%B1%9E%E6%80%A7"><span class="toc-text"> 4.2.1 为什么需要选择划分属性？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#422-%E4%BB%80%E4%B9%88%E6%98%AF%E4%BF%A1%E6%81%AF%E7%86%B5entropy"><span class="toc-text"> 4.2.2 什么是信息熵（Entropy）？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#423-%E5%A6%82%E4%BD%95%E5%88%A9%E7%94%A8%E4%BF%A1%E6%81%AF%E7%86%B5%E9%80%89%E6%8B%A9%E5%B1%9E%E6%80%A7"><span class="toc-text"> 4.2.3 如何利用信息熵选择属性？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#424-%E4%BE%8B%E5%AD%90%E8%AF%B4%E6%98%8E"><span class="toc-text"> 4.2.4 例子说明</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#425-%E4%BF%A1%E6%81%AF%E5%A2%9E%E7%9B%8A%E7%9A%84%E7%BC%BA%E7%82%B9%E4%B8%8E%E5%A2%9E%E7%9B%8A%E7%8E%87%E7%9A%84%E5%BC%95%E5%85%A5"><span class="toc-text"> 4.2.5 信息增益的缺点与增益率的引入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#426-%E5%9F%BA%E5%B0%BC%E6%8C%87%E6%95%B0gini-index"><span class="toc-text"> 4.2.6 基尼指数（Gini Index）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#427-%E5%B0%8F%E7%BB%93"><span class="toc-text"> 4.2.7 小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#43-%E5%89%AA%E6%9E%9D%E5%A4%84%E7%90%86"><span class="toc-text"> 4.3 剪枝处理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#431-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%89%AA%E6%9E%9D"><span class="toc-text"> 4.3.1 为什么要剪枝？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#432-%E9%A2%84%E5%89%AA%E6%9E%9Dpre-pruning"><span class="toc-text"> 4.3.2 预剪枝（Pre-pruning）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#433-%E5%90%8E%E5%89%AA%E6%9E%9Dpost-pruning"><span class="toc-text"> 4.3.3 后剪枝（Post-pruning）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#434-%E4%B8%80%E4%B8%AA%E7%9B%B4%E8%A7%82%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="toc-text"> 4.3.4 一个直观的例子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#435-%E6%80%BB%E7%BB%93"><span class="toc-text"> 4.3.5 总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#44-%E8%BF%9E%E7%BB%AD%E4%B8%8E%E7%BC%BA%E5%A4%B1%E5%80%BC"><span class="toc-text"> 4.4 连续与缺失值</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#441-%E8%BF%9E%E7%BB%AD%E5%80%BC%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-text"> 4.4.1 连续值的处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%A4%84%E7%90%86%E8%BF%9E%E7%BB%AD%E5%80%BC"><span class="toc-text"> 为什么要处理连续值？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E8%BF%9E%E7%BB%AD%E5%B1%9E%E6%80%A7"><span class="toc-text"> 如何处理连续属性？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#442-%E7%BC%BA%E5%A4%B1%E5%80%BC%E7%9A%84%E5%A4%84%E7%90%86"><span class="toc-text"> 4.4.2 缺失值的处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%A4%84%E7%90%86%E7%BC%BA%E5%A4%B1%E5%80%BC"><span class="toc-text"> 为什么要处理缺失值？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E7%BC%BA%E5%A4%B1%E5%80%BC"><span class="toc-text"> 如何处理缺失值？</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#443-%E5%B0%8F%E7%BB%93"><span class="toc-text"> 4.4.3 小结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#45-%E5%A4%9A%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91"><span class="toc-text"> 4.5 多变量决策树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#451-%E4%BC%A0%E7%BB%9F%E5%8D%95%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E7%89%B9%E7%82%B9"><span class="toc-text"> 4.5.1 传统（单变量）决策树的特点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#452-%E5%A4%9A%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E6%80%9D%E6%83%B3"><span class="toc-text"> 4.5.2 多变量决策树的思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#453-%E5%A4%9A%E5%8F%98%E9%87%8F%E5%86%B3%E7%AD%96%E6%A0%91%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-text"> 4.5.3 多变量决策树的优势</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#454-%E4%B8%BE%E4%B8%AA%E4%BE%8B%E5%AD%90"><span class="toc-text"> 4.5.4 举个例子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#455-%E6%80%BB%E7%BB%93"><span class="toc-text"> 4.5.5 总结</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/AI"><i class="tag post-item-tag">AI</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《机器学习》笔记四 - 决策树</h1><time class="has-text-grey" datetime="2025-02-15T02:00:58.000Z">2025-02-15</time><article class="mt-2 post-content"><input type="hidden" name="hidden" id="hidden_id1" value="fanlv_blog_hidden_recenet_list">
+<h2 id="41-基本流程"><a class="markdownIt-Anchor" href="#41-基本流程"></a> 4.1 基本流程</h2>
+<p>决策树是一种直观、类似“问答式”的分类方法，其基本思想就是通过一系列简单的判断（例如“这个瓜的颜色是不是青绿？”、“这个瓜的根蒂形状如何？”）一步步把样本分类。</p>
+<hr>
+<h3 id="411-决策树的基本概念"><a class="markdownIt-Anchor" href="#411-决策树的基本概念"></a> 4.1.1 决策树的基本概念</h3>
+<ul>
+<li>
+<p><strong>树结构</strong>：决策树由“结点”和“分支”组成。</p>
+<ul>
+<li><strong>根结点</strong>：放着所有的样本，表示开始决策的起点。</li>
+<li><strong>内部结点</strong>：每个内部结点对应一个“属性测试”，例如“色泽是否青绿？”。</li>
+<li><strong>叶结点</strong>：当经过一系列属性测试后到达的结点，叶结点直接给出最终的分类结果，比如“好瓜”或“坏瓜”。</li>
+</ul>
+</li>
+<li>
+<p><strong>决策过程</strong>：从根结点开始，根据样本在各个属性上的取值，沿着相应的分支不断向下走，直到到达叶结点，这一路上问的问题就构成了一个“测试序列”。</p>
+</li>
+</ul>
+<hr>
+<h3 id="412-决策树如何学习"><a class="markdownIt-Anchor" href="#412-决策树如何学习"></a> 4.1.2 决策树如何“学习”</h3>
+<p>决策树学习的目标是从训练数据中自动生成这样一棵树，使得它能对未见过的新样本也做出正确分类。整个过程采用了“分而治之”的策略，简单说就是“把问题不断地拆分”。</p>
+<h4 id="学习过程的基本步骤"><a class="markdownIt-Anchor" href="#学习过程的基本步骤"></a> 学习过程的基本步骤：</h4>
+<ol>
+<li>
+<p><strong>开始于所有数据的根结点</strong>：把所有训练样本放在一个结点里。</p>
+</li>
+<li>
+<p><strong>判断是否停止划分</strong>：</p>
+<ul>
+<li>如果当前结点里的所有样本都属于同一类别，就不用再分了，直接把这个结点标记为该类别的叶结点。</li>
+<li>如果当前结点中样本在所有属性上都取相同的值，或者没有属性可用来进一步划分，也就无法区分，那么就把这个结点作为叶结点，其类别由当前样本中数量最多的类别决定。</li>
+</ul>
+</li>
+<li>
+<p><strong>选择最佳的划分属性</strong>：</p>
+<ul>
+<li>从当前可用的属性集合中，选择一个最能将样本“分开”的属性，这个过程类似于“找出最有区分度的问题”。</li>
+</ul>
+</li>
+<li>
+<p><strong>递归地构造子树</strong>：</p>
+<ul>
+<li>根据所选属性的不同取值，把当前结点的样本分到不同的子结点。</li>
+<li>对于每个子结点，再重复上述过程，即继续判断是否停止划分、选择最佳属性，然后递归构建决策树。</li>
+</ul>
+</li>
+<li>
+<p><strong>处理特殊情况</strong>：</p>
+<ul>
+<li>如果某个分支没有样本（即当前测试结果下没有数据），通常会把该分支的叶结点类别设为父结点中样本最多的类别。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h3 id="413-递归与分而治之"><a class="markdownIt-Anchor" href="#413-递归与分而治之"></a> 4.1.3 递归与“分而治之”</h3>
+<p>整个决策树的生成过程其实是一个递归过程，每次都把一个问题（即一个结点的样本分类问题）拆分成更小的问题（子结点上的分类问题），直到无法再拆分为止。</p>
+<ul>
+<li><strong>停止条件</strong>：
+<ol>
+<li>当前结点的所有样本都属于同一类别（决策已完成）。</li>
+<li>没有更多的属性可以用来划分，或者样本在所有属性上的取值都一样（无法进一步区分）。</li>
+<li>当前结点没有样本（这时通常参考父结点的分布来决定类别）。</li>
+</ol>
+</li>
+</ul>
+<hr>
+<h3 id="414-一个简单的例子"><a class="markdownIt-Anchor" href="#414-一个简单的例子"></a> 4.1.4 一个简单的例子</h3>
+<p>假设我们要判断“这是个好瓜吗？”，决策树可能会这样工作：</p>
+<ol>
+<li><strong>根结点</strong>：开始时考虑所有瓜。</li>
+<li><strong>第一个测试</strong>：判断瓜的“色泽”。如果是“青绿”，沿着一条分支；如果不是，则走另一条分支。</li>
+<li><strong>第二个测试</strong>：在“青绿”这一分支上，进一步判断“根蒂形态”。例如，如果根蒂是“蜷缩”的，就继续往下判断；否则，可能直接做出决策。</li>
+<li><strong>叶结点</strong>：最终在一条测试路径的尽头，给出判断结果，比如“好瓜”或“坏瓜”。</li>
+</ol>
+<p>通过这种方式，决策树将复杂的分类问题拆分成一系列简单的判断，既符合人类直观的决策思路，又便于计算机通过递归自动生成模型。</p>
+<hr>
+<p><strong>一句话总结</strong>：</p>
+<p>决策树就是通过不断提问（每个问题对应一个属性测试），把数据一步步拆分，直到每条路径（从根到叶）都能给出明确的分类结果，从而实现对新样本的判断。</p>
+<h2 id="42-划分选择"><a class="markdownIt-Anchor" href="#42-划分选择"></a> 4.2 划分选择</h2>
+<h3 id="421-为什么需要选择划分属性"><a class="markdownIt-Anchor" href="#421-为什么需要选择划分属性"></a> 4.2.1 为什么需要选择划分属性？</h3>
+<p>在构建决策树时，我们希望通过不断地“提问”将数据拆分成纯度更高的子集。</p>
+<ul>
+<li><strong>纯度高</strong>：意味着一个子集中大部分样本都属于同一个类别。</li>
+<li><strong>目标</strong>：每次选择一个属性来划分数据，使得划分后每个分支中的数据“混乱度”降低，即更容易判断最终的类别。</li>
+</ul>
+<hr>
+<h3 id="422-什么是信息熵entropy"><a class="markdownIt-Anchor" href="#422-什么是信息熵entropy"></a> 4.2.2 什么是信息熵（Entropy）？</h3>
+<ul>
+<li><strong>信息熵</strong>是用来衡量一个数据集“混乱”程度的指标。</li>
+<li>计算公式为<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Ent</mtext><mo stretchy="false">(</mo><mi>D</mi><mo stretchy="false">)</mo><mo>=</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi mathvariant="normal">∣</mi><mi mathvariant="script">Y</mi><mi mathvariant="normal">∣</mi></mrow></munderover><msub><mi>p</mi><mi>k</mi></msub><msub><mo><mi>log</mi><mo>⁡</mo></mo><mn>2</mn></msub><msub><mi>p</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">\text{Ent}(D) = -\sum_{k=1}^{|\mathcal{Y}|} p_k \log_2 p_k
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Ent</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:3.2631180000000004em;vertical-align:-1.302113em;"></span><span class="mord">−</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.961005em;"><span style="top:-1.8478869999999998em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.0500049999999996em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.386005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∣</span><span class="mord mtight"><span class="mord mathcal mtight" style="margin-right:0.08222em;">Y</span></span><span class="mord mtight">∣</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.302113em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop"><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.20696799999999996em;"><span style="top:-2.4558600000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.24414em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+其中，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>k</mi></msub></mrow><annotation encoding="application/x-tex">p_k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是数据集中属于第 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69444em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span></span></span></span> 类的比例。</li>
+<li><strong>直观理解</strong>：
+<ul>
+<li>如果一个数据集中各类别分布均匀，熵值高，说明数据很“混乱”；</li>
+<li>如果大部分数据都来自同一类别，熵值低，说明数据很“纯”。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="423-如何利用信息熵选择属性"><a class="markdownIt-Anchor" href="#423-如何利用信息熵选择属性"></a> 4.2.3 如何利用信息熵选择属性？</h3>
+<p>假设我们有一个数据集 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span></span> 和一个候选属性 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">a</span></span></span></span>（这个属性可能有多个取值），我们用 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">a</span></span></span></span> 将 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span></span> 分成 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>V</mi></mrow><annotation encoding="application/x-tex">V</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.22222em;">V</span></span></span></span> 个子集 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>D</mi><mn>1</mn></msup><mo separator="true">,</mo><msup><mi>D</mi><mn>2</mn></msup><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msup><mi>D</mi><mi>V</mi></msup></mrow><annotation encoding="application/x-tex">D^1, D^2, \ldots, D^V</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.035771em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413309999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span></span></span></span></span></span></span></span>。</p>
+<ul>
+<li>对每个子集 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>D</mi><mi>v</mi></msup></mrow><annotation encoding="application/x-tex">D^v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span></span></span></span> 也能计算出其信息熵 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext>Ent</mtext><mo stretchy="false">(</mo><msup><mi>D</mi><mi>v</mi></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{Ent}(D^v)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Ent</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span>。</li>
+<li>然后，我们计算用属性 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">a</span></span></span></span> 划分前后的“信息变化”，称为<strong>信息增益</strong>：<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Gain</mtext><mo stretchy="false">(</mo><mi>D</mi><mo separator="true">,</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><mtext>Ent</mtext><mo stretchy="false">(</mo><mi>D</mi><mo stretchy="false">)</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>v</mi><mo>=</mo><mn>1</mn></mrow><mi>V</mi></munderover><mfrac><mrow><mi mathvariant="normal">∣</mi><msup><mi>D</mi><mi>v</mi></msup><mi mathvariant="normal">∣</mi></mrow><mrow><mi mathvariant="normal">∣</mi><mi>D</mi><mi mathvariant="normal">∣</mi></mrow></mfrac><mtext>Ent</mtext><mo stretchy="false">(</mo><msup><mi>D</mi><mi>v</mi></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{Gain}(D, a) = \text{Ent}(D) - \sum_{v=1}^{V} \frac{|D^v|}{|D|} \text{Ent}(D^v)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Gain</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">a</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Ent</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:3.0954490000000003em;vertical-align:-1.267113em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283360000000002em;"><span style="top:-1.882887em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.267113em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord">∣</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord text"><span class="mord">Ent</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7143919999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+<ul>
+<li><strong>意思</strong>：原始数据集的熵减去划分后各子集熵的加权平均值。</li>
+<li>信息增益越大，说明用这个属性划分后数据的混乱度降低得越多，也就是子集更纯。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="424-例子说明"><a class="markdownIt-Anchor" href="#424-例子说明"></a> 4.2.4 例子说明</h3>
+<p>以西瓜数据集为例：</p>
+<ul>
+<li>整个数据集 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>D</mi></mrow><annotation encoding="application/x-tex">D</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span></span> 的熵约为 0.998（表示还挺混乱的）。</li>
+<li>如果我们用“色泽”这个属性进行划分，会产生三个子集，每个子集的熵分别计算出来，再加权平均后减去原始熵，得到的信息增益约为 0.109。</li>
+<li>类似地，可以计算其他属性的信息增益。</li>
+<li>通常我们选择信息增益最大的属性作为当前节点的划分属性，从而得到最大的纯度提升。</li>
+</ul>
+<hr>
+<h3 id="425-信息增益的缺点与增益率的引入"><a class="markdownIt-Anchor" href="#425-信息增益的缺点与增益率的引入"></a> 4.2.5 信息增益的缺点与增益率的引入</h3>
+<p><strong>问题</strong>：</p>
+<ul>
+<li>某些属性如果取值太多（比如“编号”这种，每个样本都是唯一的），划分后每个子集可能只有一个样本，熵自然为 0，导致信息增益非常高。</li>
+<li>但这样的划分没有意义，因为它不能推广到新的数据上，容易导致过拟合。</li>
+</ul>
+<p><strong>解决方法：增益率</strong></p>
+<ul>
+<li>
+<p><strong>增益率</strong>（Gain Ratio）就是用来修正这一问题的。</p>
+</li>
+<li>
+<p>定义：</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Gain_ratio</mtext><mo stretchy="false">(</mo><mi>D</mi><mo separator="true">,</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><mfrac><mrow><mtext>Gain</mtext><mo stretchy="false">(</mo><mi>D</mi><mo separator="true">,</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><mrow><mtext>IV</mtext><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">\text{Gain\_ratio}(D, a) = \frac{\text{Gain}(D, a)}{\text{IV}(a)}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">Gain_ratio</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">a</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.363em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">IV</span></span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mclose">)</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord text"><span class="mord">Gain</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">a</span><span class="mclose">)</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<p>其中，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mtext>IV</mtext><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{IV}(a)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">IV</span></span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mclose">)</span></span></span></span> 称为<strong>固有值</strong>，计算公式为</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>IV</mtext><mo stretchy="false">(</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>v</mi><mo>=</mo><mn>1</mn></mrow><mi>V</mi></munderover><mfrac><mrow><mi mathvariant="normal">∣</mi><msup><mi>D</mi><mi>v</mi></msup><mi mathvariant="normal">∣</mi></mrow><mrow><mi mathvariant="normal">∣</mi><mi>D</mi><mi mathvariant="normal">∣</mi></mrow></mfrac><msub><mo><mi>log</mi><mo>⁡</mo></mo><mn>2</mn></msub><mfrac><mrow><mi mathvariant="normal">∣</mi><msup><mi>D</mi><mi>v</mi></msup><mi mathvariant="normal">∣</mi></mrow><mrow><mi mathvariant="normal">∣</mi><mi>D</mi><mi mathvariant="normal">∣</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">\text{IV}(a) = -\sum_{v=1}^{V} \frac{|D^v|}{|D|} \log_2 \frac{|D^v|}{|D|}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">IV</span></span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:3.0954490000000003em;vertical-align:-1.267113em;"></span><span class="mord">−</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283360000000002em;"><span style="top:-1.882887em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.267113em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord">∣</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop"><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.20696799999999996em;"><span style="top:-2.4558600000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.24414em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord">∣</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+</li>
+<li>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li>固有值反映了属性 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">a</span></span></span></span> 本身的取值“分散”程度，取值越多，固有值通常越大。</li>
+<li>增益率就是把信息增益除以固有值，这样能减少对那些取值很多但泛化能力差的属性的偏好。</li>
+</ul>
+</li>
+<li>
+<p><strong>C4.5 算法</strong>（一种著名的决策树算法）就是先用信息增益筛选出较好的候选属性，再用增益率来最终确定最佳属性。</p>
+</li>
+</ul>
+<hr>
+<h3 id="426-基尼指数gini-index"><a class="markdownIt-Anchor" href="#426-基尼指数gini-index"></a> 4.2.6 基尼指数（Gini Index）</h3>
+<ul>
+<li><strong>背景</strong>：<br>
+除了信息熵，CART决策树则常用另一种指标——基尼指数。</li>
+<li><strong>公式</strong>：<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Gini</mtext><mo stretchy="false">(</mo><mi>D</mi><mo stretchy="false">)</mo><mo>=</mo><mn>1</mn><mo>−</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mrow><mi mathvariant="normal">∣</mi><mi mathvariant="script">Y</mi><mi mathvariant="normal">∣</mi></mrow></munderover><msubsup><mi>p</mi><mi>k</mi><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\text{Gini}(D)=1 - \sum_{k=1}^{|\mathcal{Y}|}p_k^2
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Gini</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:3.2631180000000004em;vertical-align:-1.302113em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.961005em;"><span style="top:-1.8478869999999998em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.0500049999999996em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.386005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">∣</span><span class="mord mtight"><span class="mord mathcal mtight" style="margin-right:0.08222em;">Y</span></span><span class="mord mtight">∣</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.302113em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8641079999999999em;"><span style="top:-2.4530000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03148em;">k</span></span></span><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.247em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+</li>
+<li><strong>解释</strong>：<br>
+基尼指数反映了从数据集中随机抽取两个样本，类别不同的概率。数值越小，说明数据越纯。</li>
+<li><strong>划分选择</strong>：<br>
+当使用属性 (a) 划分数据时，对应的基尼指数为：<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Gini_index</mtext><mo stretchy="false">(</mo><mi>D</mi><mo separator="true">,</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>v</mi><mo>=</mo><mn>1</mn></mrow><mi>V</mi></munderover><mfrac><mrow><mi mathvariant="normal">∣</mi><msup><mi>D</mi><mi>v</mi></msup><mi mathvariant="normal">∣</mi></mrow><mrow><mi mathvariant="normal">∣</mi><mi>D</mi><mi mathvariant="normal">∣</mi></mrow></mfrac><mtext>Gini</mtext><mo stretchy="false">(</mo><msup><mi>D</mi><mi>v</mi></msup><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{Gini\_index}(D, a)=\sum_{v=1}^{V}\frac{|D^v|}{|D|}\text{Gini}(D^v)
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.06em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">Gini_index</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">a</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:3.0954490000000003em;vertical-align:-1.267113em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283360000000002em;"><span style="top:-1.882887em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.267113em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mord">∣</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∣</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord text"><span class="mord">Gini</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7143919999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span></p>
+在候选属性中，我们通常选择使得基尼指数最小的属性来作为最佳划分属性。</li>
+</ul>
+<hr>
+<h3 id="427-小结"><a class="markdownIt-Anchor" href="#427-小结"></a> 4.2.7 小结</h3>
+<ul>
+<li><strong>决策树划分选择的关键</strong>在于找到那个能让子集变得“最纯”的属性。</li>
+<li><strong>信息熵</strong>用来衡量数据集的混乱程度；</li>
+<li><strong>信息增益</strong>衡量划分前后纯度提升的效果；</li>
+<li><strong>增益率</strong>进一步修正了信息增益在属性取值过多时可能带来的偏好问题。</li>
+<li>通过这样的指标，我们能一步步构建出一棵具有良好泛化能力的决策树模型。</li>
+</ul>
+<h2 id="43-剪枝处理"><a class="markdownIt-Anchor" href="#43-剪枝处理"></a> 4.3 剪枝处理</h2>
+<p>剪枝是决策树防止“过拟合”的一种方法。简单来说，决策树在学习过程中可能会“学得太细”，把训练数据中的噪音和偶然性当成了规律，这样生成的树在面对新数据时往往表现不好。剪枝的目的就是在决策树生成后，有选择地删去一些不必要的分支，让树变得更简单、更泛化，从而提高新数据上的预测准确率。</p>
+<p>下面用通俗易懂的语言讲讲两种主要的剪枝策略：预剪枝和后剪枝。</p>
+<hr>
+<h3 id="431-为什么要剪枝"><a class="markdownIt-Anchor" href="#431-为什么要剪枝"></a> 4.3.1 为什么要剪枝？</h3>
+<ul>
+<li><strong>过拟合问题</strong>：如果决策树不断分裂直到每个叶结点只有极少量甚至单个样本，那么这棵树可能完全记住了训练数据的细节。但这些细节往往只适用于训练集，而不适用于新的数据。</li>
+<li><strong>目标</strong>：我们希望树的每个分支尽量概括一类数据，而不是仅仅记住训练集的特殊情况。剪枝就是通过减少不必要的分支，达到“去噪”和简化模型的效果。</li>
+</ul>
+<hr>
+<h3 id="432-预剪枝pre-pruning"><a class="markdownIt-Anchor" href="#432-预剪枝pre-pruning"></a> 4.3.2 预剪枝（Pre-pruning）</h3>
+<p>预剪枝的做法是在构建决策树的过程中，就提前阻止一些不必要的分支生长。步骤大致如下：</p>
+<ul>
+<li>
+<p><strong>决策过程</strong>：在决策树生成时，每次在决定是否对当前结点进行进一步分裂前，先用一部分预留的“验证集”数据来估计，如果再分裂能否提高在新数据上的表现。</p>
+</li>
+<li>
+<p><strong>具体判断</strong>：</p>
+<ul>
+<li>如果不分裂（即把当前结点直接作为叶结点）在验证集上的表现已经很好，</li>
+<li>或者如果进一步分裂后反而使验证集的准确率降低，</li>
+</ul>
+<p>那么就停止分裂，将当前结点直接标记为叶结点，并确定一个最终的类别（通常是该结点中样本最多的类别）。</p>
+</li>
+<li>
+<p><strong>优缺点</strong>：</p>
+<ul>
+<li>优点：可以防止树分裂得过深，减少训练和测试时的计算开销；</li>
+<li>缺点：有时一个看似没提升的分支，如果继续往下分裂可能会最终提高准确率，预剪枝的“贪心”决策可能会导致模型欠拟合。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="433-后剪枝post-pruning"><a class="markdownIt-Anchor" href="#433-后剪枝post-pruning"></a> 4.3.3 后剪枝（Post-pruning）</h3>
+<p>后剪枝的做法是先让决策树完全生成，也就是把所有训练数据都划分完，然后再从树的底部开始，逐步检查是否可以简化部分树结构。步骤大致如下：</p>
+<ul>
+<li><strong>构建完整树</strong>：首先根据所有训练数据生成一棵完整的决策树，这棵树可能非常复杂，甚至过拟合。</li>
+<li><strong>自底向上剪枝</strong>：从最底层的非叶结点开始，逐个考察：
+<ul>
+<li>尝试把某个结点以及它下面的子树全部替换成一个叶结点。</li>
+<li>用验证集数据评估，看看这样的替换是否能提高整体的泛化性能（也就是在新数据上的预测准确率）。</li>
+<li>如果替换后性能更好，就保留这种剪枝；否则，就保留原来的子树。</li>
+</ul>
+</li>
+<li><strong>优缺点</strong>：
+<ul>
+<li>优点：后剪枝能保留更多有用的分支，通常泛化性能更好，降低过拟合的风险；</li>
+<li>缺点：需要先生成完整树，再进行反复验证和剪枝，计算量和时间开销会比较大。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="434-一个直观的例子"><a class="markdownIt-Anchor" href="#434-一个直观的例子"></a> 4.3.4 一个直观的例子</h3>
+<p>假设我们用西瓜数据集来训练决策树：</p>
+<ul>
+<li><strong>初始情况</strong>：最初，我们生成了一个完整的决策树，树的每个叶结点可能都过于细化，导致在训练集上表现很好，但在预留的验证集上准确率很低（比如只有42.9%）。</li>
+<li><strong>预剪枝案例</strong>：
+<ul>
+<li>在生成树时，先用一个属性（例如“脐部”）进行分裂后，验证集的准确率提高到了71.4%，这说明这个分裂是有用的，于是保留这个分裂。</li>
+<li>但是，当对某个结点继续分裂（比如用“色泽”进一步分裂）后，验证集的准确率反而下降了，这时预剪枝会阻止这个分裂，直接将这个结点作为叶结点。</li>
+</ul>
+</li>
+<li><strong>后剪枝案例</strong>：
+<ul>
+<li>我们先生成一棵完整的树（可能在验证集上的准确率仍然很低，比如42.9%）。</li>
+<li>然后，我们自底向上检查，比如对某个结点的子树进行剪枝后，验证集准确率从42.9%提升到了57.1%，那么就将该子树剪掉。</li>
+<li>最终，经过多次剪枝后，整体验证集准确率提升到71.4%。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="435-总结"><a class="markdownIt-Anchor" href="#435-总结"></a> 4.3.5 总结</h3>
+<ul>
+<li><strong>剪枝的目的</strong>：通过删除那些在新数据上没有帮助甚至有害的分支，简化决策树，防止过拟合。</li>
+<li><strong>预剪枝</strong>：在构造树时就提前判断，若分裂后没有提升性能则停止分裂，优点是节省计算时间，但可能错过一些后续有用的信息，存在欠拟合风险。</li>
+<li><strong>后剪枝</strong>：先构建完整树，然后再逐步删减分支，通常能保留更多有用信息，泛化性能更好，但计算开销更大。</li>
+</ul>
+<h2 id="44-连续与缺失值"><a class="markdownIt-Anchor" href="#44-连续与缺失值"></a> 4.4 连续与缺失值</h2>
+<hr>
+<h3 id="441-连续值的处理"><a class="markdownIt-Anchor" href="#441-连续值的处理"></a> 4.4.1 连续值的处理</h3>
+<h4 id="为什么要处理连续值"><a class="markdownIt-Anchor" href="#为什么要处理连续值"></a> 为什么要处理连续值？</h4>
+<ul>
+<li><strong>问题</strong>：前面讨论的决策树主要针对离散属性（例如“色泽”只有“青绿”、“乌黑”、“浅白”几种取值），但现实中很多属性是连续的（例如“密度”、“含糖率”可以是任意小数）。</li>
+<li><strong>挑战</strong>：连续属性可能有无穷多个不同取值，不能直接按照每个取值来分支，这样会导致树枝过多且没有实际意义。</li>
+</ul>
+<h4 id="如何处理连续属性"><a class="markdownIt-Anchor" href="#如何处理连续属性"></a> 如何处理连续属性？</h4>
+<ul>
+<li>
+<p><strong>二分法（二元划分）</strong>：一种简单而常用的方法是把连续属性进行离散化，方法是选择一个“阈值”（或称“划分点”）将数据分为两部分。</p>
+<ol>
+<li>
+<p><strong>排序</strong>：先把属性的所有取值从小到大排序。例如，属性 a 在数据集 D 中有 n 个不同的取值：<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mn>1</mn></msup><mo separator="true">,</mo><msup><mi>a</mi><mn>2</mn></msup><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msup><mi>a</mi><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">a^1, a^2, \ldots, a^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.008548em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141079999999999em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span>。</p>
+</li>
+<li>
+<p><strong>候选划分点</strong>：在相邻两个值之间取中点作为候选划分点。也就是说，候选集合为</p>
+<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>T</mi><mi>a</mi></msub><mo>=</mo><mrow><mo fence="true">{</mo><mfrac><mrow><msup><mi>a</mi><mi>i</mi></msup><mo>+</mo><msup><mi>a</mi><mrow><mi>i</mi><mo>+</mo><mn>1</mn></mrow></msup></mrow><mn>2</mn></mfrac><mtext>&nbsp;</mtext><mo fence="false">∣</mo><mtext>&nbsp;</mtext><mn>1</mn><mo>≤</mo><mi>i</mi><mo>≤</mo><mi>n</mi><mo>−</mo><mn>1</mn><mo fence="true">}</mo></mrow><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">T_a = \left\{\frac{a^i + a^{i+1}}{2}\ \bigg|\ 1\leq i\leq n-1\right\}.
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">T</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.451694em;vertical-align:-0.95003em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size3">{</span></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.5016639999999999em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.824664em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.824664em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">i</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace">&nbsp;</span><span class="mord"><span class="delimsizing mult"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4799700000000002em;"><span style="top:-1.65598em;"><span class="pstrut" style="height:2.606em;"></span><span class="delimsizinginner delim-size1"><span>∣</span></span></span><span style="top:-2.25698em;"><span class="pstrut" style="height:2.606em;"></span><span class="delimsizinginner delim-size1"><span>∣</span></span></span><span style="top:-2.85798em;"><span class="pstrut" style="height:2.606em;"></span><span class="delimsizinginner delim-size1"><span>∣</span></span></span><span style="top:-2.87897em;"><span class="pstrut" style="height:2.606em;"></span><span class="delimsizinginner delim-size1"><span>∣</span></span></span><span style="top:-3.47997em;"><span class="pstrut" style="height:2.606em;"></span><span class="delimsizinginner delim-size1"><span>∣</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.9500199999999999em;"><span></span></span></span></span></span></span><span class="mspace">&nbsp;</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathnormal">i</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord mathnormal">n</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord">1</span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size3">}</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">.</span></span></span></span></span></p>
+</li>
+<li>
+<p><strong>评估每个划分点</strong>：对于每个候选阈值 t，将数据集分成两部分：</p>
+<ul>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>D</mi><mi>t</mi><mo>−</mo></msubsup></mrow><annotation encoding="application/x-tex">D_t^-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.057218em;vertical-align:-0.24575599999999997em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.811462em;"><span style="top:-2.454244em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span><span style="top:-3.1031310000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">−</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.24575599999999997em;"><span></span></span></span></span></span></span></span></span></span>：属性 a 的值小于或等于 t 的样本，</li>
+<li><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>D</mi><mi>t</mi><mo>+</mo></msubsup></mrow><annotation encoding="application/x-tex">D_t^+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.057218em;vertical-align:-0.24575599999999997em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.811462em;"><span style="top:-2.454244em;margin-left:-0.02778em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span><span style="top:-3.1031310000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mbin mtight">+</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.24575599999999997em;"><span></span></span></span></span></span></span></span></span></span>：属性 a 的值大于 t 的样本。</li>
+</ul>
+<p>接下来就可以计算使用该划分所获得的信息增益（类似于离散属性的划分，只不过这里是针对二分后的两个子集）。</p>
+</li>
+<li>
+<p><strong>选择最佳划分点</strong>：遍历所有候选点，选取使信息增益最大的 t。这个 t 就是当前连续属性最优的分割点。</p>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>举个例子</strong>：在西瓜数据集中，我们给每个样本增加了“密度”和“含糖率”两个连续属性。通过上述方法，我们得到例如“密度”的候选划分点集合，然后计算出在某个划分点（比如0.381）处的信息增益最大；同理，“含糖率”也找到最优划分点（比如0.126）。最终，决策树会根据这些最优划分点来进行节点划分。</p>
+</li>
+<li>
+<p><strong>注意</strong>：一个连续属性可以在决策树的不同节点上多次使用，每次划分的阈值可以不同。</p>
+</li>
+</ul>
+<hr>
+<h3 id="442-缺失值的处理"><a class="markdownIt-Anchor" href="#442-缺失值的处理"></a> 4.4.2 缺失值的处理</h3>
+<h4 id="为什么要处理缺失值"><a class="markdownIt-Anchor" href="#为什么要处理缺失值"></a> 为什么要处理缺失值？</h4>
+<ul>
+<li><strong>问题</strong>：现实数据中常常存在缺失值，比如某些样本在某些属性上的值未知。如果直接丢弃这些样本，会浪费大量信息。</li>
+<li><strong>目标</strong>：在生成决策树时，尽量利用所有样本，同时合理处理那些缺失了部分属性值的样本。</li>
+</ul>
+<h4 id="如何处理缺失值"><a class="markdownIt-Anchor" href="#如何处理缺失值"></a> 如何处理缺失值？</h4>
+<p>我们需要解决两个问题：</p>
+<ol>
+<li><strong>属性选择时</strong>：当某个属性有部分样本缺失时，如何评估这个属性的优劣？</li>
+<li><strong>样本分支时</strong>：当某个样本在划分属性上缺失值，如何决定将它归入哪一个分支？</li>
+</ol>
+<p><strong>(1) 属性选择</strong></p>
+<ul>
+<li><strong>只用非缺失样本</strong>：首先，针对某个属性 a，我们只使用那些在 a 上没有缺失值的样本，记为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>D</mi><mo>~</mo></mover></mrow><annotation encoding="application/x-tex">\tilde{D}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9201899999999998em;vertical-align:0em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9201899999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span><span style="top:-3.6023300000000003em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span></span></span></span>。</li>
+<li><strong>计算比例</strong>：
+<ul>
+<li>用 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi></mrow><annotation encoding="application/x-tex">\rho</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">ρ</span></span></span></span> 表示 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>D</mi><mo>~</mo></mover></mrow><annotation encoding="application/x-tex">\tilde{D}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9201899999999998em;vertical-align:0em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9201899999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span><span style="top:-3.6023300000000003em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span></span></span></span> 占整个数据集 D 的比例，即：<br>
+<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi><mo>=</mo><mfrac><mtext>非缺失样本的权重和</mtext><mtext>总样本的权重和</mtext></mfrac></mrow><annotation encoding="application/x-tex">\rho = \frac{\text{非缺失样本的权重和}}{\text{总样本的权重和}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">ρ</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.217331em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.872331em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord cjk_fallback mtight">总样本的权重和</span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord cjk_fallback mtight">非缺失样本的权重和</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>。</li>
+<li>对于 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mover accent="true"><mi>D</mi><mo>~</mo></mover></mrow><annotation encoding="application/x-tex">\tilde{D}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.9201899999999998em;vertical-align:0em;"></span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9201899999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span><span style="top:-3.6023300000000003em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span></span></span></span> 内不同类别和不同属性取值，也计算相应的比例。</li>
+</ul>
+</li>
+<li><strong>调整信息增益</strong>：最后，针对属性 a 的信息增益就按非缺失样本的结果计算，再乘以 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ρ</mi></mrow><annotation encoding="application/x-tex">\rho</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">ρ</span></span></span></span> 进行缩放。这样可以反映出由于缺失值带来的不确定性。公式变为：<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Gain</mtext><mo stretchy="false">(</mo><mi>D</mi><mo separator="true">,</mo><mi>a</mi><mo stretchy="false">)</mo><mo>=</mo><mi>ρ</mi><mo>×</mo><mrow><mo fence="true">(</mo><mtext>Ent</mtext><mo stretchy="false">(</mo><mover accent="true"><mi>D</mi><mo>~</mo></mover><mo stretchy="false">)</mo><mo>−</mo><munderover><mo>∑</mo><mrow><mi>v</mi><mo>=</mo><mn>1</mn></mrow><mi>V</mi></munderover><msub><mover accent="true"><mi>r</mi><mo>~</mo></mover><mi>v</mi></msub><mtext>Ent</mtext><mo stretchy="false">(</mo><msup><mover accent="true"><mi>D</mi><mo>~</mo></mover><mi>v</mi></msup><mo stretchy="false">)</mo><mo fence="true">)</mo></mrow><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">\text{Gain}(D, a) = \rho \times \left(\text{Ent}(\tilde{D}) - \sum_{v=1}^{V} \tilde{r}_v \text{Ent}(\tilde{D}^v)\right),
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">Gain</span></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.02778em;">D</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">a</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.7777700000000001em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">ρ</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:3.0954490000000003em;vertical-align:-1.267113em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size4">(</span></span><span class="mord text"><span class="mord">Ent</span></span><span class="mopen">(</span><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9201899999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span><span style="top:-3.6023300000000003em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283360000000002em;"><span style="top:-1.882887em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.267113em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6678599999999999em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord text"><span class="mord">Ent</span></span><span class="mopen">(</span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.9201899999999998em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">D</span></span></span><span style="top:-3.6023300000000003em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7143919999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span><span class="mclose">)</span><span class="mclose delimcenter" style="top:0em;"><span class="delimsizing size4">)</span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span></span></span></span></span></p>
+其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover accent="true"><mi>r</mi><mo>~</mo></mover><mi>v</mi></msub></mrow><annotation encoding="application/x-tex">\tilde{r}_v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8178599999999999em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6678599999999999em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.151392em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> 是在属性 a 上取某个值 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mi>v</mi></msup></mrow><annotation encoding="application/x-tex">a^v</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.664392em;vertical-align:0em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.664392em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">v</span></span></span></span></span></span></span></span></span></span></span> 的样本比例。</li>
+</ul>
+<p><strong>(2) 样本划分</strong></p>
+<ul>
+<li>
+<p><strong>样本属性已知</strong>：如果一个样本在属性 a 上有值，就按该值划入对应的子结点，权重不变。</p>
+</li>
+<li>
+<p><strong>样本属性缺失</strong>：如果样本 x 在属性 a 上缺失，则不舍弃该样本，而是将 x 同时“分配”到所有分支中，并为每个分支分配一个比例权重。例如，假如属性 a 的各个取值在非缺失样本中出现的比例分别为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover accent="true"><mi>r</mi><mo>~</mo></mover><mn>1</mn></msub><mo separator="true">,</mo><msub><mover accent="true"><mi>r</mi><mo>~</mo></mover><mn>2</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mover accent="true"><mi>r</mi><mo>~</mo></mover><mi>V</mi></msub></mrow><annotation encoding="application/x-tex">\tilde{r}_1, \tilde{r}_2, \ldots, \tilde{r}_V</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8622999999999998em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6678599999999999em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6678599999999999em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6678599999999999em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02778em;">r</span></span></span><span style="top:-3.35em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;"><span class="mord">~</span></span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.32833099999999993em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.22222em;">V</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>，那么将样本 x 按照这些比例分别加入到每个对应的子结点中。这样，相当于“模糊”地把 x 分配到多个分支，保证不因缺失而丢失信息。</p>
+</li>
+<li>
+<p><strong>实际应用</strong>：C4.5算法就采用了上述策略处理缺失值。这样既保证了属性选择时的合理性，又能在划分过程中充分利用那些部分缺失数据的样本。</p>
+</li>
+</ul>
+<hr>
+<h3 id="443-小结"><a class="markdownIt-Anchor" href="#443-小结"></a> 4.4.3 小结</h3>
+<ul>
+<li><strong>连续属性</strong>：采用二分法离散化连续值，先排序、选取候选阈值，再通过信息增益选择最佳的划分点。</li>
+<li><strong>缺失值</strong>：在属性选择时只考虑有值的样本，并用一个比例因子调整；在划分时，将缺失值样本按照各个分支的比例“分摊”到各子结点中。</li>
+</ul>
+<h2 id="45-多变量决策树"><a class="markdownIt-Anchor" href="#45-多变量决策树"></a> 4.5 多变量决策树</h2>
+<hr>
+<h3 id="451-传统单变量决策树的特点"><a class="markdownIt-Anchor" href="#451-传统单变量决策树的特点"></a> 4.5.1 传统（单变量）决策树的特点</h3>
+<ul>
+<li><strong>单变量决策树</strong>在每个内部结点只使用一个属性来做判断。例如，如果你只有“密度”或者“含糖率”这两个属性，那么决策树每次只能根据“密度是否大于某个值”或者“含糖率是否大于某个值”来分数据。</li>
+<li>这种分法产生的决策边界都是<strong>轴平行的</strong>，也就是说，分割线总是垂直或水平的（在二维情况下），就像在坐标图上划直线一样。</li>
+<li><strong>优点</strong>：这种方法简单直观，每个判断都直接对应某个属性的取值。</li>
+<li><strong>缺点</strong>：如果真实的分类边界并不是严格的水平或垂直线，单变量决策树可能需要用很多次分割才能近似真实边界，从而生成很复杂的树，预测时也会比较耗时。</li>
+</ul>
+<hr>
+<h3 id="452-多变量决策树的思想"><a class="markdownIt-Anchor" href="#452-多变量决策树的思想"></a> 4.5.2 多变量决策树的思想</h3>
+<ul>
+<li><strong>多变量决策树</strong>允许在一个结点上同时使用多个属性进行判断，也就是说，不再只判断某个属性是否大于某个值，而是根据属性的<strong>线性组合</strong>来进行判断。</li>
+<li>每个内部结点会建立一个形如<p class="katex-block"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>w</mi><mn>1</mn></msub><msub><mi>a</mi><mn>1</mn></msub><mo>+</mo><msub><mi>w</mi><mn>2</mn></msub><msub><mi>a</mi><mn>2</mn></msub><mo>+</mo><mo>⋯</mo><mo>+</mo><msub><mi>w</mi><mi>d</mi></msub><msub><mi>a</mi><mi>d</mi></msub><mo>=</mo><mi>t</mi></mrow><annotation encoding="application/x-tex">w_1a_1 + w_2a_2 + \cdots + w_da_d = t
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.73333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.73333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.66666em;vertical-align:-0.08333em;"></span><span class="minner">⋯</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span></span></p>
+的线性模型，其中<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>a</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>a</mi><mn>2</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>a</mi><mi>d</mi></msub></mrow><annotation encoding="application/x-tex">a_1, a_2, \ldots, a_d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>是各个属性，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>w</mi><mn>1</mn></msub><mo separator="true">,</mo><msub><mi>w</mi><mn>2</mn></msub><mo separator="true">,</mo><mo>…</mo><mo separator="true">,</mo><msub><mi>w</mi><mi>d</mi></msub></mrow><annotation encoding="application/x-tex">w_1, w_2, \ldots, w_d</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner">…</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">d</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span>是对应的权重，<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathnormal">t</span></span></span></span>是阈值。</li>
+<li>这样的决策规则可以产生<strong>斜的分割边界</strong>，也称为斜划分，不再局限于水平或垂直的分割线。</li>
+</ul>
+<hr>
+<h3 id="453-多变量决策树的优势"><a class="markdownIt-Anchor" href="#453-多变量决策树的优势"></a> 4.5.3 多变量决策树的优势</h3>
+<ul>
+<li><strong>简化决策树结构</strong>：由于斜划分能更直接地贴近真实分类边界，多变量决策树往往可以用较少的分割就达到较好的分类效果。</li>
+<li><strong>减少分支</strong>：在某些情况下，一条斜线就能把不同类别的数据很好地分开，而单变量方法可能需要连续的多个水平和垂直分割来逼近这条斜线。</li>
+<li><strong>更好的近似复杂边界</strong>：当真实数据的分类边界比较复杂时，多变量决策树更容易找到一个简单而有效的分割平面。</li>
+</ul>
+<hr>
+<h3 id="454-举个例子"><a class="markdownIt-Anchor" href="#454-举个例子"></a> 4.5.4 举个例子</h3>
+<ul>
+<li>以西瓜数据集为例，假设只有两个属性——“密度”和“含糖率”，数据点在二维平面上散布。</li>
+<li>如果使用单变量决策树，每个分割只看一个属性，分割线只能是垂直或水平的，这可能需要多个分割才能形成一条近似真实边界的曲线。</li>
+<li>而多变量决策树可以直接利用“密度”和“含糖率”的线性组合来形成一条任意角度的直线分割（斜划分），这样就更容易将“好瓜”和“坏瓜”分开，而且树的结构也更简单。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a7d1c5e0bf79f4a4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<hr>
+<h3 id="455-总结"><a class="markdownIt-Anchor" href="#455-总结"></a> 4.5.5 总结</h3>
+<ul>
+<li><strong>传统决策树</strong>：只使用单个属性分裂，生成的分类边界都是轴平行的，简单但可能需要很多分割来逼近复杂边界。</li>
+<li><strong>多变量决策树</strong>：允许在结点上使用多个属性的线性组合进行判断，能产生斜划分，通常可以更简洁地逼近复杂的分类边界，降低树的复杂度，但同时可能牺牲部分直观性和可解释性。</li>
+</ul>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

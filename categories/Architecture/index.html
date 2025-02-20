@@ -5,50 +5,71 @@ var hm = document.createElement("script");
 hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
 var s = document.getElementsByTagName("script")[0];
 s.parentNode.insertBefore(hm, s);
-})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><meta name="generator" content="Hexo 5.4.2">
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/widget-post-list.css"><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
 <style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
 </head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><span>分类 · Architecture</span></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><article class="post-container is-flex is-justify-content-center section container is-max-widescreen pt-4 px-2"><div class="columns is-variable is-1-tablet is-3-desktop-only is-2-widescreen is-full-width"><section class="column"><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2023/03/11/study-arch1/">《架构实战案例解析》</a></h2><time class="has-text-grey" datetime="2023-03-11T12:03:15.000Z">2023-03-11</time><p class="is-flex-grow-2 mt-2">摘录与 《架构实战案例解析》
 
-
-架构的本质物理学中有个很著名的“熵增定律”：一个封闭系统，都是从有序到无序，也就是它的熵（即混乱程度）会不断地增加，最终系统会彻底变得无序。
+ 架构的本质
+物理学中有个很著名的“熵增定律”：一个封闭系统，都是从有序到无序，也就是它的熵（即混乱程度）会不断地增加，最终系统会彻底变得无序。
 一方面，随着业务需求的增加，我们会往系统里不停地添加业务功能；另一方面，随着访问量的不断增加，我们会不断通过技术手段来加强系统非业务性功能。如果事先不做良好的设计，随着时间的推进，整个系统野蛮生长，就会逐渐碎片化，越来越无序，最终被推倒重来。
-不过，自然界中的生物可以通过和外界交互，主动进行新陈代谢，制造“负熵”，也就是降低混乱程度，来保证自身的有序性，继续生存。比如，植物通过光合作用，把光能、二氧化碳和水合成有机物，以此滋养自己，延续生命。对于软件系统，我们也可以主动地调整系统各个部分的关系，保证系统整体的有序性，来更好地适应不断增..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/03/11/study-arch1/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/25/design-patterns/">《设计模式之美》</a></h2><time class="has-text-grey" datetime="2021-03-25T08:05:51.000Z">2021-03-25</time><p class="is-flex-grow-2 mt-2">摘录与 《设计模式之美》
-前言什么是设计模式设计模式讲的是如何写出可扩展、可读、可维护的高质量代码，所以，它们跟平时的编码会有直接的关系，也会直接影响到你的开发能力。
-为什么要学习设计模式
+不过，自然界中的生物可以通过和外界交互，主动进行新陈代谢，制造“负熵”，也就是降低混乱程度，来保证自身的有序性，继续生存。比如，植物通过光合作用，把光能、二氧化碳和水合成有机物，以此滋养自己，延续生命。对于软件系统，我们也可以主动地调整系统各个部分的关系，保证系统整体的有序性，来更好地适应不断..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2023/03/11/study-arch1/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/25/design-patterns/">《设计模式之美》</a></h2><time class="has-text-grey" datetime="2021-03-25T08:05:51.000Z">2021-03-25</time><p class="is-flex-grow-2 mt-2">摘录与 《设计模式之美》
+ 前言
+ 什么是设计模式
+设计模式讲的是如何写出可扩展、可读、可维护的高质量代码，所以，它们跟平时的编码会有直接的关系，也会直接影响到你的开发能力。
+ 为什么要学习设计模式
+
 应对面试中的设计模式相关问题。学习设计模式和算法一样，最功利、最直接的目的，可能就是应对面试了。
-告别写被人吐槽的烂代码，代码能力是一个程序员最基础的能力，是基本功，是展示一个程序员基础素养的最直接的衡量标准。你写的代码，实际上就是你名片。我见过太多的烂代码，比如命名不规范、类设计不合理、分层不清晰、没有模块化概念、代码结构混乱、高度耦合等等。这样的代码维护起来非常费劲，添加或者修改一个功能，常常会牵一发而动全身，让你无从下手，恨不得将全部的代码删掉重写！当然，在这些年的工作经历中，我也看到过很多让我眼前一亮的代码。每当..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/25/design-patterns/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/11/clean-code/">《Clean Code》</a></h2><time class="has-text-grey" datetime="2021-03-11T15:50:08.000Z">2021-03-11</time><p class="is-flex-grow-2 mt-2">摘录与 《代码整洁之道》
-什么是整洁代码
+告别写被人吐槽的烂代码，代码能力是一个程序员最基础的能力，是基本功，是展示一个程序员基础素养的最直接的衡量标准。你写的代码，实际上就是你名片。我见过太多的烂代码，比如命名不规范、类设计不合理、分层不清晰、没有模块化概念、代码结构混乱、高度耦合等等。这样的代码维护起来非常费劲，添加或者修改一个功能，常常会牵一发而动全身，让你无从下手，恨不得将全部的代码删掉重写！当然，在这些年的工作经历中，我也看到过很多让我眼前一亮..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/25/design-patterns/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/03/11/clean-code/">《Clean Code》</a></h2><time class="has-text-grey" datetime="2021-03-11T15:50:08.000Z">2021-03-11</time><p class="is-flex-grow-2 mt-2">摘录与 《代码整洁之道》
+ 什么是整洁代码
+
 能通过所有测试；
 没有重复代码；
 体现系统中的全部设计理念；
 包括尽量少的实体，比如类、方法、函数等。
 
-童子军军规光把代码写好可不够。必须时时保持代码整洁。我们都见过代码随时间流逝而腐坏。我们应当更积极地阻止腐坏的发生。
+ 童子军军规
+光把代码写好可不够。必须时时保持代码整洁。我们都见过代码随时间流逝而腐坏。我们应当更积极地阻止腐坏的发生。
 让营地比你来时更干净。
-有意义的命名名副其实名副其实说起来简单。我们想要强调，这事很严肃。选个好名字要花时间，但省下来的时间比花掉的多。注意命名，而且一旦发现有更好的名称，就换掉旧的。这么做，读你代码的人（包括你自己）都会更开心。
+ 有意义的命名
+ 名副其实
+名副其实说起来简单。我们想要强调，这事很严肃。选个好名字要花时间，但省下来的时间比花掉的多。注意命名，而且一旦发现有更好的名称，就换掉旧的。这么做，读你代码的人（包括你自己）都会更开心。
 变量、函数或类的名称应该已经答复了所有的大问题。它该告诉你，它为什么会存在，它做什么事，应该怎么用。如果名称需要注释来补充，那就不算是名副其实。
-避免误导程序员必须避免留下掩藏代码本意的错误线索。应当避免使用与本意相悖..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/11/clean-code/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/26/clean-architecture/">《Clean Architecture》</a></h2><time class="has-text-grey" datetime="2021-02-26T15:50:08.000Z">2021-02-26</time><p class="is-flex-grow-2 mt-2">零、概述软件架构设计是一件非常困难的事情，这通常需要大多数程序员所不具备的经验和技能。同时，也不是所有人都愿意花时间来学习和钻研这个方向。做一个好的软件架构师所需要的自律和专注程度可能会让大部分程序员始料未及，更别提软件架构师这个职业本身的社会认同感与人们投身其中的热情了。
+ 避免误导
+程序员必须避免留下掩藏代码本意的错误线索。应..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/03/11/clean-code/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/26/clean-architecture/">《Clean Architecture》</a></h2><time class="has-text-grey" datetime="2021-02-26T15:50:08.000Z">2021-02-26</time><p class="is-flex-grow-2 mt-2"> 零、概述
+软件架构设计是一件非常困难的事情，这通常需要大多数程序员所不具备的经验和技能。同时，也不是所有人都愿意花时间来学习和钻研这个方向。做一个好的软件架构师所需要的自律和专注程度可能会让大部分程序员始料未及，更别提软件架构师这个职业本身的社会认同感与人们投身其中的热情了。
 采用好的软件架构可以大大节省软件项目构建与维护的人力成本。让每次变更都短小简单，易于实施，并且避免缺陷，用最小的成本，最大程度地满足功能性和灵活性的要求。
-0.1 设计与架构究竟是什么？一直以来，设计（Design）与架构（Architecture）这两个概念让大多数人十分迷惑——什么是设计？什么是架构？二者究竟有什么区别？
-本书的一个重要目标就是要清晰、明确地对二者进行定义。首先我要明确地说，二者没有任何区别。一丁点区别都没有！
-“架..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/26/clean-architecture/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Eng-Practices"><i class="tag post-item-tag">Eng-Practices</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/08/ddd/">DDD-领域驱动设计</a></h2><time class="has-text-grey" datetime="2021-02-08T07:56:00.000Z">2021-02-08</time><p class="is-flex-grow-2 mt-2">一、DDD的基础概念1.1 什么是 DDD
-2004 年埃里克·埃文斯（Eric Evans）发表了《领域驱动设计》（Domain-Driven Design –Tackling Complexity in the Heart of Software）这本书，从此领域驱动设计（Domain Driven Design，简称 DDD）诞生。DDD 核心思想是通过领域驱动设计方法定义领域模型，从而确定业务和应用边界，保证业务模型与代码模型的一致性。领域驱动设计，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。领域驱动设计这个概念并不新颖，早在 2004 年就被提出了，到现在已经有十几年的历史了。不过，它被大众熟知，还是基于另一个概念的兴起，那就是微服务。不过，我个人觉得，领域驱动设计有点..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/08/ddd/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/12/07/data_intensive/">《数据密集型应用系统设计》</a></h2><time class="has-text-grey" datetime="2020-12-07T07:00:00.000Z">2020-12-07</time><p class="is-flex-grow-2 mt-2">数据密集型应用（data-intensive applications）正在通过使用这些技术进步来推动可能性的 边界。一个应用被称为数据密集型的，如果数据是其主要挑战（数据量，数据复杂度或数据变化速度）—— 与之相对的是计算密集型，即处理器速度是其瓶颈。
-数据系统的基石可靠性、可扩展性、可维护性现今很多应用程序都是数据密集型（data-intensive）的，而非计算密集型（compute-intensive）的。因此CPU很少成为这类应用的瓶颈，更大的问题通常来自数据量、数据复杂性、以及数据的变更速度。
-可靠性（Reliability）系统在困境（adversity）（硬件故障、软件故障、人为错误）中仍可正常工作（正确完成功 能，并能达到期望的性能水准）。
-人们对于一个东西是否可靠，都有一个直观的想法。人..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/12/07/data_intensive/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/20/zero-to-one-study-architecture/">《从0开始学架构》</a></h2><time class="has-text-grey" datetime="2020-09-20T07:31:00.000Z">2020-09-20</time><p class="is-flex-grow-2 mt-2">架构设计理念架构设计理念，可以提炼为下面几个关键点：
+ 0.1 设计与架构究竟是什么？
+一直以来，设计（Design）与架构（Architecture）这两个概念让大多数人十分迷惑——什么是设计？什么是架构？二者究竟有什么区别？
+本书的一个重要目标就是要清晰、明确地对二者进行定义。首先我要明确地说，二者没有任何区别。一丁点区别都没有..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/26/clean-architecture/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Eng-Practices"><i class="tag post-item-tag">Eng-Practices</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2021/02/08/ddd/">DDD-领域驱动设计</a></h2><time class="has-text-grey" datetime="2021-02-08T07:56:00.000Z">2021-02-08</time><p class="is-flex-grow-2 mt-2"> 一、DDD的基础概念
+ 1.1 什么是 DDD
+
+2004 年埃里克·埃文斯（Eric Evans）发表了《领域驱动设计》（Domain-Driven Design –Tackling Complexity in the Heart of Software）这本书，从此领域驱动设计（Domain Driven Design，简称 DDD）诞生。DDD 核心思想是通过领域驱动设计方法定义领域模型，从而确定业务和应用边界，保证业务模型与代码模型的一致性。
+领域驱动设计，主要是用来指导如何解耦业务系统，划分业务模块，定义业务领域模型及其交互。领域驱动设计这个概念并不新颖，早在 2004 年就被提出了，到现在已经有十几年的历史了。不过，它被大众熟知，还是基于另一个概念的兴起，那就是微服务。
+不过，我个人觉得，领域..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2021/02/08/ddd/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/12/07/data_intensive/">《数据密集型应用系统设计》</a></h2><time class="has-text-grey" datetime="2020-12-07T07:00:00.000Z">2020-12-07</time><p class="is-flex-grow-2 mt-2">数据密集型应用（data-intensive applications）正在通过使用这些技术进步来推动可能性的 边界。一个应用被称为数据密集型的，如果数据是其主要挑战（数据量，数据复杂度或数据变化速度）—— 与之相对的是计算密集型，即处理器速度是其瓶颈。
+ 数据系统的基石
+ 可靠性、可扩展性、可维护性
+现今很多应用程序都是数据密集型（data-intensive）的，而非计算密集型（compute-intensive）的。因此CPU很少成为这类应用的瓶颈，更大的问题通常来自数据量、数据复杂性、以及数据的变更速度。
+ 可靠性（Reliability）
+系统在困境（adversity）（硬件故障、软件故障、人为错误）中仍可正常工作（正确完成功 能，并能达到期望的性能水准）。
+人们对于一个东西是否可靠，都有一个直..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/12/07/data_intensive/">更多</a></section></article><article class="post-item-card"><section class="content post-card-content p-4 pb-5"><header><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h2 class="mt-4 mb-0 is-family-serif"><a href="/2020/09/20/zero-to-one-study-architecture/">《从0开始学架构》</a></h2><time class="has-text-grey" datetime="2020-09-20T07:31:00.000Z">2020-09-20</time><p class="is-flex-grow-2 mt-2"> 架构设计理念
+架构设计理念，可以提炼为下面几个关键点：
 
 架构是系统的顶层结构。
 架构设计的主要目的是为了解决软件系统复杂度带来的问题。
 架构设计需要遵循三个主要原则：合适原则、简单原则、演化原则。
 架构设计首先要掌握业界已经成熟的各种架构模式，然后再进行优化、调整、创新。
 
-框架设计需要考的因素/影响架构复杂性的几个因素
+ 框架设计需要考的因素/影响架构复杂性的几个因素
+
 高性能， 衡量软件性能包括了响应时间、TPS、服务器资源利用率等客观指标，也可以是用户的主观感受。
 高可用，高可用性就是技术实力的象征，高可用性就是竞争力。99.99%（俗称4个9）网站不可用时间=52.56分钟
 可扩展性，设计具备良好可扩展性的系统，有两个基本条件：“正确预测变化、完美封装变化”。
 低成本，语言选择、方案选择。
-安全，功能安全XSS、CSRF等，架构安全、访问策略。
-规模..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/20/zero-to-one-study-architecture/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Note/">Note</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
+安全，功能安全XSS、CSRF等，架构安全、访问策略..</p><a class="button is-default mt-2 has-text-weight-semibold" href="/2020/09/20/zero-to-one-study-architecture/">更多</a></section></article></section><aside class="column is-hidden-mobile is-4-tablet is-3-widescreen"><div style="position: sticky; top: 50px;"><main class="aside-card-container categories-widget category-page"><h3>分类</h3><section><ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/AI/">AI</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Architecture/">Architecture</a><span class="category-list-count">7</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Arithmetic/">Arithmetic</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Backend/">Backend</a><span class="category-list-count">10</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Book/">Book</a><span class="category-list-count">16</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Frontend/">Frontend</a><span class="category-list-count">3</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Language/">Language</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Maths/">Maths</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Middleware/">Middleware</a><span class="category-list-count">22</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Net/">Net</a><span class="category-list-count">6</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Note/">Note</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">11</span></li></ul></section></main></div></aside></div></article><script>$claudia.fadeInImage(null, $claudia.blurBackdropImg)
 
 window.addEventListener('resize', $claudia.throttle(function () {
     var images = document.querySelectorAll('.js-img-fadeIn')
