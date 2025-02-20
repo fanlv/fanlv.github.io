@@ -1,0 +1,680 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Go源码——Sync.Map的前生今世</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 一、背景
+前段时间有个朋友来问我Go的Sync.Map性能怎么样，一般什么场景推荐使用。一句话介绍的话，就是Sync.Map底层有两个map，一个是read，一个是dirty，读写read中数据不需要加锁，读写dirty不用需要加锁，适用于读多写少的场景。
+ 碎碎念
+其实2020年的时候Go源码里面一些比较常用的包都大致看了一遍，当时跟槊槊、大飞哥、周老板空闲时间天天讨论各种技术细节，包括但不仅限于操作系统、MySQL、Redis、分布式、Go、项目架构方法论等。很多时候观点不合还会争的面红耳赤，最后还会上升到人生攻击，你不服我，我也不服你（实际上互有对错，我也被打过几次脸）。因为有的东西，网上有很多错误的资料，导致我养成了一个习惯，找资料的时候我一般都是去看一些权威的技术书或者直接去看开源组件源码，能用.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Go源码——Sync.Map的前生今世</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF"><span class="toc-text"> 一、背景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A2%8E%E7%A2%8E%E5%BF%B5"><span class="toc-text"> 碎碎念</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%9B%AE%E7%9A%84"><span class="toc-text"> 目的</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C-syncmap-%E4%BA%A7%E7%94%9F%E7%9A%84%E8%83%8C%E6%99%AF"><span class="toc-text"> 二、Sync.Map 产生的背景</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#21-syncrwmutex-%E5%A4%9A%E6%A0%B8%E7%9A%84%E4%BC%B8%E7%BC%A9%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-text"> 2.1 Sync.RWMutex 多核的伸缩性问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-%E5%A6%82%E4%BD%95%E5%8E%BB%E4%BC%98%E5%8C%96"><span class="toc-text"> 2.2 如何去优化？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#221-distributedrwmutex"><span class="toc-text"> 2.2.1 distributedrwmutex</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#222-atomicvalue"><span class="toc-text"> 2.2.2 Atomic.Value</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#223-%E5%9F%BA%E4%BA%8E%E4%BA%8C%E5%8F%89%E6%A0%91%E5%AE%9E%E7%8E%B0-dmap"><span class="toc-text"> 2.2.3 基于二叉树实现 - dmap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#224-%E4%B8%A4%E4%B8%AAmap"><span class="toc-text"> 2.2.4 两个map</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89-syncmap-%E7%9A%84%E6%9C%80%E7%BB%88%E5%AE%9E%E7%8E%B0"><span class="toc-text"> 三、Sync.Map 的最终实现</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#31-%E8%BF%9B%E4%B8%80%E6%AD%A5%E4%BC%98%E5%8C%96"><span class="toc-text"> 3.1 进一步优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-%E6%80%9D%E8%80%83dirty-%E8%83%BD%E5%90%A6%E4%B8%8D%E5%85%A8%E9%87%8F%E6%8B%B7%E8%B4%9D-read"><span class="toc-text"> 3.2 思考：dirty 能否不全量拷贝 read？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-%E5%8F%AF%E4%BB%A5%E4%B8%8D%E8%A6%81-expunged-%E7%8A%B6%E6%80%81%E5%90%97"><span class="toc-text"> 3.3 可以不要 expunged 状态吗？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-runtime-%E5%BA%93%E4%BD%BF%E7%94%A8syncmap-%E4%BC%98%E5%8C%96"><span class="toc-text"> 3.4 runtime 库使用sync.Map 优化</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B-%E6%80%BB%E7%BB%93"><span class="toc-text"> 四、总结</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a><a href="/tags/GoSourceCode"><i class="tag post-item-tag">GoSourceCode</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Go源码——Sync.Map的前生今世</h1><time class="has-text-grey" datetime="2022-09-30T16:22:26.000Z">2022-10-01</time><article class="mt-2 post-content"><h1 id="一-背景"><a class="markdownIt-Anchor" href="#一-背景"></a> 一、背景</h1>
+<p>前段时间有个朋友来问我<code>Go</code>的<code>Sync.Map</code>性能怎么样，一般什么场景推荐使用。一句话介绍的话，就是<code>Sync.Map</code>底层有两个<code>map</code>，一个是<code>read</code>，一个是<code>dirty</code>，读写<code>read</code>中数据不需要加锁，读写<code>dirty</code>不用需要加锁，适用于读多写少的场景。</p>
+<h2 id="碎碎念"><a class="markdownIt-Anchor" href="#碎碎念"></a> 碎碎念</h2>
+<p>其实<code>2020</code>年的时候<code>Go</code>源码里面一些比较常用的包都大致看了一遍，当时跟<code>槊槊</code>、<code>大飞哥</code>、<code>周老板</code>空闲时间天天讨论各种技术细节，包括但不仅限于<code>操作系统</code>、<code>MySQL</code>、<code>Redis</code>、<code>分布式</code>、<code>Go</code>、<code>项目架构方法论</code>等。很多时候观点不合还会争的面红耳赤，最后还会上升到<strong>人生攻击</strong>，你不服我，我也不服你（实际上互有对错，我也被打过几次脸）。因为有的东西，网上有很多错误的资料，导致我养成了一个习惯，找资料的时候我一般都是去看一些<code>权威的技术书</code>或者直接去看<code>开源组件源码</code>，能用代码说的话绝不跟你多<code>BB</code>（<code>talk is cheap, show you the code</code>），用这些东西去反驳别人的观点。虽然有过很多次争吵，但是我们所有人的感觉都是一样，大家都觉得个人的<code>技术能力</code>、<code>技术眼界</code>都有了质的提升，精神上也有很大的满足感。现在三个老板，都去了其他大厂，也拿到了自己期望的<code>PKG</code>了，也在各自忙着自己的工作了，技术交流的世界也少了。</p>
+<p>关于这些成长经历，就想说三点，一个是<strong>费曼教学法</strong>，你学会的东西并不代表你一定懂了，你教懂别人才能表示你彻底懂了，因为别人会站他思考的角度来思考一些你可能没考虑到的细节，用这些细节来反问你。当你把这些细节都了解通，并能解答被人的全部问题了，你才是真的懂了。二是，<strong>持续跟身边优秀的人去交流沟通</strong>，你一定会有很大的成长。如果你觉得自己足够优秀了，那你去开源社区逛逛，那你一定会发现你远远没你想的那么优秀。三是，<strong>选择大于努力</strong>，有时候你总会觉得有的人能力不如你，确混的比你好。一是可能你没看到别人在其他方面的努力，还有一个就是别人路选择的比你好。每次做选择的时候都要想清楚自己的<code>tradeoff</code>是什么，选择以后就接受现实，别再纠结为什么要这样选，记得有个本书叫**《高效人士的七个习惯》**，其他的都记不清楚了，就记得一个观点，一个人有自己的<code>关注圈</code>和<code>影响圈</code>，我们应该花更多的精力去做好自己能改变的<code>影响圈</code>，比如提高<code>个人能力</code>，减少去关注一些自己不能改变的东西比如<code>经济形势</code>、<code>就业形势</code>、<code>个人工资</code>等。</p>
+<p>人的精力是有限的，当你过度聚焦一件事，其他的事情可能很容易被忽略，比如聚焦管理技巧、沟通技巧，那你的技术成长速度就跟不上其他人。我个人更多的精力是关注<code>技术</code>和<code>技术本身能带来的业务价值</code>，所以我对<code>开毫无意义的会</code>、<code>权利的游戏</code>、<code>无意义的social</code>都不感兴趣，但是我喜欢跟有技术追求的人<code>social（交流技术）</code>，在字节这几年的确也碰到了不优秀的同事和老板。我给自己的定位是工作上成为业务专家，之前的飞书老板就是很好的一个业务专家，整个飞书<code>IM</code>架构基本上都是他设计的。很多时候做方案的时候，只有足够的<code>Context</code>，他大多时候给你选择一个最合适的方案。工作之外脱离业务，希望自己，能成为某个方面的技术专家，以后能持续做开源相关的事情。</p>
+<h2 id="目的"><a class="markdownIt-Anchor" href="#目的"></a> 目的</h2>
+<p>后面可能会系统性对<code>Go</code>源码做总结，产出<code>blog</code>，方便以后自己快速查阅。</p>
+<p>还想对<code>Go</code>的内存管理和<code>GC</code>也做个系统总结。今年估计大概率弄不完，一个是工作太忙，周末休息还要陪娃。最近还打算看下<code>Rust</code>（作为一个<code>Geeker</code>，这么多大佬都在推崇这个，不了学习下说不过去）。</p>
+<h1 id="二-syncmap-产生的背景"><a class="markdownIt-Anchor" href="#二-syncmap-产生的背景"></a> 二、Sync.Map 产生的背景</h1>
+<h2 id="21-syncrwmutex-多核的伸缩性问题"><a class="markdownIt-Anchor" href="#21-syncrwmutex-多核的伸缩性问题"></a> 2.1 Sync.RWMutex 多核的伸缩性问题</h2>
+<p>早在<code>2016</code>的时候，<a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a>（这个哥们是<code>Go</code>项目主要维护者之一） 在<code>Go</code>的 <code>Github</code> 上提出了一个<a target="_blank" rel="noopener" href="https://github.com/golang/go/issues/17973">sync: RWMutex scales poorly with CPU count</a> 的<code>Issue</code>给大家讨论。简单说就是 <code>Sync.RWMutex</code>这个读写锁，多核情况下扩展性很差。他贴的 <code>Benchmark</code> 测试代码如下：</p>
+<pre><code>func BenchmarkRWMutex(b *testing.B) {
+	for ng := 1; ng &lt;= 256; ng &lt;&lt;= 2 { // ng 表示，开多少个 goroutine
+		b.Run(fmt.Sprintf("name[%d]", ng), func(b *testing.B) {
+			var mu sync.RWMutex
+			mu.Lock()
+
+			var wg sync.WaitGroup
+			wg.Add(ng)
+
+			n := b.N        // n 表示下面要执行多少次 RLock 和 RUnlock 
+			quota := n / ng // quota 表示分摊到每个 goroutine 上需要执行多少次 Lock 和 RUnlock 
+
+			for g := ng; g &gt; 0; g-- {
+				if g == 1 { //  n / ng 不是整除的话，剩下余出来的数据，在g=1 的时候全部减掉，不然下面 n 不会等于0
+					quota = n
+				}
+
+				go func(quota int) {
+					for i := 0; i &lt; quota; i++ { // 一个循环执行一次 RLock 和 RUnlock
+						mu.RLock()
+						mu.RUnlock()
+					}
+					wg.Done()
+				}(quota)
+
+				n -= quota
+			}
+
+			if n != 0 {
+				b.Fatalf("Incorrect quota assignments: %v remaining", n)
+			}
+
+			b.StartTimer() // 从这里开始计时
+			mu.Unlock()    // 这里释放写锁，上面所有阻塞在 RLock 的 goroutine 同时唤醒去执行 RLock
+			wg.Wait()      // 所有 goroutine 的 RLock 和 RUnlock 都执行完毕
+			b.StopTimer()  // 从这里结束计时
+		})
+	}
+}
+</code></pre>
+<p><code>Benchmark</code>的结果可以看出，在多个<code>Gorutine</code>并发下，可以看到<code>CPU</code>核数越多，<code>RWLock</code>的性能越差。</p>
+<pre><code># ./benchmarks.test -test.bench . -test.cpu 1,4,16,64
+testing: warning: no tests to run
+BenchmarkRWMutex/1      20000000                72.6 ns/op
+BenchmarkRWMutex/1-4    20000000                72.4 ns/op
+BenchmarkRWMutex/1-16   20000000                72.8 ns/op
+BenchmarkRWMutex/1-64   20000000                72.5 ns/op
+BenchmarkRWMutex/4      20000000                72.6 ns/op
+BenchmarkRWMutex/4-4    20000000               105 ns/op
+BenchmarkRWMutex/4-16   10000000               130 ns/op
+BenchmarkRWMutex/4-64   20000000               160 ns/op
+BenchmarkRWMutex/16     20000000                72.4 ns/op
+BenchmarkRWMutex/16-4   10000000               125 ns/op
+BenchmarkRWMutex/16-16  10000000               263 ns/op
+BenchmarkRWMutex/16-64   5000000               287 ns/op
+BenchmarkRWMutex/64     20000000                72.6 ns/op
+BenchmarkRWMutex/64-4   10000000               137 ns/op
+BenchmarkRWMutex/64-16   5000000               306 ns/op
+BenchmarkRWMutex/64-64   3000000               517 ns/op
+BenchmarkRWMutex/256                    20000000                72.4 ns/op
+BenchmarkRWMutex/256-4                  20000000               137 ns/op
+BenchmarkRWMutex/256-16                  5000000               280 ns/op
+BenchmarkRWMutex/256-64                  3000000               602 ns/op
+PASS
+</code></pre>
+<p>为什么多核下面会更慢？其实很简单，就是资源竞争会增加额外开销。<code>RLock</code>和<code>RUnlock</code>，底层实现是<code>atomic.AddInt32</code>，<code>atomic.AddInt32</code>对应的<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/dev.boringcrypto.go1.8/src/runtime/internal/atomic/asm_amd64.s#L81">汇编代码</a>如下：</p>
+<pre><code>// uint32 Xadd(uint32 volatile *val, int32 delta)
+// Atomically:
+//	*val += delta;
+//	return *val;
+TEXT ·Xadd(SB), NOSPLIT, $0-20
+	MOVQ	ptr+0(FP), BX
+	MOVL	delta+8(FP), AX
+	MOVL	AX, CX
+	LOCK
+	XADDL	AX, 0(BX)
+	ADDL	CX, AX
+	MOVL	AX, ret+16(FP)
+	RET
+</code></pre>
+<p>可以看到里面有 <code>LOCK</code> 前缀的指令，<code>Lock</code>其实就是<code>CPU</code>层面的一个锁，锁的单位是<code>Cache Line</code> 具体可以参考 <a target="_blank" rel="noopener" href="https://fanlv.fun/2020/06/09/golang-memory-model/#Atomic">Golang Memory Model</a> 里面的详细介绍。多个核都要同时更新这个<code>Cacheline</code>，所以性能就有所下降。</p>
+<h2 id="22-如何去优化"><a class="markdownIt-Anchor" href="#22-如何去优化"></a> 2.2 如何去优化？</h2>
+<p>我们知道，在业务中遇到锁的性能瓶颈时候，我们一般会下面几个方面去考虑优化锁。</p>
+<ol>
+<li>优化锁的粒度</li>
+<li>读写分离</li>
+<li>减少锁持有时间。</li>
+<li>使用<code>CAS</code></li>
+</ol>
+<p>2、3、4 在这个读写锁场景都不试用（已经是读写锁了，且瓶颈也在<code>CAS</code>对<code>cacheline</code>的资源竞争），所以只能从锁的粒度方向考虑。</p>
+<h3 id="221-distributedrwmutex"><a class="markdownIt-Anchor" href="#221-distributedrwmutex"></a> 2.2.1 distributedrwmutex</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/dvyukov">@dvyukov</a>（<code>Go</code>小组成员之一） 提出了一个<a target="_blank" rel="noopener" href="https://codereview.appspot.com/4850045/diff2/1:3001/src/pkg/co/distributedrwmutex.go">分布式读写锁的方案</a>，<br>
+核心原理就是，一个<code>P</code>对应一个读写锁，这样读锁在多核情况就没有竞争的问题了，因为每个核的读锁是独立的，互不影响（有点类似 <code>ThreadLocal</code> 的概念）。具体核心代码如下：</p>
+<pre><code>func (m *DistributedRWMutex) RUnlock() {
+		l := m.getLocal()
+		l.RUnlock()
+}
+
+func (m *DistributedRWMutex) getLocal() *sync.RWMutex {
+		v := runtime.GetProcLocal(m.slot)
+		p := (*sync.RWMutex)(unsafe.Pointer(uintptr(*v)))
+		if p == nil {
+				p = new(sync.RWMutex)
+				atomic.AddUint64(v, uint64(uintptr(unsafe.Pointer(p))))
+		}
+		return p
+}
+</code></pre>
+<p>不过这个实现方式也有一个问题需要注意。就是<code>Goroutine</code>和<code>P</code>不是强绑定的。有可能你在某个<code>P</code>执行<code>Lock</code>以后，做了<code>系统调用</code>这个时候<code>M、G</code>和<code>P</code>可能会解绑，系统调用完成回来的时候，可能绑定的是一个新的<code>P</code>了。这个时候再去调用<code>getLocal</code>可能拿到的已经是不一样的锁对象了，再去用这个锁对象去调用<code>RUnlock</code>是有问题的。一般这种需要在<code>Goroutine</code>里面直接拿到<code>RWLock</code>锁对象。类似下面这种：</p>
+<pre><code>// ...balabala...
+go func() {
+	rwx := rw.RLocker() // 这里拿到当前P对应的ReadLocker
+	rwx.Lock()
+	defer rwx.Unlock()
+	// ... balabala...
+	// syscall 这里切换P了也没影响
+
+}()
+// ...balabala...
+</code></pre>
+<p>还有一个 <a target="_blank" rel="noopener" href="https://github.com/jonhoo/drwmutex/">drwmutex</a> 库也是这个思想，这里不过多赘述。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 的回复说，老的<code>RWMutex</code>接口，是允许在不同的<code>Goroutine</code>或者<code>P</code>里面调用<code>RLock / RUnlock</code>，考虑兼容性问题，不太想做这样的改造。</p>
+<h3 id="222-atomicvalue"><a class="markdownIt-Anchor" href="#222-atomicvalue"></a> 2.2.2 Atomic.Value</h3>
+<p>还有更大的问题是当时（<code>GO1.8</code>）一些基础库中大量使用了<code>RWMutex</code>作为包级锁。比如<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/reflect/type.go#L1434">reflect</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/net/http/server.go#L1412">http.statusMu</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/encoding/json/encode.go#L336">json.encoderCache</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/mime/type.go#L15">mime.mimeLock</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/dvyukov">@dvyukov</a> 指出这些场景其实可以用<code>Atomic.Value</code>去实现，类似场景有<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/release-branch.go1.8/src/encoding/json/encode.go#L1266">encoding/json/encode.go:cachedTypeFields</a></p>
+<pre><code>// cachedTypeFields is like typeFields but uses a cache to avoid repeated work.
+func cachedTypeFields(t reflect.Type) []field {
+	m, _ := fieldCache.value.Load().(map[reflect.Type][]field)
+	f := m[t]
+	if f != nil {
+		return f
+	}
+
+	// Compute fields without lock.
+	// Might duplicate effort but won't hold other computations back.
+	f = typeFields(t)
+	if f == nil {
+		f = []field{}
+	}
+
+	fieldCache.mu.Lock()
+	m, _ = fieldCache.value.Load().(map[reflect.Type][]field)
+	newM := make(map[reflect.Type][]field, len(m)+1)
+	for k, v := range m {
+		newM[k] = v
+	}
+	newM[t] = f
+	fieldCache.value.Store(newM)
+	fieldCache.mu.Unlock()
+	return f
+}
+</code></pre>
+<p>PS：<code>Atomic.Load</code>转汇编其实就是简单的<code>MOV</code>指令，没有<code>LOCK</code>所以没有<code>Cacheline</code>资源竞争的问题。</p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/2641/">mime: use atomic.Value to store mime types</a> 这个<code>CL</code>也是尝试用<code>atomic.Value</code>去替代<code>sync.RWMutex</code>。</p>
+<p>这个实现，虽然读的时候没有资源竞争的问题。但是写的时候是<code>O(n)</code>的开销。这个方案对写太不友好。</p>
+<h3 id="223-基于二叉树实现-dmap"><a class="markdownIt-Anchor" href="#223-基于二叉树实现-dmap"></a> 2.2.3 基于二叉树实现 - dmap</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/ianlancetaylor">@ianlancetaylor</a> 基于二叉树实现了<code>dmap</code>，<code>dmap</code>的插入时间复杂度是<code>O(LogN)</code>，<code>insert</code>就是常规的写入操作，这里就不过多去赘述了。</p>
+<pre><code>// Insert inserts a key/value pair into a dmap.
+func (d *dmap) insert(key, val interface{}) {
+	var n *node
+	for { // 判断根节点是不是为空。为空直接加锁然后写Root，否则就拿到根节点
+		root, _ := d.root.Load().(*node)
+		if root != nil {
+			n = root
+			break
+		}
+		root = &amp;node{
+			key: key,
+			val: val,
+		}
+		d.mu.Lock()
+		if d.root.Load() == nil {
+			d.root.Store(root)
+			d.mu.Unlock()
+			return
+		}
+		d.mu.Unlock() // 走到这表示，有其他 goroutine 写了根节点，会循继续去 load 根节点
+	}
+
+	// 到这里，n 表示是 root 节点
+	
+	for {
+		cmp := d.compare(key, n.key) // 判断两个 key是否相等
+		if cmp == 0 {
+			if val != n.val {
+				panic("invalid double-insert")
+			}
+			return
+		}
+		p := &amp;n.left 
+		if cmp &gt; 0 { // key 大于当前节点key。就找右节点
+			p = &amp;n.right
+		}
+		n2, _ := (*p).Load().(*node)
+		if n2 != nil { // 当前节点不为空，继续重新走循环，比较key和 n.key 大小
+			n = n2 
+		} else { // 当前节点为空，尝试写入，写入失败，就继续重新走循环逻辑 
+			n2 = &amp;node{
+				key: key,
+				val: val,
+			}
+			n.mu.Lock()
+			if (*p).Load() == nil {
+				(*p).Store(n2)
+				n.mu.Unlock()
+				return
+			}
+			n.mu.Unlock()
+		}
+	}
+}
+</code></pre>
+<p>查找的实现，有<code>fastpath</code>和<code>slowpath</code>两个路径，<code>fastpath</code>用的是<code>map</code>来查找，命中的话就直接返回，时间复杂度是<code>O(1)</code>的，<code>map</code>中没查到的话，会去二叉树里面查，时间复杂度是<code>O（LogN）</code>。有个<code>tricky</code>的地方是，没有命中<code>map</code>但是在二叉树中查到这个<code>key</code>的话，会对这个<code>key</code>的<code>count+1</code>，如果这个<code>key</code>的<code>miss count</code>大于<code>map</code>的长度的话，会复制一下<code>map</code>然后把新的<code>map</code>回写到<code>Atomic.Value</code>里面。</p>
+<pre><code>// Lookup looks up a key in the distributed map.
+func (d *dmap) lookup(key interface{}) interface{} {
+	// Common values are cached in a map held in the root.
+	m, _ := d.m.Load().(map[interface{}]interface{})
+	if val, ok := m[key]; ok { // map里面找到了，直接返回
+		return val
+	}
+
+	n, _ := d.root.Load().(*node)
+	for n != nil {
+		cmp := d.compare(key, n.key)
+		if cmp == 0 {
+			count := atomic.AddUint32(&amp;n.count, 1)
+
+			// Add this key/val pair to the map in the root,
+			// but only if it's worth copying the existing map.
+			if count &lt; 0 || (count &gt; 1 &amp;&amp; int(count) &gt; len(m)) {
+				newm := make(map[interface{}]interface{}, len(m)+1)
+				for k, v := range m {
+					newm[k] = v
+				}
+				newm[key] = n.val
+
+				// It's possible that some other
+				// goroutine has updated d.m since we
+				// loaded it.  That means we did extra
+				// work but it's otherwise OK.
+				// 这里如果有多个 goroutine 写会导致有互相覆盖的问题
+				d.m.Store(newm)
+			}
+
+			return n.val
+		}
+
+		p := &amp;n.left
+		if cmp &gt; 0 {
+			p = &amp;n.right
+		}
+		n, _ = (*p).Load().(*node)
+	}
+
+	return nil
+}
+</code></pre>
+<h3 id="224-两个map"><a class="markdownIt-Anchor" href="#224-两个map"></a> 2.2.4 两个map</h3>
+<p><a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 基于上面 <a target="_blank" rel="noopener" href="https://github.com/ianlancetaylor">@ianlancetaylor</a> 的二叉树加<code>map</code>的思想优化了下。用<code>map</code>替代了二叉树。<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33852/">具体实现</a>如下：</p>
+<pre><code>// Map is a key-value map from which entries can be read without external
+// synchronization.
+type Map struct {
+	tenured        atomic.Value // 年老代 map
+	liveNotTenured uint32 // 记录 miss count
+
+	mu   sync.RWMutex // 对 live 读写的时候，需要用到这个读写锁
+	live map[interface{}]interface{}
+}
+</code></pre>
+<p>读的话，先去<code>tenured</code>里面去读，读<code>tenured</code>不用加锁，读写<code>live</code>用的是读写锁，然后根据<code>misscount</code>把<code>live</code>复制给<code>tenured</code></p>
+<pre><code>func (b *Map) Load(key interface{}) (value interface{}, ok bool) {
+	m, _ := b.tenured.Load().(map[interface{}]interface{})
+	if value, ok = m[key]; ok {
+		return value, true
+	}
+
+	b.mu.RLock()
+	promote := false
+	if b.live != nil {
+		value, ok = b.live[key]
+		lnt := atomic.AddUint32(&amp;b.liveNotTenured, 1)
+		if lnt &gt;= 1&lt;&lt;31 || int(lnt) &gt;= len(b.live) {
+			promote = true
+		}
+	}
+	b.mu.RUnlock()
+
+	if !promote {
+		return value, ok
+	}
+
+	b.mu.Lock()
+	lnt := atomic.LoadUint32(&amp;b.liveNotTenured)
+	if b.live != nil &amp;&amp; (lnt &gt;= 1&lt;&lt;31 || int(lnt) &gt;= len(b.live)) {
+		b.tenured.Store(b.live)
+		b.live = nil
+		atomic.StoreUint32(&amp;b.liveNotTenured, 0)
+	}
+	b.mu.Unlock()
+	return value, ok
+}
+</code></pre>
+<p>写的话，很简单，只写<code>live</code>。</p>
+<pre><code>func (b *Map) StoreOrLoad(key, value interface{}) (actualValue interface{}, dup bool) {
+	b.mu.Lock()
+	if b.live == nil {
+		m, _ := b.tenured.Load().(map[interface{}]interface{})
+		b.live = make(map[interface{}]interface{}, len(m)+1)
+		for k, v := range m {
+			b.live[k] = v
+		}
+	}
+	actualValue, dup = b.live[key]
+	if !dup {
+		b.live[key] = value
+		actualValue = value
+	}
+	b.mu.Unlock()
+	return actualValue, dup
+}
+</code></pre>
+<h1 id="三-syncmap-的最终实现"><a class="markdownIt-Anchor" href="#三-syncmap-的最终实现"></a> 三、Sync.Map 的最终实现</h1>
+<p>经过一轮讨论以后，<a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 单独发了一个提案：<a target="_blank" rel="noopener" href="https://github.com/golang/go/issues/18177">sync: add a Map to replace RWLock+map usage</a> 最终决定不去修复<code>RWLock</code>的伸缩性问题，而是提供一个可伸缩并发安全的<code>Map</code>来做。 这个并发安全的<code>Map</code>实现方案就是用的上面双<code>Map</code>实现。然后这个并发安全的<code>Map</code>会先放在 <a target="_blank" rel="noopener" href="https://github.com/golang/go/wiki/X-Repositories">x-Repositories</a> 包中经过一段时间迭代，如果没问题了再收敛到<code>Go</code>源码包中。具体可以看 <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33912/">syncmap: add a synchronized map implementation</a>。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a> 基于<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33852/">双map的demo</a>，做了一些优化，新增了一些<code>API</code>，比如<code>Delete</code>、<code>Range</code>等。<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33912/">提交了一个正式的 CR</a>：</p>
+<pre><code>// A Map must not be copied after first use.
+type Map struct {
+	mu sync.Mutex
+
+	// clean 是 fastpath 用的，读的时候不用加锁，没有cacheline竞争问题
+	clean atomic.Value // map[interface{}]interface{}
+	
+	// dirty 读写都需要加锁
+	dirty map[interface{}]interface{}
+	
+	// 如果clean没有查到，这个时候misses会加1
+	// 当 misses &gt;= len(dirty)，会把dirty赋值给clean，然后情况dirty
+	misses int
+}
+</code></pre>
+<p>我们再来看下数据读取的实现，这个里面有几点需要注意，跟上面<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/33852/">双map的demo</a> 不同的事，这里的实现是<code>clean</code>和<code>dirty</code>两个<code>map</code>只会有一个不为空。所以读的时候，如果<code>clean</code>不为空就直接读<code>clean</code>，并不会再去<code>dirty</code>读一次。如果<code>dirty</code>不为<code>nil</code>，读取以后还会调用一下<code>m.missLocked</code>，这个函数主要的作用是判断对<code>m.misses</code>加<code>1</code>，然后判断要不要把<code>dirty</code>赋值给<code>clean</code>，然后清空<code>dirty</code>。</p>
+<pre><code>// Load returns the value stored in the map for a key, or nil if no
+// value is present.
+// The ok result indicates whether value was found in the map.
+func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+	clean, _ := m.clean.Load().(map[interface{}]interface{})
+	if clean != nil {
+		value, ok = clean[key]
+		return value, ok
+	}
+
+	m.mu.Lock()
+	if m.dirty == nil {
+		clean, _ := m.clean.Load().(map[interface{}]interface{})
+		if clean == nil {
+			// Completely empty — promote to clean immediately.
+			m.clean.Store(map[interface{}]interface{}{})
+		} else {
+			value, ok = clean[key]
+		}
+		m.mu.Unlock()
+		return value, ok
+	}
+	value, ok = m.dirty[key]
+	m.missLocked()
+	m.mu.Unlock()
+	return value, ok
+}
+
+func (m *Map) missLocked() {
+	if m.misses++; m.misses &gt;= len(m.dirty) {
+		m.clean.Store(m.dirty)
+		m.dirty = nil
+	}
+}
+</code></pre>
+<p><code>Store</code>的函数就比较简单了。如果写入的时候，直接加锁，然后判断<code>dirty</code>是否为空，如果是空，需要把<code>clean</code>数据复制一份给<code>dirty</code>然后清空<code>clean</code>，然后再把数据赋值给<code>dirty</code>。</p>
+<pre><code>// Store sets the value for a key.
+func (m *Map) Store(key, value interface{}) {
+	m.mu.Lock()
+	m.dirtyLocked()
+	m.dirty[key] = value
+	m.mu.Unlock()
+}
+
+// dirtyLocked prepares the map for a subsequent write.
+// It ensures that the dirty field is non-nil and clean is nil by making a deep
+// copy of clean.
+func (m *Map) dirtyLocked() {
+	m.misses = 0
+	if m.dirty != nil {
+		return
+	}
+
+	clean, _ := m.clean.Load().(map[interface{}]interface{})
+	m.dirty = make(map[interface{}]interface{}, len(clean))
+	for k, v := range clean {
+		m.dirty[k] = v
+	}
+	m.clean.Store(map[interface{}]interface{}(nil))
+}
+</code></pre>
+<p><strong>这个实现其实有个很大的问题，就是如果有频繁读写交替的话，会导致数据一直在<code>clean</code>和<code>dirty</code>两个<code>map</code>中来回<code>copy</code>，如果<code>map</code>很大的话，这个性能会很差，还会阻塞其他线程的读写，但是这个CR当时的场景是期望提供给Runtime包中一些读多写少的场景使用，所以看<code>benchmark</code>跑的性能还是有很大的提升的。</strong></p>
+<p>代码合入的时候 <a target="_blank" rel="noopener" href="https://github.com/rsc">@rsc</a> 提了两点优化建议</p>
+<ol>
+<li>如果允许<code>clean != nil and dirty != nil</code>会更好。</li>
+<li>如果一个<code>key</code>没有被覆盖或者删除的话，它命中了<code>lock-free path</code>后续理论上应该一直命中<code>lock-free path</code>会更好一些。</li>
+</ol>
+<h2 id="31-进一步优化"><a class="markdownIt-Anchor" href="#31-进一步优化"></a> 3.1 进一步优化</h2>
+<p>过了几个月，基于 <a target="_blank" rel="noopener" href="https://github.com/rsc">@rsc</a> 之前合码的时候给的建议，<a target="_blank" rel="noopener" href="https://github.com/bcmills">@bcmills</a>  <a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/sync/+/37342/">又优化了一版</a>，整个<code>sync.Map</code>的结构变成了下面这样：</p>
+<pre><code>type Map struct {
+	mu sync.Mutex
+	read atomic.Value // readOnly
+	dirty map[interface{}]*entry	
+	misses int
+}
+
+type readOnly struct { // readOnly 的 map
+	m       map[interface{}]*entry
+	amended bool // amended=true m没有全部key的数据，没查到还需要去dirty查下.
+}
+
+var expunged = unsafe.Pointer(new(interface{})) // 表示这个数据已经不在dirty中了。
+
+type entry struct {
+	p unsafe.Pointer // *interface{}
+}
+</code></pre>
+<p>主要改动只读的<code>map</code>，之前叫<code>clean</code>类型是<code>map[interface{}]interface{}</code>，现在改成了<code>read</code>，类型是<code>readOnly struct</code>，<code>readOnly</code>还有个<code>amended</code>表示当前<code>readOnly.m</code>是不是全量数据。我们继续往下<code>Store</code>的代码</p>
+<pre><code>func (m *Map) Store(key, value interface{}) {
+	// fast-path
+	read, _ := m.read.Load().(readOnly)
+	if e, ok := read.m[key]; ok &amp;&amp; e.tryStore(&amp;value) { 
+	   // 如果这个 key 在 read 里面找到了以后，尝试直接调用 tryStore 去更新 value 数据
+	   // tryStore 里面会做两件事
+	   // 1. 判断当前 entry.p 是不是等于 expunged，等于 expunged 就不能更新，直接返回false。下面会走 slow-path去更新
+	   // 2. 如果不是 expunged ，那就尝试更新 entry.p = &amp;value，如果 CAS 设置成功了就返回。
+	   // 如果是 expunged 状态，表面 dirty 里面已经没有这个 key了，如 read 里面更新这个东西，下次 dirty数据全量提升为 read 的时候，这个数据就会丢失。
+		return 
+	}
+
+	// 下面是 slow-path
+	m.mu.Lock()
+	read, _ = m.read.Load().(readOnly)
+	if e, ok := read.m[key]; ok {
+		if e.unexpungeLocked() { // e.unexpungeLocked 尝试CAS(&amp;e.p, expunged, nil)
+			m.dirty[key] = e // 把 e 赋值给 dirty
+		}
+		// 到这里 e.p 肯定不是等于 expunged 了
+		e.storeLocked(&amp;value) // 设置 e.p = &amp;value
+	} else if e, ok := m.dirty[key]; ok {
+		e.storeLocked(&amp;value) // 如果只在dirty里面有，直接设置 e.p = &amp;value
+	} else {
+		if !read.amended { // 如果目前 read 有全量数据，但是 read 和 dirty 都没有这个 key
+			m.dirtyLocked() // dirtyLocked 这个函数主要做的就是，把 read 里面的 e.p != nil &amp;&amp; e.p != expunged 的元素 copy 一份赋值给 dirty
+			m.read.Store(readOnly{m: read.m, amended: true})
+		}
+		m.dirty[key] = newEntry(value) // dirty 保存这个 kv
+	}
+	m.mu.Unlock()
+}
+</code></pre>
+<p>总结下<code>Store</code>主要做了下几件事：</p>
+<ol>
+<li><code>fast-path</code> 路径
+<ul>
+<li>看下 <code>read</code> 中是否有这个<code>key</code>，有的话尝试调用<code>tryStore</code>，把设置的<code>value</code>保存到<code>entry</code>对象中去。</li>
+<li><code>tryStore</code> 里面会判断<code>entry.p</code>是不是<code>expunged</code>状态，是的话就不能设置，需要走<code>slow-path</code></li>
+<li>如果不是的话保存成功就直接返回。</li>
+</ul>
+</li>
+<li><code>slow-path</code>路径
+<ul>
+<li>会先加互斥锁</li>
+<li>看下 <code>read</code> 中是否有这个<code>key</code>，有的话尝试调用<code>unexpungeLocked</code>，<code>CAS</code>方式清除<code>entry.p</code>的<code>expunged</code>状态。如果清楚成功，会在<code>dirty</code>里面添加这个数据。如果没有清楚成功，说明状态不是<code>expunged</code>，可以直接更新<code>read</code>的<code>entry.p=&amp;value</code>就行了。</li>
+<li>不在<code>read</code>里面，在<code>dirty</code>里面，直接设置<code>entry.p=&amp;value</code>就行了。</li>
+<li><code>read</code>和<code>dirty</code>都没有找到这个<code>key</code>，先看下<code>read</code>是不是有全量数据，是的话，就调用<code>m.dirtyLocked</code>，把<code>read</code>数据<code>copy</code>一份到<code>dirty</code>，并设置<code>read.amended=true</code>,表示 <code>read</code>里面已经没有全量数据了，需要去<code>drity</code>里面找。</li>
+<li>最后设置 <code> m.dirty[key] = newEntry(value)</code>，dirty 保存这个 kv</li>
+</ul>
+</li>
+</ol>
+<p>在来看下<code>Load</code>相关代码：</p>
+<pre><code>func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+	read, _ := m.read.Load().(readOnly)
+	e, ok := read.m[key]
+	if !ok &amp;&amp; read.amended { // 如果 read 没找到，且 read 没有全量数据
+		m.mu.Lock()
+		read, _ = m.read.Load().(readOnly)
+		e, ok = read.m[key] // 加锁以后，这里需要 double check一下
+		if !ok &amp;&amp; read.amended {
+			e, ok = m.dirty[key] // 去 dirty map 读
+			m.missLocked() // 这里面对 misscount+1 ，然后看下是否需要把 dirty 全部给 read，然后设置 dirty 为 nil。
+		}
+		m.mu.Unlock()
+	}
+	if !ok {
+		return nil, false
+	}
+	return e.load() // 如果 e.p != nil &amp;&amp; e.p == expunged , 就把 e.p 的指向的值转成Interface返回
+}
+</code></pre>
+<p>最后再来看下<code>Delete</code>的怎么做的，<code>Delete</code>其实比较简单，就是设置，在<code>read</code>里面找到这个<code>entry</code>然后设置<code>e.p=nil</code>,如果在<code>dirty</code>中就直接调用<code>delete</code>方法删除这个<code>key</code>。</p>
+<pre><code>func (m *Map) Delete(key interface{}) {
+	read, _ := m.read.Load().(readOnly)
+	e, ok := read.m[key]
+	if !ok &amp;&amp; read.amended {
+		m.mu.Lock()
+		read, _ = m.read.Load().(readOnly)
+		e, ok = read.m[key]
+		if !ok &amp;&amp; read.amended {
+			delete(m.dirty, key)
+		}
+		m.mu.Unlock()
+	}
+	if ok {
+		e.delete()
+	}
+}
+
+func (e *entry) delete() (hadValue bool) {
+	for {
+		p := atomic.LoadPointer(&amp;e.p)
+		if p == nil || p == expunged {
+			return false
+		}
+		if atomic.CompareAndSwapPointer(&amp;e.p, p, nil) {
+			return true
+		}
+	}
+}
+</code></pre>
+<h2 id="32-思考dirty-能否不全量拷贝-read"><a class="markdownIt-Anchor" href="#32-思考dirty-能否不全量拷贝-read"></a> 3.2 思考：dirty 能否不全量拷贝 read？</h2>
+<p>正常思路，为了节省内存，<code>dirty</code> 里面只存增量数据，可以吗？反向推理下如果<code>dirty</code>只存增量的数据，那就不需要<code>read</code>到<code>dirty</code>的数据同步操作了，那也不需要<code>expunged</code>状态了。所以<code>read</code>的中元素<code>e.p=nil</code>的时候，表示删除了，由于没有了<code>read</code>到<code>dirty</code>的复制，所以需要定期滤掉<code>read</code>中删除的数据（<code>e.p = nil</code>）并重新给<code>read</code>赋值，那<code>Store</code>的时候，如果<code>read</code>的<code>e.p=nil</code>的话就不能再更新了。因为定期过滤掉<code>read</code>中删除的数据可能会把这个<code>entry</code>给删除掉，导致这个<code>key</code>对应的数据丢失了。所以<code>Store</code>和<code>Load</code>伪代码如下：</p>
+<pre><code>func (m *Map) Store(key, value interface{}) {
+	read, _ := m.read.Load().(readOnly)
+	if e, ok := read.m[key]; ok &amp;&amp; e.p != nil {
+		ok:= CAS(e.p, old, &amp;value) // 注意这里要是 old = nil 时候不能再继续尝试 CAS
+		if ok{
+			return
+		}
+		// cas 失败继续往下走
+	}
+
+	m.mu.Lock() // 加锁
+	read, _ = m.read.Load().(readOnly)
+	if e, ok := read.m[key]; ok {
+		if atomic.Load(e.p) != nil{
+		   atomic.Store(e.p,&amp;value)
+			return
+		}
+
+	} else if e, ok := m.dirty[key]; ok {
+		e.storeLocked(&amp;value)
+	} 
+
+	// read 查到了 e 但是 e.p == nil
+	// read 和 dirty 都没查到
+	m.dirty[key] = newEntry(value)
+	noNilMap := fliterNilIFNeed(read.m) // 过滤掉read.m 中为空的数据，如果没有空数据直接返回nil
+	m.read.Store(readOnly{m: noNilMap, amended: true})
+
+	m.mu.Unlock()
+}
+
+
+func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+	read, _ := m.read.Load().(readOnly)
+	e, ok := read.m[key]
+	if !ok &amp;&amp; read.amended || (ok &amp;&amp; atomic.Load(e.p) == nil){
+		m.mu.Lock()
+
+		read, _ = m.read.Load().(readOnly)
+		e, ok = read.m[key]
+		if !ok &amp;&amp; read.amended || (ok &amp;&amp; atomic.Load(e.p) == nil){
+			e, ok = m.dirty[key]
+
+			m.misses++
+			if m.misses &gt;= len(m.dirty) {
+				noNilMap := fliterNilIFNeed(read.m) // 过滤掉read.m 中为空的数据，如果没有空数据直接返回nil
+				allDataMap := merge(noNilMap,m.dirty)
+				m.read.Store(readOnly{m: allDataMap})
+			    m.dirty = nil
+			    m.misses = 0
+			}
+		}
+		m.mu.Unlock()
+	}
+	if !ok {
+		return nil, false
+	}
+	return e.load()
+}
+</code></pre>
+<p>这样实现逻辑上好像也没有问题，不过每次<code>Load</code>和<code>Store</code>一个<code>read</code>中的<code>nil</code>，都需要加锁，然后会过滤<code>read</code>的<code>nil</code>数据，都有数据的拷贝操作。如果在删除以后立即读的场景性能可能会非常差。</p>
+<p><strong>总结：dirty 全量拷贝 read 数据，就是好一个空间换时间的操作。</strong></p>
+<h2 id="33-可以不要-expunged-状态吗"><a class="markdownIt-Anchor" href="#33-可以不要-expunged-状态吗"></a> 3.3 可以不要 expunged 状态吗？</h2>
+<pre><code>func (m *Map) dirtyLocked() {
+	if m.dirty != nil {
+		return
+	}
+
+	read := m.loadReadOnly()
+	m.dirty = make(map[any]*entry, len(read.m))
+	for k, e := range read.m {
+		if !e.tryExpungeLocked() {
+			m.dirty[k] = e
+		}
+	}
+}
+
+func (e *entry) tryExpungeLocked() (isExpunged bool) {
+	p := e.p.Load()
+	for p == nil {
+		if e.p.CompareAndSwap(nil, expunged) {
+			return true
+		}
+		p = e.p.Load()
+	}
+	return p == expunged
+}
+</code></pre>
+<p><code>expunged</code> 状态本质是一个中间标记，保证<code>read</code>往<code>dirty</code>同步过程中，是线程安全的，然后这样读写<code>read</code>的时候可以不用加速。不然的话如下图</p>
+<pre><code>func (m *Map) dirtyLocked() {
+	if m.dirty != nil {
+		return
+	}
+
+	read := m.loadReadOnly()
+	m.dirty = make(map[any]*entry, len(read.m))
+	for k, e := range read.m {
+		if e.p == nil { 
+		   // 这里不能保证是原子的，这个过程中，可能 e.p 又被赋值了。
+			m.dirty[k] = e
+		}
+	}
+}
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9055b66f33dffec8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-74c7eb3a7a9bf793.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="34-runtime-库使用syncmap-优化"><a class="markdownIt-Anchor" href="#34-runtime-库使用syncmap-优化"></a> 3.4 runtime 库使用sync.Map 优化</h2>
+<p><code>syncmap</code>在<a target="_blank" rel="noopener" href="https://github.com/golang/go/wiki/X-Repositories">x-Repositories</a> 里面给其他用户试用几个月以后，最终被合入了<code>Go</code>源码包中，详见<a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/36617/">sync: import Map from x/sync/syncmap</a></p>
+<p>然后又优化了一波源码中使用<code>RWMutex</code>的代码，都改成了<code>Sync.Map</code>，修改以后代码相对之前也更简单一些了。</p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/41871/">reflect: use sync.Map instead of RWMutex for type caches</a></p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/41930/">expvar: replace RWMutex usage with sync.Map and atomics</a></p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/41990/">mime: use sync.Map instead of RWMutex for type lookups</a></p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/41990/">mime: use sync.Map instead of RWMutex for type lookups</a></p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/41991/">encoding/xml: replace tinfoMap RWMutex with sync.Map</a></p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/42110/">net/http: use sync.Map instead of RWMutex for ServeMux.m</a></p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/42112/">net/rpc: use a sync.Map for serviceMap instead of RWMutex</a></p>
+<p><a target="_blank" rel="noopener" href="https://go-review.googlesource.com/c/go/+/42113/">archive/zip: replace RWMutex with sync.Map</a></p>
+<h1 id="四-总结"><a class="markdownIt-Anchor" href="#四-总结"></a> 四、总结</h1>
+<p>很多时候都没有十全十美的方案，方案设计的越<code>general</code>，需要考虑的场景就越多，需要做<code>tradeoff</code>的地方也就越多。</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

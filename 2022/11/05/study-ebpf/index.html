@@ -1,0 +1,728 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《eBPF 核心技术与实战》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 概览
+eBPF 是什么呢？ 从它的全称“扩展的伯克利数据包过滤器 (Extended Berkeley Packet Filter)” 来看，它是一种数据包过滤技术，是从 BPF (Berkeley Packet Filter) 技术扩展而来的。
+BPF 提供了一种在内核事件和用户程序事件发生时安全注入代码的机制，这就让非内核开发人员也可以对内核进行控制。随着内核的发展，BPF 逐步从最初的数据包过滤扩展到了网络、内核、安全、跟踪等，而且它的功能特性还在快速发展中，这种扩展后的 BPF 被简称为 eBPF（相应的，早期的 BPF 被称为经典 BPF，简称 cBPF）。实际上，现代内核所运行的都是 eBPF，如果没有特殊说明，内核和开源社区中提到的 BPF 等同于 eBPF。
+tcpdump 和 BCC 之.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《eBPF 核心技术与实战》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%A6%82%E8%A7%88"><span class="toc-text"> 概览</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8"><span class="toc-text"> 基础入门</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83"><span class="toc-text"> 环境</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bpf-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8"><span class="toc-text"> BPF 系统调用</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bpf-%E6%98%A0%E5%B0%84"><span class="toc-text"> BPF 映射</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#bpf-%E7%B1%BB%E5%9E%8B%E6%A0%BC%E5%BC%8F-btf"><span class="toc-text"> BPF 类型格式 (BTF)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ebpf-%E7%A8%8B%E5%BA%8F%E5%8F%AF%E4%BB%A5%E5%88%86%E6%88%90%E5%87%A0%E7%B1%BB"><span class="toc-text"> eBPF 程序可以分成几类？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E7%B1%BB-ebpf-%E7%A8%8B%E5%BA%8F"><span class="toc-text"> 网络类 eBPF 程序</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E8%BF%9B%E9%98%B6"><span class="toc-text"> 进阶</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E6%A0%B8%E8%B7%9F%E8%B8%AA"><span class="toc-text"> 内核跟踪</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%94%A8%E6%88%B7%E6%80%81%E8%BF%BD%E8%B8%AA"><span class="toc-text"> 用户态追踪</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E8%B7%9F%E8%B8%AA"><span class="toc-text"> 网络跟踪</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%B9%E5%99%A8%E5%AE%89%E5%85%A8"><span class="toc-text"> 容器安全</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text"> 总结</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Linux"><i class="tag post-item-tag">Linux</i></a><a href="/tags/ebpf"><i class="tag post-item-tag">ebpf</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《eBPF 核心技术与实战》</h1><time class="has-text-grey" datetime="2022-11-05T02:32:28.000Z">2022-11-05</time><article class="mt-2 post-content"><h1 id="概览"><a class="markdownIt-Anchor" href="#概览"></a> 概览</h1>
+<p><code>eBPF</code> 是什么呢？ 从它的全称“扩展的伯克利数据包过滤器 (<code>Extended Berkeley Packet Filter</code>)” 来看，它是一种数据包过滤技术，是从 <code>BPF (Berkeley Packet Filter)</code> 技术扩展而来的。</p>
+<p><code>BPF</code> 提供了一种在内核事件和用户程序事件发生时安全注入代码的机制，这就让非内核开发人员也可以对内核进行控制。随着内核的发展，<code>BPF</code> 逐步从最初的数据包过滤扩展到了网络、内核、安全、跟踪等，而且它的功能特性还在快速发展中，这种扩展后的 <code>BPF</code> 被简称为 <code>eBPF</code>（相应的，早期的 <code>BPF</code> 被称为经典 <code>BPF</code>，简称 <code>cBPF</code>）。实际上，现代内核所运行的都是 <code>eBPF</code>，如果没有特殊说明，内核和开源社区中提到的 <code>BPF</code> 等同于 <code>eBPF</code>。</p>
+<p><code>tcpdump</code> 和 <a target="_blank" rel="noopener" href="https://github.com/iovisor/bcc">BCC</a> 之所以这么高效强大，都是得益于 <code>BPF/eBPF</code> 技术。</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/facebookincubator/katran">Katran</a>： <code>Facebook</code> 开源的高性能网络负载均衡器。</li>
+<li><a target="_blank" rel="noopener" href="https://cilium.io/">cilium.io</a>：<code>Isovalent</code> 开源的容器网络方案 。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/iovisor/bcc">bcc</a> ：<code>BCC</code> 是一个 <code>BPF</code> 编译器集合，包含了用于构建 <code>BPF</code> 程序的编程框架和库，并提供了大量可以直接使用的工具。使用 <code>BCC</code> 的好处是，它把上述的 <code>eBPF</code> 执行过程通过内置框架抽象了起来，并提供了 <code>Python、C++</code> 等编程语言接口。这样，你就可以直接通过 <code>Python</code> 语言去跟 <code>eBPF</code> 的各种事件和数据进行交互。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/iovisor/bpftrace">bpftrace</a>：动态工具。</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/libbpf/libbpf">libbpf</a> 帮你避免了直接调用内核函数，提供了跨内核版本的兼容性（即一次编译到处执行，简称 CO-RE）</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ccf55ddb2fa009c0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c37b4d59c3ddab13.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>ebpf</code>为什么性能这么好呢？这主要得益于 <code>BPF</code> 的两大设计：</p>
+<ul>
+<li>第一，内核态引入一个新的虚拟机，所有指令都在内核虚拟机中运行。</li>
+<li>第二，用户态使用 <code>BPF</code> 字节码来定义过滤表达式，然后传递给内核，由内核虚拟机解释执行。</li>
+</ul>
+<p><strong>eBPF 的诞生是 BPF 技术的一个转折点，使得 BPF 不再仅限于网络栈，而是成为内核的一个顶级子系统。</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-481a31b615680b35.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>eBPF</code> 程序执行过程：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f6a07eb410c914fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果 <code>BPF</code> 字节码中包含了不安全的操作，验证器会直接拒绝 BPF 程序的执行。比如，下面就是一些典型的验证过程：</p>
+<ul>
+<li>只有特权进程才可以执行 <code>BPF</code> 系统调用；</li>
+<li><code>BPF</code> 程序不能包含无限循环；</li>
+<li><code>BPF</code> 程序不能导致内核崩溃；</li>
+<li><code>BPF</code> 程序必须在有限时间内完成。</li>
+</ul>
+<p><code>BPF</code> 程序可以利用 <code>BPF</code> 映射（<code>map</code>）进行存储，而用户程序通常也需要通过 <code>BPF</code> 映射同运行在内核中的 <code>BPF</code> 程序进行交互</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c01dc4e7ab140e49.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>eBPF</code> 限制：</p>
+<ul>
+<li><code>eBPF</code> 程序必须被验证器校验通过后才能执行，且不能包含无法到达的指令；</li>
+<li><code>eBPF</code> 程序不能随意调用内核函数，只能调用在 <code>API</code> 中定义的辅助函数；</li>
+<li><code>eBPF</code> 程序栈空间最多只有 <code>512</code> 字节，想要更大的存储，就必须要借助映射存储；</li>
+<li>在内核 <code>5.2</code> 之前，<code>eBPF</code> 字节码最多只支持 <code>4096</code> 条指令，而 <code>5.2</code> 内核把这个限制提高到了 <code>100</code> 万条；</li>
+<li>由于内核的快速变化，在不同版本内核中运行时，需要访问内核数据结构的 <code>eBPF</code> 程序很可能需要调整源码，并重新编译。</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://github.com/iovisor/bcc/blob/master/docs/kernel-versions.md#main-features">kernel-versions.md#main-features</a></p>
+<h1 id="基础入门"><a class="markdownIt-Anchor" href="#基础入门"></a> 基础入门</h1>
+<h2 id="环境"><a class="markdownIt-Anchor" href="#环境"></a> 环境</h2>
+<p>推荐：</p>
+<ul>
+<li>Ubuntu 20.10+</li>
+<li>Fedora 31+</li>
+<li>RHEL 8.2+</li>
+<li>Debian 11+</li>
+</ul>
+<p>工具：</p>
+<pre><code># For Ubuntu20.10+
+sudo apt-get install -y  make clang llvm libelf-dev libbpf-dev bpfcc-tools libbpfcc-dev linux-tools-$(uname -r) linux-headers-$(uname -r)
+
+# For RHEL8.2+
+sudo yum install libbpf-devel make clang llvm elfutils-libelf-devel bpftool bcc-tools bcc-devel
+</code></pre>
+<p><code>eBPF</code>在内核中的运行时主要由<code>5</code>个模块组成：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c7cef2e4836f6cc7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ul>
+<li>第一个模块是  <code>eBPF</code> 辅助函数。它提供了一系列用于 <code>eBPF</code> 程序与内核其他模块进行交互的函数。这些函数并不是任意一个 <code>eBPF</code> 程序都可以调用的，具体可用的函数集由 <code>BPF</code> 程序类型决定。关于 <code>BPF</code> 程序类型，我会在 <code>06</code> 讲 中进行讲解。</li>
+<li>第二个模块是  <code>eBPF</code> 验证器。它用于确保 <code>eBPF</code> 程序的安全。验证器会将待执行的指令创建为一个有向无环图（<code>DAG</code>），确保程序中不包含不可达指令；接着再模拟指令的执行过程，确保不会执行无效指令。</li>
+<li>第三个模块是由  <code>11</code> 个 <code>64</code> 位寄存器、一个程序计数器和一个 <code>512</code> 字节的栈组成的存储模块。这个模块用于控制 <code>eBPF</code> 程序的执行。其中，<code>R0</code> 寄存器用于存储函数调用和 <code>eBPF</code> 程序的返回值，这意味着函数调用最多只能有一个返回值；<code>R1-R5</code> 寄存器用于函数调用的参数，因此函数调用的参数最多不能超过 <code>5</code> 个；而 <code>R10</code> 则是一个只读寄存器，用于从栈中读取数据。</li>
+<li>第四个模块是即时编译器，它将 <code>eBPF</code> 字节码编译成本地机器指令，以便更高效地在内核中执行。</li>
+<li>第五个模块是  <code>BPF</code> 映射（<code>map</code>），它用于提供大块的存储。这些存储可被用户空间程序用来进行访问，进而控制 <code>eBPF</code> 程序的运行状态。</li>
+</ul>
+<p>查询系统中正在运行的 <code>eBPF</code> 程序：</p>
+<pre><code># sudo bpftool prog list
+95: kprobe  name hello_world  tag c3d700bdee3931e4  gpl
+	loaded_at 2022-10-30T20:00:44+0800  uid 0
+	xlated 528B  jited 360B  memlock 4096B  map_ids 4
+	btf_id 99
+</code></pre>
+<p>输出中，<code>95</code> 是这个 <code>eBPF</code> 程序的编号，<code>kprobe</code> 是程序的类型，而 <code>hello_world</code> 是程序的名字。</p>
+<pre><code>int hello_world(void * ctx):
+; int hello_world(void *ctx)
+   0: (b7) r1 = 33                  /* ! */
+; ({ char _fmt[] = "Hello, World!"; bpf_trace_printk_(_fmt, sizeof(_fmt)); });
+   1: (6b) *(u16 *)(r10 -4) = r1
+   2: (b7) r1 = 1684828783          /* dlro */
+   3: (63) *(u32 *)(r10 -8) = r1
+   4: (18) r1 = 0x57202c6f6c6c6548  /* W ,olleH */
+   6: (7b) *(u64 *)(r10 -16) = r1
+   7: (bf) r1 = r10
+;
+   8: (07) r1 += -16
+; ({ char _fmt[] = "Hello, World!"; bpf_trace_printk_(_fmt, sizeof(_fmt)); });
+   9: (b7) r2 = 14
+  10: (85) call bpf_trace_printk#-61616
+; return 0;
+  11: (b7) r0 = 0
+  12: (95) exit
+</code></pre>
+<p>其中，分号开头的部分，正是我们前面写的<code>C</code>代码，而其他行则是具体的<code>BPF</code>指令。具体每一行的<code>BPF</code>指令又分为三部分：</p>
+<ul>
+<li>第一部分，冒号前面的数字 <code>0-12</code> ，代表 <code>BPF</code> 指令行数；</li>
+<li>第二部分，括号中的 <code>16</code> 进制数值，表示 <code>BPF</code> 指令码。它的具体含义你可以参考 <a target="_blank" rel="noopener" href="https://github.com/iovisor/bpf-docs/blob/master/eBPF.md">IOVisor BPF</a> 文档，比如第 <code>0</code> 行的 <code>0xb7</code> 表示为 <code>64</code> 位寄存器赋值。</li>
+<li>第三部分，括号后面的部分，就是 <code>BPF</code> 指令的伪代码。</li>
+</ul>
+<p>总结起来，这些指令先通过 <code>R1</code> 和 <code>R2</code> 寄存器设置了 <code>bpf_trace_printk</code> 的参数，然后调用 <code>bpf_trace_printk</code> 函数输出字符串，最后再通过 <code>R0</code> 寄存器返回成功。</p>
+<p>跟踪<code>bpf</code>系统调用：</p>
+<pre><code># -ebpf表示只跟踪bpf系统调用
+sudo strace -v -f -ebpf ./hello.py
+
+
+bpf(BPF_PROG_LOAD,
+    {
+        prog_type=BPF_PROG_TYPE_KPROBE,
+        insn_cnt=13,
+        insns=[
+            {code=BPF_ALU64|BPF_K|BPF_MOV, dst_reg=BPF_REG_1, src_reg=BPF_REG_0, off=0, imm=0x21},
+            {code=BPF_STX|BPF_H|BPF_MEM, dst_reg=BPF_REG_10, src_reg=BPF_REG_1, off=-4, imm=0},
+            {code=BPF_ALU64|BPF_K|BPF_MOV, dst_reg=BPF_REG_1, src_reg=BPF_REG_0, off=0, imm=0x646c726f},
+            {code=BPF_STX|BPF_W|BPF_MEM, dst_reg=BPF_REG_10, src_reg=BPF_REG_1, off=-8, imm=0},
+            {code=BPF_LD|BPF_DW|BPF_IMM, dst_reg=BPF_REG_1, src_reg=BPF_REG_0, off=0, imm=0x6c6c6548},
+            {code=BPF_LD|BPF_W|BPF_IMM, dst_reg=BPF_REG_0, src_reg=BPF_REG_0, off=0, imm=0x57202c6f},
+            {code=BPF_STX|BPF_DW|BPF_MEM, dst_reg=BPF_REG_10, src_reg=BPF_REG_1, off=-16, imm=0},
+            {code=BPF_ALU64|BPF_X|BPF_MOV, dst_reg=BPF_REG_1, src_reg=BPF_REG_10, off=0, imm=0},
+            {code=BPF_ALU64|BPF_K|BPF_ADD, dst_reg=BPF_REG_1, src_reg=BPF_REG_0, off=0, imm=0xfffffff0},
+            {code=BPF_ALU64|BPF_K|BPF_MOV, dst_reg=BPF_REG_2, src_reg=BPF_REG_0, off=0, imm=0xe},
+            {code=BPF_JMP|BPF_K|BPF_CALL, dst_reg=BPF_REG_0, src_reg=BPF_REG_0, off=0, imm=0x6},
+            {code=BPF_ALU64|BPF_K|BPF_MOV, dst_reg=BPF_REG_0, src_reg=BPF_REG_0, off=0, imm=0},
+            {code=BPF_JMP|BPF_K|BPF_EXIT, dst_reg=BPF_REG_0, src_reg=BPF_REG_0, off=0, imm=0}
+        ],
+        prog_name="hello_world",
+        ...
+    },
+    128) = 4
+</code></pre>
+<p>对应前面的 strace 输出结果，这三个参数的具体含义如下。</p>
+<ul>
+<li>第一个参数是 <code>BPF_PROG_LOAD</code> ， 表示加载 <code>BPF</code> 程序。</li>
+<li>第二个参数是 <code>bpf_attr</code> 类型的结构体，表示 <code>BPF</code> 程序的属性。其中，有几个需要你留意的参数，比如：
+<ul>
+<li><code>prog_type</code> 表示 <code>BPF</code> 程序的类型，这儿是 <code>BPF_PROG_TYPE_KPROBE</code> ，跟我们 <code>Python</code> 代码中的 <code>attach_kprobe</code> 一致；</li>
+<li><code>insn_cnt</code> (<code>instructions count</code>) 表示指令条数；</li>
+<li><code>insns</code> (<code>instructions</code>) 包含了具体的每一条指令，这儿的 <code>13</code> 条指令跟我们前面 <code>bpftool prog dump</code>  的结果是一致的（具体的指令格式，你可以参考内核中 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v5.4/source/include/uapi/linux/bpf.h#L65">bpf_insn</a> 的定义）；</li>
+</ul>
+</li>
+<li>第三个参数 <code>128</code> 表示属性的大小。</li>
+</ul>
+<p>在 <code>eBPF</code> 的实现中，诸如内核跟踪（<code>kprobe</code>）、用户跟踪（<code>uprobe</code>）等的事件绑定，都是通过 <code>perf_event_open()</code> 来完成的。</p>
+<p><code>bpf</code>程序加载过程：</p>
+<pre><code>sudo strace -v -f ./hello.py
+
+
+...
+/* 1) 加载BPF程序 */
+bpf(BPF_PROG_LOAD,...) = 4
+...
+
+/* 2）查询事件类型 */
+openat(AT_FDCWD, "/sys/bus/event_source/devices/kprobe/type", O_RDONLY) = 5
+read(5, "6\n", 4096)                    = 2
+close(5)                                = 0
+...
+
+/* 3）创建性能监控事件 */
+perf_event_open(
+    {
+        type=0x6 /* PERF_TYPE_??? */,
+        size=PERF_ATTR_SIZE_VER7,
+        ...
+        wakeup_events=1,
+        config1=0x7f275d195c50,
+        ...
+    },
+    -1,
+    0,
+    -1,
+    PERF_FLAG_FD_CLOEXEC) = 5
+
+/* 4）绑定BPF到kprobe事件 */
+ioctl(5, PERF_EVENT_IOC_SET_BPF, 4)     = 0
+...
+</code></pre>
+<ul>
+<li>首先，借助 <code>bpf</code> 系统调用，加载 <code>BPF</code> 程序，并记住返回的文件描述符；</li>
+<li>然后，查询 <code>kprobe</code> 类型的事件编号。<code>BCC</code> 实际上是通过 <code>/sys/bus/event_source/devices/kprobe/type</code> 来查询的；</li>
+<li>接着，调用 <code>perf_event_open</code> 创建性能监控事件。比如，事件类型（<code>type</code> 是上一步查询到的 <code>6</code>）、事件的参数（ <code>config1</code> 包含了内核函数 <code>do_sys_openat2</code> ）等；</li>
+<li>最后，再通过 <code>ioctl</code> 的 <code>PERF_EVENT_IOC_SET_BPF</code> 命令，将 <code>BPF</code> 程序绑定到性能监控事件。</li>
+</ul>
+<p>可以参考内核源码 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v5.4/source/kernel/events/core.c#L9039">perf_event_set_bpf_prog</a> 的实现；而最终性能监控调用 <code>BPF</code> 程序的实现，则可以参考内核源码 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v5.4/source/kernel/trace/trace_kprobe.c#L1351">kprobe_perf_func</a> 的实现。</p>
+<h2 id="bpf-系统调用"><a class="markdownIt-Anchor" href="#bpf-系统调用"></a> BPF 系统调用</h2>
+<p>在命令行中输入 <a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man2/bpf.2.html">man bpf</a> ，就可以查询到 <code>BPF</code> 系统调用的调用格式：</p>
+<pre><code>#include &lt;linux/bpf.h&gt;
+
+// 第一个，cmd ，代表操作命令，比如上一讲中我们看到的 BPF_PROG_LOAD 就是加载 eBPF 程序；
+// 第二个，attr，代表 bpf_attr 类型的 eBPF 属性指针，不同类型的操作命令需要传入不同的属性参数；
+// 第三个，size ，代表属性的大小。
+// 注意，不同版本的内核所支持的 BPF 命令是不同的，具体支持的命令列表可以参考内核头文件 include/uapi/linux/bpf.h 中 bpf_cmd 的定义。比如，v5.13 内核已经支持 36 个 BPF 命令：
+int bpf(int cmd, union bpf_attr *attr, unsigned int size);
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-19ef9323331f96b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-50e2251c0c2d7bc7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="bpf-映射"><a class="markdownIt-Anchor" href="#bpf-映射"></a> BPF 映射</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d9421d80d53bab71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>BPF</code> 辅助函数中并没有 <code>BPF</code> 映射的创建函数，<code>BPF</code> 映射只能通过用户态程序的系统调用来创建。比如，你可以通过下面的示例代码来创建一个 <code>BPF</code> 映射，并返回映射的文件描述符：</p>
+<pre><code>int bpf_create_map(enum bpf_map_type map_type,
+       unsigned int key_size,
+       unsigned int value_size, unsigned int max_entries)
+{
+  union bpf_attr attr = {
+    .map_type = map_type,
+    .key_size = key_size,
+    .value_size = value_size,
+    .max_entries = max_entries
+  };
+  return bpf(BPF_MAP_CREATE, &amp;attr, sizeof(attr));
+}
+</code></pre>
+<p>你可以使用如下的 <code>bpftool</code> 命令，来查询当前系统支持哪些映射类型：</p>
+<pre><code>$ bpftool feature probe | grep map_type
+eBPF map_type hash is available
+eBPF map_type array is available
+eBPF map_type prog_array is available
+eBPF map_type perf_event_array is available
+eBPF map_type percpu_hash is available
+eBPF map_type percpu_array is available
+eBPF map_type stack_trace is available
+...
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f40e140988527f29.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果你的 <code>eBPF</code> 程序使用了 <code>BCC</code> 库，你还可以使用预定义的宏来简化 <code>BPF</code> 映射的创建过程。</p>
+<pre><code>// 使用默认参数 key_type=u64, leaf_type=u64, size=10240
+BPF_HASH(stats);
+
+// 使用自定义key类型，保持默认 leaf_type=u64, size=10240
+struct key_t {
+  char c[80];
+};
+BPF_HASH(counts, struct key_t);
+
+// 自定义所有参数
+BPF_HASH(cpu_time, uint64_t, uint64_t, 4096);
+</code></pre>
+<p>除了创建之外，映射的删除也需要你特别注意。<code>BPF</code> 系统调用中并没有删除映射的命令，这是因为 <code>BPF</code> 映射会在用户态程序<strong>关闭文件描述符的时候自动删除</strong>（即<code>close(fd)</code>）。 如果你想在程序退出后还保留映射，就需要调用 <code>BPF_OBJ_PIN</code> 命令，将映射挂载到 <code>/sys/fs/bpf</code> 中。</p>
+<p>在调试 BPF 映射相关的问题时，你还可以通过 bpftool 来查看或操作映射的具体内容。比如，你可以通过下面这些命令创建、更新、输出以及删除映射：</p>
+<pre><code>//创建一个哈希表映射，并挂载到/sys/fs/bpf/stats_map(Key和Value的大小都是2字节)
+bpftool map create /sys/fs/bpf/stats_map type hash key 2 value 2 entries 8 name stats_map
+
+//查询系统中的所有映射
+bpftool map
+//示例输出
+//340: hash  name stats_map  flags 0x0
+//        key 2B  value 2B  max_entries 8  memlock 4096B
+
+//向哈希表映射中插入数据
+bpftool map update name stats_map key 0xc1 0xc2 value 0xa1 0xa2
+
+//查询哈希表映射中的所有数据
+ 
+bpftool map dump name stats_map
+//示例输出
+//key: c1 c2  value: a1 a2
+//Found 1 element
+
+//删除哈希表映射
+rm /sys/fs/bpf/stats_map
+</code></pre>
+<h2 id="bpf-类型格式-btf"><a class="markdownIt-Anchor" href="#bpf-类型格式-btf"></a> BPF 类型格式 (BTF)</h2>
+<p>从内核 <code>5.2</code> 开始，只要开启了 <code>CONFIG_DEBUG_INFO_BTF</code>，在编译内核时，内核数据结构的定义就会自动内嵌在内核二进制文件 <code>vmlinux</code> 中。并且，你还可以借助下面的命令，把这些数据结构的定义导出到一个头文件中（通常命名为 <code>vmlinux.h</code>）:</p>
+<pre><code>// 你在开发 eBPF 程序时只需要引入一个 vmlinux.h 即可
+bpftool btf dump file /sys/kernel/btf/vmlinux format c &gt; vmlinux.h
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0ff1f91d72b4b847.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<pre><code># bpftool map dump id 386
+[
+  {
+      "key": 0,
+      "value": {
+          "eth0": {
+              "value": 0,
+              "ifindex": 0,
+              "mac": []
+          }
+      }
+  }
+]
+
+https://github.com/aquasecurity/btfhub
+</code></pre>
+<h2 id="ebpf-程序可以分成几类"><a class="markdownIt-Anchor" href="#ebpf-程序可以分成几类"></a> eBPF 程序可以分成几类？</h2>
+<p>根据内核头文件 <a target="_blank" rel="noopener" href="https://elixir.bootlin.com/linux/v5.13/source/include/uapi/linux/bpf.h#L908">include/uapi/linux/bpf.h</a> 中 <code>bpf_prog_type</code> 的定义，<code>Linux</code> 内核 <code>v5.13</code> 已经支持 <code>30</code> 种不同类型的 <code>eBPF</code> 程序（注意， <code>BPF_PROG_TYPE_UNSPEC</code>表示未定义）：</p>
+<pre><code>enum bpf_prog_type {
+  BPF_PROG_TYPE_UNSPEC, /* Reserve 0 as invalid program type */
+  BPF_PROG_TYPE_SOCKET_FILTER,
+  BPF_PROG_TYPE_KPROBE,
+  BPF_PROG_TYPE_SCHED_CLS,
+  BPF_PROG_TYPE_SCHED_ACT,
+  BPF_PROG_TYPE_TRACEPOINT,
+  BPF_PROG_TYPE_XDP,
+  BPF_PROG_TYPE_PERF_EVENT,
+  BPF_PROG_TYPE_CGROUP_SKB,
+  BPF_PROG_TYPE_CGROUP_SOCK,
+  BPF_PROG_TYPE_LWT_IN,
+  BPF_PROG_TYPE_LWT_OUT,
+  BPF_PROG_TYPE_LWT_XMIT,
+  BPF_PROG_TYPE_SOCK_OPS,
+  BPF_PROG_TYPE_SK_SKB,
+  BPF_PROG_TYPE_CGROUP_DEVICE,
+  BPF_PROG_TYPE_SK_MSG,
+  BPF_PROG_TYPE_RAW_TRACEPOINT,
+  BPF_PROG_TYPE_CGROUP_SOCK_ADDR,
+  BPF_PROG_TYPE_LWT_SEG6LOCAL,
+  BPF_PROG_TYPE_LIRC_MODE2,
+  BPF_PROG_TYPE_SK_REUSEPORT,
+  BPF_PROG_TYPE_FLOW_DISSECTOR,
+  BPF_PROG_TYPE_CGROUP_SYSCTL,
+  BPF_PROG_TYPE_RAW_TRACEPOINT_WRITABLE,
+  BPF_PROG_TYPE_CGROUP_SOCKOPT,
+  BPF_PROG_TYPE_TRACING,
+  BPF_PROG_TYPE_STRUCT_OPS,
+  BPF_PROG_TYPE_EXT,
+  BPF_PROG_TYPE_LSM,
+  BPF_PROG_TYPE_SK_LOOKUP,
+};	
+</code></pre>
+<p>对于具体的内核来说，因为不同内核的版本和编译配置选项不同，一个内核并不会支持所有的程序类型。你可以在命令行中执行下面的命令，来查询当前系统支持的程序类型：</p>
+<pre><code>bpftool feature probe | grep program_type
+</code></pre>
+<ul>
+<li>第一类是跟踪，即从内核和程序的运行状态中提取跟踪信息，来了解当前系统正在发生什么。</li>
+<li>第二类是网络，即对网络数据包进行过滤和处理，以便了解和控制网络数据包的收发过程。</li>
+<li>第三类是除跟踪和网络之外的其他类型，包括安全控制、BPF 扩展等等。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2104c35ef09fb8e7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="网络类-ebpf-程序"><a class="markdownIt-Anchor" href="#网络类-ebpf-程序"></a> 网络类 eBPF 程序</h2>
+<p>网络类 <code>eBPF</code> 程序主要用于对网络数据包进行过滤和处理，进而实现网络的观测、过滤、流量控制以及性能优化等各种丰富的功能。根据事件触发位置的不同，网络类 <code>eBPF</code> 程序又可以分为 <code>XDP</code>（<code>eXpress Data Path</code>，高速数据路径）程序、<code>TC</code>（<code>Traffic Control</code>，流量控制）程序、套接字程序以及 <code>cgroup</code> 程序，下面我们来分别看看。</p>
+<p><strong>XDP 程序</strong></p>
+<p><code>XDP</code> 程序的类型定义为 <code>BPF_PROG_TYPE_XDP</code>，它在网络驱动程序刚刚收到数据包时触发执行。由于无需通过繁杂的内核网络协议栈，<code>XDP</code> 程序可用来实现高性能的网络处理方案，常用于 <code>DDoS</code> 防御、防火墙、<code>4</code> 层负载均衡等场景。</p>
+<p>你需要注意，XDP 程序并不是绕过了内核协议栈，它只是在内核协议栈之前处理数据包，而处理过的数据包还可以正常通过内核协议栈继续处理。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-945ab7d6ec274be3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>根据网卡和网卡驱动是否原生支持 <code>XDP</code> 程序，<code>XDP</code> 运行模式可以分为下面这三种：</p>
+<ul>
+<li>通用模式。它不需要网卡和网卡驱动的支持，<code>XDP</code> 程序像常规的网络协议栈一样运行在内核中，性能相对较差，一般用于测试；</li>
+<li>原生模式。它需要网卡驱动程序的支持，<code>XDP</code> 程序在网卡驱动程序的早期路径运行；</li>
+<li>卸载模式。它需要网卡固件支持 <code>XDP</code> 卸载，<code>XDP</code> 程序直接运行在网卡上，而不再需要消耗主机的 <code>CPU</code> 资源，具有最好的性能。</li>
+</ul>
+<p>无论哪种模式，<code>XDP</code> 程序在处理过网络包之后，都需要根据 <code>eBPF</code> 程序执行结果，决定数据包的去处。这些执行结果对应以下 <code>5</code> 种 <code>XDP</code> 程序结果码：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0b0f42e5ec1d8e5f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>通常来说，<code>XDP</code> 程序通过 <code>ip link</code> 命令加载到具体的网卡上，加载格式为：</p>
+<pre><code># eth1 为网卡名
+# xdpgeneric 设置运行模式为通用模式
+# xdp-example.o 为编译后的 XDP 字节码
+sudo ip link set dev eth1 xdpgeneric object xdp-example.o
+</code></pre>
+<p>而卸载 <code>XDP</code> 程序也是通过 <code>ip link</code> 命令，具体参数如下：</p>
+<pre><code>sudo ip link set veth1 xdpgeneric off
+</code></pre>
+<p>除了 <code>ip link</code>之外， <code>BCC</code> 也提供了方便的库函数，让我们可以在同一个程序中管理 <code>XDP</code> 程序的生命周期：</p>
+<pre><code>from bcc import BPF
+
+# 编译XDP程序
+b = BPF(src_file="xdp-example.c")
+fn = b.load_func("xdp-example", BPF.XDP)
+
+# 加载XDP程序到eth0网卡
+device = "eth0"
+b.attach_xdp(device, fn, 0)
+
+# 其他处理逻辑
+...
+
+# 卸载XDP程序
+b.remove_xdp(device)
+</code></pre>
+<p><strong>TC 程序</strong></p>
+<p><code>TC</code> 程序的类型定义为 <code>BPF_PROG_TYPE_SCHED_CLS</code> 和 <code>BPF_PROG_TYPE_SCHED_ACT</code>，分别作为 <code>Linux</code> 流量控制 的分类器和执行器。<code>Linux</code> 流量控制通过网卡队列、排队规则、分类器、过滤器以及执行器等，实现了对网络流量的整形调度和带宽控制。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ee225eb5dea52746.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>得益于内核 <code>v4.4</code> 引入的 <code>direct-action</code> 模式，<code>TC</code> 程序可以直接在一个程序内完成分类和执行的动作，而无需再调用其他的 <code>TC</code> 排队规则和分类器，具体如下图所示：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-03af2f57084353fb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>同 <code>XDP</code> 程序相比，<code>TC</code> 程序可以直接获取内核解析后的网络报文数据结构<code>sk_buff</code>（<code>XDP</code> 则是 <code>xdp_buff</code>），并且可在网卡的接收和发送两个方向上执行（<code>XDP</code> 则只能用于接收）。下面我们来具体看看  <code>TC</code> 程序的执行位置：</p>
+<ul>
+<li>对于接收的网络包，<code>TC</code> 程序在网卡接收（<code>GRO</code>）之后、协议栈处理（包括 IP 层处理和 iptables 等）之前执行；</li>
+<li>对于发送的网络包，<code>TC</code> 程序在协议栈处理（包括 <code>IP</code> 层处理和 <code>iptables</code> 等）之后、数据包发送到网卡队列（<code>GSO</code>）之前执行。</li>
+</ul>
+<p>除此之外，由于 <code>TC</code> 运行在内核协议栈中，不需要网卡驱动程序做任何改动，因而可以挂载到任意类型的网卡设备（包括容器等使用的虚拟网卡）上。</p>
+<p>同 <code>XDP</code> 程序一样，<code>TC eBPF</code> 程序也可以通过 <code>Linux</code> 命令行工具来加载到网卡上，不过相应的工具要换成 <code>tc</code>。你可以通过下面的命令，分别加载接收和发送方向的 <code>eBPF</code> 程序：</p>
+<pre><code># 创建 clsact 类型的排队规则
+sudo tc qdisc add dev eth0 clsact
+
+# 加载接收方向的 eBPF 程序
+sudo tc filter add dev eth0 ingress bpf da obj tc-example.o sec ingress
+
+# 加载发送方向的 eBPF 程序
+sudo tc filter add dev eth0 egress bpf da obj tc-example.o sec egress
+</code></pre>
+<p><strong>套接字程序</strong></p>
+<p>套接字程序用于过滤、观测或重定向套接字网络包，具体的种类也比较丰富。根据类型的不同，套接字 <code>eBPF</code> 程序可以挂载到套接字（<code>socket</code>）、控制组（<code>cgroup</code>）以及网络命名空间（<code>netns</code>）等各个位置。你可以根据具体的应用场景，选择一个或组合多个类型的 <code>eBPF</code> 程序，去控制套接字的网络包收发过程。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f092e83ab4594b13.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>cgroup 程序</strong></p>
+<p><code>cgroup</code> 程序用于对 <code>cgroup</code> 内所有进程的网络过滤、套接字选项以及转发等进行动态控制，它最典型的应用场景是对容器中运行的多个进程进行网络控制。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1d0dd5e2483d1115.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这些类型的 <code>BPF</code> 程序都可以通过 <code>BPF</code> 系统调用的 <code>BPF_PROG_ATTACH</code> 命令来进行挂载，并设置挂载类型为匹配的 <code>BPF_CGROUP_xxx</code> 类型。比如，在挂载 <code>BPF_PROG_TYPE_CGROUP_DEVICE</code> 类型的 <code>BPF</code> 程序时，需要设置 <code>bpf_attach_type</code> 为 <code>BPF_CGROUP_DEVICE</code>：</p>
+<pre><code>union bpf_attr attr = {};
+attr.target_fd = target_fd;            // cgroup文件描述符
+attr.attach_bpf_fd = prog_fd;          // BPF程序文件描述符
+attr.attach_type = BPF_CGROUP_DEVICE;  // 挂载类型为BPF_CGROUP_DEVICE
+
+if (bpf(BPF_PROG_ATTACH, &amp;attr, sizeof(attr)) &lt; 0) {
+  return -errno;
+}
+
+...
+</code></pre>
+<p>注意，这几类网络 <code>eBPF</code> 程序是在不同的事件触发时执行的，因此，在实际应用中我们通常可以把多个类型的 <code>eBPF</code> 程序结合起来，一起使用，来实现复杂的网络控制功能。比如，最流行的 <code>Kubernetes</code> 网络方案 <code>Cilium</code> 就大量使用了 <code>XDP</code>、<code>TC</code> 和套接字 <code>eBPF</code> 程序，如下图（图片来自 <code>Cilium</code> 官方文档，图中黄色部分即为 <code>Cilium eBPF</code> 程序）所示：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a7fd5ea0d90dbbbb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>其他类 eBPF 程序</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-66baf136806f68e4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h1 id="进阶"><a class="markdownIt-Anchor" href="#进阶"></a> 进阶</h1>
+<h2 id="内核跟踪"><a class="markdownIt-Anchor" href="#内核跟踪"></a> 内核跟踪</h2>
+<p>内核函数是一个非稳定 <code>API</code>，在新版本中可能会发生变化，并且内核函数的数量也在不断增长中。以 <code>v5.13.0</code> 为例，总的内核符号表数量已经超过了 <code>16</code> 万：</p>
+<pre><code>$ cat /proc/kallsyms | wc -l
+165694
+</code></pre>
+<p>为了方便内核开发者获取所需的跟踪点信息，内核调试文件系统还向用户空间提供了内核调试所需的基本信息，如内核符号列表、跟踪点、函数跟踪（<code>ftrace</code>）状态以及参数格式等。你可以在终端中执行  <code>sudo ls /sys/kernel/debug</code>  来查询内核调试文件系统的具体信息。</p>
+<p>比如，执行下面的命令，就可以查询  <code>execve</code>  系统调用的参数格式</p>
+<pre><code>sudo cat /sys/kernel/debug/tracing/events/syscalls/sys_enter_execve/format
+
+sudo mount -t debugfs debugfs /sys/kernel/debug
+</code></pre>
+<p><strong>利用 bpftrace 查询跟踪点</strong></p>
+<p><code>bpftrace</code> 在 <code>eBPF</code> 和 <code>BCC</code> 之上构建了一个简化的跟踪语言，通过简单的几行脚本，就可以实现复杂的跟踪功能。并且，多行的跟踪指令也可以放到脚本文件中执行（脚本后缀通常为 &nbsp;<code>.bt</code>）。</p>
+<pre><code># Ubuntu 19.04
+sudo apt-get install -y bpftrace
+
+# RHEL8/CentOS8
+sudo dnf install -y bpftrace
+
+
+# 查询所有内核插桩和跟踪点
+sudo bpftrace -l
+
+# 使用通配符查询所有的系统调用跟踪点
+sudo bpftrace -l 'tracepoint:syscalls:*'
+
+# 使用通配符查询所有名字包含"execve"的跟踪点
+sudo bpftrace -l '*execve*'
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f6146e6fa5fd8bed.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>比如，下面就是一个查询系统调用  <code>execve</code>  入口参数（对应系统调用<code>sys_enter_execve</code>）和返回值（对应系统调用<code>sys_exit_execve</code>）的示例：</p>
+<pre><code># 查询execve入口参数格式
+$ sudo bpftrace -lv tracepoint:syscalls:sys_enter_execve
+tracepoint:syscalls:sys_enter_execve
+    int __syscall_nr
+    const char * filename
+    const char *const * argv
+    const char *const * envp
+
+# 查询execve返回值格式
+$ sudo bpftrace -lv tracepoint:syscalls:sys_exit_execve
+tracepoint:syscalls:sys_exit_execve
+    int __syscall_nr
+    long ret
+</code></pre>
+<p><strong>如何利用内核跟踪点排查短时进程问题？</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4c64949692615594.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>借助刚才提到的  <code>bpftrace</code>  工具，你可以执行下面的命令，查询所有包含  <code>execve</code>  关键字的跟踪点：</p>
+<pre><code>sudo bpftrace -l '*execve*'
+
+
+kprobe:__ia32_compat_sys_execve
+kprobe:__ia32_compat_sys_execveat
+kprobe:__ia32_sys_execve
+kprobe:__ia32_sys_execveat
+kprobe:__x32_compat_sys_execve
+kprobe:__x32_compat_sys_execveat
+kprobe:__x64_sys_execve
+kprobe:__x64_sys_execveat
+kprobe:audit_log_execve_info
+kprobe:bprm_execve
+kprobe:do_execveat_common.isra.0
+kprobe:kernel_execve
+tracepoint:syscalls:sys_enter_execve
+tracepoint:syscalls:sys_enter_execveat
+tracepoint:syscalls:sys_exit_execve
+tracepoint:syscalls:sys_exit_execveat
+</code></pre>
+<p>从输出中，你可以发现这些函数可以分为内核插桩（<code>kprobe</code>）和跟踪点（<code>tracepoint</code>）两类。<code>内核插桩</code>属于不稳定接口，而<code>跟踪点</code>则是稳定接口。因而，<strong>在内核插桩和跟踪点两者都可用的情况下，应该选择更稳定的跟踪点</strong>，以保证 <code>eBPF</code> 程序的可移植性（即在不同版本的内核中都可以正常执行）。</p>
+<p><strong>bpftrace、BCC 、libbpf 对比</strong></p>
+<ul>
+<li><code>bpftrace</code> 通常用在快速排查和定位系统上，它支持用单行脚本的方式来快速开发并执行一个 <code>eBPF</code> 程序。不过，<code>bpftrace</code> 的功能有限，不支持特别复杂的 <code>eBPF</code> 程序，也依赖于 <code>BCC</code> 和 <code>LLVM</code> 动态编译执行。</li>
+<li><code>BCC</code> 通常用在开发复杂的 <code>eBPF</code> 程序中，其内置的各种小工具也是目前应用最为广泛的 <code>eBPF</code> 小程序。不过，<code>BCC</code> 也不是完美的，它依赖于 <code>LLVM</code> 和内核头文件才可以动态编译和加载 <code>eBPF</code> 程序。</li>
+<li><code>libbpf</code> 是从内核中抽离出来的标准库，用它开发的 <code>eBPF</code> 程序可以直接分发执行，这样就不需要每台机器都安装 <code>LLVM</code> 和内核头文件了。不过，它要求内核开启 <code>BTF</code> 特性，需要非常新的发行版才会默认开启（如 <code>RHEL 8.2+</code> 和 <code>Ubuntu 20.10+</code> 等）。</li>
+</ul>
+<p>如何使用 bpftrace 来跟踪短时进程？</p>
+<pre><code>	sudo bpftrace -e 'tracepoint:syscalls:sys_enter_execve,tracepoint:syscalls:sys_enter_execveat { printf("%-6d %-8s", pid, comm); join(args-&gt;argv);}'
+	sudo bpftrace -e 'tracepoint:syscalls:sys_enter_execve { printf("%ld %s  ", nsecs, comm); join(args-&gt;argv);}'
+</code></pre>
+<ul>
+<li>bpftrace -e  表示直接从后面的字符串参数中读入 bpftrace 程序（除此之外，它还支持从文件中读入 bpftrace 程序）；</li>
+<li>tracepoint:syscalls:sys_enter_execve,tracepoint:syscalls:sys_enter_execveat  表示用逗号分隔的多个跟踪点，其后的中括号表示跟踪点的处理函数；</li>
+<li>printf()  表示向终端中打印字符串，其用法类似于 C 语言中的  printf()  函数；</li>
+<li>pid  和  comm  是 bpftrace 内置的变量，分别表示进程 PID 和进程名称（你可以在其官方文档中找到其他的内置变量）；</li>
+<li>join(args-&gt;argv)  表示把字符串数组格式的参数用空格拼接起来，再打印到终端中。对于跟踪点来说，你可以使用  args-&gt;参数名  的方式直接读取参数（比如这里的  args-&gt;argv  就是读取系统调用中的  argv  参数）。</li>
+</ul>
+<p><strong>BCC 内核跟踪</strong></p>
+<p>可以用下面的方式来创建这两个映射：</p>
+<pre><code>struct data_t {
+    u32 pid;
+    char comm[TASK_COMM_LEN];
+    int retval;
+    unsigned int args_size;
+    char argv[FULL_MAX_ARGS_ARR];
+};
+BPF_PERF_OUTPUT(events);
+BPF_HASH(tasks, u32, struct data_t);
+</code></pre>
+<ul>
+<li><code>struct data_t</code>  定义了一个包含进程基本信息的数据结构，它将用在哈希映射的值中（其中的参数大小  <code>args_size</code>  会在读取参数内容的时候用到）；</li>
+<li><code>BPF_PERF_OUTPUT(events)</code> 定义了一个性能事件映射；</li>
+<li><code>BPF_HASH(tasks, u32, struct data_t)</code>  定义了一个哈希映射，其键为 <code>32</code> 位的进程 <code>PID</code>，而值则是进程基本信息  <code>data_t</code>。</li>
+</ul>
+<p>两个映射定义好之后，接下来就是定义跟踪点的处理函数。在 <code>BCC</code> 中，你可以通过  <code>TRACEPOINT_PROBE(category, event)</code>  来定义一个跟踪点处理函数。<code>BCC</code> 会将所有的参数放入  <code>args</code>  这个变量中，这样使用  <code>args-&gt;&lt;参数名&gt;</code>  就可以访问跟踪点的参数值。</p>
+<pre><code>// 引入内核头文件
+#include &lt;uapi/linux/ptrace.h&gt;
+#include &lt;linux/sched.h&gt;
+#include &lt;linux/fs.h&gt;
+
+// 定义sys_enter_execve跟踪点处理函数.
+TRACEPOINT_PROBE(syscalls, sys_enter_execve)
+{
+    // 变量定义
+    unsigned int ret = 0;
+    
+    // BCC 把所有参数都放到了  args  中，你可以使用  args-&gt;argv  来访问参数列表：
+    const char **argv = (const char **)(args-&gt;argv);
+
+    // 调用  bpf_get_current_pid_tgid()  查询进程 PID，调用  bpf_get_current_comm()  读取进程名称：
+    // 获取进程PID和进程名称
+    struct data_t data = { };
+    u32 pid = bpf_get_current_pid_tgid();
+    data.pid = pid;
+    bpf_get_current_comm(&amp;data.comm, sizeof(data.comm));
+
+    // 获取第一个参数（即可执行文件的名字）
+    if (__bpf_read_arg_str(&amp;data, (const char *)argv[0]) &lt; 0) {
+        goto out;
+    }
+
+    // 获取其他参数（限定最多5个）
+    #pragma unrollfor (int i = 1; i &lt; TOTAL_MAX_ARGS; i++) {
+        if (__bpf_read_arg_str(&amp;data, (const char *)argv[i]) &lt; 0) {
+            goto out;
+        }
+    }
+
+ out:
+    // 存储到哈希映射中
+    tasks.update(&amp;pid, &amp;data);
+    return 0;
+}
+
+
+// 从用户空间读取字符串
+// 在调用  bpf_probe_read_user_str()  前后，需要对指针位置和返回值进行校验，这可以帮助 eBPF 验证器获取指针读写的边界（如果你感兴趣，可以参考这篇文章，了解更多的内存访问验证细节）。
+static int __bpf_read_arg_str(struct data_t *data, const char *ptr)
+{
+    if (data-&gt;args_size &gt; LAST_ARG) {
+        return -1;
+    }
+
+	// bpf_probe_read_user_str()  返回的是包含字符串结束符  \0  的长度。为了拼接所有的字符串，在计算已读取参数长度的时候，需要把  \0  排除在外。
+   // &amp;data-&gt;argv[data-&gt;args_size]  用来获取要存放参数的位置指针，这是为了把多个参数拼接到一起。
+   // 在调用  bpf_probe_read_user_str()  前后，需要对指针位置和返回值进行校验，这可以帮助 eBPF 验证器获取指针读写的边界
+    int ret = bpf_probe_read_user_str(&amp;data-&gt;argv[data-&gt;args_size], ARGSIZE, (void *)ptr);
+    if (ret &gt; ARGSIZE || ret &lt; 0) {
+        return -1;
+    }
+
+    // increase the args size. the first tailing '\0' is not counted and hence it
+    // would be overwritten by the next call.
+    data-&gt;args_size += (ret - 1);
+
+    return 0;
+}
+
+
+// 定义sys_exit_execve跟踪点处理函数.
+TRACEPOINT_PROBE(syscalls, sys_exit_execve)
+{
+    // 从哈希映射中查询进程基本信息
+    u32 pid = bpf_get_current_pid_tgid();
+    struct data_t *data = tasks.lookup(&amp;pid);
+
+    // 填充返回值并提交到性能事件映射中
+    if (data != NULL) {
+        data-&gt;retval = args-&gt;ret;
+        events.perf_submit(args, data, sizeof(struct data_t));
+
+        // 最后清理进程信息
+        tasks.delete(&amp;pid);
+    }
+
+    return 0;
+}
+</code></pre>
+<p><code>Python</code> 前端处理，<code>Python</code> 前端逻辑需要 <code>eBPF</code> 程序加载、挂载到内核函数和跟踪点，以及通过 <code>BPF</code> 映射获取和打印执行结果等几个步骤。其中，因为我们已经使用了  <code>TRACEPOINT_PROBE</code>  宏定义，来定义 <code>eBPF</code> 跟踪点处理函数，<code>BCC</code> 在加载字节码的时候，会帮你自动把它挂载到正确的跟踪点上，所以挂载的步骤就可以忽略。完整的 <code>Python</code> 程序如下所示：</p>
+<pre><code># 引入库函数
+from bcc import BPF
+from bcc.utils import printb
+
+# 1) 加载eBPF代码
+b = BPF(src_file="execsnoop.c")
+
+# 2) 输出头
+print("%-6s %-16s %-3s %s" % ("PID", "COMM", "RET", "ARGS"))
+
+# 3) 定义性能事件打印函数
+def print_event(cpu, data, size):
+    # BCC自动根据"struct data_t"生成数据结构s
+    event = b["events"].event(data)
+    printb(b"%-6d %-16s %-3d %-16s" % (event.pid, event.comm, event.retval, event.argv))
+
+# 4) 绑定性能事件映射和输出函数，并从映射中循环读取数据
+b["events"].open_perf_buffer(print_event)
+while 1:
+    try:
+        b.perf_buffer_poll()
+    except KeyboardInterrupt:
+        exit()
+</code></pre>
+<p><strong>libbpf 方法</strong></p>
+<p>略</p>
+<h2 id="用户态追踪"><a class="markdownIt-Anchor" href="#用户态追踪"></a> 用户态追踪</h2>
+<p>如何查询用户进程跟踪点？</p>
+<p>在跟踪内核的状态之前，你需要利用内核提供的调试信息查询内核函数、内核跟踪点以及性能事件等。类似地，在跟踪应用进程之前，你也需要知道这个进程所对应的二进制文件中提供了哪些可用的跟踪点。那么，从哪里可以找到这些信息呢？如果你使用 <code>GDB</code> 之类的应用调试过程序，这时应该已经想到了，那就是应用程序二进制文件中的调试信息。</p>
+<p>在静态语言的编译过程中，通常你可以加上  <code>-g</code>  选项保留调试信息。这样，源代码中的函数、变量以及它们对应的代码行号等信息，就以  <a target="_blank" rel="noopener" href="https://dwarfstd.org/">DWARF</a>（<code>Debugging With Attributed Record Formats</code>，<code>Linux</code> 和类 <code>Unix</code> 平台最主流的调试信息格式）格式存储到了编译后的二进制文件中。</p>
+<p>有了调试信息，你就可以通过  <code>readelf</code>、<code>objdump</code>、<code>nm</code>  等工具，查询可用于跟踪的函数、变量等符号列表。</p>
+<pre><code># 查询符号表（RHEL8系统中请把动态库路径替换为/usr/lib64/libc.so.6）
+readelf -Ws /usr/lib/x86_64-linux-gnu/libc.so.6
+
+# 查询USDT信息（USDT信息位于ELF文件的notes段）
+readelf -n /usr/lib/x86_64-linux-gnu/libc.so.6
+
+
+# 查询uprobe（RHEL8系统中请把动态库路径替换为/usr/lib64/libc.so.6）
+bpftrace -l 'uprobe:/usr/lib/x86_64-linux-gnu/libc.so.6:*'
+
+# 查询USDT
+bpftrace -l 'usdt:/usr/lib/x86_64-linux-gnu/libc.so.6:*'
+</code></pre>
+<p>同内核跟踪点类似，你也可以加上  <code>-v</code>  选项查询用户探针的参数格式。不过需要再次强调的是，想要通过二进制文件查询符号表和参数定义，必须在编译的时候保留 <code>DWARF</code> 调试信息。</p>
+<p><code>ELF</code> 符号表包含  <code>.symtab</code>（应用本地的符号）和  <code>.dynsym</code>（调用到外部的符号），<code>strip</code> 命令实际上只是删除了  <code>.symtab</code>  的内容。</p>
+<p>除了符号表之外，理论上你可以把 <code>uprobe</code> 插桩到二进制文件的任意地址。不过这要求你对应用程序 <code>ELF</code> 格式的地址空间非常熟悉，并且具体的地址会随着应用的迭代更新而发生变化。所以，在需要跟踪地址的场景中，一定要记得去 <code>ELF</code> 二进制文件动态获取地址信息。</p>
+<p><strong>uprobe 是基于文件的。当文件中的某个函数被跟踪时，除非对进程 PID 进行了过滤，默认所有使用到这个文件的进程都会被插桩。</strong></p>
+<p><strong>Bash 里面到底执行过什么命令</strong></p>
+<p>在跟踪 <code>Bash</code> 之前，首先执行下面的命令，安装它的调试信息：</p>
+<pre><code># Ubuntu
+sudo apt install bash-dbgsym
+
+# RHEL
+sudo debuginfo-install bash
+</code></pre>
+<p>有了 <code>Bash</code> 调试信息之后，再执行下面的几步，查询 <code>Bash</code> 的符号表：</p>
+<pre><code># 第一步，查询 Build ID（用于关联调试信息）
+readelf -n /usr/bin/bash | grep 'Build ID'
+# 输出示例为：
+#     Build ID: 7b140b33fd79d0861f831bae38a0cdfdf639d8bc
+
+# 第二步，找到调试信息对应的文件（调试信息位于目录/usr/lib/debug/.build-id中，上一步中得到的Build ID前两个字母为目录名）
+ls /usr/lib/debug/.build-id/7b/140b33fd79d0861f831bae38a0cdfdf639d8bc.debug
+
+# 第三步，从调试信息中查询符号表
+readelf -Ws /usr/lib/debug/.build-id/7b/140b33fd79d0861f831bae38a0cdfdf639d8bc.debug
+</code></pre>
+<p>参考 Bash 的源代码，每条 Bash 命令在运行前，都会调用  charreadline (const charprompt)  函数读取用户的输入，然后再去解析执行（Bash 自身是使用编译型语言 C 开发的，而 Bash 语言则是一种解释型语言）。</p>
+<p>注意，readline  函数的参数是命令行提示符（通过环境变量  PS1、PS2 等设置），而返回值才是用户的输入。因而，我们只需要跟踪  readline  函数的返回值，也就是使用  uretprobe  跟踪。</p>
+<p>bpftrace、BCC 以及 libbpf 等工具均支持 uretprobe，因而最简单的跟踪方法就是使用 bpftrace 的单行命令：</p>
+<pre><code>// uretprobe:/usr/bin/bash:readline  设置跟踪类型为  uretprobe，跟踪的二进制文件为  /usr/bin/bash，跟踪符号为  readline；
+// 中括号里的内容为 uretprobe 的处理函数；
+// 处理函数中，uid  和  retval  是两个内置变量，分别表示用户 UID 以及返回值；
+// str 用于从指针中读取字符串， str(retval) 就是 Bash 中输入命令的字符串；
+// printf 用于向终端中打印一个字符串。
+sudo bpftrace -e 'uretprobe:/usr/bin/bash:readline { printf("User %d executed \"%s\" command\n", uid, str(retval)); }'
+</code></pre>
+<h2 id="网络跟踪"><a class="markdownIt-Anchor" href="#网络跟踪"></a> 网络跟踪</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-65c228e224dd639c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>eBPF</code> 提供了大量专用于网络的 <code>eBPF</code> 程序类型，包括 <code>XDP</code> 程序、<code>TC</code> 程序、套接字程序以及 <code>cgroup</code> 程序等。这些类型的程序涵盖了从网卡（如卸载到硬件网卡中的 <code>XDP</code> 程序）到网卡队列（如 <code>TC</code> 程序）、封装路由（如轻量级隧道程序）、<code>TCP</code> 拥塞控制、套接字（如 <code>sockops</code> 程序）等内核协议栈，再到同属于一个 <code>cgroup</code> 的一组进程的网络过滤和控制，而这些都是内核协议栈的核心组成部分</p>
+<h2 id="容器安全"><a class="markdownIt-Anchor" href="#容器安全"></a> 容器安全</h2>
+<p>既然容器是共享内核的，这些安全问题的解决自然就可以从内核的角度进行考虑。除了容器自身所强依赖的命名空间、<code>cgroups</code>、<code>Linux</code> 权限控制 <code>Capabilities</code> 之外，可以动态跟踪和扩展内核的 <code>eBPF</code> 就成为了安全监控和安全控制的主要手段之一。 <code>Sysdig</code>、<code>Aqua</code> <code>Security</code>、<code>Datadog</code> 等业内知名的容器安全解决方案，都基于 <code>eBPF</code> 构建了丰富的安全特性。</p>
+<p>比如，<code>Aqua Security</code> 开源的 <a target="_blank" rel="noopener" href="https://aquasecurity.github.io/tracee/dev/">Tracee</a> 项目就利用 <code>eBPF</code>，动态跟踪系统和应用的可疑行为模式，再与不断丰富的特征检测库进行匹配，就可以分析出容器应用中的安全问题。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1ff538b30863f9a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3daee62f09ca5085.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>比如，<code>Sysdig</code> 贡献给 <code>CNCF</code> 基金会的 <a target="_blank" rel="noopener" href="https://falco.org/">Falco</a> 项目，就利用 <code>eBPF</code> 在运行时监测内核和应用中是否发生了诸如特权提升、<code>SHELL</code> 命令执行、系统文件（比如 <code>/etc/passwd</code>）修改、<code>SSH</code> 登录等异常行为，再通过告警系统实时将这些安全事件及时推送给你。</p>
+<p>容器运行时安全系统 <code>KubeArmor</code> 就利用 <code>LSM</code> 和 <code>eBPF</code>，限制容器中进程执行、文件访问、网络连接等各种违反安全策略的操作。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e5d4c42e3df2335c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>如何使用 eBPF 优化负载均衡性能？</strong></p>
+<p>每个 eBPF 程序都属于特定的类型，不同类型 eBPF 程序的触发事件是不同的。既然是网络的性能优化，自然应该去考虑网络类的 eBPF 程序。根据触发事件的不同，网络类 eBPF 程序可以分为 XDP 程序、TC 程序、套接字程序以及 cgroup 程序。这几类程序的触发事件和常用场景分别为：</p>
+<ul>
+<li>XDP 程序在网络驱动程序刚刚收到数据包的时候触发执行，支持卸载到网卡硬件，常用于防火墙和四层负载均衡；</li>
+<li>TC 程序在网卡队列接收或发送的时候触发执行，运行在内核协议栈中，常用于流量控制；</li>
+<li>套接字程序在套接字发生创建、修改、收发数据等变化的时候触发执行，运行在内核协议栈中，常用于过滤、观测或重定向套接字网络包。其中，BPF_PROG_TYPE_SOCK_OPS、BPF_PROG_TYPE_SK_SKB、BPF_PROG_TYPE_SK_MSG 等都可以用于套接字重定向；</li>
+<li>cgroup 程序在 cgroup 内所有进程的套接字创建、修改选项、连接等情况下触发执行，常用于过滤和控制 cgroup 内多个进程的套接字。</li>
+</ul>
+<p>根据这些触发事件，你可以发现这几类网络程序都有可能用在网络性能优化上。其中，由于支持卸载到硬件，XDP 的性能应该是最好的；而由于直接作用在套接字上，套接字程序和 cgroup 程序是最接近应用的。</p>
+<pre><code>clang -g -O2 -target bpf -D__TARGET_ARCH_x86 -I/usr/include/x86_64-linux-gnu -I. -c sockops.bpf.c -o sockops.bpf.o
+</code></pre>
+<h1 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h1>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fe6ac98498c30cfa.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>BCC</code>、<code>libbpf</code> 以及内核源码，都主要使用 <code>C</code> 语言开发 <code>eBPF</code> 程序，而实际的应用程序可能会以多种多样的编程语言进行开发。所以，开源社区也开发和维护了很多不同语言的接口，方便这些高级语言跟 <code>eBPF</code> 系统进行交互。比如，我们课程多次使用的 <code>BCC</code> 就提供了 <code>Python</code>、<code>C++</code> 等多种语言的接口，而使用 <code>BCC</code> 的 <code>Python</code> 接口去加载 <code>eBPF</code> 程序，要比 <code>libbpf</code> 和内核源码的方法简单得多。</p>
+<p>在这些开发库的基础上，得益于 <code>eBPF</code> 在动态跟踪、网络、安全以及云原生等领域的广泛应用，开源社区中也诞生了各种编程语言的开发库，特别是 <code>Go</code> 和 <code>Rust</code> 这两种语言，其开发库尤为丰富。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-446dc760caa142c0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在使用这些 <code>Go</code> 语言开发库时需要注意，<code>Go</code> 开发库只适用于用户态程序中，可以完成 <code>eBPF</code> 程序编译、加载、事件挂载，以及 <code>BPF</code> 映射交互等用户态的功能，而内核态的 <code>eBPF</code> 程序还是需要使用 <code>C</code> 语言来开发的。</p>
+<p>而对于 <code>Rust</code> 来说，由于其出色的安全和性能，也诞生了很多不同的开发库。下面的表格列出了常见的 <code>Rust</code> 语言开发库，以及它们的使用场景：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-35bb3d513312bd41.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>从 <code>Go</code> 和 <code>Rust</code> 语言的开发库中你可以发现，纯编程语言实现的开发库（即不依赖于 <code>libbpf</code> 和 <code>BCC</code> 的库）由于很难及时通过内核进行同步，通常都有一定的功能限制；而 <code>libbpf</code> 和 <code>libbcc</code> 的开发语言绑定通常功能更为完善，但开发和运行环境就需要安装 <code>libbpf</code> 和 <code>libbcc</code>（部分开发库支持静态链接，在运行环境不再需要 <code>libbpf</code> 或 <code>libbcc</code>）。因为底层的实现是类似的，所以掌握了 <code>libbpf</code> 和 <code>BCC</code> 的使用方法，在学习其他语言的绑定时会更容易理解。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8eae4e695287bf56.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-58754b5bd9812346.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>eBPF 应用类</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-141bd8d1ef425171.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

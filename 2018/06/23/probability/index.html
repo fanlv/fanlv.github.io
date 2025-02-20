@@ -1,0 +1,62 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>概率论基础</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 样本空间与事件
+A⊂B 事件 B 包含了事件 A，A 被包含于 B
+A∩B A 与 B 的交集，表示事件 A 和事件 B 同时发生
+A∪B A 与 B 的并集，表示事件 A 或事件 B 或他们二者同事发生
+P(A|B) 在事件 B 发生下，事件 A 发生的概率
+
+ 对偶公式
+
+ 随机事件运算
+（1）交换律：A∪B=B∪A、AB=BA
+（2）结合律：( A∪B )∪C=A∪( B∪C )
+（3）分配律：A∪( BC )=( A∪B )( A∪C )A( B∪C )=( AB )∪( AC )
+（4）摩根律：A B=A∪B、A ∪ B=A B
+ 概率的三个基本性质
+
+ 二项系数
+
+ 蒙特卡罗（Monte Carlo）
+
+ 乘法公式
+P(AB)=P(B)P(A|B) = P(A)P(B|A)
+ 全概率公式
+
+ .."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">概率论基础</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%B7%E6%9C%AC%E7%A9%BA%E9%97%B4%E4%B8%8E%E4%BA%8B%E4%BB%B6"><span class="toc-text"> 样本空间与事件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E5%81%B6%E5%85%AC%E5%BC%8F"><span class="toc-text"> 对偶公式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9A%8F%E6%9C%BA%E4%BA%8B%E4%BB%B6%E8%BF%90%E7%AE%97"><span class="toc-text"> 随机事件运算</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A6%82%E7%8E%87%E7%9A%84%E4%B8%89%E4%B8%AA%E5%9F%BA%E6%9C%AC%E6%80%A7%E8%B4%A8"><span class="toc-text"> 概率的三个基本性质</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E9%A1%B9%E7%B3%BB%E6%95%B0"><span class="toc-text"> 二项系数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%92%99%E7%89%B9%E5%8D%A1%E7%BD%97monte-carlo"><span class="toc-text"> 蒙特卡罗（Monte Carlo）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%98%E6%B3%95%E5%85%AC%E5%BC%8F"><span class="toc-text"> 乘法公式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%A8%E6%A6%82%E7%8E%87%E5%85%AC%E5%BC%8F"><span class="toc-text"> 全概率公式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%85%AC%E5%BC%8Fbayes"><span class="toc-text"> 贝叶斯公式（Bayes）</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Probability"><i class="tag post-item-tag">Probability</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">概率论基础</h1><time class="has-text-grey" datetime="2018-06-23T03:36:37.000Z">2018-06-23</time><article class="mt-2 post-content"><h2 id="样本空间与事件"><a class="markdownIt-Anchor" href="#样本空间与事件"></a> 样本空间与事件</h2>
+<p>A⊂B 事件 B 包含了事件 A，A 被包含于 B</p>
+<p>A∩B A 与 B 的交集，表示事件 A 和事件 B 同时发生</p>
+<p>A∪B A 与 B 的并集，表示事件 A 或事件 B 或他们二者同事发生</p>
+<p>P(A|B) 在事件 B 发生下，事件 A 发生的概率</p>
+<p><img src="./glsj.png" alt=""></p>
+<h2 id="对偶公式"><a class="markdownIt-Anchor" href="#对偶公式"></a> 对偶公式</h2>
+<p><img src="./dogs.png" alt=""></p>
+<h2 id="随机事件运算"><a class="markdownIt-Anchor" href="#随机事件运算"></a> 随机事件运算</h2>
+<p>（1）交换律：A∪B=B∪A、AB=BA</p>
+<p>（2）结合律：( A∪B )∪C=A∪( B∪C )</p>
+<p>（3）分配律：A∪( BC )=( A∪B )( A∪C )A( B∪C )=( AB )∪( AC )</p>
+<p>（4）摩根律：A B=A∪B、A ∪ B=A B</p>
+<h2 id="概率的三个基本性质"><a class="markdownIt-Anchor" href="#概率的三个基本性质"></a> 概率的三个基本性质</h2>
+<p><img src="./gltz.png" alt=""></p>
+<h2 id="二项系数"><a class="markdownIt-Anchor" href="#二项系数"></a> 二项系数</h2>
+<p><img src="./exs2.png" alt=""></p>
+<h2 id="蒙特卡罗monte-carlo"><a class="markdownIt-Anchor" href="#蒙特卡罗monte-carlo"></a> 蒙特卡罗（Monte Carlo）</h2>
+<p><img src="./mtkl.png" alt=""></p>
+<h2 id="乘法公式"><a class="markdownIt-Anchor" href="#乘法公式"></a> 乘法公式</h2>
+<p>P(AB)=P(B)P(A|B) = P(A)P(B|A)</p>
+<h2 id="全概率公式"><a class="markdownIt-Anchor" href="#全概率公式"></a> 全概率公式</h2>
+<p><img src="./qggs.png" alt=""></p>
+<h2 id="贝叶斯公式bayes"><a class="markdownIt-Anchor" href="#贝叶斯公式bayes"></a> 贝叶斯公式（Bayes）</h2>
+<p><img src="./bysgs.png" alt=""></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

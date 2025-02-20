@@ -1,0 +1,233 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>高并发服务器IO模型</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="服务端IO模型总结 草稿
+ 网络框架视角
+ 零、Nginx
+
+ 一、Netty（主从Reactor）
+MainReactor负责客户端的连接请求，并将请求转交给SubReactor
+SubReactor负责相应通道的IO读写请求
+非IO请求（具体逻辑处理）的任务则会直接写入队列，等待worker threads进行处理
+
+
+
+
+ 二、GRPC-GO （Goroutine Per Connection）
+net.Listen -&amp;gt; Serve() -&amp;gt; lis.Accept() net库的accept 
+-&amp;gt; 一个连接开个一个goroutine -&amp;gt; s.handleRawConn(rawConn) 
+-&amp;gt; newHTTP2Transport(conn, authInfo) -&amp;.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">高并发服务器IO模型</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E6%A1%86%E6%9E%B6%E8%A7%86%E8%A7%92"><span class="toc-text"> 网络框架视角</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%B6-nginx"><span class="toc-text"> 零、Nginx</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-netty%E4%B8%BB%E4%BB%8Ereactor"><span class="toc-text"> 一、Netty（主从Reactor）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-grpc-go-goroutine-per-connection"><span class="toc-text"> 二、GRPC-GO （Goroutine Per Connection）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89-thrift-go-goroutine-per-connection"><span class="toc-text"> 三、Thrift-GO （ Goroutine Per Connection）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B-kite-goroutine-per-connection"><span class="toc-text"> 四、Kite （Goroutine Per Connection）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94-kitex-netpoll%E4%B8%BB%E4%BB%8Ereactor"><span class="toc-text"> 五、Kitex-Netpoll（主从Reactor）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#io%E6%A8%A1%E5%9E%8B%E8%A7%86%E8%A7%92"><span class="toc-text"> IO模型视角</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-%E5%90%8C%E6%AD%A5%E9%98%BB%E5%A1%9Eio"><span class="toc-text"> 一、同步阻塞IO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-%E5%90%8C%E6%AD%A5%E9%9D%9E%E9%98%BB%E5%A1%9Eio"><span class="toc-text"> 二、同步非阻塞IO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89-io%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8-epoll-kqueue-select"><span class="toc-text"> 三、IO多路复用 （epoll、kqueue、select）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B-%E4%BF%A1%E5%8F%B7%E9%A9%B1%E5%8A%A8"><span class="toc-text"> 四、信号驱动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94-%E5%BC%82%E6%AD%A5io"><span class="toc-text"> 五**、异步IO**</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B%E8%A7%86%E8%A7%92"><span class="toc-text"> 线程模型视角</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80-%E7%BA%BF%E7%A8%8B%E6%A8%A1%E5%9E%8B-thread-per-connection"><span class="toc-text"> 一、线程模型 Thread Per Connection</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C-%E5%8D%95reactor%E5%8D%95%E7%BA%BF%E7%A8%8B"><span class="toc-text"> 二、单Reactor单线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89-%E5%8D%95reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B"><span class="toc-text"> 三、单Reactor多线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B-%E4%B8%BB%E4%BB%8Ereactor%E5%A4%9A%E7%BA%BF%E7%A8%8B"><span class="toc-text"> 四、主从Reactor多线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94-proactor-%E6%A8%A1%E5%9E%8B%E5%BC%82%E6%AD%A5io"><span class="toc-text"> 五、Proactor 模型（异步IO）</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/IO"><i class="tag post-item-tag">IO</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">高并发服务器IO模型</h1><time class="has-text-grey" datetime="2018-07-15T12:20:04.000Z">2018-07-15</time><article class="mt-2 post-content"><p>服务端IO模型总结 草稿</p>
+<h2 id="网络框架视角"><a class="markdownIt-Anchor" href="#网络框架视角"></a> 网络框架视角</h2>
+<h3 id="零-nginx"><a class="markdownIt-Anchor" href="#零-nginx"></a> 零、Nginx</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ee3acec698831d00?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="一-netty主从reactor"><a class="markdownIt-Anchor" href="#一-netty主从reactor"></a> 一、Netty（主从Reactor）</h3>
+<pre class="highlight"><code class="">MainReactor负责客户端的连接请求，并将请求转交给SubReactor
+SubReactor负责相应通道的IO读写请求
+非IO请求（具体逻辑处理）的任务则会直接写入队列，等待worker threads进行处理
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9216883059354e4b?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-58af79a163dc0002?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="二-grpc-go-goroutine-per-connection"><a class="markdownIt-Anchor" href="#二-grpc-go-goroutine-per-connection"></a> 二、GRPC-GO （Goroutine Per Connection）</h3>
+<pre class="highlight"><code class="">net.Listen -&gt; Serve() -&gt; lis.Accept() net库的accept 
+-&gt; 一个连接开个一个goroutine -&gt; s.handleRawConn(rawConn) 
+-&gt; newHTTP2Transport(conn, authInfo) -&gt;  newHTTP2Server
+-&gt; 开个gorutine for 循环检查 是否有 数据没有发送=&gt; t.loopy.run(); 
+-&gt; go t.keepalive()
+ -&gt; 设置读取鉴权信息、超时配置、Http2Transport、一堆有的没的配置 最后生成st对象 -&gt; serveStreams(st)
+-&gt; 收到Request 、 HandleStreams (这个方法里面会for{} 不停读写消息内容)
+-&gt; ReadFrame() 读取数据 -&gt; 判断是什么帧类型数据
+http2.MetaHeadersFrame、http2.DataFrame、http2.RSTStreamFrame、http2.SettingsFrame
+http2.PingFrame、http2.WindowUpdateFrame -&gt; t.operateHeaders 处理数据 -&gt; s.handleStream
+-&gt; 解析出service和method 找到对应的handle方法 -&gt; processUnaryRPC -&gt;  md.Handler
+-&gt;  执行对应方法的handle _Greeter_Login_Handler -&gt; s.getCodec 解码出req数据
+-&gt; srv.(GreeterServer).Login 执行对应的函数 -&gt; sendResponse -&gt; encode、compress、Write
+-&gt; writeHeaderLocked-&gt; dataFrame -&gt; writeQuota 剑去包大小 -&gt; t.controlBuf.put(df)
+-&gt;  executeAndPut -&gt; c.list.enqueue(it) -&gt; WriteStatus -&gt; 另个有个gorutine 会调用 t.loopy.run()
+-&gt; l.processData() -&gt; str.itl.peek().(*dataFrame)  -&gt;  l.framer.fr.WriteData 
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b95dc7af4b943476?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="三-thrift-go-goroutine-per-connection"><a class="markdownIt-Anchor" href="#三-thrift-go-goroutine-per-connection"></a> 三、Thrift-GO （ Goroutine Per Connection）</h3>
+<pre class="highlight"><code class="">Serve() -&gt; Listen() -&gt; AcceptLoop() 
+-&gt; for 循环接受连接请求 {innerAccept()} 一个连接开一个goroutine
+-&gt; 拿到net.coon -&gt; client = NewTSocketFromConnTimeout(coon,timeout)
+-&gt; processRequests(cleint) 
+-&gt; TProcessor(interface包含:Process、ProcessorMap、AddToProcessorMap )
+-&gt;  调用 TransportFactory.GetTransport(client)拿到 inputTransport,outputTransport
+-&gt; ProtocolFactory.GetProtocol(inputTransport)拿到 inputProtocol和outputProtocol
+-&gt; for { ReadFrame processor.Process } 这里循环读取数据，读出请求，然后返回resp，然后再继续读
+-&gt; 调用到IDL生成的代码中对应方法的Process(inputProtocol和outputProtocol) -&gt;
+name, _, seqId, err := iprot.ReadMessageBegin() (seqId回复的数据包要回写回去)
+-&gt; 根据name 找到对应方法的 Process，调用对应的Process
+-&gt; args.Read(iprot) -&gt; iprot.ReadMessageEnd() -&gt; handler.xxxx 方法拿到结果 -&gt;
+oprot.WriteMessageBegin-&gt; response字段.Write(oprot) -&gt; oprot.WriteMessageEnd() -&gt; oprot.Flush() -&gt; 判断是否 ErrAbandonRequest 是的话关闭连接，不是的话继续读 processor.Process
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d19e6b183ef7baac?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="四-kite-goroutine-per-connection"><a class="markdownIt-Anchor" href="#四-kite-goroutine-per-connection"></a> 四、Kite （Goroutine Per Connection）</h3>
+<pre class="highlight"><code class="">kite跟Thrift Go Server 流程基本一样，只是在整理流程中加入了一些服务治理的东西，比如判断的连接是否过载，加一些中间件（打点、熔断、限流、ACL、压测、定时拉取ms配置）等等。
+
+</code></pre>
+<pre class="highlight"><code class="">kite.Run() -&gt; RPCServer.ListenAndServe -&gt; CreateListener() -&gt; Serve() 
+-&gt; for {Accept()} 一个连接开一个goroutine  -&gt; processRequests
+-&gt; for 循环 { processor.Process} -&gt; Process(in, out TProtocol)
+-&gt; name, _, seqId, err := iprot.ReadMessageBegin() (seqId回复的数据包要回写回去)
+-&gt; 根据name 找到对应方法的 Process，调用对应的Process
+-&gt; args.Read(iprot) -&gt; iprot.ReadMessageEnd() -&gt; handler.xxxx 方法拿到结果 -&gt;
+oprot.WriteMessageBegin-&gt; response字段.Write(oprot) -&gt; oprot.WriteMessageEnd() -&gt;
+oprot.Flush() -&gt; 判断是否 ErrAbandonRequest 是的话关闭连接，不是的话继续读 processor.Process
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3bd0241472e2566f?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="五-kitex-netpoll主从reactor"><a class="markdownIt-Anchor" href="#五-kitex-netpoll主从reactor"></a> 五、Kitex-Netpoll（主从Reactor）</h3>
+<p>其实为了解决 <a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/wSaJYg-HqnYY4SdLA2Zzaw">字节跳动在 Go 网络库上的实践</a>提到的“<strong>Go 调度导致的延迟问题</strong>” 最新的Netpoll已经改成了单Reactor模式。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-902e074e38161b26?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p>随便说下Go自身的Net库没有这个问题，是因为Golang的网络请求都是在GO自己的一个<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/master/src/runtime/proc.go#L5099">Sysmon监控线程维护</a>的，<strong>Sysmon线程不需绑定P</strong>，首次休眠20us，每次执行完后，增加一倍的休眠时间，但是最多休眠10ms。</p>
+<p>Sysmon主要做以下几件事</p>
+<pre class="highlight"><code class="">1\. 释放闲置超过5分钟的span物理内存
+2\. 如果超过两分钟没有执行垃圾回收，则强制执行
+3\. 将长时间未处理的netpoll结果添加到任务队列
+4\. 向长时间运行的g进行抢占
+5\. 收回因为syscall而长时间阻塞的p
+
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/master/src/runtime/netpoll_epoll.go#L106">Golang runtime的netpoll函数</a>主要做的是就是调用epollwait拿到活跃的FD，然后唤醒相关阻塞的gorotine。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b7f607bde828cf3a?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-59a9682ef60f1a64?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><strong>Goroutine Pool ：</strong> 减少gorotine 调度开销， 最大10000</p>
+<p><strong>LinkBuffer</strong> : 用来“分离网络IO”和“业务处理过程” ， 减少序列化和传递过程中字节的拷贝</p>
+<p><strong>Codec</strong>：Kitex 支持自定义Codec。默认支持Thrift和ProtoBuf 两种Codec。</p>
+<pre class="highlight"><code class="">/*
+kitex server
+
+-&gt; 启动netpoll初始化
+netpool init函数 -&gt; 初始化 loops数量 -&gt; SetNumLoops() -&gt;  m.Run()
+-&gt; openPoll()这个里面调用syscall.EpollCreate1 -&gt;  go poll.Wait() 这里调用 epollwait Reactor
+-&gt; subReactor 数量 = CPUNUM() / 20 + 1
+
+-&gt; 初始化Server
+LarkSvcDemo.NewServer -&gt; server.NewServer -&gt; 初始化中间件 -&gt; RegisterService -&gt; Run()
+-&gt; richRemoteOption() -&gt; 初始化opt.RemoteOpt 属性 -&gt; addBoundHandlers
+-&gt; 添加入流量和出流量处理类 In/Out boundsHandler(ServerBaseHandler、ServerTTHeaderHandler)
+-&gt; Start() -&gt; buildListener -&gt; netpoll.CreateListener -&gt; go s.transSvr.BootstrapServer()
+-&gt; netpoll server.Run() -&gt; pollmanager.Pick() 找个一个 epoll 出来。
+-&gt; 注册 listen fd 的 onRead 事件里面主要是Accept Socket ，可以通过 OnRead != nil 判断这个fd是不是listen的FD
+
+-&gt; 等待接受链接
+-&gt; newConnectionWithPrepare 初始化链接相关 设置回调函数，添加链接到epoll、保存FD-&gt;connection关系
+-&gt; connection.init -&gt; 设置 Fd 为 noblocking -&gt; 初始化inputBuffer outputBuffer = NewLinkBuffer()
+-&gt; 设置 supportZeroCopy -&gt; onEvent . onPrepare 设置熟悉 -&gt; 这里onRequest 就是 transServer.onConnRead
+-&gt; onEvent .process = onRequest -&gt; onPrepare 就是 transServer.onConnActive -&gt; ts.connCount.Inc()
+-&gt; OnActive 新建立连接是触发 -&gt; inboundHdrls 执行OnActive -&gt; svrTransHandler OnActive 初始化RCPinfo
+-&gt; register -&gt; pollmanager.Pick() -&gt; 添加Fd到 epoll -&gt; s.connections.Store(fd, connection)
+
+-&gt; 等待接受客户端数据
+-&gt; epollWait 返回活跃链接 -&gt; operator.Inputs -&gt; Book 这个主要是判断是否需要扩大buffer
+-&gt; syscall.SYS_READV -&gt; inputAck -&gt; MallocAck(n)  linkbuffer的malloc += n ,buf = [:n]
+
+-&gt; 读取完以后处理数据
+-&gt; onEvent.onRequest -&gt; gopool.CtxGo(on.ctx, task) 新建一个task丢pool里面去让worker处理
+-&gt; 执行task -&gt; handler -&gt; transServer. onConnRead -&gt; transMetaHandler.OnRead -&gt; svrTransHandler.OnRead
+-&gt; NewMessageWithNewer -&gt; SetPayloadCodec -&gt; NewReadByteBuffer(ctx, conn, recvMsg)
+-&gt; Decode -&gt; flagBuf = Peek(8) 先读8个字节出来 , 根据前8个字节判断是不是TTHeader或者MeshHeader编码的
+-&gt; IsTTHeader -&gt; isMeshHeader -&gt; checkPayload 这个是没有header的编码 -&gt; isThriftBinary
+-&gt; 得到编码数据codecType是Thrift还是PB, transProto 是Framed还是transport.TTHeaderFramed
+-&gt; decodePayload -&gt; GetPayloadCodec 拿解码器，可以自定义codec，默认支持thrift和PB
+-&gt; pCodec.Unmarshal -&gt; thriftCodec.Unmarshal
+-&gt; methodName, msgType, seqID, err := tProt.ReadMessageBegin()
+-&gt; req.Read(tProt) 读取数据解码到 request -&gt; tProt.ReadMessageEnd() -&gt; tProt.Recycle()
+-&gt; sendMsg = remote.NewMessage -&gt; transPipe.OnMessage -&gt; TransPipeline.OnMessage
+-&gt; transMetaHandler.OnMessage -&gt; serverBaseHandler.ReadMeta 这里主要是设置logID、caller、GetExtra
+-&gt; serverTTHeaderHandler.ReadMeta -&gt; svrTransHandler.OnMessage -&gt; NewServerBytedTraceMW
+-&gt; NewStatusCheckMW -&gt; NewRPCConfigUpdateMW -&gt; NewACLMiddleware -&gt; invokeHandleEndpoint
+-&gt; getConfigDemoHandler 到业务方的代码handler -&gt; 执行完业务代码拿到response
+
+-&gt; 把拿到的response回复出去
+-&gt; transPipe.Write -&gt; outboundHdrls.Write -&gt; transMetaHandler.Write -&gt; serverTTHeaderHandler.WriteMeta
+-&gt; svrTransHandler.Write -&gt; NewWriteByteBuffer -&gt; codec.Encode -&gt; defaultCodec.Encode
+-&gt; getPayloadBuffer -&gt; encodePayload -&gt; pCodec.Marshal -&gt; thriftCodec.Marshal
+-&gt; tProt.WriteMessageBegin() BinaryProtocol -&gt; BinaryProtocol 底层内存用的是LinkBuffer 减少一次Copy？
+-&gt; msg.Write(tProt) -&gt; tProt.WriteMessageEnd() -&gt; bufWriter.Flush() -&gt; connection.flush
+-&gt; atomic.StoreInt32(&amp;c.writing, 2) 加锁 -&gt; sendmsg -&gt; syscall SYS_SENDMSG
+-&gt; outputAck() -&gt; 调整底层LinkBuffer的指针
+
+*/
+
+</code></pre>
+<h2 id="io模型视角"><a class="markdownIt-Anchor" href="#io模型视角"></a> IO模型视角</h2>
+<h3 id="一-同步阻塞io"><a class="markdownIt-Anchor" href="#一-同步阻塞io"></a> <strong>一、同步阻塞IO</strong></h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7dd0f91bbe4f0680?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="二-同步非阻塞io"><a class="markdownIt-Anchor" href="#二-同步非阻塞io"></a> <strong>二、同步非阻塞IO</strong></h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fca24d340f5ba47f?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<pre class="highlight"><code class="">func SetNonblock(fd int, nonblocking bool) (err error) {
+   flag, err := fcntl(fd, F_GETFL, 0)
+   if err != nil {
+      return err
+   }
+   if nonblocking {
+      flag |= O_NONBLOCK
+   } else {
+      flag &amp;^= O_NONBLOCK
+   }
+   _, err = fcntl(fd, F_SETFL, flag)
+   return err
+}
+
+</code></pre>
+<h3 id="三-io多路复用-epoll-kqueue-select"><a class="markdownIt-Anchor" href="#三-io多路复用-epoll-kqueue-select"></a> <strong>三、IO多路复用 （epoll、kqueue、select）</strong></h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3cfef77b51bb63dc?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="四-信号驱动"><a class="markdownIt-Anchor" href="#四-信号驱动"></a> 四、信号驱动</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a09ac98836a4daef?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="五-异步io"><a class="markdownIt-Anchor" href="#五-异步io"></a> 五**、异步IO**</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-356652fa26c0b0f1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6983d49e972be5e1?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h2 id="线程模型视角"><a class="markdownIt-Anchor" href="#线程模型视角"></a> 线程模型视角</h2>
+<h3 id="一-线程模型-thread-per-connection"><a class="markdownIt-Anchor" href="#一-线程模型-thread-per-connection"></a> 一、<strong>线程模型</strong> Thread Per Connection</h3>
+<p><strong>生产环境基本没有使用这种模型的</strong></p>
+<pre class="highlight"><code class="">采用阻塞式 I/O 模型获取输入数据；
+每个连接都需要独立的线程完成数据输入，业务处理，数据返回的完整操作。
+缺点：
+当并发数较大时，需要创建大量线程来处理连接，系统资源占用较大；
+连接建立后，如果当前线程暂时没有数据可读，则线程就阻塞在 Read 操作上，造成线程资源浪费。
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-714c4431d96deb48?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="二-单reactor单线程"><a class="markdownIt-Anchor" href="#二-单reactor单线程"></a> 二、单Reactor单线程</h3>
+<pre class="highlight"><code class="">优点：简单，没有多线程，没有进程通信
+缺点：性能，无法发挥多核的极致，一个handler卡死，导致当前进程无法使用，IO和CPU不匹配
+场景：客户端有限，业务处理快，比如redis
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d410a6277eecae1a?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="三-单reactor多线程"><a class="markdownIt-Anchor" href="#三-单reactor多线程"></a> 三、单Reactor多线程</h3>
+<pre class="highlight"><code class="">优点：充分利用的CPU
+缺点：进程通信，复杂，Reactor承放了太多业务，高并发下可能成为性能瓶颈
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-df0beafafd370a62?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="四-主从reactor多线程"><a class="markdownIt-Anchor" href="#四-主从reactor多线程"></a> 四、主从Reactor多线程</h3>
+<pre class="highlight"><code class="">主Reactor负责建立连接，建立连接后的句柄丢给子Reactor，子Reactor负责监听所有事件进行处理
+优点：职责明确，分摊压力
+Nginx/netty/memcached都是使用的这
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4e21da74445bf72e?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+<h3 id="五-proactor-模型异步io"><a class="markdownIt-Anchor" href="#五-proactor-模型异步io"></a> 五、Proactor 模型（异步IO）</h3>
+<pre class="highlight"><code class="">  编程复杂性，由于异步操作流程的事件的初始化和事件完成在时间和空间上都是相互分离的，因此开发异步应用程序更加复杂。应用程序还可能因为反向的流控而变得更加难以 Debug；
+  内存使用，缓冲区在读或写操作的时间段内必须保持住，可能造成持续的不确定性，并且每个并发操作都要求有独立的缓存，相比 Reactor 模式，在 Socket 已经准备好读或写前，是不要求开辟缓存的；
+  操作系统支持，Windows 下通过 IOCP 实现了真正的异步 I/O，而在 Linux 系统下，Linux 2.6 才引入，目前异步 I/O 还不完善。
+
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-940d12d2acc853d5?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

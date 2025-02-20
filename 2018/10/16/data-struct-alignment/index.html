@@ -1,0 +1,51 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Golang 内存对齐问题</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 什么是内存对齐？
+CPU把内存当成是一块一块的，块的大小可以是2，4，8，16字节大小，因此CPU在读取内存时是一块一块进行读取的。块大小成为memory access granularity（粒度）。
+
+假设CPU访问粒度是4，也就是一次性可以读取内存中的四个字节内容；当我们不采用内存对齐策略，如果需要访问A中的b元素，CPU需要先取出0-3四个字节的内容，发现没有读取完，还需要再次读取，一共需要进行两次访问内存的操作；而有了内存对齐，参考左图，可一次性取出4-7四个字节的元素也即是b，这样就只需要进行一次访问内存的操作。所以操作系统这样做的原因也就是所谓的拿空间换时间，提高效率。
+ 为什么要内存对齐？
+会了关于结构体内存大小的计算，可是为什么系统要对于结构体数据进行内存对齐呢，很明显所占用的空间大小要.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Golang 内存对齐问题</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="toc-text"> 什么是内存对齐？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="toc-text"> 为什么要内存对齐？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#golang-%E5%AD%97%E8%8A%82%E5%AF%B9%E9%BD%90"><span class="toc-text"> Golang 字节对齐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text"> 参考文献</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Golang 内存对齐问题</h1><time class="has-text-grey" datetime="2018-10-16T12:52:07.000Z">2018-10-16</time><article class="mt-2 post-content"><h3 id="什么是内存对齐"><a class="markdownIt-Anchor" href="#什么是内存对齐"></a> 什么是内存对齐？</h3>
+<p>CPU把内存当成是一块一块的，块的大小可以是2，4，8，16字节大小，因此CPU在读取内存时是一块一块进行读取的。块大小成为memory access granularity（粒度）。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-31a8410aa48ca94f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sda.png"></p>
+<p>假设CPU访问粒度是4，也就是一次性可以读取内存中的四个字节内容；当我们不采用内存对齐策略，如果需要访问A中的b元素，CPU需要先取出0-3四个字节的内容，发现没有读取完，还需要再次读取，一共需要进行两次访问内存的操作；而有了内存对齐，参考左图，可一次性取出4-7四个字节的元素也即是b，这样就只需要进行一次访问内存的操作。所以操作系统这样做的原因也就是所谓的拿空间换时间，提高效率。</p>
+<h3 id="为什么要内存对齐"><a class="markdownIt-Anchor" href="#为什么要内存对齐"></a> 为什么要内存对齐？</h3>
+<p>会了关于结构体内存大小的计算，可是为什么系统要对于结构体数据进行内存对齐呢，很明显所占用的空间大小要更多。原因可归纳如下：</p>
+<ol>
+<li>平台原因(移植原因)：不是所有的硬件平台都能访问任意地址上的任意数据的；某些硬件平台只能在某些地址处取某些特定类型的数据，否则抛出硬件异常。</li>
+<li>性能原因：数据结构(尤其是栈)应该尽可能地在自然边界上对齐。原因在于，为了访问未对齐的内存，处理器需要作两次内存访问；而对齐的内存访问仅需要一次访问。</li>
+</ol>
+<h3 id="golang-字节对齐"><a class="markdownIt-Anchor" href="#golang-字节对齐"></a> Golang 字节对齐</h3>
+<p>最近在做一个需求的时候，有个场景，需要一个线程定时去更新一个全局变量指针地址，然后在另外的线程可以读取这个变量的数据，同事在帮忙Review代码的时候，问这个多线程操作这个全局指针变量时候需不需要加锁，因为在C/C++中有内存对齐问题，如果指针是内存对齐的，是可以不加锁的(<strong>但是这里其实是有线程可见性的问题</strong>)。所以下面测试下golang的内存是否会做自动对齐的操作。</p>
+<p>测试一</p>
+<pre><code>	//输出长度为1
+   fmt.Printf("%d",unsafe.Sizeof(struct {
+	   i8  int8
+   }{}))
+</code></pre>
+<p>测试二</p>
+<pre><code>	//输出长度为16
+   fmt.Printf("%d",unsafe.Sizeof(struct {
+	   i8  int8
+	   p   *int8
+   }{}))
+</code></pre>
+<p>在测试二中可以看出， 在后面申明一个指针以后，内存空间自动扩容为16了，说明编译自动帮我们做了内存对齐。</p>
+<h3 id="参考文献"><a class="markdownIt-Anchor" href="#参考文献"></a> 参考文献</h3>
+<p><a target="_blank" rel="noopener" href="http://www.cppblog.com/snailcong/archive/2009/03/16/76705.html">http://www.cppblog.com/snailcong/archive/2009/03/16/76705.html</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/27862634">https://www.zhihu.com/question/27862634</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/sssssuuuuu666/article/details/75175108">https://blog.csdn.net/sssssuuuuu666/article/details/75175108</a></p>
+<p><a target="_blank" rel="noopener" href="https://my.oschina.net/u/2950272/blog/1829197">https://my.oschina.net/u/2950272/blog/1829197</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/cb40c746bf9e">https://www.jianshu.com/p/cb40c746bf9e</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

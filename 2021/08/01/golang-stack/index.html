@@ -1,0 +1,1113 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>深入理解 Golang Stack</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+
+ 一、基础知识
+ 1.1 Linux 虚拟地址空间布局
+我们知道CPU有实模式和保护模式，系统刚刚启动的时候是运行在实模式下，然后经过一系列初始化工作以后，Linux会把CPU的实模式改为保护模式（具体就是修改CPU的CR0寄存器相关标记位），在保护模式下，CPU访问的地址都是虚拟地址(逻辑地址)。Linux 为了每个进程维护了一个单独的虚拟地址空间，虚拟地址空间又分为“用户空间”和“内核空间”。 虚拟地址空间更多相关可以看Linux内核虚拟地址空间这篇文章。
+
+
+ 1.2 Golang 栈和虚拟地址空间栈的区别
+Golang 的内存管理是用的 TCMalloc（Thread-Caching Malloc）算法, 简单点说就是 Golang 是使用 mmap 函数去操作系统申请一大块内存，然后把内存按照.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">深入理解 Golang Stack</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text"> 一、基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-linux-%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E5%B8%83%E5%B1%80"><span class="toc-text"> 1.1 Linux 虚拟地址空间布局</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-golang-%E6%A0%88%E5%92%8C%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4%E6%A0%88%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text"> 1.2 Golang 栈和虚拟地址空间栈的区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-%E5%B8%B8%E7%94%A8%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text"> 1.3 常用寄存器</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-%E8%B0%83%E7%94%A8%E8%A7%84%E7%BA%A6"><span class="toc-text"> 1.4 调用规约</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-%E4%BB%80%E4%B9%88%E6%98%AF%E5%86%85%E5%AD%98%E9%80%83%E9%80%B8"><span class="toc-text"> 1.5 什么是内存逃逸？</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#151-%E9%80%83%E9%80%B8%E5%9C%BA%E6%99%AF%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E6%89%8D%E5%88%86%E9%85%8D%E5%88%B0%E5%A0%86%E4%B8%AD"><span class="toc-text"> 1.5.1 逃逸场景（什么情况才分配到堆中）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C-golang-%E6%A0%88"><span class="toc-text"> 二、Golang 栈</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#21-golang-%E6%A0%88%E5%A4%A7%E5%B0%8F%E5%8F%98%E6%9B%B4%E5%8E%86%E5%8F%B2"><span class="toc-text"> 2.1 Golang 栈大小变更历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-%E5%88%86%E6%AE%B5%E6%A0%88"><span class="toc-text"> 2.2 分段栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-%E8%BF%9E%E7%BB%AD%E6%A0%88"><span class="toc-text"> 2.3 连续栈</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#231-%E4%BB%80%E4%B9%88%E6%98%AF%E8%BF%9E%E7%BB%AD%E6%A0%88"><span class="toc-text"> 2.3.1 什么是连续栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#232-nosplit%E7%9A%84%E8%87%AA%E5%8A%A8%E6%A3%80%E6%B5%8B"><span class="toc-text"> 2.3.2 NOSPLIT的自动检测</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#233-goroutine%E7%9A%84%E5%88%9B%E5%BB%BA"><span class="toc-text"> 2.3.3 Goroutine的创建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#234-%E6%A0%88%E7%9A%84%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text"> 2.3.4 栈的初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#235-%E6%A0%88%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D"><span class="toc-text"> 2.3.5 栈内存分配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#236-%E6%A0%88%E7%9A%84%E6%89%A9%E5%AE%B9"><span class="toc-text"> 2.3.6 栈的扩容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#237-%E6%A0%88%E6%8B%B7%E8%B4%9D"><span class="toc-text"> 2.3.7 栈拷贝</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#238-%E6%A0%88%E7%9A%84%E6%94%B6%E7%BC%A9"><span class="toc-text"> 2.3.8 栈的收缩</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#24-%E5%85%B3%E4%BA%8Egolang%E6%A0%88%E5%87%A0%E4%B8%AA%E5%AE%9E%E9%AA%8C"><span class="toc-text"> 2.4 关于Golang栈几个实验</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text"> 三、参考资料</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Golang"><i class="tag post-item-tag">Golang</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">深入理解 Golang Stack</h1><time class="has-text-grey" datetime="2021-07-31T17:50:20.000Z">2021-08-01</time><article class="mt-2 post-content"><br>
+<!--
+"https://upload-images.jianshu.io/upload_images/12321605-b6543138cca8bb9c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+-->
+<h1 id="一-基础知识"><a class="markdownIt-Anchor" href="#一-基础知识"></a> 一、基础知识</h1>
+<h2 id="11-linux-虚拟地址空间布局"><a class="markdownIt-Anchor" href="#11-linux-虚拟地址空间布局"></a> 1.1 Linux 虚拟地址空间布局</h2>
+<p>我们知道<code>CPU</code>有实模式和保护模式，系统刚刚启动的时候是运行在实模式下，然后经过一系列初始化工作以后，<code>Linux</code>会把<code>CPU</code>的实模式改为保护模式（具体就是修改<code>CPU</code>的<code>CR0寄存器</code>相关标记位），在保护模式下，<code>CPU</code>访问的地址都是虚拟地址(逻辑地址)。<code>Linux</code> 为了每个进程维护了一个单独的虚拟地址空间，虚拟地址空间又分为“<code>用户空间</code>”和“<code>内核空间</code>”。 虚拟地址空间更多相关可以看<a href="/2021/07/25/linux-mem/">Linux内核虚拟地址空间</a>这篇文章。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2cdf1bedff166c2f.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Linux-Memory-X86-64.jpg"></p>
+<br>
+<h2 id="12-golang-栈和虚拟地址空间栈的区别"><a class="markdownIt-Anchor" href="#12-golang-栈和虚拟地址空间栈的区别"></a> 1.2 Golang 栈和虚拟地址空间栈的区别</h2>
+<p><code>Golang</code> 的内存管理是用的 <code>TCMalloc</code>（<code>Thread-Caching Malloc</code>）算法, 简单点说就是 <code>Golang</code> 是使用 <code>mmap</code> 函数去操作系统申请一大块内存，然后把内存按照 <code>8Byte~32KB</code> <code>67</code>个 <code>size</code> 类型的 <code>mspan</code>，每个 <code>mspan</code>按照它自身的属性 <code>Size Class</code> 的大小分割成若干个 <code>object</code><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.16.6/src/runtime/sizeclasses.go">（每个span默认是8K）</a>，因为分需要 <code>gc</code> 的 <code>mspan</code> 和不需要 <code>gc</code> 的 <code>mspan</code>（<code>Golang</code>的<code>stack</code>），所以一共有<code>134</code>种类型。</p>
+<p><strong>上面说了 Golang 内存申请是用的 mmap，mmap申请的内存都在虚拟地址空间的“Memory Mapping Segment”，所有Golang 所有的内存使用（包括栈）都是在“Memory Mapping Segment”，并不是在传统应用地址空间划的栈区。</strong></p>
+<p>写<code>Demo</code>个代码验证一下</p>
+<pre><code>func main() {
+	a := 8
+	println("a address : ", &amp;a)
+	println("pid : ", os.Getpid())
+	time.Sleep(time.Hour)
+}
+
+// 这里加“-m”来check没有内存逃逸
+[root@n227-005-021 stack ]$ go build -gcflags "-N -l -m"  demo.go
+[root@n227-005-021 stack ]$ ./demo
+a address :  0xc00006ef60
+pid :  1710242
+</code></pre>
+<p>用<code>pmap</code>看进程的内存区域，可以看到<code>stack</code>的起始地址是<code>7ffe46cfa000</code>，<code>a</code>地址是<code>0xc00006ef60</code>很显然不在虚地址空间的栈区。<code>000000c000000000</code> 属于<code>[ anon ]</code>，这个一般代码<code>mmap</code>映射区。</p>
+<pre><code>[root@n227-005-021 stack ]$ pmap  1710242
+1710242:   ./demo
+0000000000400000    416K r-x-- demo
+0000000000468000    472K r---- demo
+00000000004de000     20K rw--- demo
+00000000004e3000    200K rw---   [ anon ]
+000000c000000000  65536K rw---   [ anon ]
+00007f10068a1000  36548K rw---   [ anon ]
+00007f1008c52000 263680K -----   [ anon ]
+00007f1018dd2000      4K rw---   [ anon ]
+00007f1018dd3000 293564K -----   [ anon ]
+00007f102ac82000      4K rw---   [ anon ]
+00007f102ac83000  36692K -----   [ anon ]
+00007f102d058000      4K rw---   [ anon ]
+00007f102d059000   4580K -----   [ anon ]
+00007f102d4d2000      4K rw---   [ anon ]
+00007f102d4d3000    508K -----   [ anon ]
+00007f102d552000    384K rw---   [ anon ]
+00007ffe46cfa000    132K rw---   [ stack ]
+00007ffe46dbf000     12K r----   [ anon ]
+00007ffe46dc2000      8K r-x--   [ anon ]
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://github.com/bminor/glibc/blob/release/2.36/master/nptl/allocatestack.c#L209">allocate_stack</a></p>
+<h2 id="13-常用寄存器"><a class="markdownIt-Anchor" href="#13-常用寄存器"></a> 1.3 常用寄存器</h2>
+<table>
+<thead>
+<tr>
+<th>寄存器</th>
+<th>64位名称</th>
+<th>32位名称</th>
+<th>16位名称</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AX</td>
+<td>rax</td>
+<td>eax</td>
+<td>ax</td>
+<td>函数返回值一般都存这个里面</td>
+</tr>
+<tr>
+<td>BX</td>
+<td>rbx</td>
+<td>ebx</td>
+<td>bx</td>
+<td>基址(Base)寄存器，常做内存数据的指针, 或者说常以它为基址来访问内存.</td>
+</tr>
+<tr>
+<td>CX</td>
+<td>rcx</td>
+<td>ecx</td>
+<td>cx</td>
+<td>计数器(Counter)寄存器，常做字符串和循环操作中的计数器, 或者用于保存函数调用第4个参数</td>
+</tr>
+<tr>
+<td>DX</td>
+<td>rdx</td>
+<td>edx</td>
+<td>dx</td>
+<td>数据(Data)寄存器，常用于乘、除法和 I/O 指针，或者用于保存函数调用第3个参数</td>
+</tr>
+<tr>
+<td>SI</td>
+<td>rsi</td>
+<td>esi</td>
+<td>si</td>
+<td>来源索引(Source Index)寄存器，常做内存数据指针和源字符串指针，或者用于保存函数调用第2个参数</td>
+</tr>
+<tr>
+<td>DI</td>
+<td>rdi</td>
+<td>edi</td>
+<td>di</td>
+<td>目的索引(Destination Index)寄存器，或者用于保存函数调用第1个参数	，常做内存数据指针和目的字符串指针</td>
+</tr>
+<tr>
+<td>SP</td>
+<td>rsp</td>
+<td>esp</td>
+<td>sp</td>
+<td>堆栈指针(Stack Point)寄存器，只做堆栈的栈顶指针; 不能用于算术运算与数据传送</td>
+</tr>
+<tr>
+<td>BP</td>
+<td>rbp</td>
+<td>ebp</td>
+<td>bp</td>
+<td>基址指针(Base Point)寄存器，只做堆栈指针, 可以访问堆栈内任意地址, 经常用于中转 ESP 中的数据, 也常以它为基址来访问堆栈; 不能用于算术运算与数据传送</td>
+</tr>
+<tr>
+<td>IP</td>
+<td>rip</td>
+<td>eip</td>
+<td>ip</td>
+<td>指令指针(Instruction Pointer)寄存器，总是指向下一条指令的地址; 所有已执行的指令都被它指向过.</td>
+</tr>
+</tbody>
+</table>
+<p>还有 R8 ~ R15 8个寄存器这里就不详细列出来了， R8用于保存函数调用5个参数，R9用于保存函数调用6个参数</p>
+<p>虽然在<code>x86-64</code>架构下，增加了很多通用寄存器，使得调用惯例(<code>calling convention</code>)变为函数传参可以部分（最多6个）<strong>使用寄存器直接传递</strong>，但是在<code>Golang</code>中，<strong>编译器强制规定函数的传参全部都用栈传递</strong>，不使用寄存器传参。<code>go 1.17</code>以后好像已经开始可以用寄存器传参。</p>
+<p><code>Golang</code>不使用寄存器传参，应该还是为了使生成的伪汇编方便跨平台。这里扩展一个优化点，为了减少函数调用的开销小，可以尽量让函数内联。</p>
+<p>内联的条件：1. 函数语法解析完，<code>token</code>数不超过 80. 2. <code>Interface</code> 的方法调用，不能内联。</p>
+<h2 id="14-调用规约"><a class="markdownIt-Anchor" href="#14-调用规约"></a> 1.4 调用规约</h2>
+<p>栈帧，也就是<code>stack frame</code>，其本质就是一种栈，只是这种栈专门用于保存<strong>函数调用过程</strong>中的各种信息（参数，返回地址，本地变量等）。栈帧有栈顶和栈底之分，其中栈顶的地址最低，栈底的地址最高用，<code>BP</code>（栈指针）指向栈底，<code>SP</code>(栈指针)指向栈顶的。</p>
+<p>具体实现，我们看一个<code>Demo</code></p>
+<pre><code>#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int add(int x, int y)
+{
+    return x + y;
+}
+int main()
+{
+    int p = add(2, 6);
+    printf("add:%d\n", p);
+    return 0;
+}
+</code></pre>
+<p><code>clang add.c -o add.o</code> // 编译，Linux可以用 gcc add.c -o add.o<br>
+<code>otool -tvV add.o</code>  //导出汇编代码 Linux可以用 objdump -d -M at -S add.o</p>
+<pre><code>add.o:
+(__TEXT,__text) section
+_add:
+0000000100003f20	pushq	%rbp
+0000000100003f21	movq	%rsp, %rbp
+0000000100003f24	movl	%edi, -0x4(%rbp)
+0000000100003f27	movl	%esi, -0x8(%rbp)
+0000000100003f2a	movl	-0x4(%rbp), %eax
+0000000100003f2d	addl	-0x8(%rbp), %eax
+0000000100003f30	popq	%rbp
+0000000100003f31	retq
+0000000100003f32	nopw	%cs:(%rax,%rax)
+0000000100003f3c	nopl	(%rax)
+_main:
+0000000100003f40	pushq	%rbp
+0000000100003f41	movq	%rsp, %rbp
+0000000100003f44	subq	$0x10, %rsp
+0000000100003f48	movl	$0x0, -0x4(%rbp)
+0000000100003f4f	movl	$0x2, %edi
+0000000100003f54	movl	$0x6, %esi
+0000000100003f59	callq	_add
+0000000100003f5e	movl	%eax, -0x8(%rbp)
+0000000100003f61	movl	-0x8(%rbp), %esi
+0000000100003f64	leaq	0x37(%rip), %rdi                ##literal pool for: "add:%d\n"
+0000000100003f6b	movb	$0x0, %al
+0000000100003f6d	callq	0x100003f80                     ##symbol stub for: _printf
+0000000100003f72	xorl	%ecx, %ecx
+0000000100003f74	movl	%eax, -0xc(%rbp)
+0000000100003f77	movl	%ecx, %eax
+0000000100003f79	addq	$0x10, %rsp
+0000000100003f7d	popq	%rbp
+0000000100003f7e	retq
+</code></pre>
+<p>我们接着<code>lldb add.o</code> <code>Debug</code>一下。我们在Add函数最开始的地方<code>0000000100003f20</code>打上断点，看下调用<code>add</code>过程栈的变化。我们执行<code>x/8xg $rbp</code>先打印下<code>rbp</code>，由下面可以知<code>rbp</code>的地址是<code>0x7ffeefbff580 </code>，<code>rbp</code>地址指向的内容是<code>0x00007ffeefbff590</code></p>
+<pre><code>(lldb) s
+Process 43672 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = instruction step into
+    frame #0: 0x0000000100003f20 add.o`add
+add.o`add:
+-&gt;  0x100003f20 &lt;+0&gt;: pushq  %rbp // 把rbp地址压栈
+    0x100003f21 &lt;+1&gt;: movq   %rsp, %rbp // rbp = rsp
+    0x100003f24 &lt;+4&gt;: movl   %edi, -0x4(%rbp) // $(rbp-4) = 2
+    0x100003f27 &lt;+7&gt;: movl   %esi, -0x8(%rbp) // $(rbp-8) = 6
+Target 0: (add.o) stopped.
+(lldb) x/8xg $rbp
+0x7ffeefbff580: 0x00007ffeefbff590 0x00007fff203fbf3d
+0x7ffeefbff590: 0x0000000000000000 0x0000000000000001
+</code></pre>
+<p>执行完<code>movl   %esi, -0x8(%rbp) </code>我们再<code>x/8xg $rbp </code>看下rbp地址，发现<code>rbp</code>地址变成了<code>0x7ffeefbff560 </code> <code>rbp</code>指向了<code>0x00007ffeefbff580</code></p>
+<pre><code>(lldb) s
+Process 43672 stopped
+* thread #1, queue = 'com.apple.main-thread', stop reason = instruction step into
+    frame #0: 0x0000000100003f2a add.o`add + 10
+add.o`add:
+-&gt;  0x100003f2a &lt;+10&gt;: movl   -0x4(%rbp), %eax
+    0x100003f2d &lt;+13&gt;: addl   -0x8(%rbp), %eax
+    0x100003f30 &lt;+16&gt;: popq   %rbp
+    0x100003f31 &lt;+17&gt;: retq
+Target 0: (add.o) stopped.
+(lldb)  x/8xg $rbp
+0x7ffeefbff560: 0x00007ffeefbff580 0x0000000100003f5e
+0x7ffeefbff570: 0x00007ffeefbff590 0x0000000000011025
+</code></pre>
+<p>我们在看下 <code>$rbp-8</code>，发现 <code>$rbp-8</code>的位置数据存的是6 <code>$rbp-4</code>位置存的数据是<code>2</code> ，<code>$rbp</code>数据存的是main函数的<code>rbp</code>地址，<code>$rbp+8</code>的地址是 <code>add</code> 函数返回以后需要执行的代码地址<code>0x00003f5e </code></p>
+<pre><code>(lldb)  x/8xw $rbp-8
+0x7ffeefbff558: 0x00000006 0x00000002 0xefbff580 0x00007ffe
+0x7ffeefbff568: 0x00003f5e 0x00000001 0xefbff590 0x00007ffe
+</code></pre>
+<p>栈的图大致如下</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2e4149f286f5ceb0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这个栈帧的图里面我们主要关注几点。</p>
+<ol>
+<li>栈是由高地址像低地址扩张，比如<code>main</code>函数里面执行<code>subq $0x10, %rsp</code> 就是申请16个字节的栈空间，执行完<code>add</code>函数再调用<code>addq	$0x10, %rsp</code> 表示释放之前申请的<code>16</code>个字节栈空间。</li>
+<li>每次函数调用都会有一定的栈空间的开销，（老的<code>rbp</code>压栈、函数的返回地址压栈）</li>
+<li>函数执行完以后。会继续执行<code>return address</code>指向的代码。</li>
+</ol>
+<p><strong>这里要理解栈帧是向下扩展的很重要。下面golang的stack扩容缩容判断的时候会用到</strong></p>
+<h2 id="15-什么是内存逃逸"><a class="markdownIt-Anchor" href="#15-什么是内存逃逸"></a> 1.5 什么是内存逃逸？</h2>
+<p>逃逸分析是一种确定指针动态范围的方法。简单来说就是分析在程序的哪些地方可以访问到该指针。编译器会根据变量是否被外部引用来决定是否逃逸：</p>
+<ol>
+<li>如果函数外部没有引用，则优先放到栈中；</li>
+<li>如果函数外部存在引用，则必定放到堆中；</li>
+</ol>
+<p><strong>注意：go 在编译阶段确立逃逸，并不是在运行时。</strong></p>
+<h3 id="151-逃逸场景什么情况才分配到堆中"><a class="markdownIt-Anchor" href="#151-逃逸场景什么情况才分配到堆中"></a> 1.5.1 逃逸场景（什么情况才分配到堆中）</h3>
+<ol>
+<li>
+<p>指针逃逸，<code>Go</code>可以返回局部变量指针，这其实是一个典型的变量逃逸案例，示例代码如下：</p>
+<pre><code> func StudentRegister(name string, age int) *Student {
+     s := new(Student) //局部变量s逃逸到堆
+     s.Name = name
+     s.Age = age
+     return s
+ }
+</code></pre>
+</li>
+<li>
+<p>栈空间不足逃逸（空间开辟过大），下面代码<code>Slice()</code>函数中分配了一个<code>1000</code>个长度的切片，是否逃逸取决于栈空间是否足够大。如下：</p>
+<pre><code> func Slice() { 
+     s := make([]int, 1000, 1000) // s 会分配在堆上
+ 
+     for index, _ := range s {
+         s[index] = index
+     }
+ }
+</code></pre>
+</li>
+<li>
+<p>动态类型逃逸（不确定长度大小）。很多函数参数为<code>interface</code>类型，比如<code>fmt.Println(a …interface{})</code>，编译期间很难确定其参数的具体类型，也能产生逃逸。</p>
+<pre><code> func main() {
+     s := "Escape"
+     fmt.Println(s)
+ }
+</code></pre>
+</li>
+<li>
+<p>闭包引用对象逃逸</p>
+<pre><code> func Fibonacci() func() int {
+     a, b := 0, 1
+     return func() int {
+         a, b = b, a+b
+         return a
+     }
+ }
+</code></pre>
+</li>
+</ol>
+<p>可以使用<code>go build -gcflags=-m</code>查看逃逸分析日志</p>
+<h1 id="二-golang-栈"><a class="markdownIt-Anchor" href="#二-golang-栈"></a> 二、Golang 栈</h1>
+<h2 id="21-golang-栈大小变更历史"><a class="markdownIt-Anchor" href="#21-golang-栈大小变更历史"></a> 2.1 Golang 栈大小变更历史</h2>
+<p><code>Go</code> 语言使用用户态线程 <code>Goroutine</code> 作为执行上下文，它的额外开销和默认栈大小都比线程小很多，然而 <code>Goroutine</code> 的栈内存空间和栈结构也在经过很多次变化：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/commit/af58f17af936f8d88ccfed96b7a0e9953b4e6010">第一版提交sys·newproc 栈默认是4K</a>、<a target="_blank" rel="noopener" href="https://github.com/golang/go/commit/a67258f3801b6aa218c8c2563f0a743b944e5946">malg commit</a> （早期<code>Golang</code>的<code>runtime</code>代码是用c写的）</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/commit/408238e20bb794d91199c892c68a0989fc924d65">第二次修改 4K -&gt; 8K</a>，主要是提高部分<code>encode</code>和<code>decode</code>的性能</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/commit/1665b006a57099d7bdf5c9f1277784d36b7168d9">第三次修改 8K -&gt; 4K</a> runtime: grow stack by copying</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/commit/6aee29648fce3af20507787035ae22d06d75d39b">第四次修改 4K -&gt; 8K</a> runtime: switch default stack size back to 8kB</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/commit/6c934238c93f8f60775409f1ab410ce9c9ea2357">最后、将最小栈内存从8K降低到了2KB</a> change minimum stack size to 2K，主要是为了节省内存空间使用。</p>
+<pre><code>v1.0 ~ v1.1 — 最小栈内存空间为 4KB；
+v1.2 — 将最小栈内存提升到了 8KB；
+v1.3 — 使用连续栈替换之前版本的分段栈；
+v1.4 — 将最小栈内存降低到了 2KB；
+</code></pre>
+<h2 id="22-分段栈"><a class="markdownIt-Anchor" href="#22-分段栈"></a> 2.2 分段栈</h2>
+<p>分段栈是 <code>Go</code> 语言在 <code>v1.3</code> 版本之前的实现，所有 <code>Goroutine</code> 在栈扩容的时候都会调用<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.2/src/pkg/runtime/stack.c#L196">runtime·newstack:go1.2</a> 分配的内存为<a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.2/src/pkg/runtime/stack.h#L79">StackMin + StackSystem</a> 表示，在 <code>v1.2</code> 版本中为<code>StackMin</code> <code>8KB</code>：</p>
+<pre><code>// Called from runtime·newstackcall or from runtime·morestack when a new
+// stack segment is needed.  Allocate a new stack big enough for
+// m-&gt;moreframesize bytes, copy m-&gt;moreargsize bytes to the new frame,
+// and then act as though runtime·lessstack called the function at
+// m-&gt;morepc.
+void
+runtime·newstack(void)
+{
+   ...........
+	// gp-&gt;status is usually Grunning, but it could be Gsyscall if a stack split
+	// happens during a function call inside entersyscall.
+	gp = m-&gt;curg;
+	oldstatus = gp-&gt;status;
+
+	framesize = m-&gt;moreframesize;
+	argsize = m-&gt;moreargsize;
+	gp-&gt;status = Gwaiting;
+	gp-&gt;waitreason = "stack split";
+	newstackcall = framesize==1;
+	if(newstackcall)
+		framesize = 0;
+   
+   
+	if(newstackcall &amp;&amp; m-&gt;morebuf.sp - sizeof(Stktop) - argsize - 32 &gt; gp-&gt;stackguard) {
+	   .........
+	} else {
+		// 这里计算栈的空间大小
+		// allocate new segment.
+		framesize += argsize;
+		framesize += StackExtra;	// room for more functions, Stktop.
+		if(framesize &lt; StackMin)
+			framesize = StackMin; // 栈最小8K
+		framesize += StackSystem; // StackSystem  Window-64 是4K，plan9 是512，其他平台是0
+		gp-&gt;stacksize += framesize;
+		if(gp-&gt;stacksize &gt; runtime·maxstacksize) { // maxstacksize x64是 1G，x32是250m
+			runtime·printf("runtime: goroutine stack exceeds %D-byte limit\n", (uint64)runtime·maxstacksize);
+			runtime·throw("stack overflow");
+		}
+		stk = runtime·stackalloc(framesize);
+		top = (Stktop*)(stk+framesize-sizeof(*top));
+		free = framesize;
+	}
+}	
+
+..............
+
+
+void*
+runtime·stackalloc(uint32 n)
+{
+	uint32 pos;
+	void *v;
+
+	if(g != m-&gt;g0)
+		runtime·throw("stackalloc not on scheduler stack");
+
+	if(n == FixedStack || m-&gt;mallocing || m-&gt;gcing) {
+		if(n != FixedStack) {
+			runtime·printf("stackalloc: in malloc, size=%d want %d\n", FixedStack, n);
+			runtime·throw("stackalloc");
+		}
+		if(m-&gt;stackcachecnt == 0)
+			stackcacherefill();
+		pos = m-&gt;stackcachepos;
+		pos = (pos - 1) % StackCacheSize;
+		v = m-&gt;stackcache[pos];
+		m-&gt;stackcachepos = pos;
+		m-&gt;stackcachecnt--;
+		m-&gt;stackinuse++;
+		return v;
+	}
+	
+	// https://github.com/golang/go/blob/go1.2/src/pkg/runtime/malloc.goc#L34
+	// 这里调用 runtime·mallocgc 去申请内存，指定内存不需要GC
+	return runtime·mallocgc(n, 0, FlagNoProfiling|FlagNoGC|FlagNoZero|FlagNoInvokeGC);
+}
+</code></pre>
+<p>如果通过该方法申请的内存大小为固定的 <code>8KB</code> 或者满足其他的条件，运行时会在全局的栈缓存链表中找到空闲的内存块并作为新 <code>Goroutine</code> 的栈空间返回；在其余情况下，栈内存空间会从堆上申请一块合适的内存。</p>
+<p>当 <code>Goroutine</code> 调用的函数层级或者局部变量需要的越来越多时，运行时会调用 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.2/src/pkg/runtime/asm_amd64.s#L195">runtime.morestack:go1.2</a> 和 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.2/src/pkg/runtime/stack.c#L196">runtime.newstack:go1.2</a> 创建一个新的栈空间，这些栈空间虽然不连续，但是当前 <code>Goroutine</code> 的多个栈空间会以链表的形式串联起来，运行时会通过指针找到连续的栈片段：</p>
+<p>一旦 <code>Goroutine</code> 申请的栈空间不在被需要，运行时会调用 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.2/src/pkg/runtime/asm_amd64.s#L370">runtime.lessstack:go1.2</a> 和 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.2/src/pkg/runtime/stack.c#L132">runtime.oldstack:go1.2</a> 释放不再使用的内存空间。</p>
+<p>分段栈机制虽然能够按需为当前 <code>Goroutine</code> 分配内存并且及时减少内存的占用，但是它也存在两个比较大的问题：</p>
+<ol>
+<li>如果当前 <code>Goroutine</code> 的栈几乎充满，那么任意的函数调用都会触发栈扩容，当函数返回后又会触发栈的收缩，如果在一个循环中调用函数，栈的分配和释放就会造成巨大的额外开销，<strong>这被称为热分裂问题（Hot split）</strong>；</li>
+<li>一旦 <code>Goroutine</code> 使用的内存越过了分段栈的扩缩容阈值，运行时会触发栈的扩容和缩容，带来额外的工作量；</li>
+</ol>
+<h2 id="23-连续栈"><a class="markdownIt-Anchor" href="#23-连续栈"></a> 2.3 连续栈</h2>
+<h3 id="231-什么是连续栈"><a class="markdownIt-Anchor" href="#231-什么是连续栈"></a> 2.3.1 什么是连续栈</h3>
+<p>连续栈可以解决分段栈中存在的两个问题，其核心原理是每当程序的栈空间不足时，初始化一片更大的栈空间并将原栈中的所有值都迁移到新栈中，新的局部变量或者函数调用就有充足的内存空间。使用连续栈机制时，栈空间不足导致的扩容会经历以下几个步骤：</p>
+<ol>
+<li>在内存空间中分配更大的栈内存空间；</li>
+<li>将旧栈中的所有内容复制到新栈中；</li>
+<li>将指向旧栈对应变量的指针重新指向新栈；</li>
+<li>销毁并回收旧栈的内存空间；</li>
+</ol>
+<p>在扩容的过程中，最重要的是调整指针的第三步，这一步能够保证指向栈的指针的正确性，因为栈中的所有变量内存都会发生变化，所以原本指向栈中变量的指针也需要调整。我们在前面提到过经过逃逸分析的 <code>Go</code> 语言程序的遵循以下不变性 —— 指向栈对象的指针不能存在于堆中，所以指向栈中变量的指针只能在栈上，我们只需要调整栈中的所有变量就可以保证内存的安全了。</p>
+<h3 id="232-nosplit的自动检测"><a class="markdownIt-Anchor" href="#232-nosplit的自动检测"></a> 2.3.2 NOSPLIT的自动检测</h3>
+<p>我们在编写函数时，编译出汇编代码会发现，在一些函数的执行代码中，编译器很智能的加上了<code>NOSPLIT</code>标记。这个标记可以禁用栈溢出检测<code>prolog</code>，即该函数运行不会导致栈分裂，由于不需要再照常执行栈溢出检测，所以会提升一些函数性能。这是如何做到的</p>
+<pre><code>// cmd/internal/obj/s390x/objz.go
+
+if p.Mark&amp;LEAF != 0 &amp;&amp; autosize &lt; objabi.StackSmall {
+	// A leaf function with a small stack can be marked
+	// NOSPLIT, avoiding a stack check.
+	p.From.Sym.Set(obj.AttrNoSplit, true)
+}
+</code></pre>
+<p>当函数处于调用链的叶子节点，且栈帧小于<code>StackSmall</code>字节时，则自动标记为<code>NOSPLIT</code>。 <code>x86</code>架构处理与之类似</p>
+<p>自动标记为<code>NOSPLIT</code>的函数，链接器就会知道该函数最多还会使用<code>StackLimit</code>字节空间，不需要栈分裂。</p>
+<p>备注：用户也可以使用<code>//go:nosplit</code>强制指定<code>NOSPLIT</code>属性，但如果函数实际真的溢出了，则会在编译期就报错<code>nosplit stack overflow</code></p>
+<pre><code>$ GOOS=linux GOARCH=amd64 go build -gcflags="-N -l" main.go
+#command-line-arguments
+main.add: nosplit stack overflow
+	744	assumed on entry to main.add (nosplit)
+	-79264	after main.add (nosplit) uses 80008
+</code></pre>
+<br>
+<h3 id="233-goroutine的创建"><a class="markdownIt-Anchor" href="#233-goroutine的创建"></a> 2.3.3 Goroutine的创建</h3>
+<p>程序中执行 <code>go func(){} </code>创建<code>Goroutine</code>的时候，runtime会执行<code>newproc1</code>，这里会先去<code>_p_.gFree</code>列表拿，如果没有空闲的g就会调用<code>malg</code> 去new一个。</p>
+<pre><code>// https://github.com/golang/go/blob/go1.16.6/src/runtime/proc.go#L4065
+
+func newproc1(fn *funcval, argp unsafe.Pointer, narg int32, callergp *g, callerpc uintptr) *g {
+   ..............
+   
+	newg := gfget(_p_) // 先去P的free list拿 没有的话就调用malg new一个g
+	if newg == nil {
+		newg = malg(_StackMin)
+		casgstatus(newg, _Gidle, _Gdead)
+		allgadd(newg) // publishes with a g-&gt;status of Gdead so GC scanner doesn't look at uninitialized stack.
+	}
+}
+</code></pre>
+<p><code>new</code> 一个新的<code>Goroutine</code>的时候，会调用<code>stackalloc</code>来申请栈空间。</p>
+<pre><code>//https://github.com/golang/go/blob/go1.16.6/src/runtime/proc.go#L3987
+// Allocate a new g, with a stack big enough for stacksize bytes.
+func malg(stacksize int32) *g {
+	newg := new(g)
+	if stacksize &gt;= 0 {
+		// round2 是求2的指数，比如传 6 返回 8
+		// _StackSystem linux是0、plan9 是512 、 Windows-x64 是4k
+		stacksize = round2(_StackSystem + stacksize)
+		systemstack(func() {//切换到 G0 为 newg 初始化栈内存
+			newg.stack = stackalloc(uint32(stacksize))
+		})
+		// 设置 stackguard0 ，用来判断是否要进行栈扩容
+		newg.stackguard0 = newg.stack.lo + _StackGuard
+		newg.stackguard1 = ^uintptr(0)
+		// Clear the bottom word of the stack. We record g
+		// there on gsignal stack during VDSO on ARM and ARM64.
+		*(*uintptr)(unsafe.Pointer(newg.stack.lo)) = 0
+	}
+	return newg
+}
+</code></pre>
+<p>每一个<code>Goroutine</code>的<code>g-&gt;stackguard</code>0都被设置为指向<code>stack.lo </code>+ <code>StackGuard</code>的位置。所以每一个函数在真正执行前都会将<code>SP</code>和<code>stackguard0</code>进行比较。</p>
+<br>
+<h3 id="234-栈的初始化"><a class="markdownIt-Anchor" href="#234-栈的初始化"></a> 2.3.4 栈的初始化</h3>
+<pre><code>// Number of orders that get caching. Order 0 is FixedStack
+// and each successive order is twice as large.
+// We want to cache 2KB, 4KB, 8KB, and 16KB stacks. Larger stacks
+// will be allocated directly.
+// Since FixedStack is different on different systems, we
+// must vary NumStackOrders to keep the same maximum cached size.
+//   OS               | FixedStack | NumStackOrders
+//   -----------------+------------+---------------
+//   linux/darwin/bsd | 2KB        | 4
+//   windows/32       | 4KB        | 3
+//   windows/64       | 8KB        | 2
+//   plan9            | 4KB        | 3
+_NumStackOrders = 4 - sys.PtrSize/4*sys.GoosWindows - 1*sys.GoosPlan9
+
+
+// 全局的栈缓存，分配 32KB以下内存
+var stackpool [_NumStackOrders]struct {
+	item stackpoolItem
+	_    [cpu.CacheLinePadSize - unsafe.Sizeof(stackpoolItem{})%cpu.CacheLinePadSize]byte // CacheLine对齐，防止Flase Sharding的问题
+}
+
+//go:notinheap
+type stackpoolItem struct {
+	mu   mutex
+	span mSpanList 
+}
+
+// 全局的栈缓存，分配 32KB 以上内存 
+// heapAddrBits 48 , pageShift 13
+var stackLarge struct {
+	lock mutex
+	free [heapAddrBits - pageShift]mSpanList // free lists by log_2(s.npages)
+}
+
+func stackinit() {
+	if _StackCacheSize&amp;_PageMask != 0 {
+		throw("cache size must be a multiple of page size")
+	}
+	for i := range stackpool {
+		stackpool[i].item.span.init()
+		lockInit(&amp;stackpool[i].item.mu, lockRankStackpool)
+	}
+	for i := range stackLarge.free {
+		stackLarge.free[i].init()
+		lockInit(&amp;stackLarge.lock, lockRankStackLarge)
+	}
+}
+</code></pre>
+<p>在执行栈初始化的时候会初始化两个全局变量 <code>stackpool</code> 和 <code>stackLarge</code>。<code>stackpool</code> 可以分配小于 <code>32KB </code>的内存，<code>stackLarge</code> 用来分配大于 <code>32KB</code> 的栈空间。</p>
+<br>
+<h3 id="235-栈内存分配"><a class="markdownIt-Anchor" href="#235-栈内存分配"></a> 2.3.5 栈内存分配</h3>
+<pre><code>// https://github.com/golang/go/blob/go1.16.6/src/runtime/stack.go#L327
+
+// Per-P, per order stack segment cache size.
+_StackCacheSize = 32 * 1024
+// stackalloc allocates an n byte stack.
+//
+// stackalloc must run on the system stack because it uses per-P
+// resources and must not split the stack.
+//
+//go:systemstack
+func stackalloc(n uint32) stack {
+	// Stackalloc must be called on scheduler stack, so that we
+	// never try to grow the stack during the code that stackalloc runs.
+	// Doing so would cause a deadlock (issue 1547).
+	thisg := getg() // 必须是g0
+	if thisg != thisg.m.g0 {
+		throw("stackalloc not on scheduler stack")
+	}
+	if n&amp;(n-1) != 0 {
+		throw("stack size not a power of 2")
+	}
+	if stackDebug &gt;= 1 {
+		print("stackalloc ", n, "\n")
+	}
+
+	if debug.efence != 0 || stackFromSystem != 0 {
+		n = uint32(alignUp(uintptr(n), physPageSize))
+		v := sysAlloc(uintptr(n), &amp;memstats.stacks_sys)
+		if v == nil {
+			throw("out of memory (stackalloc)")
+		}
+		return stack{uintptr(v), uintptr(v) + uintptr(n)}
+	}
+
+	// Small stacks are allocated with a fixed-size free-list allocator.
+	// If we need a stack of a bigger size, we fall back on allocating
+	// a dedicated span.
+	var v unsafe.Pointer
+	// _FixedStack: 2K、_NumStackOrders：4 、_StackCacheSize = 32 * 1024
+	if n &lt; _FixedStack&lt;&lt;_NumStackOrders &amp;&amp; n &lt; _StackCacheSize {// 小于32K
+		order := uint8(0)
+		n2 := n
+		// 大于 2048 ,那么 for 循环 将 n2 除 2,直到 n 小于等于 2048
+		for n2 &gt; _FixedStack {
+			order++
+			n2 &gt;&gt;= 1
+		}
+		var x gclinkptr
+		//preemptoff != "", 在 GC 的时候会进行设置,表示如果在 GC 那么从 stackpool 分配
+		// thisg.m.p = 0 会在系统调用和 改变 P 的个数的时候调用,如果发生,那么也从 stackpool 分配
+		if stackNoCache != 0 || thisg.m.p == 0 || thisg.m.preemptoff != "" {
+			// thisg.m.p == 0 can happen in the guts of exitsyscall
+			// or procresize. Just get a stack from the global pool.
+			// Also don't touch stackcache during gc
+			// as it's flushed concurrently.
+			lock(&amp;stackpool[order].item.mu)
+			x = stackpoolalloc(order)// 从 stackpool 分配
+
+			unlock(&amp;stackpool[order].item.mu)
+		} else {
+		
+			// 从 P 的 mcache 分配内存
+			c := thisg.m.p.ptr().mcache
+			x = c.stackcache[order].list
+			if x.ptr() == nil {
+				// 从堆上申请一片内存空间填充到stackcache中
+				stackcacherefill(c, order)
+				x = c.stackcache[order].list
+			}
+			c.stackcache[order].list = x.ptr().next // 移除链表的头节点
+			c.stackcache[order].size -= uintptr(n)
+		}
+		v = unsafe.Pointer(x) // 获取到分配的span内存块
+	} else {
+		// 申请的内存空间过大，从 runtime.stackLarge 中检查是否有剩余的空间
+		var s *mspan
+		// 计算需要分配多少个 span 页， 8KB 为一页
+		npage := uintptr(n) &gt;&gt; _PageShift
+		log2npage := stacklog2(npage)
+
+		// Try to get a stack from the large stack cache.
+		lock(&amp;stackLarge.lock)
+		// 如果 stackLarge 对应的链表不为空
+		if !stackLarge.free[log2npage].isEmpty() {
+			//获取链表的头节点，并将其从链表中移除
+			s = stackLarge.free[log2npage].first
+			stackLarge.free[log2npage].remove(s)
+		}
+		unlock(&amp;stackLarge.lock)
+
+		lockWithRankMayAcquire(&amp;mheap_.lock, lockRankMheap)
+		//这里是stackLarge为空的情况
+		if s == nil {
+			// 从堆上申请新的内存 span
+			// Allocate a new stack from the heap.
+			s = mheap_.allocManual(npage, spanAllocStack)
+			if s == nil {
+				throw("out of memory")
+			}
+			// OpenBSD 6.4+ 系统需要做额外处理
+			osStackAlloc(s)
+			s.elemsize = uintptr(n)
+		}
+		v = unsafe.Pointer(s.base())
+	}
+
+	..........
+	
+	return stack{uintptr(v), uintptr(v) + uintptr(n)}
+}
+</code></pre>
+<p><strong>小于32KB的栈内存分配</strong></p>
+<p>小栈指大小为 <code>2K/4K/8K/16K</code> 的栈，在分配的时候，会根据大小计算不同的 <code>order</code> 值，如果栈大小是 <code>2K</code>，那么 <code>order</code> 就是 <code>0，4K</code> 对应 <code>order</code> 就是 <code>1</code>，以此类推。这样一方面可以减少不同 <code>Goroutine</code> 获取不同栈大小的锁冲突，另一方面可以预先缓存对应大小的 <code>span</code> ，以便快速获取。</p>
+<p><code>thisg.m.p == 0</code>可能发生在系统调用 <code>exitsyscall</code> 或改变 <code>P</code> 的个数 <code>procresize</code> 时，<code>thisg.m.preemptoff != ""</code>会发生在 <code>GC</code> 的时候。也就是说在发生在系统调用 <code>exitsyscall</code> 或改变 P 的个数在变动，亦或是在 <code>GC</code> 的时候，会从 <code>stackpool</code> 分配栈空间，否则从 <code>mcache</code> 中获取。</p>
+<p>在 <code>stackpoolalloc</code> 函数中会去找 <code>stackpool</code> 对应 <code>order</code> 下标的 <code>span</code> 链表的头节点，如果不为空，那么直接将头节点的属性 <code>manualFreeList</code> 指向的节点从链表中移除，并返回；</p>
+<p>如果 <code>list.first</code>为空，那么调用 <code>mheap_</code>的 <code>allocManual</code> 函数从堆中分配 <code>mspan</code></p>
+<p>从 <code>allocManual</code> 函数会分配 <code>32KB</code> 大小的内存块，分配好新的 <code>span</code> 之后会根据 <code>elemsize</code> 大小将 <code>32KB</code> 内存进行切割，然后通过单向链表串起来并将最后一块内存地址赋值给 <code>manualFreeList</code> 。</p>
+<pre><code>func stackpoolalloc(order uint8) gclinkptr {
+	list := &amp;stackpool[order].item.span
+	s := list.first
+	lockWithRankMayAcquire(&amp;mheap_.lock, lockRankMheap)
+	if s == nil {
+		// no free stacks. Allocate another span worth.
+		// 从堆上分配 mspan
+        // _StackCacheSize = 32 * 1024
+		s = mheap_.allocManual(_StackCacheSize&gt;&gt;_PageShift, &amp;memstats.stacks_inuse)
+		if s == nil {
+			throw("out of memory")
+		}
+		// 刚分配的 span 里面分配对象个数肯定为 0
+		if s.allocCount != 0 {
+			throw("bad allocCount")
+		}
+		if s.manualFreeList.ptr() != nil {
+			throw("bad manualFreeList")
+		}
+		//OpenBSD 6.4+ 系统需要做额外处理
+		osStackAlloc(s)
+		// Linux 中 _FixedStack = 2048
+		s.elemsize = _FixedStack &lt;&lt; order
+		//_StackCacheSize =  32 * 1024
+		// 这里是将 32KB 大小的内存块分成了elemsize大小块，用单向链表进行连接
+		// 最后 s.manualFreeList 指向的是这块内存的尾部
+		for i := uintptr(0); i &lt; _StackCacheSize; i += s.elemsize {
+			x := gclinkptr(s.base() + i)
+			x.ptr().next = s.manualFreeList
+			s.manualFreeList = x
+		}
+		// 插入到 list 链表头部
+		list.insert(s)
+	}
+	x := s.manualFreeList
+	// 代表被分配完毕
+	if x.ptr() == nil {
+		throw("span has no free stacks")
+	}
+	// 将 manualFreeList 往后移动一个单位
+	s.manualFreeList = x.ptr().next
+	// 统计被分配的内存块
+	s.allocCount++
+	// 因为分配的时候第一个内存块是 nil
+	// 所以当指针为nil 的时候代表被分配完毕
+	// 那么需要将该对象从 list 的头节点移除
+	if s.manualFreeList.ptr() == nil {
+		// all stacks in s are allocated.
+		list.remove(s)
+	}
+	return x
+}
+</code></pre>
+<p>如果 <code>mcache</code> 对应的 <code>stackcache</code> 获取不到，那么调用 <code>stackcacherefill</code> 从堆上申请一片内存空间填充到<code>stackcache</code>中。</p>
+<p><code>stackcacherefill</code> 函数会调用 <code>stackpoolalloc</code> 从 <code>stackpool</code> 中获取一半的空间组装成 <code>list</code> 链表，然后放入到 <code>stackcache</code> 数组中。</p>
+<pre><code>func stackcacherefill(c *mcache, order uint8) { 
+	var list gclinkptr
+	var size uintptr
+	lock(&amp;stackpool[order].item.mu)
+	//_StackCacheSize = 32 * 1024
+	// 将 stackpool 分配的内存组成一个单向链表 list
+	for size &lt; _StackCacheSize/2 {
+		x := stackpoolalloc(order)
+		x.ptr().next = list
+		list = x
+		// _FixedStack = 2048
+		size += _FixedStack &lt;&lt; order
+	}
+	unlock(&amp;stackpool[order].item.mu)
+	c.stackcache[order].list = list
+	c.stackcache[order].size = size
+}
+</code></pre>
+<p><strong>大于等于32KB的栈内存分配</strong></p>
+<p>对于大栈内存分配，运行时会查看 <code>stackLarge</code> 中是否有剩余的空间，如果不存在剩余空间，它也会调用 <code>mheap_.allocManual</code> 从堆上申请新的内存。</p>
+<br>
+<h3 id="236-栈的扩容"><a class="markdownIt-Anchor" href="#236-栈的扩容"></a> 2.3.6 栈的扩容</h3>
+<p><code>Go</code> 语言中的执行栈由 <code>runtime.stack</code> 表示，该结构体中只包含两个字段，分别表示栈的顶部和栈的底部，每个栈结构体都表示范围为 <code>[lo, hi) </code>的内存空间：</p>
+<pre><code>type stack struct {
+	lo uintptr
+	hi uintptr
+}
+</code></pre>
+<p>栈的结构虽然非常简单，但是想要理解 <code>Goroutine</code> 栈的实现原理，还是需要我们从编译期间和运行时两个阶段入手：</p>
+<ol>
+<li>编译器会在编译阶段会通过 <code>cmd/internal/obj/x86.stacksplit</code> 在调用函数前插入 <code>runtime.morestack</code> 或者 <code>runtime.morestack_noctxt</code> 函数；</li>
+<li>运行时在创建新的 <code>Goroutine</code> 时会在 <code>runtime.malg</code> 中调用 <code>runtime.stackalloc</code> 申请新的栈内存，并在编译器插入的 <code>runtime.morestack</code> 中检查栈空间是否充足；</li>
+</ol>
+<p>需要注意的是，<code>Go</code> 语言的编译器不会为所有的函数插入 <code>runtime.morestack</code>，它只会在必要时插入指令以减少运行时的额外开销，编译指令 <code>nosplit</code> 可以跳过栈溢出的检查，虽然这能降低一些开销，不过固定大小的栈也存在溢出的风险。本节将分别分析栈的初始化、创建 <code>Goroutine</code> 时栈的分配、编译器和运行时协作完成的栈扩容以及当栈空间利用率不足时的缩容过程。</p>
+<p>在 <code>Goroutine</code> 中会通过 <code>stackguard0</code> 来判断是否要进行栈增长：</p>
+<ul>
+<li><code>stackguard0</code>：<code>stack.lo</code> + <code>StackGuard</code>, 用于<code>stack overlow</code>的检测；</li>
+<li><code>StackGuard</code>：保护区大小，常量<code>Linux</code>上为 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.16.6/src/cmd/internal/objabi/stack.go#L21">928 字节</a>；</li>
+<li><code>StackSmall</code>：常量大小为 <code>128</code> 字节，用于小函数调用的优化；</li>
+<li><code>StackBig</code>：常量大小为 <code>4096</code> 字节；</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8dd04e53b3137274.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-59ca6d23d703f42f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>需要注意的是，由于栈是由高地址向低地址增长的，所以对比的时候，都是小于才执行扩容。</p>
+<p>当执行栈扩容时，会在内存空间中分配更大的栈内存空间，然后将旧栈中的所有内容复制到新栈中，并修改指向旧栈对应变量的指针重新指向新栈，最后销毁并回收旧栈的内存空间，从而实现栈的动态扩容。</p>
+<p><strong>具体代码实现</strong></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.16.6/src/runtime/asm_amd64.s#L416">runtime.morestack_noctxt</a> 是用汇编实现的，它会调用到 <code>runtime·morestack</code>，下面我们看看它的实现：</p>
+<pre><code>TEXT runtime·morestack(SB),NOSPLIT,$0-0
+	// Cannot grow scheduler stack (m-&gt;g0).
+	// 无法增长调度器的栈(m-&gt;g0)
+	get_tls(CX)
+	MOVQ	g(CX), BX
+	MOVQ	g_m(BX), BX
+	MOVQ	m_g0(BX), SI
+	CMPQ	g(CX), SI
+	JNE	3(PC)
+	CALL	runtime·badmorestackg0(SB)
+	CALL	runtime·abort(SB)
+	// 省略signal stack、morebuf和sched的处理
+	...
+	// Call newstack on m-&gt;g0's stack.
+	// 在 m-&gt;g0 栈上调用 newstack.
+	MOVQ	m_g0(BX), BX
+	MOVQ	BX, g(CX)
+	MOVQ	(g_sched+gobuf_sp)(BX), SP
+	CALL	runtime·newstack(SB)
+	CALL	runtime·abort(SB)	// 如果 newstack 返回则崩溃 crash if newstack returns
+	RET
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.16.6/src/runtime/asm_amd64.s#L416">runtime·morestack</a> 做完校验和赋值操作后会切换到 <code>G0</code> 调用 <a target="_blank" rel="noopener" href="https://github.com/golang/go/blob/go1.16.6/src/runtime/stack.go#L938">runtime·newstack</a>来完成扩容的操作。</p>
+<pre><code>func newstack() {
+	thisg := getg() 
+
+	gp := thisg.m.curg
+	 
+	// 初始化寄存器相关变量
+	morebuf := thisg.m.morebuf
+	thisg.m.morebuf.pc = 0
+	thisg.m.morebuf.lr = 0
+	thisg.m.morebuf.sp = 0
+	thisg.m.morebuf.g = 0
+	...
+	// 校验是否被抢占
+	preempt := atomic.Loaduintptr(&amp;gp.stackguard0) == stackPreempt
+ 
+	// 如果被抢占
+	if preempt {
+		// 校验是否可以安全的被抢占
+		// 如果 M 上有锁
+		// 如果正在进行内存分配
+		// 如果明确禁止抢占
+		// 如果 P 的状态不是 running
+		// 那么就不执行抢占了
+		if !canPreemptM(thisg.m) {
+			// 到这里表示不能被抢占？
+			// Let the goroutine keep running for now.
+			// gp-&gt;preempt is set, so it will be preempted next time.
+			gp.stackguard0 = gp.stack.lo + _StackGuard
+			// 触发调度器的调度
+			gogo(&amp;gp.sched) // never return
+		}
+	}
+
+	if gp.stack.lo == 0 {
+		throw("missing stack in newstack")
+	}
+	// 寄存器 sp
+	sp := gp.sched.sp
+	if sys.ArchFamily == sys.AMD64 || sys.ArchFamily == sys.I386 || sys.ArchFamily == sys.WASM {
+		// The call to morestack cost a word.
+		sp -= sys.PtrSize
+	} 
+	...
+	if preempt {
+		//需要收缩栈
+		if gp.preemptShrink { 
+			gp.preemptShrink = false
+			shrinkstack(gp)
+		}
+		// 被 runtime.suspendG 函数挂起
+		if gp.preemptStop {
+			// 被动让出当前处理器的控制权
+			preemptPark(gp) // never returns
+		}
+ 
+		//主动让出当前处理器的控制权
+		gopreempt_m(gp) // never return
+	}
+ 
+	// 计算新的栈空间是原来的两倍
+	oldsize := gp.stack.hi - gp.stack.lo
+	newsize := oldsize * 2 
+	... 
+	//将 Goroutine 切换至 _Gcopystack 状态
+	casgstatus(gp, _Grunning, _Gcopystack)
+ 
+	//开始栈拷贝
+	copystack(gp, newsize) 
+	casgstatus(gp, _Gcopystack, _Grunning)
+	gogo(&amp;gp.sched)
+}
+</code></pre>
+<br>
+<h3 id="237-栈拷贝"><a class="markdownIt-Anchor" href="#237-栈拷贝"></a> 2.3.7 栈拷贝</h3>
+<p>在开始执行栈拷贝之前会先计算新栈的大小是原来的两倍，然后将 <code>Goroutine</code> 状态切换至 <code>_Gcopystack</code> 状态。</p>
+<pre><code>func copystack(gp *g, newsize uintptr) { 
+	old := gp.stack 
+	// 当前已使用的栈空间大小
+	used := old.hi - gp.sched.sp
+ 
+	//分配新的栈空间
+	new := stackalloc(uint32(newsize))
+	...
+ 
+	// 计算调整的幅度
+	var adjinfo adjustinfo
+	adjinfo.old = old
+	// 新栈和旧栈的幅度来控制指针的移动
+	adjinfo.delta = new.hi - old.hi
+ 
+	// 调整 sudogs, 必要时与 channel 操作同步
+	ncopy := used
+	if !gp.activeStackChans {
+		...
+		adjustsudogs(gp, &amp;adjinfo)
+	} else {
+		// 到这里代表有被阻塞的 G 在当前 G 的channel 中，所以要防止并发操作，需要获取 channel 的锁
+		 
+		// 在所有 sudog 中找到地址最大的指针
+		adjinfo.sghi = findsghi(gp, old) 
+		// 对所有 sudog 关联的 channel 上锁，然后调整指针，并且复制 sudog 指向的部分旧栈的数据到新的栈上
+		ncopy -= syncadjustsudogs(gp, used, &amp;adjinfo)
+	} 
+	// 将源栈中的整片内存拷贝到新的栈中
+	memmove(unsafe.Pointer(new.hi-ncopy), unsafe.Pointer(old.hi-ncopy), ncopy)
+	// 继续调整栈中 txt、defer、panic 位置的指针
+	adjustctxt(gp, &amp;adjinfo)
+	adjustdefers(gp, &amp;adjinfo)
+	adjustpanics(gp, &amp;adjinfo)
+	if adjinfo.sghi != 0 {
+		adjinfo.sghi += adjinfo.delta
+	} 
+	// 将 G 上的栈引用切换成新栈
+	gp.stack = new
+	gp.stackguard0 = new.lo + _StackGuard // NOTE: might clobber a preempt request
+	gp.sched.sp = new.hi - used
+	gp.stktopsp += adjinfo.delta
+ 
+	// 在新栈重调整指针
+	gentraceback(^uintptr(0), ^uintptr(0), 0, gp, 0, nil, 0x7fffffff, adjustframe, noescape(unsafe.Pointer(&amp;adjinfo)), 0)
+ 
+	if stackPoisonCopy != 0 {
+		fillstack(old, 0xfc)
+	}
+	//释放原始栈的内存空间
+	stackfree(old)
+}
+</code></pre>
+<ol>
+<li><code>copystack</code> 首先会计算一下使用栈空间大小，那么在进行栈复制的时候只需要复制已使用的空间就好了；</li>
+<li>然后调用 <code>stackalloc</code> 函数从堆上分配一片内存块；</li>
+<li>然后对比新旧栈的 <code>hi</code> 的值计算出两块内存之间的差值 <code>delta</code>，这个 <code>delta</code> 会在调用 <code>adjustsudogs</code>、<code>adjustctxt</code> 等函数的时候判断旧栈的内存指针位置，然后加上 <code>delta</code> 然后就获取到了新栈的指针位置，这样就可以将指针也调整到新栈了；</li>
+<li>调用 <code>memmove</code> 将源栈中的整片内存拷贝到新的栈中；</li>
+<li>然后继续调用调整指针的函数继续调整栈中 <code>txt</code>、<code>defer</code>、<code>panic</code> 位置的指针；</li>
+<li>接下来将 <code>G</code> 上的栈引用切换成新栈；</li>
+<li>最后调用 <code>stackfree</code> 释放原始栈的内存空间；</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-82ea33f8a92282b0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<br>
+<h3 id="238-栈的收缩"><a class="markdownIt-Anchor" href="#238-栈的收缩"></a> 2.3.8 栈的收缩</h3>
+<p>栈的收缩发生在 <code>GC</code> 时对栈进行扫描的阶段：</p>
+<pre><code>func scanstack(gp *g, gcw *gcWork) {
+	... 
+	// 进行栈收缩
+	shrinkstack(gp)
+	...
+}
+
+func shrinkstack(gp *g) {
+	...
+	oldsize := gp.stack.hi - gp.stack.lo
+	newsize := oldsize / 2 
+	// 当收缩后的大小小于最小的栈的大小时，不再进行收缩
+	if newsize &lt; _FixedStack {
+		return
+	}
+	avail := gp.stack.hi - gp.stack.lo
+	// 计算当前正在使用的栈数量，如果 gp 使用的当前栈少于四分之一，则对栈进行收缩
+	// 当前使用的栈包括到 SP 的所有内容以及栈保护空间，以确保有 nosplit 功能的空间
+	if used := gp.stack.hi - gp.sched.sp + _StackLimit; used &gt;= avail/4 {
+		return
+	}
+	// 将旧栈拷贝到新收缩后的栈上
+	copystack(gp, newsize)
+}
+</code></pre>
+<p>新栈的大小会缩小至原来的一半，如果小于 <code>_FixedStack</code> （<code>2KB</code>）那么不再进行收缩。除此之外还会计算一下当前栈的使用情况是否不足 <code>1/4 </code>，如果使用超过 <code>1/4 </code>那么也不会进行收缩。</p>
+<p>最后判断确定要进行收缩则调用 <code>copystack</code> 函数进行栈拷贝的逻辑。</p>
+<br>
+<h2 id="24-关于golang栈几个实验"><a class="markdownIt-Anchor" href="#24-关于golang栈几个实验"></a> 2.4 关于Golang栈几个实验</h2>
+<br>
+<p><strong>Demo0：Golang栈会自动扩容，是不是永远不会栈溢出？</strong></p>
+<pre><code>func f(i int) int {
+	if i == 0 || i == 1 {
+		return i
+	}
+	return f(i - 1)
+}
+func main() {
+	println(f(100000000))
+}
+</code></pre>
+<p>执行这个函数，程序会报“<code>stack overflow</code>”的<code>excepttion</code>，具体错误日志如下：</p>
+<pre><code>➜  GoTest git:(master) ✗ go run stack.go
+runtime: goroutine stack exceeds 1000000000-byte limit
+runtime: sp=0xc0200e0390 stack=[0xc0200e0000, 0xc0400e0000]
+fatal error: stack overflow
+
+runtime stack:
+runtime.throw(0x1074923, 0xe)
+	/Users/fanlv/.g/go/src/runtime/panic.go:1117 +0x72
+runtime.newstack()
+	/Users/fanlv/.g/go/src/runtime/stack.go:1069 +0x7ed
+runtime.morestack()
+	/Users/fanlv/.g/go/src/runtime/asm_amd64.s:458 +0x8f
+</code></pre>
+<p>这个错误是在<code>newstack</code>函数中抛出来的</p>
+<pre><code>if newsize &gt; maxstacksize || newsize &gt; maxstackceiling {
+	if maxstacksize &lt; maxstackceiling {
+		print("runtime: goroutine stack exceeds ", maxstacksize, "-byte limit\n")
+	} else {
+		print("runtime: goroutine stack exceeds ", maxstackceiling, "-byte limit\n")
+	}
+	print("runtime: sp=", hex(sp), " stack=[", hex(gp.stack.lo), ", ", hex(gp.stack.hi), "]\n")
+	throw("stack overflow")
+}
+</code></pre>
+<p>有上面可知，当新的栈大小超过了<code>maxstacksize</code>就会抛出"<code>stack overflow</code>"的异常。<code>maxstacksize</code>是在<code>runtime.main</code>中设置的。<code>64位</code> 系统下栈的最大值<code>1GB</code>、<code>32位</code>系统是<code>250MB</code></p>
+<pre><code>// Max stack size is 1 GB on 64-bit, 250 MB on 32-bit.
+// Using decimal instead of binary GB and MB because
+// they look nicer in the stack overflow failure message.
+if sys.PtrSize == 8 {
+	maxstacksize = 1000000000
+} else {
+	maxstacksize = 250000000
+}
+</code></pre>
+<br>
+<p><strong>Demo1：验证栈扩容以后地址变了，对我们是不是写代码的时候会有影响？</strong></p>
+<pre><code>func f(i int) int {
+	if i == 0 || i == 1 {
+		return i
+	}
+	return f(i - 1)
+}
+
+func main() {	
+	demo1()
+}
+
+func demo1() {
+	var xDemo1 uint64
+	xAddr := uintptr(unsafe.Pointer(&amp;xDemo1))
+	println("demo1 before stack copy xDemo1 : ", xDemo1, " xDemo1 pointer: ", &amp;xDemo1)
+
+	f(10000000)
+
+	xPointer := (*uint64)(unsafe.Pointer(xAddr))
+	atomic.AddUint64(xPointer, 1)
+	println("demo1 after stack copy xDemo1 : ", xDemo1, " xDemo1 pointer:", &amp;xDemo1)
+}
+</code></pre>
+<p>编译执行上面的代码，输入结果如下，由下面内容可以知道栈扩容过程中，栈上变量的地址的确会发生改变。</p>
+<pre><code>➜  GoTest git:(master) ✗ go build -gcflags "-N -l -m"  stack.go
+➜  GoTest git:(master) ✗ ./stack
+demo1 before stack copy xDemo1 :  0  xDemo1 pointer:  0xc000044740
+demo1 after stack copy xDemo1 :  0  xDemo1 pointer: 0xc04015ff40
+</code></pre>
+<br>
+<p><strong>Demo2：变量逃逸到堆上的情况</strong></p>
+<p>上面是变量没有逃逸的情况，我们构造个变量逃逸到堆上的<code>case</code>（其实用<code>fmt.Println</code>打印<code>x变量</code>就导致<code>x逃逸</code>，笔者最开始使用<code>fmt.Println</code>打印<code>x变量</code>发现栈扩容的情况下，<code>x地址</code>也一直不会变），代码如下：</p>
+<pre><code>// f 和 main 函数代码如demo1
+func demo2() {
+	var xDemo2 uint64
+	println("demo2 before stack copy xDemo2 : ", xDemo2, " xDemo2 pointer: ", &amp;xDemo2)
+	f(10000000)
+	atomic.AddUint64(&amp;xDemo2, 1)
+	println("demo2 after stack copy xDemo2 : ", xDemo2, " xDemo2 pointer:", &amp;xDemo2)
+}
+</code></pre>
+<p><code>demo2</code>中，我们直接用取地址的方式去调用<code>atomic.AddUint64(&amp;xDemo2, 1)</code>，看编译日志可以知道<code>xDemo2</code>这个变量逃逸到堆上了。逃逸 到堆上的变量地址是不会变的。这样也符合预期。</p>
+<pre><code>➜  GoTest git:(master) ✗ go build -gcflags "-N -l -m"  stack.go
+#command-line-arguments
+./stack.go:36:6: moved to heap: xDemo2
+➜  GoTest git:(master) ✗ ./stack
+demo2 before stack copy xDemo2 :  0  xDemo2 pointer:  0xc0000180b8
+demo2 after stack copy xDemo2 :  1  xDemo2 pointer: 0xc0000180b8
+</code></pre>
+<br>
+<p><strong>Demo3：go run方式去运行代码</strong></p>
+<p><code>demo3</code> 中，我们直接返回变量的地址，这个时候我们知道，变量肯定已经逃逸到堆上。我们用<code>go run</code>的方式去跑下面代码，地址会变吗？</p>
+<pre><code>func demo3() *uint64 {
+	var xDemo3 uint64 = 8
+	println("demo3 before stack copy xDemo3 : ", xDemo3, " xDemo3 pointer: ", &amp;xDemo3)
+	f(1000)
+	println("demo3 after stack copy xDemo3 : ", xDemo3, " xDemo3 pointer:", &amp;xDemo3)
+	return &amp;xDemo3
+}
+</code></pre>
+<p>输入日志如下，我们发现逃逸到堆上的变量地址也变了，这个是为什么？</p>
+<pre><code>➜  GoTest git:(master) ✗ go run stack.go
+demo3 before stack copy xDemo3 :  0  xDemo3 pointer:  0xc000044770
+demo3 after stack copy xDemo3 :  0  xDemo3 pointer: 0xc000117f70
+</code></pre>
+<p>其实执行<code>go run</code>的时候，它就是想编译在运行，执行<code>go build</code>的时候没有“<code>禁止内联</code>”，所以<code>demo3</code>函数就发生了内联，所以变量也不会逃逸到堆上了。我们可以<code>go build -gcflags "-m"  stack.go</code>看下，输出日志如下。<code>can inline demo3 </code>，这个时候<code>demo3</code>已经内联了。</p>
+<pre><code>➜  GoTest git:(master) ✗ go build -gcflags "-m"  stack.go
+#command-line-arguments
+./stack.go:37:6: can inline demo3
+./stack.go:14:7: inlining call to demo3
+./stack.go:38:6: moved to heap: xDemo3
+</code></pre>
+<p>虽然逃逸分析日志还有<code>moved to heap: xDemo3 </code>，但是其实这个时候已经没有逃逸了，具体我们可以导出汇编代码 <code>otool -tvV stack &gt;&gt; ~/Desktop/stack.s</code> 看下。可以看到main里面已经没有<code>demo3</code>的调用了。<code>xDemo3</code>这边变量还是在栈上<code>$0x8, 0x10(%rsp)</code></p>
+<pre><code>_main.main:
+000000000105c920	movq	%gs:0x30, %rcx
+000000000105c929	cmpq	0x10(%rcx), %rsp
+000000000105c92d	jbe	0x105ca21
+000000000105c933	subq	$0x20, %rsp
+000000000105c937	movq	%rbp, 0x18(%rsp)
+000000000105c93c	leaq	0x18(%rsp), %rbp
+000000000105c941	movq	$0x8, 0x10(%rsp)
+000000000105c94a	callq	_runtime.printlock
+000000000105c94f	leaq	0x18e96(%rip), %rax
+000000000105c956	movq	%rax, (%rsp)
+000000000105c95a	movq	$0x22, 0x8(%rsp)
+000000000105c963	callq	_runtime.printstring
+000000000105c968	movq	0x10(%rsp), %rax
+000000000105c96d	movq	%rax, (%rsp)
+000000000105c971	callq	_runtime.printuint
+000000000105c976	leaq	0x16ccd(%rip), %rax
+000000000105c97d	movq	%rax, (%rsp)
+000000000105c981	movq	$0x13, 0x8(%rsp)
+000000000105c98a	callq	_runtime.printstring
+000000000105c98f	leaq	0x10(%rsp), %rax
+000000000105c994	movq	%rax, (%rsp)
+000000000105c998	callq	_runtime.printpointer
+000000000105c99d	nopl	(%rax)
+000000000105c9a0	callq	_runtime.printnl
+000000000105c9a5	callq	_runtime.printunlock
+000000000105c9aa	movq	$0x3e8, (%rsp)  
+000000000105c9b2	callq	_main.f
+000000000105c9b7	callq	_runtime.printlock
+000000000105c9bc	leaq	0x18bf7(%rip), %rax
+000000000105c9c3	movq	%rax, (%rsp)
+000000000105c9c7	movq	$0x21, 0x8(%rsp)
+000000000105c9d0	callq	_runtime.printstring
+000000000105c9d5	movq	0x10(%rsp), %rax
+000000000105c9da	movq	%rax, (%rsp)
+000000000105c9de	nop
+000000000105c9e0	callq	_runtime.printuint
+000000000105c9e5	leaq	0x16b62(%rip), %rax
+000000000105c9ec	movq	%rax, (%rsp)
+000000000105c9f0	movq	$0x12, 0x8(%rsp)
+000000000105c9f9	callq	_runtime.printstring
+000000000105c9fe	leaq	0x10(%rsp), %rax
+000000000105ca03	movq	%rax, (%rsp)
+000000000105ca07	callq	_runtime.printpointer
+000000000105ca0c	callq	_runtime.printnl
+000000000105ca11	callq	_runtime.printunlock
+000000000105ca16	movq	0x18(%rsp), %rbp
+000000000105ca1b	addq	$0x20, %rsp
+000000000105ca1f	nop
+000000000105ca20	retq
+000000000105ca21	callq	_runtime.morestack_noctxt
+000000000105ca26	jmp	_main.main
+</code></pre>
+<h1 id="三-参考资料"><a class="markdownIt-Anchor" href="#三-参考资料"></a> 三、参考资料</h1>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/luozhiyun/p/14619585.html">https://www.cnblogs.com/luozhiyun/p/14619585.html</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.huamo.online/2019/06/25/%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6goroutine%E6%A0%88/">http://www.huamo.online/2019/06/25/%E6%B7%B1%E5%85%A5%E7%A0%94%E7%A9%B6goroutine%E6%A0%88/</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/shijingxiang/articles/12200355.html">https://www.cnblogs.com/shijingxiang/articles/12200355.html<br>
+</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/shijingxiang/articles/12200355.html">https://draveness.me/golang/docs/part3-runtime/ch07-memory/golang-stack-management/</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

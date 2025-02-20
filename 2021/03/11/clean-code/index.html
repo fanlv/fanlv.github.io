@@ -1,0 +1,695 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《Clean Code》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="摘录与 《代码整洁之道》
+ 什么是整洁代码
+
+能通过所有测试；
+没有重复代码；
+体现系统中的全部设计理念；
+包括尽量少的实体，比如类、方法、函数等。
+
+ 童子军军规
+光把代码写好可不够。必须时时保持代码整洁。我们都见过代码随时间流逝而腐坏。我们应当更积极地阻止腐坏的发生。
+让营地比你来时更干净。
+ 有意义的命名
+ 名副其实
+名副其实说起来简单。我们想要强调，这事很严肃。选个好名字要花时间，但省下来的时间比花掉的多。注意命名，而且一旦发现有更好的名称，就换掉旧的。这么做，读你代码的人（包括你自己）都会更开心。
+变量、函数或类的名称应该已经答复了所有的大问题。它该告诉你，它为什么会存在，它做什么事，应该怎么用。如果名称需要注释来补充，那就不算是名副其实。
+ 避免误导
+程序员必须避免留下掩藏代码本意的错误线索。应.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《Clean Code》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E6%95%B4%E6%B4%81%E4%BB%A3%E7%A0%81"><span class="toc-text"> 什么是整洁代码</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AB%A5%E5%AD%90%E5%86%9B%E5%86%9B%E8%A7%84"><span class="toc-text"> 童子军军规</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%89%E6%84%8F%E4%B9%89%E7%9A%84%E5%91%BD%E5%90%8D"><span class="toc-text"> 有意义的命名</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%8D%E5%89%AF%E5%85%B6%E5%AE%9E"><span class="toc-text"> 名副其实</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%BF%E5%85%8D%E8%AF%AF%E5%AF%BC"><span class="toc-text"> 避免误导</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%9A%E6%9C%89%E6%84%8F%E4%B9%89%E7%9A%84%E5%8C%BA%E5%88%86"><span class="toc-text"> 做有意义的区分</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%AF%BB%E5%BE%97%E5%87%BA%E6%9D%A5%E7%9A%84%E5%90%8D%E7%A7%B0"><span class="toc-text"> 使用读得出来的名称</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E5%8F%AF%E6%90%9C%E7%B4%A2%E7%9A%84%E5%90%8D%E7%A7%B0"><span class="toc-text"> 使用可搜索的名称</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E5%90%8D"><span class="toc-text"> 类名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%90%8D"><span class="toc-text"> 方法名</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B7%BB%E5%8A%A0%E6%9C%89%E6%84%8F%E4%B9%89%E7%9A%84%E8%AF%AD%E5%A2%83"><span class="toc-text"> 添加有意义的语境</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E8%A6%81%E6%B7%BB%E5%8A%A0%E6%B2%A1%E7%94%A8%E7%9A%84%E8%AF%AD%E5%A2%83"><span class="toc-text"> 不要添加没用的语境</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0"><span class="toc-text"> 函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9F%AD%E5%B0%8F"><span class="toc-text"> 短小</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%AA%E5%81%9A%E4%B8%80%E4%BB%B6%E4%BA%8B"><span class="toc-text"> 只做一件事</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%AF%8F%E4%B8%AA%E5%87%BD%E6%95%B0%E4%B8%80%E4%B8%AA%E6%8A%BD%E8%B1%A1%E5%B1%82%E7%BA%A7"><span class="toc-text"> 每个函数一个抽象层级</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%87%AA%E9%A1%B6%E5%90%91%E4%B8%8B%E8%AF%BB%E4%BB%A3%E7%A0%81%E5%90%91%E4%B8%8B%E8%A7%84%E5%88%99"><span class="toc-text"> 自顶向下读代码：向下规则</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#switch"><span class="toc-text"> switch</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0"><span class="toc-text"> 函数参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%87%E8%AF%86%E5%8F%82%E6%95%B0"><span class="toc-text"> 标识参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A8%E8%AF%8D%E4%B8%8E%E5%85%B3%E9%94%AE%E5%AD%97"><span class="toc-text"> 动词与关键字</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B3%A8%E9%87%8A"><span class="toc-text"> 注释</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E9%87%8A%E4%B8%8D%E8%83%BD%E7%BE%8E%E5%8C%96%E7%B3%9F%E7%B3%95%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="toc-text"> 注释不能美化糟糕的代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A5%BD%E7%9A%84%E6%B3%A8%E9%87%8A%E5%9C%BA%E6%99%AF"><span class="toc-text"> 好的注释场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9D%8F%E6%B3%A8%E9%87%8A%E5%9C%BA%E6%99%AF"><span class="toc-text"> 坏注释场景</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%BC%E5%BC%8F"><span class="toc-text"> 格式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%82%E7%9B%B4%E6%A0%BC%E5%BC%8F"><span class="toc-text"> 垂直格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%90%91%E6%8A%A5%E7%BA%B8%E5%AD%A6%E4%B9%A0"><span class="toc-text"> 向报纸学习</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%82%E7%9B%B4%E8%B7%9D%E7%A6%BB"><span class="toc-text"> 垂直距离</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9E%82%E7%9B%B4%E9%A1%BA%E5%BA%8F"><span class="toc-text"> 垂直顺序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%AA%E5%90%91%E6%A0%BC%E5%BC%8F"><span class="toc-text"> 横向格式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B0%B4%E5%B9%B3%E5%AF%B9%E9%BD%90"><span class="toc-text"> 水平对齐</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A9%BA%E8%8C%83%E5%9B%B4"><span class="toc-text"> 空范围</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%92%8C%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text"> 对象和数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%97%E5%A2%A8%E5%BF%92%E8%80%B3%E5%BE%8B"><span class="toc-text"> 得墨忒耳律</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95"><span class="toc-text"> 单元测试</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#tdd-%E4%B8%89%E5%AE%9A%E5%BE%8B"><span class="toc-text"> TDD 三定律</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8C%81%E6%B5%8B%E8%AF%95%E6%95%B4%E6%B4%81"><span class="toc-text"> 保持测试整洁</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B4%E6%B4%81%E7%9A%84%E6%B5%8B%E8%AF%95"><span class="toc-text"> 整洁的测试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#first"><span class="toc-text"> F.I.R.S.T.</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B1%BB"><span class="toc-text"> 类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E7%9A%84%E7%BB%84%E7%BB%87"><span class="toc-text"> 类的组织</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B1%BB%E5%BA%94%E8%AF%A5%E7%9F%AD%E5%B0%8F"><span class="toc-text"> 类应该短小</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%95%E4%B8%80%E6%9D%83%E8%B4%A3%E5%8E%9F%E5%88%99"><span class="toc-text"> 单一权责原则</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E8%81%9A"><span class="toc-text"> 内聚</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8C%81%E5%86%85%E8%81%9A%E6%80%A7%E5%B0%B1%E4%BC%9A%E5%BE%97%E5%88%B0%E8%AE%B8%E5%A4%9A%E7%9F%AD%E5%B0%8F%E7%9A%84%E7%B1%BB"><span class="toc-text"> 保持内聚性就会得到许多短小的类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9A%94%E7%A6%BB%E4%BF%AE%E6%94%B9"><span class="toc-text"> 隔离修改</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%B3%BB%E7%BB%9F"><span class="toc-text"> 系统</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%86%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%9E%84%E9%80%A0%E4%B8%8E%E4%BD%BF%E7%94%A8%E5%88%86%E5%BC%80"><span class="toc-text"> 将系统的构造与使用分开</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%A5%E5%8E%82"><span class="toc-text"> 工厂</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5"><span class="toc-text"> 依赖注入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B"><span class="toc-text"> 并发编程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%B9%B6%E5%8F%91"><span class="toc-text"> 为什么要并发</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BF%9D%E6%8C%81%E5%90%8C%E6%AD%A5%E5%8C%BA%E5%9F%9F%E5%BE%AE%E5%B0%8F"><span class="toc-text"> 保持同步区域微小</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%91%B3%E9%81%93%E4%B8%8E%E5%90%AF%E5%8F%91"><span class="toc-text"> 味道与启发</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E9%87%8A-2"><span class="toc-text"> 注释</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E6%81%B0%E5%BD%93%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="toc-text"> 不恰当的信息</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BA%9F%E5%BC%83%E7%9A%84%E6%B3%A8%E9%87%8A"><span class="toc-text"> 废弃的注释</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%86%97%E4%BD%99%E6%B3%A8%E9%87%8A"><span class="toc-text"> 冗余注释</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%B3%9F%E7%B3%95%E7%9A%84%E6%B3%A8%E9%87%8A"><span class="toc-text"> 糟糕的注释</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B3%A8%E9%87%8A%E6%8E%89%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="toc-text"> 注释掉的代码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83"><span class="toc-text"> 环境</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E5%A4%9A%E6%AD%A5%E6%89%8D%E8%83%BD%E5%AE%9E%E7%8E%B0%E7%9A%84%E6%9E%84%E5%BB%BA"><span class="toc-text"> 需要多步才能实现的构建</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%9C%80%E8%A6%81%E5%A4%9A%E6%AD%A5%E6%89%8D%E8%83%BD%E5%81%9A%E5%88%B0%E7%9A%84%E6%B5%8B%E8%AF%95"><span class="toc-text"> 需要多步才能做到的测试</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0-2"><span class="toc-text"> 函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%87%E5%A4%9A%E7%9A%84%E5%8F%82%E6%95%B0"><span class="toc-text"> 过多的参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E5%8F%82%E6%95%B0"><span class="toc-text"> 输出参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%A0%87%E8%AF%86%E5%8F%82%E6%95%B0-2"><span class="toc-text"> 标识参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%BB%E5%87%BD%E6%95%B0"><span class="toc-text"> 死函数</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E8%88%AC%E6%80%A7%E9%97%AE%E9%A2%98"><span class="toc-text"> 一般性问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E4%B8%AA%E6%BA%90%E6%96%87%E4%BB%B6%E4%B8%AD%E5%AD%98%E5%9C%A8%E5%A4%9A%E7%A7%8D%E8%AF%AD%E8%A8%80"><span class="toc-text"> 一个源文件中存在多种语言</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%98%8E%E6%98%BE%E7%9A%84%E8%A1%8C%E4%B8%BA%E6%9C%AA%E8%A2%AB%E5%AE%9E%E7%8E%B0"><span class="toc-text"> 明显的行为未被实现</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E6%AD%A3%E7%A1%AE%E7%9A%84%E8%BE%B9%E7%95%8C%E8%A1%8C%E4%B8%BA"><span class="toc-text"> 不正确的边界行为</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%BF%BD%E8%A7%86%E5%AE%89%E5%85%A8"><span class="toc-text"> 忽视安全</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%8D%E5%A4%8D"><span class="toc-text"> 重复</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8%E9%94%99%E8%AF%AF%E7%9A%84%E6%8A%BD%E8%B1%A1%E5%B1%82%E7%BA%A7%E4%B8%8A%E7%9A%84%E4%BB%A3%E7%A0%81"><span class="toc-text"> 在错误的抽象层级上的代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9F%BA%E7%B1%BB%E4%BE%9D%E8%B5%96%E4%BA%8E%E6%B4%BE%E7%94%9F%E7%B1%BB"><span class="toc-text"> 基类依赖于派生类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BF%A1%E6%81%AF%E8%BF%87%E5%A4%9A"><span class="toc-text"> 信息过多</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%AD%BB%E4%BB%A3%E7%A0%81"><span class="toc-text"> 死代码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9E%82%E7%9B%B4%E5%88%86%E9%9A%94"><span class="toc-text"> 垂直分隔</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%89%8D%E5%90%8E%E4%B8%8D%E4%B8%80%E8%87%B4"><span class="toc-text"> 前后不一致</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B7%B7%E6%B7%86%E8%A7%86%E5%90%AC"><span class="toc-text"> 混淆视听</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%BA%E4%B8%BA%E8%80%A6%E5%90%88"><span class="toc-text"> 人为耦合</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%89%B9%E6%80%A7%E4%BE%9D%E6%81%8B"><span class="toc-text"> 特性依恋</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%80%89%E6%8B%A9%E7%AE%97%E5%AD%90%E5%8F%82%E6%95%B0"><span class="toc-text"> 选择算子参数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%99%A6%E6%B6%A9%E7%9A%84%E6%84%8F%E5%9B%BE"><span class="toc-text"> 晦涩的意图</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%8D%E7%BD%AE%E9%94%99%E8%AF%AF%E7%9A%84%E6%9D%83%E8%B4%A3"><span class="toc-text"> 位置错误的权责</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%8D%E6%81%B0%E5%BD%93%E7%9A%84%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95"><span class="toc-text"> 不恰当的静态方法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%A7%A3%E9%87%8A%E6%80%A7%E5%8F%98%E9%87%8F"><span class="toc-text"> 使用解释性变量</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%90%8D%E7%A7%B0%E5%BA%94%E8%AF%A5%E8%A1%A8%E8%BE%BE%E5%85%B6%E8%A1%8C%E4%B8%BA"><span class="toc-text"> 函数名称应该表达其行为</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%90%86%E8%A7%A3%E7%AE%97%E6%B3%95"><span class="toc-text"> 理解算法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8A%8A%E9%80%BB%E8%BE%91%E4%BE%9D%E8%B5%96%E6%94%B9%E4%B8%BA%E7%89%A9%E7%90%86%E4%BE%9D%E8%B5%96"><span class="toc-text"> 把逻辑依赖改为物理依赖</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8%E5%A4%9A%E6%80%81%E6%9B%BF%E4%BB%A3-ifelse-%E6%88%96-switchcase"><span class="toc-text"> 用多态替代 If&#x2F;Else 或 Switch&#x2F;Case</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%81%B5%E5%BE%AA%E6%A0%87%E5%87%86%E7%BA%A6%E5%AE%9A"><span class="toc-text"> 遵循标准约定</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%94%A8%E5%91%BD%E5%90%8D%E5%B8%B8%E9%87%8F%E6%9B%BF%E4%BB%A3%E9%AD%94%E6%9C%AF%E6%95%B0"><span class="toc-text"> 用命名常量替代魔术数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%86%E7%A1%AE"><span class="toc-text"> 准确</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E7%94%9A%E4%BA%8E%E7%BA%A6%E5%AE%9A"><span class="toc-text"> 结构甚于约定</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%81%E8%A3%85%E6%9D%A1%E4%BB%B6"><span class="toc-text"> 封装条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%81%BF%E5%85%8D%E5%90%A6%E5%AE%9A%E6%80%A7%E6%9D%A1%E4%BB%B6"><span class="toc-text"> 避免否定性条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%8F%AA%E8%AF%A5%E5%81%9A%E4%B8%80%E4%BB%B6%E4%BA%8B"><span class="toc-text"> 函数只该做一件事</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8E%A9%E8%94%BD%E6%97%B6%E5%BA%8F%E8%80%A6%E5%90%88"><span class="toc-text"> 掩蔽时序耦合</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%AB%E9%9A%8F%E6%84%8F"><span class="toc-text"> 别随意</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%81%E8%A3%85%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="toc-text"> 封装边界条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E5%BA%94%E8%AF%A5%E5%8F%AA%E5%9C%A8%E4%B8%80%E4%B8%AA%E6%8A%BD%E8%B1%A1%E5%B1%82%E7%BA%A7%E4%B8%8A"><span class="toc-text"> 函数应该只在一个抽象层级上</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%9C%A8%E8%BE%83%E9%AB%98%E5%B1%82%E7%BA%A7%E6%94%BE%E7%BD%AE%E5%8F%AF%E9%85%8D%E7%BD%AE%E6%95%B0%E6%8D%AE"><span class="toc-text"> 在较高层级放置可配置数据</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%81%BF%E5%85%8D%E4%BC%A0%E9%80%92%E6%B5%8F%E8%A7%88"><span class="toc-text"> 避免传递浏览</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#java"><span class="toc-text"> Java</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%87%87%E7%94%A8%E6%8F%8F%E8%BF%B0%E6%80%A7%E5%90%8D%E7%A7%B0"><span class="toc-text"> 采用描述性名称</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%8D%E7%A7%B0%E5%BA%94%E4%B8%8E%E6%8A%BD%E8%B1%A1%E5%B1%82%E7%BA%A7%E7%9B%B8"><span class="toc-text"> 名称应与抽象层级相</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B0%BD%E5%8F%AF%E8%83%BD%E4%BD%BF%E7%94%A8%E6%A0%87%E5%87%86%E5%91%BD%E5%90%8D%E6%B3%95"><span class="toc-text"> 尽可能使用标准命名法</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%97%A0%E6%AD%A7%E4%B9%89%E7%9A%84%E5%90%8D%E7%A7%B0"><span class="toc-text"> 无歧义的名称</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%BA%E8%BE%83%E5%A4%A7%E4%BD%9C%E7%94%A8%E8%8C%83%E5%9B%B4%E9%80%89%E7%94%A8%E8%BE%83%E9%95%BF%E5%90%8D%E7%A7%B0"><span class="toc-text"> 为较大作用范围选用较长名称</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E9%81%BF%E5%85%8D%E7%BC%96%E7%A0%81"><span class="toc-text"> 避免编码</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%90%8D%E7%A7%B0%E5%BA%94%E8%AF%A5%E8%AF%B4%E6%98%8E%E5%89%AF%E4%BD%9C%E7%94%A8"><span class="toc-text"> 名称应该说明副作用</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95"><span class="toc-text"> 测试</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E4%B8%8D%E8%B6%B3"><span class="toc-text"> 测试不足</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E8%A6%86%E7%9B%96%E7%8E%87%E5%B7%A5%E5%85%B7"><span class="toc-text"> 使用覆盖率工具</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%AB%E7%95%A5%E8%BF%87%E5%B0%8F%E6%B5%8B%E8%AF%95"><span class="toc-text"> 别略过小测试</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A2%AB%E5%BF%BD%E7%95%A5%E7%9A%84%E6%B5%8B%E8%AF%95%E5%B0%B1%E6%98%AF%E5%AF%B9%E4%B8%8D%E7%A1%AE%E5%AE%9A%E4%BA%8B%E7%89%A9%E7%9A%84%E7%96%91%E9%97%AE"><span class="toc-text"> 被忽略的测试就是对不确定事物的疑问</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E8%BE%B9%E7%95%8C%E6%9D%A1%E4%BB%B6"><span class="toc-text"> 测试边界条件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E9%9D%A2%E6%B5%8B%E8%AF%95%E7%9B%B8%E8%BF%91%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="toc-text"> 全面测试相近的缺陷</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%A4%B1%E8%B4%A5%E7%9A%84%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%90%AF%E5%8F%91%E6%80%A7"><span class="toc-text"> 测试失败的模式有启发性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E8%A6%86%E7%9B%96%E7%8E%87%E7%9A%84%E6%A8%A1%E5%BC%8F%E6%9C%89%E5%90%AF%E5%8F%91%E6%80%A7"><span class="toc-text"> 测试覆盖率的模式有启发性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%B5%8B%E8%AF%95%E5%BA%94%E8%AF%A5%E5%BF%AB%E9%80%9F"><span class="toc-text"> 测试应该快速</span></a></li></ol></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《Clean Code》</h1><time class="has-text-grey" datetime="2021-03-11T15:50:08.000Z">2021-03-11</time><article class="mt-2 post-content"><p>摘录与 <a target="_blank" rel="noopener" href="https://book.douban.com/subject/4199741/">《代码整洁之道》</a></p>
+<h2 id="什么是整洁代码"><a class="markdownIt-Anchor" href="#什么是整洁代码"></a> 什么是整洁代码</h2>
+<ul>
+<li>能通过所有测试；</li>
+<li>没有重复代码；</li>
+<li>体现系统中的全部设计理念；</li>
+<li>包括尽量少的实体，比如类、方法、函数等。</li>
+</ul>
+<h3 id="童子军军规"><a class="markdownIt-Anchor" href="#童子军军规"></a> 童子军军规</h3>
+<p>光把代码写好可不够。必须时时保持代码整洁。我们都见过代码随时间流逝而腐坏。我们应当更积极地阻止腐坏的发生。</p>
+<p>让营地比你来时更干净。</p>
+<h2 id="有意义的命名"><a class="markdownIt-Anchor" href="#有意义的命名"></a> 有意义的命名</h2>
+<h3 id="名副其实"><a class="markdownIt-Anchor" href="#名副其实"></a> 名副其实</h3>
+<p>名副其实说起来简单。我们想要强调，这事很严肃。选个好名字要花时间，但省下来的时间比花掉的多。<strong>注意命名，而且一旦发现有更好的名称，就换掉旧的</strong>。这么做，读你代码的人（包括你自己）都会更开心。</p>
+<p>变量、函数或类的名称应该已经答复了所有的大问题。它该告诉你，它为什么会存在，它做什么事，应该怎么用。<strong>如果名称需要注释来补充，那就不算是名副其实</strong>。</p>
+<h3 id="避免误导"><a class="markdownIt-Anchor" href="#避免误导"></a> 避免误导</h3>
+<p>程序员必须避免留下掩藏代码本意的错误线索。应当避免使用与本意相悖的词。例如，hp、aix 和 sco 都不该用做变量名，因为它们都是 UNIX 平台或类 UNIX 平台的专有名称。即便你是在编写三角计算程序，hp 看起来是个不错的缩写，但那也可能会提供错误信息。</p>
+<p>别用 accountList 来指称一组账号，除非它真的是 List 类型。List 一词对程序员有特殊意义。如果包纳账号的容器并非真是个 List，就会引起错误的判断。所以，用 accountGroup或 bunchOfAccounts，甚至直接用 accounts 都会好一些。</p>
+<p>提防使用不同之处较小的名称。想区分模块中某处的 XYZControllerForEfficientHandlingOfStrings 和另一处的 XYZControllerForEfficientStorageOfStrings，会花多长时间呢？这两个词外形实在太相似了。</p>
+<h3 id="做有意义的区分"><a class="markdownIt-Anchor" href="#做有意义的区分"></a> 做有意义的区分</h3>
+<p>废话都是冗余。Variable 一词永远不应当出现在变量名中。Table 一词永远不应当出现在表名中。NameString 会比 Name 好吗？难道 Name 会是一个浮点数不成？如果是这样，就触犯了关于误导的规则。设想有个名为 Customer 的类，还有一个名为 CustomerObject 的类。区别何在呢？哪一个是表示客户历史支付情况的最佳途径？</p>
+<p>如果缺少明确约定，变量 moneyAmount 就与 money 没区别，customerInfo 与 customer没区别，accountData 与 account 没区别，theMessage 也与 message 没区别。要区分名称，就要以读者能鉴别不同之处的方式来区分。</p>
+<h3 id="使用读得出来的名称"><a class="markdownIt-Anchor" href="#使用读得出来的名称"></a> 使用读得出来的名称</h3>
+<p>人类长于记忆和使用单词。大脑的相当一部分就是用来容纳和处理单词的。单词能读得出来。人类进化到大脑中有那么大的一块地方用来处理言语，若不善加利用，实在是种耻辱。如果名称读不出来，讨论的时候就会像个傻鸟。“哎，这儿，鼻涕阿三喜摁踢（bee cee arr three cee enn tee）上头，有个皮挨死极翘（pee ess zee kyew）3整数，看见没？”这不是小事，因为编程本就是一种社会活动。</p>
+<p>有家公司，程序里面写了个 genymdhms（生成日期，年、月、日、时、分、秒），他们一般读作“gen why emm dee aich emm ess”4。我有个见字照读的恶习，于是开口就念“gen-yah-mudda-hims”。后来好些设计师和分析师都有样学样，听起来傻乎乎的。我们知道典故，所以会觉得很搞笑。搞笑归搞笑，实际是在强忍糟糕的命名。</p>
+<h3 id="使用可搜索的名称"><a class="markdownIt-Anchor" href="#使用可搜索的名称"></a> 使用可搜索的名称</h3>
+<p>同样，e 也不是个便于搜索的好变量名。它是英文中最常用的字母，在每个程序、每段代码中都有可能出现。由此而见，长名称胜于短名称，搜得到的名称胜于用自造编码代写就的名称。窃以为单字母名称仅用于短方法中的本地变量。<strong>名称长短应与其作用域大小相对应</strong>[N5]。若变量或常量可能在代码中多处使用，则应赋其以便于搜索的名称。再比较</p>
+<h3 id="类名"><a class="markdownIt-Anchor" href="#类名"></a> 类名</h3>
+<p>类名和对象名应该是名词或名词短语，如 Customer、WikiPage、Account 和 AddressParser。避免使用 Manager、Processor、Data 或 Info 这样的类名。<strong>类名不应当是动词</strong>。</p>
+<h3 id="方法名"><a class="markdownIt-Anchor" href="#方法名"></a> 方法名</h3>
+<p>方法名应当是动词或动词短语，如 postPayment、deletePage 或 save。属性访问器、修改器和断言应该根据其值命名，并依 Javabean 标准 加上 get、set 和 is 前缀。</p>
+<h3 id="添加有意义的语境"><a class="markdownIt-Anchor" href="#添加有意义的语境"></a> 添加有意义的语境</h3>
+<p>设想你有名为 firstName、lastName、street、houseNumber、city、state 和 zipcode 的变量。当它们搁一块儿的时候，很明确是构成了一个地址。不过，假使只是在某个方法中看见孤零零一个 state 变量呢？你会理所当然推断那是某个地址的一部分吗？</p>
+<p>可以添加前缀 addrFirstName、addrLastName、addrState 等，以此提供语境。至少，读者会明白这些变量是某个更大结构的一部分。当然，更好的方案是创建名为 Address 的类。这样，即便是编译器也会知道这些变量隶属某个更大的概念了。</p>
+<h3 id="不要添加没用的语境"><a class="markdownIt-Anchor" href="#不要添加没用的语境"></a> 不要添加没用的语境</h3>
+<p>设若有一个名为“加油站豪华版”（Gas Station Deluxe）的应用，在其中给每个类添加GSD 前缀就不是什么好点子。说白了，你是在和自己在用的工具过不去。输入 G，按下自动完成键，结果会得到系统中全部类的列表，列表恨不得有一英里那么长。这样做聪明吗？为什么要搞得 IDE 没法帮助你？</p>
+<p><strong>只要短名称足够清楚，就要比长名称好。别给名称添加不必要的语境。</strong></p>
+<h2 id="函数"><a class="markdownIt-Anchor" href="#函数"></a> 函数</h2>
+<h3 id="短小"><a class="markdownIt-Anchor" href="#短小"></a> 短小</h3>
+<p><strong>函数的第一规则是要短小。第二条规则是还要更短小</strong>。我无法证明这个断言。我给不出任何证实了小函数更好的研究结果。我能说的是，近 40 年来，我写过各种不同大小的函数。我写过令人憎恶的长达 3000 行的厌物，也写过许多 100 行到 300 行的函数，我还写过 20 行 到 30 行的。经过漫长的试错，经验告诉我，函数就该小。</p>
+<h3 id="只做一件事"><a class="markdownIt-Anchor" href="#只做一件事"></a> 只做一件事</h3>
+<p>函数应该做一件事。做好这件事。只做这一件事。</p>
+<h3 id="每个函数一个抽象层级"><a class="markdownIt-Anchor" href="#每个函数一个抽象层级"></a> 每个函数一个抽象层级</h3>
+<p>要确保函数只做一件事，函数中的语句都要在同一抽象层级上。一眼就能看出，代码清单 3-1 违反了这条规矩。那里面有 getHtml( )等位于较高抽象层的概念，也有 String pagePathName = PathParser.render(pagePath)等位于中间抽象层的概念，还有.append(“\n”)等位于相当低的抽象层的概念。</p>
+<h4 id="自顶向下读代码向下规则"><a class="markdownIt-Anchor" href="#自顶向下读代码向下规则"></a> 自顶向下读代码：向下规则</h4>
+<p>我们想要让代码拥有自顶向下的阅读顺序。我们想要让每个函数后面都跟着位于下一抽象层级的函数，这样一来，在查看函数列表时，就能偱抽象层级向下阅读了。我把这叫做向下规则。</p>
+<h3 id="switch"><a class="markdownIt-Anchor" href="#switch"></a> switch</h3>
+<p>写出短小的 switch 语句很难 。即便是只有两种条件的 switch 语句也要比我想要的单个代码块或函数大得多。写出只做一件事的 switch 语句也很难。Switch 天生要做 N 件事。不幸我们总无法避开 switch 语句，不过还是能够确保每个 switch 都埋藏在较低的抽象层级，而且永远不重复。当然，我们利用多态来实现这一点。</p>
+<h3 id="函数参数"><a class="markdownIt-Anchor" href="#函数参数"></a> 函数参数</h3>
+<p>最理想的参数数量是零（零参数函数），其次是一（单参数函数），再次是二（双参数函数），应尽量避免三（三参数函数）。有足够特殊的理由才能用三个以上参数（多参数函数）—所以无论如何也不要这么做。</p>
+<h3 id="标识参数"><a class="markdownIt-Anchor" href="#标识参数"></a> 标识参数</h3>
+<p>标识参数丑陋不堪。向函数传入布尔值简直就是骇人听闻的做法。这样做，方法签名立刻变得复杂起来，大声宣布本函数不止做一件事。如果标识为 true 将会这样做，标识为 false则会那样做！在代码清单 3-7 中，我们别无选择，因为调用者已经传入了那个标识，而我想把重构范围限制在该函数及该函数以下范围之内。方法调用 render(true)对于可怜的读者来说仍然摸不着头脑。卷动屏幕，看到 render(Boolean isSuite)，稍许有点帮助，不过仍然不够。应该把该函数一分为二：reanderForSuite( )和 renderForSingleTest( )。</p>
+<h3 id="动词与关键字"><a class="markdownIt-Anchor" href="#动词与关键字"></a> 动词与关键字</h3>
+<p>给函数取个好名字，能较好地解释函数的意图，以及参数的顺序和意图。对于一元函数，函数和参数应当形成一种非常良好的动词/名词对形式。例如，write(name)就相当令人认同。不管这个“name”是什么，都要被“write”。更好的名称大概是 writeField(name)，它告诉我们，“name”是一个“field”。</p>
+<p>最后那个例子展示了函数名称的关键字（keyword）形式。使用这种形式，我们把参数的名称编码成了函数名。例如，assertEqual 改成 assertExpectedEqualsActual(expected, actual)可能会好些。这大大减轻了记忆参数顺序的负担。</p>
+<h2 id="注释"><a class="markdownIt-Anchor" href="#注释"></a> 注释</h2>
+<p>注释并不像辛德勒的名单。它们并不“纯然地好”。实际上，注释最多也就是一种必须的恶。若编程语言足够有表达力，或者我们长于用这些语言来表达意图，就不那么需要注释—也许根本不需要。</p>
+<p>注释的恰当用法是弥补我们在用代码表达意图时遭遇的失败。注意，我用了“失败”一词。我是说真的。<strong>注释总是一种失败。我们总无法找到不用注释就能表达自我的方法，所以总要有注释，这并不值得庆贺</strong>。</p>
+<p>如果你发现自己需要写注释，再想想看是否有办法翻盘，用代码来表达。每次用代码表达，你都该夸奖一下自己。每次写注释，你都该做个鬼脸，感受自己在表达能力上的失败。</p>
+<p>我为什么要极力贬低注释？因为注释会撒谎。也不是说总是如此或有意如此，但出现得实在太频繁。注释存在的时间越久，就离其所描述的代码越远，越来越变得全然错误。原因很简单。程序员不能坚持维护注释。</p>
+<h3 id="注释不能美化糟糕的代码"><a class="markdownIt-Anchor" href="#注释不能美化糟糕的代码"></a> 注释不能美化糟糕的代码</h3>
+<p>写注释的常见动机之一是糟糕的代码的存在。我们编写一个模块，发现它令人困扰、乱七八糟。我们知道，它烂透了。我们告诉自己：“喔，最好写点注释！”不！最好是把代码弄干净！</p>
+<p>带有少量注释的整洁而有表达力的代码，要比带有大量注释的零碎而复杂的代码像样得多。与其花时间编写解释你搞出的糟糕的代码的注释，不如花时间清洁那堆糟糕的代码。</p>
+<h3 id="好的注释场景"><a class="markdownIt-Anchor" href="#好的注释场景"></a> 好的注释场景</h3>
+<ol>
+<li>法律信息，有时，公司代码规范要求编写与法律有关的注释。例如，版权及著作权声明就是必须和有理由在每个源文件开头注释处放置的内容。</li>
+<li>用注释来提供基本信息也有其用处。</li>
+<li>对意图的解释,注释不仅提供了有关实现的有用信息，而且还提供了某个决定后面的意图。</li>
+<li>阐释, 注释把某些晦涩难明的参数或返回值的意义翻译为某种可读形式，也会是有用的。通常，更好的方法是尽量让参数或返回值自身就足够清楚；但如果参数或返回值是某个标准库的一部分，或是你不能修改的代码，帮助阐释其含义的代码就会有用。</li>
+<li>警示， 用于警告其他程序员会出现某种后果的注释也是有用的。</li>
+<li>TODO 注释，有时，有理由用//TODO 形式在源代码中放置要做的工作列表。</li>
+<li>放大，注释可以用来放大某种看来不合理之物的重要性。</li>
+</ol>
+<h3 id="坏注释场景"><a class="markdownIt-Anchor" href="#坏注释场景"></a> 坏注释场景</h3>
+<ol>
+<li>喃喃自语，如果只是因为你觉得应该或者因为过程需要就添加注释，那就是无谓之举。如果你决定写注释，就要花必要的时间确保写出最好的注释。</li>
+<li>多余的注释，读这段注释花的时间没准比读代码花的时间还要长。</li>
+<li>误导性注释，尽管初衷可嘉，程序员还是会写出不够精确的注释。</li>
+<li>循规式注释，所谓每个函数都要有 Javadoc 或每个变量都要有注释的规矩全然是愚蠢可笑的。这类注释徒然让代码变得散乱，满口胡言，令人迷惑不解。</li>
+<li>有人会在每次编辑代码时，在模块开始处添加一条注释。这类注释就像是一种记录每次修改的日志。我见过满篇尽是这类日志的代码模块。</li>
+<li>废话注释，有时，你会看到纯然是废话的注释。它们对于显然之事喋喋不休，毫无新意。/** The day of the month. */ private int dayOfMonth;</li>
+<li>可怕的废话，同上</li>
+<li>能用函数或变量时就别用注释</li>
+<li>位置标记，有时，程序员喜欢在源代码中标记某个特别位置。例如，最近我在程序中看到这样一行：// Actions //////////////////////////////////把特定函数趸放在这种标记栏下面，多数时候实属无理。鸡零狗碎，理当删除—特别是尾部那一长串无用的斜杠。</li>
+<li>括号后面的注释，有时，程序员会在括号后面放置特殊的注释，如代码清单 4-6 所示。尽管这对于含有深度嵌套结构的长函数可能有意义，但只会给我们更愿意编写的短小、封装的函数带来混乱。如果你发现自己想标记右括号，其实应该做的是缩短函数。</li>
+<li>归属与署名，源代码控制系统非常善于记住是谁在何时添加了什么。没必要用那些小小的签名搞脏代码。你也许会认为，这种注释大概有助于他人了解应该和谁讨论这段代码。不过，事实却是注释在那儿放了一年又一年，越来越不准确，越来越和原作者没关系。</li>
+<li>注释掉的代码，直接把代码注释掉是讨厌的做法。别这么干！其他人不敢删除注释掉的代码。他们会想，代码依然放在那儿，一定有其原因，而且这段代码很重要，不能删除。注释掉的代码堆积在一起，就像破酒瓶底的渣滓一般。</li>
+<li>HTML 注释，源代码注释中的 HTML 标记是一种厌物，如你在下面代码中所见。编辑器/IDE 中的代码本来易于阅读，却因为 HTML 注释的存在而变得难以卒读。如果注释将由某种工具（例如Javadoc）抽取出来，呈现到网页，那么该是工具而非程序员来负责给注释加上合适的 HTML标签。</li>
+<li>非本地信息，假如你一定要写注释，请确保它描述了离它最近的代码。别在本地注释的上下文环境中给出系统级的信息。以下面的 Javadoc 注释为例，除了那可怕的冗余之外，它还给出了有关默认端口的信息。不过该函数完全没控制到那个所谓默认值。这个注释并未描述该函数，而是在描述系统中远在他方的其他函数。当然，也无法担保在包含那个默认值的代码修改之后，这里的注释也会跟着修改。</li>
+<li>信息过多，别在注释中添加有趣的历史性话题或者无关的细节描述。下列注释来自某个用来测试base64 编解码函数的模块。除了 RFC 文档编号之外，注释中的其他细节信息对于读者完全没有必要。</li>
+<li>不明显的联系，注释及其描述的代码之间的联系应该显而易见。如果你不嫌麻烦要写注释，至少让读者能看着注释和代码，并且理解注释所谈何物。</li>
+<li>短函数不需要太多描述。为只做一件事的短函数选个好名字，通常要比写函数头注释要好。</li>
+<li>非公共代码中的 Javadoc，虽然 Javadoc 对于公共 API 非常有用，但对于不打算作公共用途的代码就令人厌恶了。为系统中的类和函数生成 Javadoc 页并非总有用，而 Javadoc 注释额外的形式要求几乎等同于八股文章。</li>
+</ol>
+<h2 id="格式"><a class="markdownIt-Anchor" href="#格式"></a> 格式</h2>
+<h3 id="垂直格式"><a class="markdownIt-Anchor" href="#垂直格式"></a> 垂直格式</h3>
+<p>对我们来说，这意味着什么？意味着有可能用大多数为 200 行、最长 500 行的单个文件<br>
+构造出色的系统（FitNesse 总长约 50000 行）。尽管这并非不可违背的原则，也应该乐于接受。<br>
+短文件通常比长文件易于理解</p>
+<h3 id="向报纸学习"><a class="markdownIt-Anchor" href="#向报纸学习"></a> 向报纸学习</h3>
+<p>源文件也要像报纸文章那样。名称应当简单且一目了然。名称本身应该足够告诉我们是否在正确的模块中。源文件最顶部应该给出高层次概念和算法。细节应该往下渐次展开，直至找到源文件中最底层的函数和细节。</p>
+<h3 id="垂直距离"><a class="markdownIt-Anchor" href="#垂直距离"></a> 垂直距离</h3>
+<p>关系密切的概念应该互相靠近[G10]。显然，这条规则并不适用于分布在不同文件中的概念。除非有很好的理由，否则就不要把关系密切的概念放到不同的文件中。实际上，这也是避免使用 protected 变量的理由之一。</p>
+<p>变量声明。变量声明应尽可能靠近其使用位置。因为函数很短，本地变量应该在函数的顶部出现，就像 Junit4.3.1 中这个稍长的函数中那样。</p>
+<h3 id="垂直顺序"><a class="markdownIt-Anchor" href="#垂直顺序"></a> 垂直顺序</h3>
+<p>一般而言，我们想自上向下展示函数调用依赖顺序。也就是说，被调用的函数应该放在执行调用的函数下面。这样就建立了一种自顶向下贯穿源代码模块的良好信息流。</p>
+<h3 id="横向格式"><a class="markdownIt-Anchor" href="#横向格式"></a> 横向格式</h3>
+<p>我一向遵循无需拖动滚动条到右边的原则。但近年来显示器越来越宽，而年轻程序员又能将显示字符缩小到如此程度，屏幕上甚至能容纳 200 个字符的宽度。别那么做。我个人的上限是 120 个字符。</p>
+<h3 id="水平对齐"><a class="markdownIt-Anchor" href="#水平对齐"></a> 水平对齐</h3>
+<p>如今，我更喜欢用不对齐的声明和赋值，如下所示，因为它们指出了重点。如果有较长的列表需要做对齐处理，那问题就是在列表的长度上而不是对齐上。</p>
+<h3 id="空范围"><a class="markdownIt-Anchor" href="#空范围"></a> 空范围</h3>
+<p>有时，while 或 for 语句的语句体为空，如下所示。我不喜欢这种结构，尽量不使用。如果无法避免，就确保空范围体的缩进，用括号包围起来。</p>
+<h2 id="对象和数据结构"><a class="markdownIt-Anchor" href="#对象和数据结构"></a> 对象和数据结构</h2>
+<h3 id="得墨忒耳律"><a class="markdownIt-Anchor" href="#得墨忒耳律"></a> 得墨忒耳律</h3>
+<p>著名的得墨忒耳律（The Law of Demeter）认为，模块不应了解它所操作对象的内部情形。如上节所见，对象隐藏数据，曝露操作。这意味着对象不应通过存取器曝露其内部结构，因为这样更像是曝露而非隐藏其内部结构。</p>
+<h2 id="单元测试"><a class="markdownIt-Anchor" href="#单元测试"></a> 单元测试</h2>
+<h3 id="tdd-三定律"><a class="markdownIt-Anchor" href="#tdd-三定律"></a> TDD 三定律</h3>
+<p>谁都知道 TDD 要求我们在编写生产代码前先编写单元测试。但这条规则只是冰山之巅。看看下列三定律 ：</p>
+<ul>
+<li>定律一 在编写不能通过的单元测试前，不可编写生产代码。</li>
+<li>定律二 只可编写刚好无法通过的单元测试，不能编译也算不通过。</li>
+<li>定律三 只可编写刚好足以通过当前失败测试的生产代码。</li>
+</ul>
+<p>这三条定律将你限制在大概 30 秒一个的循环中。测试与生产代码一起编写，测试只比生产代码早写几秒钟。</p>
+<h3 id="保持测试整洁"><a class="markdownIt-Anchor" href="#保持测试整洁"></a> 保持测试整洁</h3>
+<p>测试代码和生产代码一样重要。它可不是二等公民。它需要被思考、被设计和被照料。它该像生产代码一般保持整洁。</p>
+<h3 id="整洁的测试"><a class="markdownIt-Anchor" href="#整洁的测试"></a> 整洁的测试</h3>
+<p>整洁的测试有什么要素？有三个要素：可读性，可读性和可读性。在单元测试中，可读性甚至比在生产代码中还重要。测试如何才能做到可读？和其他代码中一样：明确，简洁，还有足够的表达力。在测试中，你要以尽可能少的文字表达大量内容。</p>
+<h3 id="first"><a class="markdownIt-Anchor" href="#first"></a> F.I.R.S.T.</h3>
+<p>整洁的测试还遵循以下 5 条规则，这 5 条规则的首字母构成了本节标题：</p>
+<ul>
+<li>快速（Fast） 测试应该够快。测试应该能快速运行。测试运行缓慢，你就不会想要频繁地运行它。如果你不频繁运行测试，就不能尽早发现问题，也无法轻易修正，从而也不能轻而易举地清理代码。最终，代码就会腐坏。</li>
+<li>独立（Independent） 测试应该相互独立。某个测试不应为下一个测试设定条件。你应该可以单独运行每个测试，及以任何顺序运行测试。当测试互相依赖时，头一个没通过就会导致一连串的测试失败，使问题诊断变得困难，隐藏了下级错误。</li>
+<li>可重复（Repeatable） 测试应当可在任何环境中重复通过。你应该能够在生产环境、质检环境中运行测试，也能够在无网络的列车上用笔记本电脑运行测试。如果测试不能在任意环境中重复，你就总会有个解释其失败的接口。当环境条件不具备时，你也会无法运行<br>
+测试。</li>
+<li>自足验证（Self-Validating） 测试应该有布尔值输出。无论是通过或失败，你不应该查看日志文件来确认测试是否通过。你不应该手工对比两个不同文本文件来确认测试是否通过。如果测试不能自足验证，对失败的判断就会变得依赖主观，而运行测试也需要更长的手工操作时间。</li>
+<li>及时（Timely） 测试应及时编写。单元测试应该恰好在使其通过的生产代码之前编写。如果在编写生产代码之后编写测试，你会发现生产代码难以测试。你可能会认为某些生产代码本身难以测试。你可能不会去设计可测试的代码。</li>
+</ul>
+<h2 id="类"><a class="markdownIt-Anchor" href="#类"></a> 类</h2>
+<h3 id="类的组织"><a class="markdownIt-Anchor" href="#类的组织"></a> 类的组织</h3>
+<p>遵循标准的 Java 约定，类应该从一组变量列表开始。如果有公共静态常量，应该先出现。然后是私有静态变量，以及私有实体变量。很少会有公共变量。</p>
+<p>公共函数应跟在变量列表之后。我们喜欢把由某个公共函数调用的私有工具函数紧随在该公共函数后面。这符合了自顶向下原则，让程序读起来就像一篇报纸文章。</p>
+<h3 id="类应该短小"><a class="markdownIt-Anchor" href="#类应该短小"></a> 类应该短小</h3>
+<p>关于类的第一条规则是类应该短小。第二条规则是还要更短小。不，我们并不是要重弹“函数”一章的论调。就像函数一样，在设计类时，首要规条就是要更短小。</p>
+<h3 id="单一权责原则"><a class="markdownIt-Anchor" href="#单一权责原则"></a> 单一权责原则</h3>
+<p>认为，类或模块应有且只有一条加以修改的理由。该原则既给出了权责的定义，又是关于类的长度的指导方针。类只应有一个权责—只有一条修改的理由。</p>
+<h3 id="内聚"><a class="markdownIt-Anchor" href="#内聚"></a> 内聚</h3>
+<p>类应该只有少量实体变量。类中的每个方法都应该操作一个或多个这种变量。通常而言，方法操作的变量越多，就越黏聚到类上。如果一个类中的每个变量都被每个方法所使用，则该类具有最大的内聚性。</p>
+<h3 id="保持内聚性就会得到许多短小的类"><a class="markdownIt-Anchor" href="#保持内聚性就会得到许多短小的类"></a> 保持内聚性就会得到许多短小的类</h3>
+<p>对于多数系统，修改将一直持续。每处修改都让我们冒着系统其他部分不能如期望般工作的风险。在整洁的系统中，我们对类加以组织，以降低修改的风险。</p>
+<h3 id="隔离修改"><a class="markdownIt-Anchor" href="#隔离修改"></a> 隔离修改</h3>
+<p>需求会改变，所以代码也会改变。我们学习到，具体类包含实现细节（代码），而抽象类则只呈现概念。依赖于具体细节的客户类，当细节改变时，就会有风险。我们可以借助接口和抽象类来隔离这些细节带来的影响。</p>
+<h2 id="系统"><a class="markdownIt-Anchor" href="#系统"></a> 系统</h2>
+<h3 id="将系统的构造与使用分开"><a class="markdownIt-Anchor" href="#将系统的构造与使用分开"></a> 将系统的构造与使用分开</h3>
+<p>软件系统应将启始过程和启始过程之后的运行时逻辑分离开，在启始过程中构建应用对象，也会存在互相缠结的依赖关系。</p>
+<h3 id="工厂"><a class="markdownIt-Anchor" href="#工厂"></a> 工厂</h3>
+<p>使用工厂分离构造过程</p>
+<h3 id="依赖注入"><a class="markdownIt-Anchor" href="#依赖注入"></a> 依赖注入</h3>
+<p>有一种强大的机制可以实现分离构造与使用，那就是依赖注入（Dependency Injection，DI），控制反转（Inversion of Control，IoC）在依赖管理中的一种应用手段。控制反转将第二权责从对象中拿出来，转移到另一个专注于此的对象中，从而遵循了单一权责原则。在依赖管理情景中，对象不应负责实体化对自身的依赖。反之，它应当将这份权责移交给其他“有权力”的机制，从而实现控制的反转。因为初始设置是一种全局问题，这种授权机制通常要么是 main 例程，要么是有特定目的的容器。</p>
+<h2 id="并发编程"><a class="markdownIt-Anchor" href="#并发编程"></a> 并发编程</h2>
+<h3 id="为什么要并发"><a class="markdownIt-Anchor" href="#为什么要并发"></a> 为什么要并发</h3>
+<p>并发是一种解耦策略。它帮助我们把做什么（目的）和何时（时机）做分解开。在单线程应用中，目的与时机紧密耦合，很多时候只要查看堆栈追踪即可断定应用程序的状态。调试这种系统的程序员可以设定断点或者断点序列，通过查看到达哪个断点来了解系统状态。</p>
+<p>解耦目的与时机能明显地改进应用程序的吞吐量和结构。从结构的角度来看，应用程序看起来更像是许多台协同工作的计算机，而不是一个大循环。系统因此会更易于被理解，给出了许多切分关注面的有力手段。</p>
+<h3 id="保持同步区域微小"><a class="markdownIt-Anchor" href="#保持同步区域微小"></a> 保持同步区域微小</h3>
+<p>关键字 synchronized 制造了锁。同一个锁维护的所有代码区域在任一时刻保证只有一个线程执行。锁是昂贵的，因为它们带来了延迟和额外开销。所以我们不愿将代码扔给 synchronized语句了事。另一方面，临界区应该被保护起来。所以，应该尽可能少地设计临界区。</p>
+<h2 id="味道与启发"><a class="markdownIt-Anchor" href="#味道与启发"></a> 味道与启发</h2>
+<h3 id="注释-2"><a class="markdownIt-Anchor" href="#注释-2"></a> 注释</h3>
+<h4 id="不恰当的信息"><a class="markdownIt-Anchor" href="#不恰当的信息"></a> 不恰当的信息</h4>
+<p>让注释传达本该更好地在源代码控制系统、问题追踪系统或任何其他记录系统中保存的信息，是不恰当的。例如，修改历史记录只会用大量过时而无趣的文本搞乱源代码文件。通常，作者、最后修改时间、SPR 数等元数据不该在注释中出现。注释只应该描述有关代码和设计的技术性信息。</p>
+<h4 id="废弃的注释"><a class="markdownIt-Anchor" href="#废弃的注释"></a> 废弃的注释</h4>
+<p>过时、无关或不正确的注释就是废弃的注释。注释会很快过时。最好别编写将被废弃的注释。如果发现废弃的注释，最好尽快更新或删除掉。废弃的注释会远离它们曾经描述的代码，变成代码中无关和误导的浮岛。</p>
+<h4 id="冗余注释"><a class="markdownIt-Anchor" href="#冗余注释"></a> 冗余注释</h4>
+<p>如果注释描述的是某种充分自我描述了的东西，那么注释就是多余的。例如：</p>
+<pre><code>i++; // increment i
+</code></pre>
+<p>另一个例子是除函数签名之外什么也没多说（或少说）的 Javadoc</p>
+<pre><code>/**
+* @param sellRequest
+* @return
+* @throws ManagedComponentException
+*/
+public SellResponse beginSellItem(SellRequest sellRequest) 
+throws ManagedComponentException
+</code></pre>
+<h4 id="糟糕的注释"><a class="markdownIt-Anchor" href="#糟糕的注释"></a> 糟糕的注释</h4>
+<p>值得编写的注释，也值得好好写。如果要编写一条注释，就花时间保证写出最好的注释。字斟句酌。使用正确的语法和拼写。别闲扯，别画蛇添足，保持简洁。</p>
+<h4 id="注释掉的代码"><a class="markdownIt-Anchor" href="#注释掉的代码"></a> 注释掉的代码</h4>
+<p>看到被注释掉的代码会令我抓狂。谁知道它有多旧？谁知道它有没有意义？没人会删除它，因为大家都假设别人需要它或是有进一步计划。</p>
+<h3 id="环境"><a class="markdownIt-Anchor" href="#环境"></a> 环境</h3>
+<h4 id="需要多步才能实现的构建"><a class="markdownIt-Anchor" href="#需要多步才能实现的构建"></a> 需要多步才能实现的构建</h4>
+<p>构建系统应该是单步的小操作。不应该从源代码控制系统中一小点一小点签出代码。不应该需要一系列神秘指令或环境依赖脚本来构建单个元素。不应该四处寻找额外的小JAR、XML 文件和其他系统所需的杂物。你应当能够用单个命令签出系统，并用单个指令构建它。</p>
+<pre><code>svn get mySystem 
+cd mySystem
+ant all
+</code></pre>
+<h4 id="需要多步才能做到的测试"><a class="markdownIt-Anchor" href="#需要多步才能做到的测试"></a> 需要多步才能做到的测试</h4>
+<p>你应当能够发出单个指令就可以运行全部单元测试。能够运行全部测试是如此基础和重要，应该快速、轻易和直截了当地做到。</p>
+<h3 id="函数-2"><a class="markdownIt-Anchor" href="#函数-2"></a> 函数</h3>
+<h4 id="过多的参数"><a class="markdownIt-Anchor" href="#过多的参数"></a> 过多的参数</h4>
+<p>函数的参数量应该少。没参数最好，一个次之，两个、三个再次之。三个以上的参数非常值得质疑，应坚决避免。</p>
+<h4 id="输出参数"><a class="markdownIt-Anchor" href="#输出参数"></a> 输出参数</h4>
+<p>输出参数违反直觉。读者期望参数用于输入而非输出。如果函数非要修改什么东西的状态不可，就修改它所在对象的状态好了。</p>
+<h4 id="标识参数-2"><a class="markdownIt-Anchor" href="#标识参数-2"></a> 标识参数</h4>
+<p>布尔值参数大声宣告函数做了不止一件事。它们令人迷惑，应该消灭掉。</p>
+<h4 id="死函数"><a class="markdownIt-Anchor" href="#死函数"></a> 死函数</h4>
+<p>永不被调用的方法应该丢弃。保留死代码纯属浪费。别害怕删除函数。记住，源代码控制系统还会记得它。</p>
+<h3 id="一般性问题"><a class="markdownIt-Anchor" href="#一般性问题"></a> 一般性问题</h3>
+<h4 id="一个源文件中存在多种语言"><a class="markdownIt-Anchor" href="#一个源文件中存在多种语言"></a> 一个源文件中存在多种语言</h4>
+<p>当今的现代编程环境允许在单个源文件中存在多种不同语言。例如，Java 源文件可能还包括 XML、HTML、YAML、JavaDoc、英文、JavaScript 等语言。另例，JSP 文件可能还包括 HTML、Java、标签库语法、英文注释、Javadoc、XML、JavaScript 等。往好处说是令人迷惑，往坏处说就是粗心大意、驳杂不精。</p>
+<p>理想的源文件包括且只包括一种语言。现实上，我们可能会不得不使用多于一种语言。但应该尽力减少源文件中额外语言的数量和范围。</p>
+<h4 id="明显的行为未被实现"><a class="markdownIt-Anchor" href="#明显的行为未被实现"></a> 明显的行为未被实现</h4>
+<p>遵循“最小惊异原则”（The Principle of Least Surprise），函数或类应该实现其他程序员有理由期待的行为。例如，考虑一个将日期名称翻译为表示该日期的枚举的函数。</p>
+<pre><code>Day day = DayDate.StringToDay(String dayName);
+</code></pre>
+<p>我们期望字符串 Monday 翻译为 Day.MONDAY。我们也期望常用缩写形式也能被翻译出来，我们还期待函数忽略大小写。<br>
+如果明显的行为未被实现，读者和用户就不能再依靠他们对函数名称的直觉。他们不再信任原作者，不得不阅读代码细节。</p>
+<h4 id="不正确的边界行为"><a class="markdownIt-Anchor" href="#不正确的边界行为"></a> 不正确的边界行为</h4>
+<p>代码应该有正确行为，这话看似明白。问题是我们很少能明白正确行为有多复杂。开发者常常写出他们以为能工作的函数，信赖自己的直觉，而不是努力去证明代码在所有的角落和边界情形下真能工作。</p>
+<p>没什么可以替代谨小慎微。每种边界条件、每种极端情形、每个异常都代表了某种可能搞乱优雅而直白的算法的东西。别依赖直觉。追索每种边界条件，并编写测试。</p>
+<h4 id="忽视安全"><a class="markdownIt-Anchor" href="#忽视安全"></a> 忽视安全</h4>
+<p>切尔诺贝利核电站崩塌了，因为电厂经理一条又一条地忽视了安全机制。遵守安全就不便于做试验。结果就是试验未能运行，全世界都目睹首个民用核电站大灾难。忽</p>
+<p>视安全相当危险。手工控制 serialVersionUID 可能有必要，但总会有风险。关闭某些编译器警告（或者全部警告！）可能有助于构建成功，但也存在陷于无穷无尽的调试的风险。关闭失败测试、告诉自己过后再处理，这和假装刷信用卡不用还钱一样坏。</p>
+<h4 id="重复"><a class="markdownIt-Anchor" href="#重复"></a> 重复</h4>
+<p>有一条本书提到的最重要的规则之一，你应该非常严肃地对待。实际上，每位编写有关软件设计的作者都提到这条规则。Dave Thomas 和 Andy Hunt 称之为 DRY 原则（Don’t Repeat Yourself，别重复自己）1。Kent Beck 将它列为极限编程核心原则之一，并称之为“一次，也只一次” 。Ron Jeffries 将这条规则列在第二位，地位只低于通过所有测试。</p>
+<p>每次看到重复代码，都代表遗漏了抽象。重复的代码可能成为子程序或干脆是另一个类。将重复代码叠放进类似的抽象，增加了你的设计语言的词汇量。其他程序员可以用到你创建的抽象设施。编码变得越来越快，错误越来越少，因为你提升了抽象层级。</p>
+<p>重复最明显的形态是你不断看到明显一样的代码，就像是某位程序员疯狂地用鼠标不断复制粘贴代码。可以用单一方法来替代之。</p>
+<p>较隐蔽的形态是在不同模块中不断重复出现、检测同一组条件的 switch/case 或 if/else 链。<br>
+可以用多态来替代之。</p>
+<p>更隐蔽的形态是采用类似算法但具体代码行不同的模块。这也是一种重复，可以使用模板方法模式或策略模式来修正。</p>
+<p>的确，过去 15 年内出现的多数设计模式都是消除重复的有名手段。考德范式（Codd Normal Forms）是消除数据库规划中的重复的策略。OO 自身也是组织模块和消除重复的策略。毫不出奇，结构化编程也是。</p>
+<p>重点已经在那里了。尽可能找到并消除重复。</p>
+<h4 id="在错误的抽象层级上的代码"><a class="markdownIt-Anchor" href="#在错误的抽象层级上的代码"></a> 在错误的抽象层级上的代码</h4>
+<p>创建分离较高层级一般性概念与较低层级细节概念的抽象模型，这很重要。有时，我们创建抽象类来容纳较高层级概念，创建派生类来容纳较低层次概念。这样做的时候，需要确保分离完整。所有较低层级概念放在派生类中，所有较高层级概念放在基类中。</p>
+<p>例如，只与细节实现有关的常量、变量或工具函数不应该在基类中出现。基类应该对这些东西一无所知。</p>
+<p>这条规则对于源文件、组件和模块也适用。良好的软件设计要求分离位于不同层级的概念，将它们放到不同容器中。有时，这些容器是基类或派生类，有时是源文件、模块或组件。无论哪种情况，分离都要完整。较低层级概念和较高层级概念不应混杂在一起。看看下面的代码：</p>
+<pre><code>public interface Stack {
+	Object pop() throws EmptyException;
+	void push(Object o) throws FullException;
+	double percentFull();
+	class EmptyException extends Exception {}
+	class FullException extends Exception {}
+}
+</code></pre>
+<h4 id="基类依赖于派生类"><a class="markdownIt-Anchor" href="#基类依赖于派生类"></a> 基类依赖于派生类</h4>
+<p>将概念分解到基类和派生类的最普遍的原因是较高层级基类概念可以不依赖于较低层级派生类概念。这样，如果看到基类提到派生类名称，就可能发现了问题。通常来说，基类对派生类应该一无所知。</p>
+<h4 id="信息过多"><a class="markdownIt-Anchor" href="#信息过多"></a> 信息过多</h4>
+<p>设计良好的模块有着非常小的接口，让你能事半功倍。设计低劣的模块有着广阔、深入的接口，你不得不事倍功半。设计良好的接口并不提供许多需要依靠的函数，所以耦合度也较低。设计低劣的借口提供大量你必须调用的函数，耦合度较高。</p>
+<h4 id="死代码"><a class="markdownIt-Anchor" href="#死代码"></a> 死代码</h4>
+<p>死代码就是不执行的代码。可以在检查不会发生的条件的 if 语句体中找到。可以在从不抛出异常的 try 语句的 catch 块中找到。可以在从不被调用的小工具方法中找到，也可以在永不会发生的 switch/case 条件中找到。</p>
+<p>死代码的问题是过不久它就会发出臭味。时间越久，味道就越酸臭。这是因为，在设计改变时，死代码不会随之更新。它还能通过编译，但并不会遵循较新的约定或规则。它编写的时候，系统是另一番模样。如果你找到死代码，就体面地埋葬它，将它从系统中删除掉。</p>
+<h4 id="垂直分隔"><a class="markdownIt-Anchor" href="#垂直分隔"></a> 垂直分隔</h4>
+<p>变量和函数应该在靠近被使用的地方定义。本地变量应该正好在其首次被使用的位置上面声明，垂直距离要短。本地变量不该在其被使用之处几百行以外声明。</p>
+<p>私有函数应该刚好在其首次被使用的位置下面定义。私有函数属于整个类，但我们还是要限制调用和定义之间的垂直距离。找个私有函数，应该只是从其首次被使用处往下看一点那么简单。</p>
+<h4 id="前后不一致"><a class="markdownIt-Anchor" href="#前后不一致"></a> 前后不一致</h4>
+<p>从一而终。这可以追溯到最小惊异原则。小心选择约定，一旦选中，就小心持续遵循。</p>
+<p>如果在特定函数中用名为 response 的变量来持有 HttpServletResponse 对象，则在其他用到 HttpServletResponse 对象的函数中也用同样的变量名。 如果将某个方法命名为processVerificationRequest，则给处理其他请求类型的方法取类似的名字，例如 processDeletionRequest。</p>
+<p>如此简单的前后一致，一旦坚决贯彻，就能让代码更加易于阅读和修改。</p>
+<h4 id="混淆视听"><a class="markdownIt-Anchor" href="#混淆视听"></a> 混淆视听</h4>
+<p>没有实现的默认构造器有何用处呢？它只会用无意义的杂碎搞乱对代码的理解。没有用到的变量，从不调用的函数，没有信息量的注释，等等，这些都是应该移除的废物。保持源文件整洁，良好地组织，不被搞乱。</p>
+<h4 id="人为耦合"><a class="markdownIt-Anchor" href="#人为耦合"></a> 人为耦合</h4>
+<p>不互相依赖的东西不该耦合。例如，普通的 enum 不应在特殊类中包括，因为这样一来应用程序就要了解这些更为特殊的类。对于在特殊类中声明一般目的的 static 函数也是如此。</p>
+<p>一般来说，人为耦合是指两个没有直接目的之间的模块的耦合。其根源是将变量、常量或函数不恰当地放在临时方便的位置。这是种漫不经心的偷懒行为。</p>
+<p>花点时间研究应该在什么地方声明函数、常量和变量。不要为了方便随手放置，然后置之不理。</p>
+<h4 id="特性依恋"><a class="markdownIt-Anchor" href="#特性依恋"></a> 特性依恋</h4>
+<p>这是 Martin Fowler 提出的代码味道之一 。类的方法只应对其所属类中的变量和函数感兴趣，不该垂青其他类中的变量和函数。当方法通过某个其他对象的访问器和修改器来操作该对象内部数据，则它就依恋于该对象所属类的范围。它期望自己在那个类里面，这样就能直接访问它操作的变量。</p>
+<pre><code>public class HourlyPayCalculator {
+	public Money calculateWeeklyPay(HourlyEmployee e) {
+		int tenthRate = e.getTenthRate().getPennies();
+		int tenthsWorked = e.getTenthsWorked();
+		int straightTime = Math.min(400, tenthsWorked);
+		int overTime = Math.max(0, tenthsWorked - straightTime);
+		int straightPay = straightTime * tenthRate;
+		int overtimePay = (int)Math.round(overTime*tenthRate*1.5); 
+		return new Money(straightPay + overtimePay);
+	} 
+}
+</code></pre>
+<p>方法 calculateWeeklyPay 伸手到 HourlyEmployee 对象，获取要操作的数据。方法calculateWeeklyPay 依恋于 HourlyEmployee 的作用范围。它“期望”自己在 HourlyEmployee 中。</p>
+<h4 id="选择算子参数"><a class="markdownIt-Anchor" href="#选择算子参数"></a> 选择算子参数</h4>
+<p>没有什么比在函数调用末尾遇到一个 false 参数更为可憎的事情了。那个 false 是什么意思？如果它是 true，会有什么变化吗？不仅是一个选择算子（selector）参数的目的难以记住，每个选择算子参数将多个函数绑到了一起。选择算子参数只是一种避免把大函数切分为多个小函数的偷懒做法。</p>
+<h4 id="晦涩的意图"><a class="markdownIt-Anchor" href="#晦涩的意图"></a> 晦涩的意图</h4>
+<p>代码要尽可能具有表达力。联排表达式、匈牙利语标记法和魔术数都遮蔽了作者的意图。例如，下面是 overTimePay 函数可能的一种表现形式：</p>
+<pre><code>public int m_otCalc() {
+	return iThsWkd * iThsRte +
+	(int) Math.round(0.5 * iThsRte *
+	Math.max(0, iThsWkd - 400)
+	);
+}
+</code></pre>
+<h4 id="位置错误的权责"><a class="markdownIt-Anchor" href="#位置错误的权责"></a> 位置错误的权责</h4>
+<p>软件开发者做出的最重要决定之一就是在哪里放代码。例如，PI 常量放在何处？是该在Math 类中吗？或者应该属于 Trigonometry 类？还是在 Circle 类？</p>
+<p>最小惊异原则在这里起作用了。代码应该放在读者自然而然期待它所在的地方。PI 常量应该在出现在声明三角函数的地方。OVERTIME_RATE 常量应该在 HourlyPayCalculator 类中声明。</p>
+<p>有时，我们“聪明”地知道在何处放置功能代码。我们会放在自己方便而读者不能随直觉找到的地方。例如，也许我们需要打印出某个雇员的总工作时间的报表。我们可以在打印报表的代码中做工作时间统计，或者我们可以在接受工作时间卡的代码中保留一份工作时间记录。</p>
+<h4 id="不恰当的静态方法"><a class="markdownIt-Anchor" href="#不恰当的静态方法"></a> 不恰当的静态方法</h4>
+<p>Math.max(double a, double)是个良好的静态方法。它并不在单个实体上操作；的确，不得不写 new Math( ).max(a,b)甚至 a.max(b)实在愚蠢。那个 max 用到的全部数据来自其两个参数，而不是来自“所属”对象。而且，我们也没机会用到 Math.max 的多态特征</p>
+<h4 id="使用解释性变量"><a class="markdownIt-Anchor" href="#使用解释性变量"></a> 使用解释性变量</h4>
+<p>Kent Beck在其巨著Smalltalk Best Practice Patterns和另一部巨著Implementation Patterns<br>
+（中译版 《实现模式》）中都写到这个。让程序可读的最有力方法之一就是将计算过程打散成在用有意义的单词命名的变量中放置的中间值。</p>
+<h4 id="函数名称应该表达其行为"><a class="markdownIt-Anchor" href="#函数名称应该表达其行为"></a> 函数名称应该表达其行为</h4>
+<p>看看这行代码：</p>
+<pre><code>Date newDate = date.add(5);
+</code></pre>
+<p>你会期望它向日期添加5天吗？或者是5个星期？5个小时？该date实体会变化吗？或者该函数只是返回一个新的Date实体，并不改动旧的？从函数调用中看不出函数的行为。</p>
+<p>如果函数向日期添加5天并且修改该日期，就该命名为addDaysTo或increaseByDays。如果函数返回一个表示5天后的日期，而不修改日期实体，就该叫做daysLater或daysSince。</p>
+<p>如果你必须查看函数的实现（或文档）才知道它是做什么的，就该换个更好的函数名，或者重新安排功能代码，放到有较好名称的函数中。</p>
+<h4 id="理解算法"><a class="markdownIt-Anchor" href="#理解算法"></a> 理解算法</h4>
+<p>好多可笑代码的出现，是因为人们没花时间去理解算法。他们硬塞进足够多的if语句和标识，从不真正停下来考虑发生了什么，勉强让系统能工作。</p>
+<p>编程常常是一种探险。你以为自己知道某事的正确算法，然后就卷起袖子瞎干一气，搞到“可以工作”为止。你怎么知道它“可以工作”？因为它通过了你能想到的单元测试。这种做法没错。实际上，这也是让函数按你设想的方式执行的唯一途径。不过，“可以工作”周围的引号可不能一直保留。</p>
+<p>在你认为自己完成某个函数之前，确认自己理解了它是怎么工作的。通过全部测试还不够好。你必须知道[10]解决方案是正确的。</p>
+<p>获得这种知识和理解的最好途径，往往是重构函数，得到某种整洁而足具表达力、清楚呈示如何工作的东西。</p>
+<h4 id="把逻辑依赖改为物理依赖"><a class="markdownIt-Anchor" href="#把逻辑依赖改为物理依赖"></a> 把逻辑依赖改为物理依赖</h4>
+<p>如果某个模块依赖于另一个模块，依赖就该是物理上的而不是逻辑上的。依赖者模块不应对被依赖者模块有假定（换言之，逻辑依赖）。它应当明确地询问后者全部信息。</p>
+<p>例如， 想像你在编写一个打印出雇员工作时长的纯文本报表的函数。有个名为HourlyReporter的类把数据收集为某种方便的形式，传递到HourlyReportFormatter中，再打印出来。（如代码清单17-1所示。）</p>
+<p>代码清单17-1　HourlyReporter.java</p>
+<pre><code>public class HourlyReporter {
+　private HourlyReportFormatter formatter;
+　private List&lt;LineItem&gt; page;
+　private final int PAGE_SIZE = 55;
+
+　public HourlyReporter(HourlyReportFormatter formatter) {
+　　this.formatter = formatter;
+　　page = new ArrayList&lt;LineItem&gt;();
+　}
+
+　public void generateReport(List&lt;HourlyEmployee&gt; employees) {
+　　for (HourlyEmployee e : employees) {
+　　　addLineItemToPage(e);
+　　　if (page.size() == PAGE_SIZE)
+　　　　printAndClearItemList();
+　　}
+　　if (page.size() &gt; 0)
+　　　printAndClearItemList();
+　}
+
+　private void printAndClearItemList() {
+　　formatter.format(page);
+　　page.clear();
+　}
+
+　private void addLineItemToPage(HourlyEmployee e) {
+　　LineItem item = new LineItem();
+　　item.name = e.getName();
+　　item.hours = e.getTenthsWorked() / 10;
+　　item.tenths = e.getTenthsWorked() % 10;
+　　page.add(item);
+　}
+
+　public class LineItem {
+　　public String name;
+　　public int hours;
+　　public int tenths;
+　}
+}
+</code></pre>
+<p>这段代码有尚未物理化的逻辑依赖。你能指出来吗？那就是常量PAGE_SIZE。HourlyReporter为什么要知道页面尺寸？页面尺寸只该是HourlyReportFormatter的权责。</p>
+<p>PAGE_SIZE在HourlyReporter中声明，代表了一种位置错误的权责[G17]，导致HourlyReporter假定它知道页面尺寸。这类假设是一种逻辑依赖。HourlyReporter依赖于HourlyReportFormatter能应付55的页面尺寸。如果HourlyReportFormatter的某些实现不能处理这样的尺寸，就会出错。</p>
+<p>可以通过创建HourlyReport中名为getMaxPageSize()的新方法来物理化这种依赖。HourlyReporter将调用这个方法，而不是使用PAGE_SIZE常量。</p>
+<h4 id="用多态替代-ifelse-或-switchcase"><a class="markdownIt-Anchor" href="#用多态替代-ifelse-或-switchcase"></a> 用多态替代 If/Else 或 Switch/Case</h4>
+<p>有了第6章谈及的主题，这条建议看似奇怪。在那章中，我提出在添加新函数甚于添加新类型的系统中，switch语句是恰当的。</p>
+<p>首先，多数人使用switch语句，因为它是最直截了当又有力的方案，而不是因为它适合当前情形。这给我们的启发是在使用switch之前，先考虑使用多态。</p>
+<p>其次，函数变化甚于类型变化的情形相对罕见。每个switch语句都值得怀疑。</p>
+<p>我使用所谓“单个switch”规则：对于给定的选择类型，不应有多于一个switch语句。在那个switch语句中的多个case，必须创建多态对象，取代系统中其他类似switch语句。</p>
+<h4 id="遵循标准约定"><a class="markdownIt-Anchor" href="#遵循标准约定"></a> 遵循标准约定</h4>
+<p>每个团队都应遵循基于通用行业规范的一套编码标准。编码标准应指定诸如在何处声明实体变量，如何命名类，方法和变量，在何处放置括号，等等。团队不应用文档描述这些约定，因为代码本身提供了范例。</p>
+<p>团队中的每个成员都应遵循这些约定。这意味着每个团队成员必须成熟到能了解只要全体同意在何处放置括号，那么在哪里放置都无关紧要。</p>
+<p>如果你想知道我遵循哪些约定，可以查看代码清单B-7～B-14中重构之后的代码。</p>
+<h4 id="用命名常量替代魔术数"><a class="markdownIt-Anchor" href="#用命名常量替代魔术数"></a> 用命名常量替代魔术数</h4>
+<p>这大概是软件开发中最古老的规则之一了。我记得，在20世纪60年代介绍COBOL、FORTRAN和PL/1的手册中就读到过。在代码中出现原始形态数字通常来说是坏现象。应该用良好命名的常量来隐藏它。</p>
+<p>例如，数字86400应当藏在常量SECONDS_PER_DAY后面。如果每页打印55行，则常数55应该藏在常量LINES_PER_PAGE后面。</p>
+<p>有些常量与非常具有自我解释能力的代码协同工作时，如此易于识别，也就不必总是需要命名常量来隐藏了。例如：</p>
+<pre><code>double milesWalked = feetWalked/5280.0;
+int dailyPay = hourlyRate * 8;
+double circumference = radius * Math.PI * 2;
+</code></pre>
+<p>在上例中，我们真需要常量FEET_PER_MILE、WORK_HOURS_PER_DAY和TWO吗？显然，最后那个很可笑。有些情况下，常量直接写作原始形态数字会更好。你可能会质疑WORK_HOURS_PER_ DAY，因为约定规则可能会改变。另一方面，在这里直接用数字8读起来很舒服，也就没必要非用17个额外的字母来加重读者负担不可。对于FEET_PER_MILE，数字5280众人皆知，意义独特，即便没有上下文环境，读者也能识别它。</p>
+<p>3.141592653589793之类常数也众所周知，很容易识别。不过，如果直接使用原始形式，却很有可能出错。每次有人看到3.141592653589793，都会知道那是π值，从而不会去仔细查看。（你发现那个错误的数字了吗？）我们不想要人们使用3.14、3.14159或3.142等。所以，为我们定义好Math.PI是件好事。</p>
+<p>术语“魔术数”不仅是说数字。它泛指任何不能自我描述的符号。例如：</p>
+<p>assertEquals(7777, Employee.find(“John Doe”).employeeNumber());</p>
+<p>上列断言中有两个魔术数。第一个显然是777，它的意义并不明确。第二个魔术数是John Doe，因为其意图不明显。<br>
+John Doe是开发团队创建的测试数据中编号为#7777的雇员。团队中每个成员都知道，当连接到数据库时，里面已经有数个雇员信息，其值和属性都是大家熟知的。所以，这个测试应该读作：</p>
+<pre><code>assertEquals(
+　HOURLY_EMPLOYEE_ID,
+　Employee.find(HOURLY_EMPLOYEE_NAME).employeeNumber());
+　
+</code></pre>
+<h4 id="准确"><a class="markdownIt-Anchor" href="#准确"></a> 准确</h4>
+<p>期望某个查询的第一次匹配就是唯一匹配可能过于天真。用浮点数表示货币几近于犯罪。因为你不想做并发更新就避免使用锁和/或事务管理往好处说也是一种懒惰行为。在可以用List的时候非要把变量声明为ArrayList就过分拘束了。把所有变量设置为protected却不够自律。</p>
+<p>在代码中做决定时，确认自己足够准确。明确自己为何要这么做，如果遇到异常情况如何处理。别懒得理会决定的准确性。如果你打算调用可能返回null的函数，确认自己检查了null值。如果查询你认为是数据库中唯一的记录，确保代码检查不存在其他记录。如果要处理货币数据，使用整数[11]，并恰当地处理四舍五入。如果可能有并发更新，确认你实现了某种锁定机制。</p>
+<p>代码中的含糊和不准确要么是意见不同的结果，要么源于懒惰。无论原因是什么，都要消除。</p>
+<h4 id="结构甚于约定"><a class="markdownIt-Anchor" href="#结构甚于约定"></a> 结构甚于约定</h4>
+<p>坚守结构甚于约定的设计决策。命名约定很好，但却次于强制性的结构。例如，用到良好命名的枚举的switch/case要弱于拥有抽象方法的基类。没人会被强迫每次都以同样方式实现switch/case语句，但基类却让具体类必须实现所有抽象方法。</p>
+<h4 id="封装条件"><a class="markdownIt-Anchor" href="#封装条件"></a> 封装条件</h4>
+<p>如果没有if或while语句的上下文，布尔逻辑就难以理解。应该把解释了条件意图的函数抽离出来。<br>
+例如：</p>
+<pre><code>if (shouldBeDeleted(timer))
+</code></pre>
+<p>要好于</p>
+<pre><code>if　(timer.hasExpired()　&amp;&amp;　!timer.isRecurrent())
+</code></pre>
+<h4 id="避免否定性条件"><a class="markdownIt-Anchor" href="#避免否定性条件"></a> 避免否定性条件</h4>
+<p>否定式要比肯定式难明白一些。所以，尽可能将条件表示为肯定形式。例如：</p>
+<pre><code>if　(buffer.shouldCompact())
+</code></pre>
+<p>要好于</p>
+<pre><code>if　(!buffer.shouldNotCompact())
+</code></pre>
+<h4 id="函数只该做一件事"><a class="markdownIt-Anchor" href="#函数只该做一件事"></a> 函数只该做一件事</h4>
+<p>编写执行一系列操作的包括多段代码的函数常常是诱人的。这类函数做了不只一件事，应该转换为多个更小的函数，每个只做一件事。</p>
+<h4 id="掩蔽时序耦合"><a class="markdownIt-Anchor" href="#掩蔽时序耦合"></a> 掩蔽时序耦合</h4>
+<p>常常有必要使用时序耦合，但你不应该掩蔽它。排列函数参数，好让它们被调用的次序显而易见。看下列代码：</p>
+<pre><code>public class MoogDiver {
+　Gradient gradient;
+　List&lt;Spline&gt; splines;
+
+　public void dive(String reason) {
+　　saturateGradient();
+　　reticulateSplines();
+　　diveForMoog(reason);
+　}
+　...
+}
+</code></pre>
+<p>三个函数的次序很重要。捕鱼之前先织网，织网之前先编绳。不幸的是，代码并没有强制这种时序耦合。其他程序员可以在调用saturateGradient之前调用reticulateSplines，从而导致抛出UnsaturatedGradientException异常。更好的方式是：</p>
+<pre><code>public class MoogDiver {
+　Gradient gradient;
+　List&lt;Spline&gt; splines;
+
+　public void dive(String reason) {
+　　Gradient gradient = saturateGradient();
+　　List&lt;Spline&gt; splines = reticulateSplines(gradient);
+　　diveForMoog(splines, reason);
+　}
+　...
+}
+</code></pre>
+<p>这样就通过创建顺序队列暴露了时序耦合。每个函数都产生出下一个函数所需的结果，这样一来就没理由不按顺序调用了。</p>
+<p>你可能会抱怨着增加了函数的复杂度，没错，不过这点额外的复杂度却曝露了该种情况真正的时序复杂性。</p>
+<p>注意我保留了那些实体变量。我假设类中的私有方法可能会用到它们。即便如此，我还是希望参数能让时序耦合变得可见。</p>
+<h4 id="别随意"><a class="markdownIt-Anchor" href="#别随意"></a> 别随意</h4>
+<p>构建代码需要理由，而且理由应与代码结构相契合。如果结构显得太随意，其他人就会想修改它。如果结构自始至终保持一致，其他人就会使用它，并且遵循其约定。例如，我最近对FitNesse做合并修改，发现有位贡献者这么做：</p>
+<pre><code>public class AliasLinkWidget extends ParentWidget
+{
+　public static class VariableExpandingWidgetRoot {
+　　...
+
+　...
+}
+</code></pre>
+<p>问题在于，VariableExpandingWidgetRoot没必要在AliasLinkWidget作用范围之内。而且，其他无关的类也用到AliasLinkWidget.VariableExpandingWidgetRoot。这些类没必要了解AliasLinkWidget。</p>
+<p>或许那位程序员只是循例把VariableExpandingWidgetRoot放到AliasWidget里面，或者他真认为这么做是对的。不管原因是什么，结果都显得随心所欲。不作为类工具的公共类，不应该放到其他类里面。惯例是将它置为public，并且放在代码包的顶部。</p>
+<h4 id="封装边界条件"><a class="markdownIt-Anchor" href="#封装边界条件"></a> 封装边界条件</h4>
+<p>边界条件难以追踪。把处理边界条件的代码集中到一处，不要散落于代码中。我们不想见到四处散见的+1和−1字样。看看这个来自FIT的简单例子：</p>
+<pre><code>if(level + 1 &lt; tags.length)
+{
+　parts = new Parse(body, tags, level + 1, offset + endTag);
+　body = null;
+}
+</code></pre>
+<p>注意，level + 1出现了两次。这是个应该封装到名为nextLevel之类的变量中的边界条件。</p>
+<pre><code>int nextLevel = level + 1;
+if(nextLevel &lt; tags.length)
+{
+　parts = new Parse(body, tags, nextLevel, offset + endTag);
+　body = null;
+}
+</code></pre>
+<h4 id="函数应该只在一个抽象层级上"><a class="markdownIt-Anchor" href="#函数应该只在一个抽象层级上"></a> 函数应该只在一个抽象层级上</h4>
+<p>函数中的语句应该在同一抽象层级上，该层级应该是函数名所示操作的下一层。这可能是最难理解和遵循的启发。尽管概念足够直白，人们还是很容易混淆抽象层级。例如，请看下面来自FitNesse的例子：</p>
+<pre><code>public String render() throws Exception
+{
+　StringBuffer html = new StringBuffer("&lt;hr");
+　if(size &gt; 0)
+　　html.append(" size=\"").append(size + 1).append("\"");
+　html.append("&gt;");
+
+　return html.toString();
+}
+</code></pre>
+<p>稍微研究一下，你就会看到发生了什么。该函数构建了绘制横贯页面线条的HTML标记。线条高度在size变量中指定。<br>
+再看一遍。方法混杂了至少两个抽象层级。第一个是横线有尺寸这个概念。第二个是hr标记自身的语法。这段代码来自FitNesse的HruleWidget模块。该模块检测一行4个或更多个破折号，并将其转换为恰当的hr标记。破折号越多，尺寸越大。</p>
+<p>我重构了这段代码。注意，我修改了size字段的名称，反映其真正目的。它表示额外破折号的数量。</p>
+<pre><code>public String render() throws Exception
+{
+　HtmlTag hr = new HtmlTag("hr");
+　if (extraDashes &gt; 0)
+　　hr.addAttribute("size", hrSize(extraDashes));
+　return hr.html();
+}
+
+private String hrSize(int height)
+{
+　int hrSize = height + 1;
+　return String.format("%d", hrSize);
+}
+</code></pre>
+<p>这次修改很好地拆开了两个抽象层级。函数render只构造一个hr标记，不去管该标记的HTML语法。而HtmlTag模块则照管所有这些肮脏的语法问题。</p>
+<p>做出修改时，我发现了一处微小的错误。原始代码没有加上hr标记的结束斜线符，而XHTML标准要求这样做。（换言之，代码使用了<code>&lt;hr</code>&gt;而不是<code>&lt;hr /&gt;。</code>）HtmlTag模块很早就改造成符合XHTML标准了。</p>
+<p>拆分不同抽象层级是重构的最重要功能之一，也是最难做的一个。以下面的代码为例。这是我第一次尝试拆分HruleWidget.rendermethod中的抽象层级的结果。</p>
+<pre><code>public String render() throws Exception
+{
+　HtmlTag hr = new HtmlTag("hr");
+　if (size &gt; 0) {
+　　hr.addAttribute("size", ""+(size+1));
+　}
+　return hr.html();
+}
+</code></pre>
+<p>此时，我的目的是做必要的拆分，并让测试通过。我轻易达到了这一目的，但结果是该函数仍然混杂了多个抽象层级。此时，混杂的层级是hr标记的构建，以及size变量的翻译和格式化。这说明当你偱抽象界线拆解函数时，经常会挖出原本被之前的结构所掩蔽的新抽象界线。</p>
+<h4 id="在较高层级放置可配置数据"><a class="markdownIt-Anchor" href="#在较高层级放置可配置数据"></a> 在较高层级放置可配置数据</h4>
+<p>如果你有个已知并该在较高抽象层级的默认常量或配置值，不要将它埋藏到较低层级的函数中。把它作为较高层级函数调用较低层级函数时的一个参数。看看以下来自FItNesse的代码：</p>
+<pre><code>　public static void main(String[] args) throws Exception
+　{
+　　Arguments arguments = parseCommandLine(args);
+　　...
+　}
+
+public class Arguments
+{
+　public static final String DEFAULT_PATH = ".";
+　public static final String DEFAULT_ROOT = "FitNesseRoot";
+　public static final int DEFAULT_PORT = 80;
+　public static final int DEFAULT_VERSION_DAYS = 14;
+　...
+}
+</code></pre>
+<p>命令行参数在FitNesse中的第一行可执行代码得到解析。这些参数的默认值在Argument类的顶部指定。你不必到系统的较低层级去查看类似的语句：</p>
+<p>if (arguments.port == 0) // use 80 by default</p>
+<p>位于较高层级的配置性常量易于修改。它们向下贯穿应用程序。应用程序的较低层级并不拥有这些常量的值。</p>
+<h4 id="避免传递浏览"><a class="markdownIt-Anchor" href="#避免传递浏览"></a> 避免传递浏览</h4>
+<p>通常我们不想让某个模块了解太多其协作者的信息。更具体地说，如果A与B协作，B与C协作，我们不想让使用A的模块了解C的信息。（例如，我们不想写类似a.getB( ).getC( ).doSomething( )的代码。）</p>
+<p>这就是所谓得墨忒耳律。The Pragmatic Programmers（中译版《程序员修炼之道》）称之为“编写害羞代码”[12]。两者都归结为确保模块只了解其直接协作者，不了解整个系统的游览图。</p>
+<p>如果有多个模块使用类似a.getB( ).getC( )这样的语句形式，就难以修改设计和架构，在B和C之间插进一个Q。你得找到a.getB( ).getC( )出现的所有地方，并将其改为a.getB( ).getQ( ).getC( )。系统就此变得缺乏柔韧性。太多的模块了解了太多有关架构的信息。</p>
+<p>正确的做法是让直接协作者提供所需的全部服务。不必逛遍系统的对象全图，搜寻我们要调用的方法。只要简单地说：<br>
+myCollaborator.doSomething().</p>
+<h3 id="java"><a class="markdownIt-Anchor" href="#java"></a> Java</h3>
+<h4 id="采用描述性名称"><a class="markdownIt-Anchor" href="#采用描述性名称"></a> 采用描述性名称</h4>
+<p>不要太快取名。确认名称具有描述性。记住，事物的意义随着软件的演化而变化，所以，要经常性地重新估量名称是否恰当。<br>
+这不仅是一条“感觉良好式”建议。软件中的名称对于软件可读性有90%的作用。你要花时间明智地取名，保持名称有关。名称太重要了，不可随意对待。</p>
+<p>看看以下代码。这段代码是做什么的？用了好名称的代码一目了然，而这样的代码却是符号和魔术数的大杂烩。</p>
+<pre><code>public int x() {
+　int q = 0;
+　int z = 0;
+　for (int kk = 0; kk &lt; 10; kk++) {
+　　if (l[z] == 10)
+　　{
+　　　q += 10 + (l[z + 1] + l[z + 2]);
+　　　z += 1;
+　　}
+　　else if (l[z] + l[z + 1] == 10)
+　　{
+　　　q += 10 + l[z + 2];
+　　　z += 2;
+　　} else {
+　　　q += l[z] + l[z + 1];
+　　　z += 2;
+　　}
+　}
+　return q;
+}
+</code></pre>
+<p>下面是这段代码应该写成的样子。代码片段实际上不如上段完整。但你还是能马上推断出它要做什么，而且很有可能依据推断出的意思写出遗漏的函数。魔术数不复神秘，算法的结构也足具描述性。</p>
+<pre><code>public int score() {
+　int score = 0;
+　int frame = 0;
+　for (int frameNumber = 0; frameNumber &lt; 10; frameNumber++) {
+　　if (isStrike(frame)) {
+　　　score += 10 + nextTwoBallsForStrike(frame);
+　　　frame += 1;
+　　} else if (isSpare(frame)) {
+　　　score += 10 + nextBallForSpare(frame);
+　　　frame += 2;
+　　} else {
+　　　score += twoBallsInFrame(frame);
+　　　frame += 2;
+　　}
+　}
+　return score;
+}
+</code></pre>
+<p>仔细取好的名称的威力在于，它用描述性信息覆盖了代码。这种信息覆盖设定了读者对于模块中其他函数行为的期待。看看上面的代码，你就能推断出isStrike( )的实现。读到isStrick方法时，它“深合你意”[13]。</p>
+<pre><code>private boolean isStrike(int frame) {
+　return rolls[frame] == 10;
+}
+</code></pre>
+<h4 id="名称应与抽象层级相"><a class="markdownIt-Anchor" href="#名称应与抽象层级相"></a> 名称应与抽象层级相</h4>
+<p>不要取沟通实现的名称；取反映类或函数抽象层级的名称。这样做不容易。人们擅长于混杂抽象层级。每次浏览代码，你总会发现有些变量的名称层级太低。你应当趁机为之改名。要让代码可读，需要持续不断的改进。看看下面的Modem接口：</p>
+<pre><code>public interface Modem {
+　boolean dial(String phoneNumber);
+　boolean disconnect();
+　boolean send(char c);
+　char recv();
+　String getConnectedPhoneNumber();
+}
+</code></pre>
+<p>粗看还行。函数看来都很合适，对于多数应用程序来说是这样。不过，想想看某个应用中有些调制解调器并不用拨号连接的情形。有些用线缆直连（就像如今为多数家庭提供Internet连接的线缆解调器）的情形。有些通过向USB口发送端口信息连接。显然，有关电话号码的信息就是位于错误的抽象层级了。对于这种情形，更好的命名策略可能是：</p>
+<pre><code>public interface Modem {
+　boolean connect(String connectionLocator);
+　boolean disconnect();
+　boolean send(char c);
+　char recv();
+　String getConnectedLocator();
+}
+</code></pre>
+<p>现在名称再不与电话号码有关系。还是可以用于用电话号码的情形，也可以用于其他连接策略。</p>
+<h4 id="尽可能使用标准命名法"><a class="markdownIt-Anchor" href="#尽可能使用标准命名法"></a> 尽可能使用标准命名法</h4>
+<p>如果名称基于既存约定或用法，就比较易于理解。例如，如果你采用油漆工模式，就该在给油漆类命名时用上Decorator字样。例如，AutoHangupModemDecorator可能是某个给Modem类刷上在会话结束时自动挂机的能力的类的名称。</p>
+<p>模式只是标准的一种。例如，在Java中，将对象转换为字符串的函数通常命名为toString。最好是遵循这些约定，而不是自己创造命名法。</p>
+<p>对于特定项目，开发团队常常发明自己的命名标准系统。Eric Evans称之为项目的共同语言[14]。代码应该使用来自这种语言的术语。简言之，具有与项目有关的特定意义的名称用得越多，读者就越容易明白你的代码是做什么的。</p>
+<h4 id="无歧义的名称"><a class="markdownIt-Anchor" href="#无歧义的名称"></a> 无歧义的名称</h4>
+<p>选用不会混淆函数或变量意义的名称。看看来自FitNesse的这个例子：</p>
+<pre><code>private String doRename() throws Exception
+{
+　if(refactorReferences)
+　　renameReferences();
+　renamePage();
+
+　pathToRename.removeNameFromEnd();
+　pathToRename.addNameToEnd(newName);
+　return PathParser.render(pathToRename);
+}
+</code></pre>
+<p>该函数的名称含混不清，没有说明函数的作用。由于在doRename函数里面还有个名为renamePage的函数，这就更不明白了！这些名称有没有说明两个函数之间的区别呢？没有。</p>
+<p>该函数的更好名称应该是renamePageAndOptionallyAllReferences。看似太长，的确也很长，不过它只在模块中的一处被调用，所以其解释性的好处大过了长度的坏处。</p>
+<h4 id="为较大作用范围选用较长名称"><a class="markdownIt-Anchor" href="#为较大作用范围选用较长名称"></a> 为较大作用范围选用较长名称</h4>
+<p>名称的长度应与作用范围的广泛度相关。对于较小的作用范围，可以用很短的名称，而对于较大作用范围就该用较长的名称。<br>
+类似i和j之类的变量名对于作用范围在5行之内的情形没问题。看看以下来自老“标准保龄球游戏”的代码片段：</p>
+<pre><code>private void rollMany(int n, int pins)
+{
+　for (int i=0; i&lt;n; i++)
+　　g.roll(pins);
+}
+</code></pre>
+<p>这段代码很明白，如果用rollCount之类烦人的名称代替变量i，反而是徒增混乱。另一方面，在较长距离上，使用短名称的变量和函数会丧失其含义。名称的作用范围越大，名称就该越长、越准确。</p>
+<h4 id="避免编码"><a class="markdownIt-Anchor" href="#避免编码"></a> 避免编码</h4>
+<p>不应在名称中包括类型或作用范围信息。在如今的开发环境中，m_或f之类前缀完全无用。类似vis_（表示图形系统）之类的项目或子系统名称也属多余。当今的开发环境不用纠缠于名称也能提供这些信息。不要用匈牙利语命名法污染你的名称。</p>
+<h4 id="名称应该说明副作用"><a class="markdownIt-Anchor" href="#名称应该说明副作用"></a> 名称应该说明副作用</h4>
+<p>名称应该说明函数、变量或类的一切信息。不要用名称掩蔽副作用。不要用简单的动词来描述做了不止一个简单动作的函数。例如，请看以下来自TestNG的代码：</p>
+<pre><code>public ObjectOutputStream getOos() throws IOException {
+　if (m_oos == null) {
+　　m_oos = new ObjectOutputStream(m_socket.getOutputStream());
+　}
+　return m_oos;
+}
+</code></pre>
+<p>该函数不只是获取一个oos，如果oos不存在，还会创建一个。所以，更好的名称大概是createOrReturnOos。</p>
+<h3 id="测试"><a class="markdownIt-Anchor" href="#测试"></a> 测试</h3>
+<h4 id="测试不足"><a class="markdownIt-Anchor" href="#测试不足"></a> 测试不足</h4>
+<p>一套测试中应该有多少个测试？不幸的是，许多程序员的衡量标准是“看起来够了”。一套测试应该测到所有可能失败的东西。只要还有没被测试探测过的条件，或是还有没被验证过的计算，测试就还不够。</p>
+<h4 id="使用覆盖率工具"><a class="markdownIt-Anchor" href="#使用覆盖率工具"></a> 使用覆盖率工具</h4>
+<p>覆盖率工具能汇报你测试策略中的缺口。使用覆盖率工具能更容易地找到测试不足的模块、类和函数。多数IDE都给出直观的指示，用绿色标记测试覆盖了的代码行，而未覆盖的代码行则是红色。这样就能又快又容易地找到尚未检测过的if或catch语句。</p>
+<h4 id="别略过小测试"><a class="markdownIt-Anchor" href="#别略过小测试"></a> 别略过小测试</h4>
+<p>小测试易于编写，其文档上的价值高于编写成本。</p>
+<h4 id="被忽略的测试就是对不确定事物的疑问"><a class="markdownIt-Anchor" href="#被忽略的测试就是对不确定事物的疑问"></a> 被忽略的测试就是对不确定事物的疑问</h4>
+<p>有时，我们会因为需求不明而不能确定某个行为细节。可以用注释掉的测试或者用@Ignore标记的测试来表达我们对于需求的疑问。使用哪种方式，取决于该不确定性所关涉代码是否要编译。</p>
+<h4 id="测试边界条件"><a class="markdownIt-Anchor" href="#测试边界条件"></a> 测试边界条件</h4>
+<p>特别注意测试边界条件。算法的中间部分正确但边界判断错误的情形很常见。</p>
+<h4 id="全面测试相近的缺陷"><a class="markdownIt-Anchor" href="#全面测试相近的缺陷"></a> 全面测试相近的缺陷</h4>
+<p>缺陷趋向于扎堆。在某个函数中发现一个缺陷时，最好全面测试那个函数。你可能会发现缺陷不止一个。</p>
+<h4 id="测试失败的模式有启发性"><a class="markdownIt-Anchor" href="#测试失败的模式有启发性"></a> 测试失败的模式有启发性</h4>
+<p>有时，你可以通过找到测试用例失败的模式来诊断问题所在。这也是尽可能编写足够完整的测试用例的理由之一。完整的测试用例，按合理的顺序排列，能暴露出模式。</p>
+<p>简单举例，假设你注意到所有长于5个字符的输入都会导致测试失败，或者向函数的第二个参数传入负数都会导致测试失败。有时，只要看看测试报告的红绿模式，就足以绽放出那句带来解决方法的“啊哈！”回头看看第16章“重构SerialDate”中的有趣例子吧。</p>
+<h4 id="测试覆盖率的模式有启发性"><a class="markdownIt-Anchor" href="#测试覆盖率的模式有启发性"></a> 测试覆盖率的模式有启发性</h4>
+<p>查看被或未被已通过的测试执行的代码，往往能发现失败的测试为何失败的线索。</p>
+<h4 id="测试应该快速"><a class="markdownIt-Anchor" href="#测试应该快速"></a> 测试应该快速</h4>
+<p>慢速的测试是不会被运行的测试。时间一紧，较慢的测试就会被摘掉。所以，竭尽所能让测试够快。</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

@@ -1,0 +1,504 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《Clean Architecture》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 零、概述
+软件架构设计是一件非常困难的事情，这通常需要大多数程序员所不具备的经验和技能。同时，也不是所有人都愿意花时间来学习和钻研这个方向。做一个好的软件架构师所需要的自律和专注程度可能会让大部分程序员始料未及，更别提软件架构师这个职业本身的社会认同感与人们投身其中的热情了。
+采用好的软件架构可以大大节省软件项目构建与维护的人力成本。让每次变更都短小简单，易于实施，并且避免缺陷，用最小的成本，最大程度地满足功能性和灵活性的要求。
+ 0.1 设计与架构究竟是什么？
+一直以来，设计（Design）与架构（Architecture）这两个概念让大多数人十分迷惑——什么是设计？什么是架构？二者究竟有什么区别？
+本书的一个重要目标就是要清晰、明确地对二者进行定义。首先我要明确地说，二者没有任何区别。一丁点区别都没有.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《Clean Architecture》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9B%B6-%E6%A6%82%E8%BF%B0"><span class="toc-text"> 零、概述</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#01-%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%9E%B6%E6%9E%84%E7%A9%B6%E7%AB%9F%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text"> 0.1 设计与架构究竟是什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%9B%AE%E6%A0%87"><span class="toc-text"> 目标</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#02-%E4%B8%A4%E4%B8%AA%E7%BA%AC%E5%BA%A6%E7%9A%84%E4%BB%B7%E5%80%BC"><span class="toc-text"> 0.2 两个纬度的价值</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A1%8C%E4%B8%BA%E4%BB%B7%E5%80%BC"><span class="toc-text"> 行为价值</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%9E%B6%E6%9E%84%E4%BB%B7%E5%80%BC"><span class="toc-text"> 架构价值</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E7%BC%96%E7%A8%8B%E8%8C%83%E5%BC%8F"><span class="toc-text"> 一、编程范式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-%E7%BB%93%E6%9E%84%E5%8C%96%E7%BC%96%E7%A8%8Bstructured-programming"><span class="toc-text"> 1.1 结构化编程（Structured Programming）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E7%BC%96%E7%A8%8Bobject-oriented-programming"><span class="toc-text"> 1.2 面向对象编程（Object Oriented Programming）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-%E5%87%BD%E6%95%B0%E5%BC%8F%E7%BC%96%E7%A8%8Bfunctional-programming"><span class="toc-text"> 1.3 函数式编程（Functional Programming）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-%E6%80%BB%E7%BB%93"><span class="toc-text"> 1.4 总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E8%AE%BE%E8%AE%A1%E5%8E%9F%E5%88%99-solid-%E5%8E%9F%E5%88%99"><span class="toc-text"> 二、设计原则 - SOLID 原则</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#21-%E5%8D%95%E4%B8%80%E8%81%8C%E8%B4%A3srp"><span class="toc-text"> 2.1 单一职责（SRP）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#22-%E5%BC%80%E9%97%AD%E5%8E%9F%E5%88%99ocp"><span class="toc-text"> 2.2 开闭原则（OCP）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#23-%E9%87%8C%E5%BC%8F%E6%9B%BF%E6%8D%A2lsp"><span class="toc-text"> 2.3 里式替换（LSP）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#24-%E6%8E%A5%E5%8F%A3%E9%9A%94%E7%A6%BB%E5%8E%9F%E5%88%99isp"><span class="toc-text"> 2.4 接口隔离原则（ISP)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#25-%E4%BE%9D%E8%B5%96%E5%8F%8D%E8%BD%AC%E5%8E%9F%E5%88%99dip"><span class="toc-text"> 2.5 依赖反转原则（DIP)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E7%BB%84%E4%BB%B6"><span class="toc-text"> 三、组件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#31-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BB%84%E4%BB%B6"><span class="toc-text"> 3.1 什么是组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#32-%E7%BB%84%E4%BB%B6%E7%9A%84%E8%81%9A%E5%90%88"><span class="toc-text"> 3.2 组件的聚合</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#321-%E5%A4%8D%E7%94%A8%E5%8F%91%E5%B8%83%E7%AD%89%E5%90%8C%E5%8E%9F%E5%88%99rep%E5%8E%9F%E5%88%99-release-reuse-equivalency-principle"><span class="toc-text"> 3.2.1 复用&#x2F;发布等同原则（REP原则 - Release Reuse Equivalency Principle）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#322-%E5%85%B1%E5%90%8C%E9%97%AD%E5%8C%85%E5%8E%9F%E5%88%99-ccp%E5%8E%9F%E5%88%99-the-common-closure-principle"><span class="toc-text"> 3.2.2 共同闭包原则 （CCP原则 - the Common Closure Principle）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#ccp%E4%B8%8Esrp%E5%8E%9F%E5%88%99%E7%9A%84%E7%9B%B8%E4%BC%BC%E7%82%B9"><span class="toc-text"> CCP与SRP原则的相似点:</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#323-%E5%85%B1%E5%90%8C%E5%A4%8D%E7%94%A8%E5%8E%9F%E5%88%99crp%E5%8E%9F%E5%88%99-composite-reuse-principle"><span class="toc-text"> 3.2.3 共同复用原则（CRP原则 - Composite Reuse Principle）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%8Eisp%E5%8E%9F%E5%88%99%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-text"> 与ISP原则的关系</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#324-%E4%B8%89%E4%B8%AA%E8%A7%84%E5%88%99%E7%9A%84treadeoff"><span class="toc-text"> 3.2.4 三个规则的Treadeoff</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#33-%E7%BB%84%E4%BB%B6%E8%80%A6%E5%90%88"><span class="toc-text"> 3.3 组件耦合</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#331-%E6%97%A0%E4%BE%9D%E8%B5%96%E7%8E%AF%E5%8E%9F%E5%88%99adp-acyclic-dependency-principle"><span class="toc-text"> 3.3.1 无依赖环原则（ADP - Acyclic Dependency Principle）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#332-%E8%87%AA%E4%B8%8A%E8%80%8C%E4%B8%8B%E7%9A%84%E8%AE%BE%E8%AE%A1"><span class="toc-text"> 3.3.2 自上而下的设计</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#333-%E7%A8%B3%E5%AE%9A%E4%BE%9D%E8%B5%96%E5%8E%9F%E5%88%99-sdp-stabilization-dependency-principle"><span class="toc-text"> 3.3.3 稳定依赖原则 （SDP - Stabilization Dependency Principle）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#334-%E7%A8%B3%E5%AE%9A%E6%8A%BD%E8%B1%A1%E5%8E%9F%E5%88%99sap-stable-abstractions-principle"><span class="toc-text"> 3.3.4 稳定抽象原则（SAP - Stable Abstractions Principle）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#335-%E9%AB%98%E9%98%B6%E7%AD%96%E7%95%A5%E5%BA%94%E8%AF%A5%E6%94%BE%E5%9C%A8%E5%93%AA%E9%87%8C"><span class="toc-text"> 3.3.5 高阶策略应该放在哪里？</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#336-%E7%A8%B3%E5%AE%9A%E6%8A%BD%E8%B1%A1%E5%8E%9F%E5%88%99%E7%AE%80%E4%BB%8B"><span class="toc-text"> 3.3.6 稳定抽象原则简介</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84"><span class="toc-text"> 四、软件架构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#41-%E4%BB%80%E4%B9%88%E6%98%AF%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84%E5%B8%88%E5%B7%A5%E4%BD%9C%E5%86%85%E5%AE%B9%E6%98%AF%E4%BB%80%E4%B9%88"><span class="toc-text"> 4.1 什么是软件架构？软件架构师工作内容是什么？</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#411-%E5%BC%80%E5%8F%91development"><span class="toc-text"> 4.1.1 开发（development）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#412-%E9%83%A8%E7%BD%B2deployment"><span class="toc-text"> 4.1.2 部署（Deployment）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#413-%E7%BB%B4%E6%8A%A4maintenance"><span class="toc-text"> 4.1.3 维护（Maintenance）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#413-%E4%BF%9D%E6%8C%81%E5%8F%AF%E9%80%89%E9%A1%B9"><span class="toc-text"> 4.1.3 保持可选项</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#42-%E7%8B%AC%E7%AB%8B%E6%80%A7"><span class="toc-text"> 4.2 独立性</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#421-%E7%94%A8%E4%BE%8B"><span class="toc-text"> 4.2.1 用例</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#422-%E8%BF%90%E8%A1%8C"><span class="toc-text"> 4.2.2 运行</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#423-%E5%BC%80%E5%8F%91"><span class="toc-text"> 4.2.3 开发</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#424-%E9%83%A8%E7%BD%B2"><span class="toc-text"> 4.2.4 部署</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#425-%E4%BF%9D%E7%95%99%E5%8F%AF%E9%80%89%E9%A1%B9"><span class="toc-text"> 4.2.5 保留可选项</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#426-%E6%8C%89%E5%B1%82%E8%A7%A3%E8%80%A6"><span class="toc-text"> 4.2.6 按层解耦</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#427-%E7%94%A8%E4%BE%8B%E7%9A%84%E8%A7%A3%E8%80%A6"><span class="toc-text"> 4.2.7 用例的解耦</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#428-%E7%BB%93%E6%9E%84%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 4.2.8 结构模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#429-%E5%BC%80%E5%8F%91%E7%8B%AC%E7%AB%8B%E6%80%A7"><span class="toc-text"> 4.2.9 开发独立性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4210-%E9%83%A8%E7%BD%B2%E7%8B%AC%E7%AB%8B%E6%80%A7"><span class="toc-text"> 4.2.10 部署独立性</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4211-%E9%87%8D%E5%A4%8D"><span class="toc-text"> 4.2.11 重复</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#4212-%E5%86%8D%E8%B0%88%E8%A7%A3%E8%80%A6%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 4.2.12 再谈解耦模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#43-%E5%88%92%E5%88%86%E8%BE%B9%E7%95%8C"><span class="toc-text"> 4.3 划分边界</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#431-%E6%8F%92%E4%BB%B6%E5%BC%8F%E6%9E%B6%E6%9E%84"><span class="toc-text"> 4.3.1 插件式架构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#433-%E6%8F%92%E4%BB%B6%E5%BC%8F%E6%9E%B6%E6%9E%84%E5%A5%BD%E5%A4%84"><span class="toc-text"> 4.3.3 插件式架构好处</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#44-%E8%BE%B9%E7%95%8C%E5%89%96%E6%9E%90"><span class="toc-text"> 4.4 边界剖析</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#441-%E8%B7%A8%E8%BE%B9%E7%95%8C%E8%B0%83%E7%94%A8"><span class="toc-text"> 4.4.1 跨边界调用</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#442-%E6%9C%AC%E5%9C%B0%E8%BF%9B%E7%A8%8B"><span class="toc-text"> 4.4.2 本地进程</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#443-%E6%9C%8D%E5%8A%A1"><span class="toc-text"> 4.4.3 服务</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#45-%E7%AD%96%E7%95%A5%E5%92%8C%E5%B1%82%E6%AC%A1"><span class="toc-text"> 4.5 策略和层次</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#451-%E5%B1%82%E6%AC%A1"><span class="toc-text"> 4.5.1 层次</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#46-%E4%B8%9A%E5%8A%A1%E9%80%BB%E8%BE%91"><span class="toc-text"> 4.6 业务逻辑</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#461-%E4%B8%9A%E5%8A%A1%E5%AE%9E%E4%BD%93"><span class="toc-text"> 4.6.1 业务实体</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#462-%E7%94%A8%E4%BE%8B"><span class="toc-text"> 4.6.2 用例</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#47-%E5%B0%96%E5%8F%AB%E7%9A%84%E8%BD%AF%E4%BB%B6%E6%9E%B6%E6%9E%84"><span class="toc-text"> 4.7 尖叫的软件架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#471-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E7%9A%84%E4%B8%BB%E9%A2%98"><span class="toc-text"> 4.7.1 架构设计的主题</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#472-%E6%9E%B6%E6%9E%84%E8%AE%BE%E8%AE%A1%E7%9A%84%E6%A0%B8%E5%BF%83%E7%9B%AE%E6%A0%87"><span class="toc-text"> 4.7.2 架构设计的核心目标</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#473-%E6%A1%86%E6%9E%B6%E6%98%AF%E5%B7%A5%E5%85%B7%E4%B8%8D%E6%98%AF%E7%94%9F%E6%B4%BB%E4%BF%A1%E6%9D%A1"><span class="toc-text"> 4.7.3 框架是工具不是生活信条</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#474-%E5%8F%AF%E6%B5%8B%E8%AF%95%E7%9A%84%E6%A1%86%E6%9E%B6%E8%AE%BE%E8%AE%A1"><span class="toc-text"> 4.7.4 可测试的框架设计</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#48-%E6%95%B4%E6%B4%81%E6%9E%B6%E6%9E%84"><span class="toc-text"> 4.8 整洁架构</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#481-%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB%E8%A7%84%E5%88%99"><span class="toc-text"> 4.8.1  依赖关系规则</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#482-%E4%B8%80%E4%B8%AA%E5%9C%BA%E6%99%AF%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF"><span class="toc-text"> 4.8.2 一个场景应用场景</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#49-%E5%B1%95%E7%A4%BA%E5%99%A8%E5%92%8C%E8%B0%A6%E5%8D%91%E5%AF%B9%E8%B1%A1"><span class="toc-text"> 4.9 展示器和谦卑对象</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#491-%E8%B0%A6%E5%8D%91%E5%AF%B9%E8%B1%A1%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 4.9.1 谦卑对象模式</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#492-%E5%B1%95%E7%A4%BA%E5%99%A8%E4%B8%8E%E8%A7%86%E5%9B%BE"><span class="toc-text"> 4.9.2  展示器与视图</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#493-%E6%B5%8B%E8%AF%95%E4%B8%8E%E6%9E%B6%E6%9E%84"><span class="toc-text"> 4.9.3 测试与架构</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#494-%E6%95%B0%E6%8D%AE%E5%BA%93%E7%BD%91%E5%85%B3"><span class="toc-text"> 4.9.4 数据库网关</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#495-%E6%95%B0%E6%8D%AE%E6%98%A0%E5%B0%84%E5%99%A8"><span class="toc-text"> 4.9.5 数据映射器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#496-%E6%9C%8D%E5%8A%A1%E7%9B%91%E5%90%AC%E5%99%A8"><span class="toc-text"> 4.9.6 服务监听器</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#497-%E4%B8%8D%E5%AE%8C%E5%85%A8%E8%BE%B9%E7%95%8C"><span class="toc-text"> 4.9.7 不完全边界</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#498-%E5%8D%95%E5%90%91%E8%BE%B9%E7%95%8C"><span class="toc-text"> 4.9.8 单向边界</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#499-%E9%97%A8%E6%88%B7%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 4.9.9 门户模式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#410-%E5%B1%82%E6%AC%A1%E4%B8%8E%E8%BE%B9%E7%95%8C"><span class="toc-text"> 4.10 层次与边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#411-main%E7%BB%84%E4%BB%B6"><span class="toc-text"> 4.11 Main组件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#412-%E5%AE%8F%E8%A7%82%E5%92%8C%E5%BE%AE%E8%A7%82"><span class="toc-text"> 4.12 宏观和微观</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#413-%E6%B5%8B%E8%AF%95%E8%BE%B9%E7%95%8C"><span class="toc-text"> 4.13 测试边界</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#414-%E6%95%B4%E6%B4%81%E7%9A%84%E5%B5%8C%E5%85%A5%E5%BC%8F%E6%9E%B6%E6%9E%84"><span class="toc-text"> 4.14 整洁的嵌入式架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="toc-text"> 五、实现细节</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#51-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8F%AA%E6%98%AF%E7%BB%86%E8%8A%82"><span class="toc-text"> 5.1 数据库只是细节</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#511-%E5%81%87%E8%AE%BE%E7%A3%81%E7%9B%98%E4%B8%8D%E5%AD%98%E5%9C%A8%E4%BC%9A%E6%80%8E%E4%B9%88%E6%A0%B7"><span class="toc-text"> 5.1.1 假设磁盘不存在会怎么样？</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#512-%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="toc-text"> 5.1.2 实现细节</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#52-web%E5%8F%AA%E6%98%AF%E7%BB%86%E8%8A%82"><span class="toc-text"> 5.2 web只是细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#53-%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%A1%86%E6%9E%B6%E5%8F%AA%E6%98%AF%E7%BB%86%E8%8A%82"><span class="toc-text"> 5.3 应用程序框架只是细节</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#531-%E5%8D%95%E5%90%91%E5%A9%9A%E5%A7%BB"><span class="toc-text"> 5.3.1 单向婚姻</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#532-%E9%A3%8E%E9%99%A9"><span class="toc-text"> 5.3.2 风险</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#533-%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="toc-text"> 5.3.3 解决方案</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#534-%E6%80%BB%E7%BB%93"><span class="toc-text"> 5.3.4 总结</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD-%E4%BB%A3%E7%A0%81%E7%BB%93%E6%9E%84%E7%BB%84%E7%BB%87%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-text"> 六、代码结构组织的几种方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#61-%E6%8C%89%E5%B1%82%E5%B0%81%E8%A3%85"><span class="toc-text"> 6.1 按层封装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#62-%E6%8C%89%E5%8A%9F%E8%83%BD%E5%B0%81%E8%A3%85"><span class="toc-text"> 6.2 按功能封装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#63-%E7%AB%AF%E5%8F%A3%E5%92%8C%E9%80%82%E9%85%8D"><span class="toc-text"> 6.3 端口和适配</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#64-%E5%AE%BD%E6%9D%BE%E7%9A%84%E5%88%86%E5%B1%82%E6%9E%B6%E6%9E%84"><span class="toc-text"> 6.4 宽松的分层架构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#65-%E6%8C%89%E7%BB%84%E4%BB%B6%E5%B0%81%E8%A3%85"><span class="toc-text"> 6.5 按组件封装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#66-%E6%80%BB%E7%BB%93"><span class="toc-text"> 6.6 总结</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《Clean Architecture》</h1><time class="has-text-grey" datetime="2021-02-26T15:50:08.000Z">2021-02-26</time><article class="mt-2 post-content"><h2 id="零-概述"><a class="markdownIt-Anchor" href="#零-概述"></a> 零、概述</h2>
+<p>软件架构设计是一件非常困难的事情，这通常需要大多数程序员所不具备的经验和技能。同时，也不是所有人都愿意花时间来学习和钻研这个方向。做一个好的软件架构师所需要的自律和专注程度可能会让大部分程序员始料未及，更别提软件架构师这个职业本身的社会认同感与人们投身其中的热情了。</p>
+<p>采用好的软件架构可以大大节省软件项目构建与维护的人力成本。让每次变更都短小简单，易于实施，并且避免缺陷，用最小的成本，最大程度地满足功能性和灵活性的要求。</p>
+<h3 id="01-设计与架构究竟是什么"><a class="markdownIt-Anchor" href="#01-设计与架构究竟是什么"></a> 0.1 设计与架构究竟是什么？</h3>
+<p>一直以来，设计（Design）与架构（Architecture）这两个概念让大多数人十分迷惑——什么是设计？什么是架构？二者究竟有什么区别？</p>
+<p>本书的一个重要目标就是要清晰、明确地对二者进行定义。首先我要明确地说，二者没有任何区别。一丁点区别都没有！</p>
+<p>“架构”这个词往往使用于“高层级”的讨论中。这类讨论一般都把“底层”的实现细节排除在外。而“设计”一词，往往用来指代具体的系统底层组织结构和实现的细节。但是，从一个真正的系统架构师的日常工作来看，这样的区分是根本不成立的。</p>
+<h4 id="目标"><a class="markdownIt-Anchor" href="#目标"></a> 目标</h4>
+<p>所有这些决策的终极目标是什么呢？一个好的软件设计的终极目标是什么呢？</p>
+<p><strong>软件架构的终极目标是，用最小的人力成本来满足构建和维护该系统的需求。</strong></p>
+<p>一个软件架构的优劣，可以用它满足用户需求所需要的成本来衡量。如果该成本很低，并且在系统的整个生命周期内一直都能维持这样的低成本，那么这个系统的设计就是优良的。如果该系统的每次发布都会提升下一次变更的成本，那么这个设计就是不好的。就这么简单。</p>
+<h3 id="02-两个纬度的价值"><a class="markdownIt-Anchor" href="#02-两个纬度的价值"></a> 0.2 两个纬度的价值</h3>
+<p>对于每个软件系统，我们都可以通过行为和架构两个维度来体现它的实际价值。软件研发人员应该确保自己的系统在这两个维度上的实际价值都能长时间维持在很高的状态。不幸的是，他们往往只关注一个维度，而忽视了另外一个维度。更不幸的是，他们常常关注的还是错误的维度，这导致了系统的价值最终趋降为零。</p>
+<h4 id="行为价值"><a class="markdownIt-Anchor" href="#行为价值"></a> 行为价值</h4>
+<p>软件系统的行为是其最直观的价值维度。程序员的工作就是让机器按照某种指定方式运转，给系统的使用者创造或者提高利润。程序员们为了达到这个目的，往往需要帮助系统使用者编写一个对系统功能的定义，也就是需求文档。然后，程序员们再把需求文档转化为实际的代码。</p>
+<h4 id="架构价值"><a class="markdownIt-Anchor" href="#架构价值"></a> 架构价值</h4>
+<p>软件系统的第二个价值维度，就体现在软件这个英文单词上：software。“ware”的意思是“产品”，而“soft”的意思，不言而喻，是指软件的灵活性。</p>
+<p>软件系统必须保持灵活。软件发明的目的，就是让我们可以以一种灵活的方式来改变机器的工作行为。对机器上那些很难改变的工作行为，我们通常称之为硬件（hardware）。</p>
+<p>为了达到软件的本来目的，软件系统必须够“软”——也就是说，软件应该容易被修改。当需求方改变需求的时候，随之所需的软件变更必须可以简单而方便地实现。变更实施的难度应该和变更的范畴（scope）成等比关系，而与变更的具体形状（shape）无关。</p>
+<p>需求变更的范畴与形状，是决定对应软件变更实施成本高低的关键。这就是为什么有的代码变更的成本与其实现的功能改变不成比例。这也是为什么第二年的研发成本比第一年的高很多，第三年又比第二年更高。</p>
+<p>从系统相关方（Stakeholder）的角度来看，他们所提出的一系列的变更需求的范畴都是类似的，因此成本也应该是固定的。但是从研发者角度来看，系统用户持续不断的变更需求就像是要求他们不停地用一堆不同形状的拼图块，拼成一个新的形状。整个拼图的过程越来越困难，因为现有系统的形状永远和需求的形状不一致。</p>
+<p>我们在这里使用了“形状”这个词，这可能不是该词的标准用法，但是其寓意应该很明确。毕竟，软件工程师们经常会觉得自己的工作就是把方螺丝拧到圆螺丝孔里面。</p>
+<p>问题的实际根源当然就是系统的架构设计。如果系统的架构设计偏向某种特定的“形状”，那么新的变更就会越来越难以实施。所以，好的系统架构设计应该尽可能做到与“形状”无关。</p>
+<h2 id="一-编程范式"><a class="markdownIt-Anchor" href="#一-编程范式"></a> 一、编程范式</h2>
+<h3 id="11-结构化编程structured-programming"><a class="markdownIt-Anchor" href="#11-结构化编程structured-programming"></a> 1.1 结构化编程（Structured Programming）</h3>
+<p><strong>结构化编程是对程序控制权的直接转移的限制。</strong></p>
+<p>结构化编程范式促使我们先将一段程序递归降解为一系列可证明的小函数，然后再编写相关的测试来试图证明这些函数是错误的。如果这些测试无法证伪这些函数，那么我们就可以认为这些函数是足够正确的，进而推导整个程序是正确的。</p>
+<h3 id="12-面向对象编程object-oriented-programming"><a class="markdownIt-Anchor" href="#12-面向对象编程object-oriented-programming"></a> 1.2 面向对象编程（Object Oriented Programming）</h3>
+<p><strong>面向对象编程是对程序控制权的间接转移的限制。</strong></p>
+<ul>
+<li>
+<p>封装（Encapsulation），封装也叫作信息隐藏或者数据访问保护。类通过暴露有限的访问接口，授权外部仅能通过类提供的方式来访问内部信息或者数据。它需要编程语言提供权限访问控制语法来支持，例如 Java 中的 private、protected、public 关键字。封装特性存在的意义，一方面是保护数据不被随意修改，提高代码的可维护性；另一方面是仅暴露有限的必要接口，提高类的易用性。</p>
+</li>
+<li>
+<p>抽象（Abstraction），封装主要讲如何隐藏信息、保护数据，那抽象就是讲如何隐藏方法的具体实现，让使用者只需要关心方法提供了哪些功能，不需要知道这些功能是如何实现的。抽象可以通过接口类或者抽象类来实现，但也并不需要特殊的语法机制来支持。抽象存在的意义，一方面是提高代码的可扩展性、维护性，修改实现不需要改变定义，减少代码的改动范围；另一方面，它也是处理复杂系统的有效手段，能有效地过滤掉不必要关注的信息。</p>
+</li>
+<li>
+<p>继承（Inheritance），继承是用来表示类之间的 is-a 关系，比如猫是一种哺乳动物。从继承关系上来讲，继承可以分为两种模式，单继承和多继承。单继承表示一个子类只继承一个父类，多继承表示一个子类可以继承多个父类，比如猫既是哺乳动物，又是爬行动物。为了实现继承这个特性，编程语言需要提供特殊的语法机制来支持。继承主要是用来解决代码复用的问题。</p>
+</li>
+<li>
+<p>多态（Polymorphism），多态是指子类可以替换父类，在实际的代码运行过程中，调用子类的方法实现。多态这种特性也需要编程语言提供特殊的语法机制来实现，比如继承、接口类、duck-typing。多态可以提高代码的扩展性和复用性，是很多设计模式、设计原则、编程技巧的代码实现基础。</p>
+</li>
+<li>
+<p>Clean Architecture 里面指出<strong>多态是函数指针的一种应用</strong>。并用getchar()举了例子。然后用多态的实现引出了“依赖反转”的例子。</p>
+</li>
+</ul>
+<p>面向对象编程就是以多态为手段来对源代码中的依赖关系进行控制的能力，这种能力让软件架构师可以构建出某种插件式架构，让高层策略性组件与底层实现性组件相分离，底层组件可以被编译成插件，实现独立于高层组件的开发和部署。</p>
+<h3 id="13-函数式编程functional-programming"><a class="markdownIt-Anchor" href="#13-函数式编程functional-programming"></a> 1.3 函数式编程（Functional Programming）</h3>
+<p><strong>函数式编程是对程序中赋值操作的限制</strong></p>
+<ul>
+<li>本质：函数式编程中的函数这个术语不是指计算机中的函数（实际上是Subroutine），而是指数学中的函数，即自变量的映射。也就是说一个函数的值仅决定于函数参数的值，不依赖其他状态。比如sqrt(x)函数计算x的平方根，只要x不变，不论什么时候调用，调用几次，值都是不变的。</li>
+<li>在函数式语言中，函数作为一等公民，可以在任何地方定义，在函数内或函数外，可以作为函数的参数和返回值，可以对函数进行组合。</li>
+<li>纯函数式编程语言中的变量也不是命令式编程语言中的变量，即存储状态的单元，而是代数中的变量，即一个值的名称。变量的值是不可变的（immutable），也就是说不允许像命令式编程语言中那样多次给一个变量赋值。比如说在命令式编程语言我们写“x = x + 1”，这依赖可变状态的事实，拿给程序员看说是对的，但拿给数学家看，却被认为这个等式为假。</li>
+<li>由于命令式编程语言也可以通过类似函数指针的方式来实现高阶函数，函数式的最主要的好处主要是不可变性带来的。没有可变的状态，函数就是引用透明（Referential transparency）的和没有副作用（No Side Effect）。</li>
+<li>一个好处是，函数即不依赖外部的状态也不修改外部的状态，函数调用的结果不依赖调用的时间和位置，这样写的代码容易进行推理，不容易出错。这使得单元测试和调试都更容易。</li>
+<li>不变性带来的另一个好处是：由于（多个线程之间）不共享状态，不会造成资源争用(Race condition)，也就不需要用锁来保护可变状态，也就不会出现死锁，这样可以更好地并发起来，尤其是在对称多处理器（SMP）架构下能够更好地利用多个处理器（核）提供的并行处理能力。</li>
+</ul>
+<h3 id="14-总结"><a class="markdownIt-Anchor" href="#14-总结"></a> 1.4 总结</h3>
+<p>这三个编程范式都对程序员提出了新的限制。每个范式都约束了某种编写代码的方式，没有一个编程范式是在增加新能力。<br>
+也就是说，我们过去50年学到的东西主要是——什么不应该做。</p>
+<p>我们必须面对这种不友好的现实：软件构建并不是一个迅速前进的技术。今天构建软件的规则和1946年阿兰·图灵写下电子计算机的第一行代码时是一样的。尽管工具变化了，硬件变化了，但是软件编程的核心没有变。<br>
+总而言之，软件，或者说计算机程序无一例外是由顺序结构、分支结构、循环结构和间接转移这几种行为组合而成的，无可增加，也缺一不可。</p>
+<h2 id="二-设计原则-solid-原则"><a class="markdownIt-Anchor" href="#二-设计原则-solid-原则"></a> 二、设计原则 - SOLID 原则</h2>
+<h3 id="21-单一职责srp"><a class="markdownIt-Anchor" href="#21-单一职责srp"></a> 2.1 单一职责（SRP）</h3>
+<p>Single Responsibility Principle，一个类只负责完成一个职责或者功能。不要设计大而全的类，要设计粒度小、功能单一的类。单一职责原则是为了实现代码高内聚、低耦合，提高代码的复用性、可读性、可维护性。</p>
+<p>Clean Architecture 中用一个 “工资管理程序中的 Employee 类”举例，这类里面分别有三个函数</p>
+<ul>
+<li>calculatePay （）函数是由财务部门制定的，他们负责向 CFO 汇报。</li>
+<li>reportHours （）函数是由人力资源部门制定并使用的，他们负责向 coo汇报。</li>
+<li>save （）函数是由 DBA 制定的，他们负责向 CTO 汇报。</li>
+</ul>
+<p>这三个函数由三个部门负责，然后修改其中一个就会影响其他两个，这个类很显然违背了单一职责。</p>
+<p>总结为：<strong>“任何一个软件模块都应该只对某一类行为者负责”</strong></p>
+<p>单一职责原则主要讨论的是函数和类之间的关系——但是它在两个讨论层面上会以不同的形式出现。在组件层面，我们可以将其称为共同闭包原则（Common Closure Principle），在软件架构层面，它则是用于奠定架构边界的变更轴心（Axis of Change）。</p>
+<p>facade 模式：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-736908d53218edd8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="facade_mode.png"></p>
+<h3 id="22-开闭原则ocp"><a class="markdownIt-Anchor" href="#22-开闭原则ocp"></a> 2.2 开闭原则（OCP）</h3>
+<p>Open Closed Principle，对扩展开放，对修改关闭。添加一个新的功能，应该是通过在已有代码基础上扩展代码（新增模块、类、方法、属性等），而非修改已有代码（修改模块、类、方法、属性等）的方式来完成。关于定义，我们有两点要注意。第一点是，开闭原则并不是说完全杜绝修改，而是以最小的修改代码的代价来完成新功能的开发。第二点是，同样的代码改动，在粗代码粒度下，可能被认定为“修改”；在细代码粒度下，可能又被认定为“扩展”。</p>
+<ul>
+<li>
+<p>一个设计良好的计算机系统应该在不需要修改的前提下就可以轻易被扩展。</p>
+</li>
+<li>
+<p>一个好的软件架构设计师会努力将旧代码的修改需求量降至最小，甚至为0。</p>
+</li>
+</ul>
+<h3 id="23-里式替换lsp"><a class="markdownIt-Anchor" href="#23-里式替换lsp"></a> 2.3 里式替换（LSP）</h3>
+<p>Liskov Substitution Principle 子类对象（object of subtype/derived class）能够替换程序（program）中父类对象（object of base/parent class）出现的任何地方，并且保证原来程序的逻辑行为（behavior）不变及正确性不被破坏。举例： 是拿父类的单元测试去验证子类的代码。如果某些单元测试运行失败，就有可能说明，子类的设计实现没有完全地遵守父类的约定，子类有可能违背了里式替换原则。</p>
+<h3 id="24-接口隔离原则isp"><a class="markdownIt-Anchor" href="#24-接口隔离原则isp"></a> 2.4 接口隔离原则（ISP)</h3>
+<p>Interface Segregation Principle 调用方不应该被强迫依赖它不需要的接口。</p>
+<p>回顾一下ISP最初的成因：在一般情况下，任何层次的软件设计如果依赖于不需要的东西，都会是有害的。从源代码层次来说，<strong>这样的依赖关系会导致不必要的重新编译和重新部署</strong>，对更高层次的软件架构设计来说，问题也是类似的。</p>
+<p>本章所讨论的设计原则告诉我们：任何层次的软件设计如果依赖了它并不需要的东西，就会带来意料之外的麻烦。</p>
+<p><strong>Bad Case:</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2c2ed731a470f6cd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="isp1.png"></p>
+<p><strong>Good Case:</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fb32dba139193d2e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="isp2.png"></p>
+<h3 id="25-依赖反转原则dip"><a class="markdownIt-Anchor" href="#25-依赖反转原则dip"></a> 2.5 依赖反转原则（DIP)</h3>
+<p>Dependency Inversion Principle 高层模块（high-level modules）不要依赖低层模块（low-level）。高层模块和低层模块应该通过抽象（abstractions）来互相依赖。除此之外，抽象（abstractions）不要依赖具体实现细节（details），具体实现细节（details）依赖抽象（abstractions）。举例 Tomcat和Java WebApp，两者都依赖同一个“抽象”，也就是 Servlet 规范。</p>
+<p><strong>依赖反转原则（DIP）主要想告诉我们的是，如果想要设计一个灵活的系统，在源代码层次的依赖关系中就应该多引用抽象类型，而非具体实现。</strong></p>
+<p>同理，在应用DIP时，我们也不必考虑稳定的操作系统或者平台设施，因为这些系统接口很少会有变动。我们主要应该关注的是软件系统内部那些会经常变动的（volatile）具体实现模块，这些模块是不停开发的，也就会经常出现变更。</p>
+<p>我们每次修改抽象接口的时候，一定也会去修改对应的具体实现。但反过来，当我们修改具体实现时，却很少需要去修改相应的抽象接口。所以我们可以认为<strong>接口比实现更稳定</strong>。</p>
+<p>依赖反转原则归结为具体编码守则：</p>
+<ul>
+<li>
+<p>应在代码中多使用抽象接口，尽量避免使用那些多变的具体实现类。这条守则适用于所有编程语言，无论静态类型语言还是动态类型语言。同时，对象的创建过程也应该受到严格限制，对此，我们通常会选择用抽象工厂（abstract factory）这个设计模式。</p>
+</li>
+<li>
+<p>不要在具体实现类上创建衍生类。上一条守则虽然也隐含了这层意思，但它还是值得被单独拿出来做一次详细声明。在静态类型的编程语言中，<strong>继承关系是所有一切源代码依赖关系中最强的、最难被修改的，所以我们对继承的使用应该格外小心</strong>。即使是在稍微便于修改的动态类型语言中，这条守则也应该被认真考虑。(我理解这里说的意思不是说不能使用继承，而已谨慎使用继承，防止杂乱无章的继承)</p>
+</li>
+<li>
+<p>不要覆盖（override）包含具体实现的函数。调用包含具体实现的函数通常就意味着引入了源代码级别的依赖。即使覆盖了这些函数，我们也无法消除这其中的依赖——这些函数继承了那些依赖关系。在这里，控制依赖关系的唯一办法，就是创建一个抽象函数，然后再为该函数提供多种具体实现。</p>
+</li>
+<li>
+<p><strong>应避免在代码中写入与任何具体实现相关的名字，或者是其他容易变动的事物的名字</strong>。这基本上是DIP原则的另外一个表达方式。比如mysql存储、redis存储。</p>
+</li>
+</ul>
+<p>控制反转（IOC）: Inversion Of Control，框架提供了一个可扩展的代码骨架，用来组装对象、管理整个执行流程。程序员利用框架进行开发的时候，只需要往预留的扩展点上，添加跟自己业务相关的代码，就可以利用框架来驱动整个程序流程的执行。</p>
+<p>依赖注入（DI）: Dependency Injection 依赖注入的方式来将依赖的类对象传递进来，这样就提高了代码的扩展性，我们可以灵活地替换依赖的类</p>
+<h2 id="三-组件"><a class="markdownIt-Anchor" href="#三-组件"></a> 三、组件</h2>
+<h3 id="31-什么是组件"><a class="markdownIt-Anchor" href="#31-什么是组件"></a> 3.1 什么是组件</h3>
+<p>组件是软件的部署单元，是整个软 系统在部署过程中可以独立完成部署的最小实体。例如，对于 Java 来说 它的组件是 jar 文件。而在 Rub 它们是 ge。<a target="_blank" rel="noopener" href="http://xn--3ds.Net">在.Net</a> 中，它们 DLL 文件。总而言之 在编译运行语言中，组件是二进制文件的集合。而在解释运行语言中 组件则是 组源代码文件的集合。无采用什么编程语言来开发软件，组件都是该软件在部署过程中的最小单元。</p>
+<p>大型软件系统的构建过程与建筑物修建很类似，都是由一个个小组件组成的。所以，<strong>如果说SOLID原则是用于指导我们如何将砖块砌成墙与房间的，那么组件构建原则就是用来指导我们如何将这些房间组合成房子的</strong>。</p>
+<h3 id="32-组件的聚合"><a class="markdownIt-Anchor" href="#32-组件的聚合"></a> 3.2 组件的聚合</h3>
+<h4 id="321-复用发布等同原则rep原则-release-reuse-equivalency-principle"><a class="markdownIt-Anchor" href="#321-复用发布等同原则rep原则-release-reuse-equivalency-principle"></a> 3.2.1 复用/发布等同原则（REP原则 - Release Reuse Equivalency Principle）</h4>
+<p><strong>软件复用的最粒度应等同于其发布的最小粒度</strong></p>
+<p>从软件设计和架构设计的角度来看，REP原则就是指组件中的类与模块必须是彼此紧密相关的，也就是说，一个组件不能由毫无关联类和模块组成，它们之间应该有一个共同的主题或者大方向。</p>
+<p>但从另外一个视角来看，这个原则就没那么简单了 因为根据该原则，一个组件中包含的类与模块还应该是可以同时发布的这意味着它 享相同的版本号与版本跟踪，并且包含在相同的发行文档中，这些都应该同时对该组件的作者和用户有意义。</p>
+<p>这层建议听起来就比较薄弱了，毕竟说某项事情的安排应该“合理”的确有点假大空，不着实该建议薄弱的原因是它没有清晰地定义出到底应该如何将类与模块组合成组件 但即使这样， REP 原则的重要性也是毋庸置疑的，因为违反这个原则的后果事实上很明显定会有人抱怨你的安排“不合理”，并进而对你的软件架构能力产生怀疑</p>
+<h4 id="322-共同闭包原则-ccp原则-the-common-closure-principle"><a class="markdownIt-Anchor" href="#322-共同闭包原则-ccp原则-the-common-closure-principle"></a> 3.2.2 共同闭包原则 （CCP原则 - the Common Closure Principle）</h4>
+<p><strong>我们应该将那些会同时修改，并且为相同目的而修改的类放到同一个组件中，而将不会同时修改，并且不会为了相同目的而修改的那些类放到不同的组件中。</strong></p>
+<p>对大部分应用程序来说，可维护性的重要性要远远高于可复用性。如果某程序中的代码必须要进行某些变更，那么这些变更最好都体现在同一个组件中，而不是分布于很多个组件中[4]。因为如果这些变更都集中在同一个组件中，我们就只需要重新部署该组件，其他组件则不需要被重新验证、重新部署了。</p>
+<p>总而言之，CCP的主要作用就是提示我们要将所有可能会被一起修改的类集中在一处。也就是说，如果两个类紧密相关，不管是源代码层面还是抽象理念层面，永远都会一起被修改，那么它们就应该被归属为同一个组件。通过遵守这个原则，我们就可以有效地降低因软件发布、验证及部署所带来的工作压力。</p>
+<p>另外，CCP原则和开闭原则（OCP）也是紧密相关的。CCP讨论的就是OCP中所指的“闭包”。OCP原则认为一个类应该便于扩展，而抗拒修改。由于100%的闭包是不可能的，所以我们只能战略性地选择闭包范围。在设计类的时候，我们需要根据历史经验和预测能力，尽可能地将需要被一同变更的那些点聚合在一起。</p>
+<p>对于CCP，我们还可以在此基础上做进一步的延伸，即可以将某一类变更所涉及的所有类尽量聚合在一处。这样当此类变更出现时，我们就可以最大限度地做到使该类变更只影响到有限的相关组件。</p>
+<h5 id="ccp与srp原则的相似点"><a class="markdownIt-Anchor" href="#ccp与srp原则的相似点"></a> CCP与SRP原则的相似点:</h5>
+<p>如前所述，CCP原则实际上就是SRP原则的组件版。在SRP原则的指导下，我们将会把变更原因不同的函数放入不同的类中。而CCP原则指导我们应该将变更原因不同的类放入不同的组件中。简而言之，这两个原则都可以用以下一句简短的话来概括：<br>
+<strong>“将由于相同原因而修改，并且需要同时修改的东西放在一起。将由于不同原因而修改，并且不同时修改的东西分开”</strong>。</p>
+<h4 id="323-共同复用原则crp原则-composite-reuse-principle"><a class="markdownIt-Anchor" href="#323-共同复用原则crp原则-composite-reuse-principle"></a> 3.2.3 共同复用原则（CRP原则 - Composite Reuse Principle）</h4>
+<p><strong>不要强迫一个组件的用户依赖他们不需要的东西。</strong></p>
+<p>共同复用原则（CRP）是另外一个帮助我们决策类和模块归属于哪一个组件的原则。该原则建议我们将经常共同复用的类和模块放在同一个组件中。<br>
+通常情况下，类很少会被单独复用。更常见的情况是多个类同时作为某个可复用的抽象定义被共同复用。CRP原则指导我们将这些类放在同一个组件中，而在这样的组件中，我们应该预见到会存在着许多互相依赖的类。</p>
+<p>一个简单的例子就是容器类与其相关的遍历器类，这些类之间通常是紧密相关的，一般会被共同复用，因此应该被放置在同一个组件中。<br>
+但是CRP的作用不仅是告诉我们应该将哪些类放在一起，更重要的是要告诉我们应该将哪些类分开。因为每当一个组件引用了另一个组件时，就等于增加了一条依赖关系。虽然这个引用关系仅涉及被引用组件中的一个类，但它所带来的依赖关系丝毫没有减弱。也就是说，引用组件已然依赖于被引用组件了。</p>
+<p>由于这种依赖关系的存在，每当被引用组件发生变更时，引用它的组件一般也需要做出相应的变更。即使它们不需要进行代码级的变更，一般也免不了需要被重新编译、验证和部署。哪怕引用组件根本不关心被引用组件中的变更，也要如此。</p>
+<p>因此，当我们决定要依赖某个组件时，最好是实际需要依赖该组件中的每个类。换句话说，我们希望组件中的所有类是不能拆分的，即不应该出现别人只需要依赖它的某几个类而不需要其他类的情况。否则，我们后续就会浪费不少时间与精力来做不必要的组件部署。</p>
+<p>因此在CRP原则中，关于哪些类不应该被放在一起的建议是其更为重要的内容。简而言之，CRP原则实际上是在指导我们：不是紧密相连的类不应该被放在同一个组件里。</p>
+<h5 id="与isp原则的关系"><a class="markdownIt-Anchor" href="#与isp原则的关系"></a> 与ISP原则的关系</h5>
+<p>CRP原则实际上是ISP原则的一个普适版。ISP原则是建议我们不要依赖带有不需要的函数的类，而CRP原则则是建议我们不要依赖带有不需要的类的组件。上述两条建议实际上都可以用下面一句话来概括：<strong>“不要依赖不需要用到的东西。”</strong></p>
+<h4 id="324-三个规则的treadeoff"><a class="markdownIt-Anchor" href="#324-三个规则的treadeoff"></a> 3.2.4 三个规则的Treadeoff</h4>
+<p>下面我们来看下图。这是一张组件聚合三大原则的张力图，图的边线所描述的是忽视对应原则的后果。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c38b621f4aee1208.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="tradeoff.jpg"></p>
+<p>￼<br>
+简而言之，只关注REP和CRP的软件架构师会发现，即使是简单的变更也会同时影响到许多组件。相反，如果软件架构师过于关注CCP和REP，则会导致很多不必要的发布。</p>
+<p>优秀的软件架构师应该能在上述三角张力区域中定位一个最适合目前研发团队状态的位置，同时也会根据时间不停调整。例如在项目早期，CCP原则会比REP原则更重要，因为在这一阶段研发速度比复用性更重要。</p>
+<p>一般来说，一个软件项目的重心会从该三角区域的右侧开始，先期主要牺牲的是复用性。然后，随着项目逐渐成熟，其他项目会逐渐开始对其产生依赖，项目重心就会逐渐向该三角区域的左侧滑动。换句话说，一个项目在组件结构设计上的重心是根据该项目的开发时间和成熟度不断变动的，我们对组件结构的安排主要与项目开发的进度和它被使用的方式有关，与项目本身功能的关系其实很小。</p>
+<h3 id="33-组件耦合"><a class="markdownIt-Anchor" href="#33-组件耦合"></a> 3.3 组件耦合</h3>
+<h4 id="331-无依赖环原则adp-acyclic-dependency-principle"><a class="markdownIt-Anchor" href="#331-无依赖环原则adp-acyclic-dependency-principle"></a> 3.3.1 无依赖环原则（ADP - Acyclic Dependency Principle）</h4>
+<p><strong>组件依赖关系图中不应该出现环。</strong></p>
+<h4 id="332-自上而下的设计"><a class="markdownIt-Anchor" href="#332-自上而下的设计"></a> 3.3.2 自上而下的设计</h4>
+<p>组件结构图是不可能自上而下被设计出来的。它必须随着软件系统的变化而变化和扩张，而不可能在系统构建的最初就被完美设计出来。</p>
+<p>事实上，组件依赖结构图并不是用来描述应用程序功能的，它更像是应用程序在构建性与维护性方面的一张地图。这就是组件的依赖结构图不能在项目的开始阶段被设计出来的原因——当时该项目还没有任何被构建和维护的需要，自然也就不需要一张地图来指引。然而，随着早期被设计并实现出来的模块越来越多，项目中就逐渐出现了要对组件依赖关系进行管理的需求，以此来预防“一觉醒来综合征”的爆发。除此之外，我们还希望将项目变更所影响的范围被限制得越小越好，因此需要应用单一职责原则（SRP）和共同闭包原则（CCP）来将经常同时被变更的类聚合在一起。</p>
+<p>组件结构图中的一个重要目标是指导如何隔离频繁的变更。我们不希望那些频繁变更的组件影响到其他本来应该很稳定的组件，例如，我们通常不会希望无关紧要的GUI变更影响到业务逻辑组件；我们也不希望对报表的增删操作影响到其高阶策略。出于这样的考虑，软件架构师们才有必要设计并且铸造出一套组件依赖关系图来，以便将稳定的高价值组件与常变的组件隔离开，从而起到保护作用。</p>
+<p>另外，随着应用程序的增长，创建可重用组件的需要也会逐渐重要起来。这时CRP又会开始影响组件的组成。最后当循环依赖出现时，随着无循环依赖原则（ADP）的应用，组件依赖关系会产生相应的抖动和扩张。</p>
+<p>如果我们在设计具体类之前就来设计组件依赖关系，那么几乎是必然要失败的。因为在当下，我们对项目中的共同闭包一无所知，也不可能知道哪些组件可以复用，这样几乎一定会创造出循环依赖的组件。因此，<strong>组件依赖关系是必须要随着项目的逻辑设计一起扩张和演进的。</strong></p>
+<h4 id="333-稳定依赖原则-sdp-stabilization-dependency-principle"><a class="markdownIt-Anchor" href="#333-稳定依赖原则-sdp-stabilization-dependency-principle"></a> 3.3.3 稳定依赖原则 （SDP - Stabilization Dependency Principle）</h4>
+<p><strong>依赖关系必须要指向更稳定的方向。</strong> 例如：我们Service Mesh 的控制面氛围<code>cp_http</code>、<code>cp_core</code> 两个模块，<code>cp_core</code> 是比较核心比较稳定的模块，改动也会比较少。<code>cp_http</code>是非核心模块，改动了个会比较多。</p>
+<p>设计这件事不可能是完全静止的，如果我们要让一个设计是可维护的，那么其中某些部分就必须是可变的。通过遵守共同闭包原则（CCP），我们可以创造出对某些变更敏感，对其他变更不敏感的组件。这其中的一些组件在设计上就已经是考虑了易变性，预期它们会经常发生变更的。</p>
+<p>任何一个我们预期会经常变更的组件都不应该被一个难于修改的组件所依赖，否则这个多变的组件也将会变得非常难以被修改。</p>
+<p>这就是软件开发的困难之处，我们精心设计的一个容易被修改的组件很可能会由于别人的一条简单依赖而变得非常难以被修改。即使该模块中没有一行代码需要被修改，但是整个模块在被修改时所面临的挑战性也已经存在了。而通过遵守稳定依赖原则（SDP），我们就可以确保自己设计中那些容易变更的模块不会被那些难于修改的组件所依赖。<br>
+稳定性</p>
+<p>我们该如何定义“稳定性”呢？譬如说将一个硬币立起来放，你认为它会处于一个稳定的位置吗？当然不会。然而，除非受到外界因素干扰，否则硬币本身可以在这个位置保持相当长的一段时间。因此稳定性应该与变更的频繁度没有直接关系。但问题是硬币并没有倒，为什么我们却并不认为它是稳定的呢？</p>
+<p>下面来看看Webster在线字典中的描述：稳定指的是“很难移动”。所以稳定性应该与变更所需的工作量有关。例如，硬币是不稳定的，因为只需要很小的动作就可以推倒它，而桌子则是非常稳定的，因为将它掀翻需要很大的动作。</p>
+<p>但如果将这套理论关联到软件开发的问题上呢？软件组件的变更困难度与很多因素有关，例如代码的体量大小、复杂度、清晰度等。我们在这里会忽略这些因素，只集中讨论一个特别的因素——让软件组件难于修改的一个最直接的办法就是让很多其他组件依赖于它。带有许多入向依赖关系的组件是非常稳定的，因为它的任何变更都需要应用到所有依赖它的组件上。</p>
+<h4 id="334-稳定抽象原则sap-stable-abstractions-principle"><a class="markdownIt-Anchor" href="#334-稳定抽象原则sap-stable-abstractions-principle"></a> 3.3.4 稳定抽象原则（SAP - Stable Abstractions Principle）</h4>
+<p><strong>一个组件的抽象化程度应该与其稳定性保持一致。</strong></p>
+<h5 id="335-高阶策略应该放在哪里"><a class="markdownIt-Anchor" href="#335-高阶策略应该放在哪里"></a> 3.3.5 高阶策略应该放在哪里？</h5>
+<p>在一个软件系统中，总有些部分是不应该经常发生变更的。这些部分通常用于表现该系统的高阶架构设计及一些策略相关的高阶决策。我们不想让这些业务决策和架构设计经常发生变更，因此这些代表了系统高阶策略的组件应该被放到稳定组件（I=0）中，而不稳定的组件（I=1）中应该只包含那些我们想要快速和方便修改的部分。</p>
+<p>然而，如果我们将高阶策略放入稳定组件中，那么用于描述那些策略的源代码就很难被修改了。这可能会导致整个系统的架构设计难于被修改。如何才能让一个无限稳定的组件（I=0）接受变更呢？开闭原则（OCP）为我们提供了答案。这个原则告诉我们：创造一个足够灵活、能够被扩展，而且不需要修改的类是可能的，而这正是我们所需要的。哪一种类符合这个原则呢？答案是抽象类。</p>
+<h5 id="336-稳定抽象原则简介"><a class="markdownIt-Anchor" href="#336-稳定抽象原则简介"></a> 3.3.6 稳定抽象原则简介</h5>
+<p>稳定抽象原则（SAP）为组件的稳定性与它的抽象化程度建立了一种关联。一方面，该原则要求稳定的组件同时应该是抽象的，这样它的稳定性就不会影响到扩展性。另一方面，该原则也要求一个不稳定的组件应该包含具体的实现代码，这样它的不稳定性就可以通过具体的代码被轻易修改。</p>
+<p>因此，如果一个组件想要成为稳定组件，那么它就应该由接口和抽象类组成，以便将来做扩展。如此，这些既稳定又便于扩展的组件可以被组合成既灵活又不会受到过度限制的架构。</p>
+<p>将SAP与SDP这两个原则结合起来，就等于组件层次上的DIP。因为SDP要求的是让依赖关系指向更稳定的方向，而SAP则告诉我们稳定性本身就隐含了对抽象化的要求，即依赖关系应该指向更抽象的方向。</p>
+<p>然而，DIP毕竟是与类这个层次有关的原则——对类来说，设计是没有灰色地带的。一个类要么是抽象类，要么就不是。SDP与SAP这对原则是应用在组件层面上的，我们要允许一个组件部分抽象，部分稳定。</p>
+<h2 id="四-软件架构"><a class="markdownIt-Anchor" href="#四-软件架构"></a> 四、软件架构</h2>
+<h3 id="41-什么是软件架构软件架构师工作内容是什么"><a class="markdownIt-Anchor" href="#41-什么是软件架构软件架构师工作内容是什么"></a> 4.1 什么是软件架构？软件架构师工作内容是什么？</h3>
+<p>首先，<strong>软件架构师自身需要是程序员</strong>，并且必须一直坚持做一线程序员，绝对不要听从那些说应该让软件架构师从代码中解放出来以专心解决高阶问题的伪建议。不是这样的！软件架构师其实应该是能力最强的一群程序员，他们通常会在自身承接编程任务的同时，逐渐引导整个团队向一个<strong>能够最大化生产力的系统设计方向前进</strong>。也许软件架构师生产的代码量不是最多的，但是他们必须不停地承接编程任务。如果不亲身承受因系统设计而带来的麻烦，就体会不到设计不佳所带来的痛苦，接着就会逐渐迷失正确的设计方向。</p>
+<p>软件系统的架构质量是由它的构建者所决定的，<strong>软件架构这项工作的实质就是规划如何将系统切分成组件，并安排好组件之间的排列关系，以及组件之间互相通信的方式</strong>。</p>
+<p>而设计软件架构的目的，<strong>就是为了在工作中更好地对这些组件进行研发、部署、运行以及维护</strong>。</p>
+<p>软件架构设计的主要目标是支撑软件系统的全生命周期，设计良好的架构可以让系统便于理解、易于修改、方便维护，并且能轻松部署。软件架构的终极目标就是最大化程序员的生产力，同时最小化系统的总运营成本。</p>
+<h4 id="411-开发development"><a class="markdownIt-Anchor" href="#411-开发development"></a> 4.1.1 开发（development）</h4>
+<p>一个开发起来很困难的软件系统一般不太可能会有一个长久、健康的生命周期，所以系统架构的作用就是要方便其开发团队对它的开发。</p>
+<p>这意味着，不同的团队结构应该采用不同的架构设计。一方面，对于一个只有五个开发人员的小团队来说，他们完全可以非常高效地共同开发一个没有明确定义组件和接口的单体系统（monolithic system）。事实上，<strong>这样的团队可能会发现软件架构在早期开发中反而是一种障碍</strong>。这可能就是为什么许多系统都没有设计一个良好架构的原因，因为它们的开发团队起初都很小，<strong>不需要设计一些上层建筑来限制某些事情</strong>。</p>
+<h4 id="412-部署deployment"><a class="markdownIt-Anchor" href="#412-部署deployment"></a> 4.1.2 部署（Deployment）</h4>
+<p>为了让开发成为有效的工作，软件系统就必须是可部署的。在通常情况下，一个系统的部署成本越高，可用性就越低。因此，实现一键式的轻松部署应该是我们设计软件架构的一个目标。</p>
+<p>但很不幸，我们在系统的早期开发中很少会考虑部署策略方面的事情，这常常会导致一些易于开发、难于部署的系统架构。</p>
+<p>例如，在系统的早期开发中，开发人员可能会决定采用某种“微服务架构”。这种架构的组件边界清晰，接口稳定，非常利于开发。但当我们实际部署这种系统时，就会发现其微服务的数量已经大到令人望而生畏，而配置这些微服务之间的连接以及启动时间都会成为系统出错的主要来源。</p>
+<p>如果软件架构师早先就考虑到这些部署问题，可能就会有意地减少微服务的数量，采用进程内部组件与外部服务混合的架构，以及更加集成式的连接管理方式。</p>
+<h4 id="413-维护maintenance"><a class="markdownIt-Anchor" href="#413-维护maintenance"></a> 4.1.3 维护（Maintenance）</h4>
+<p>在软件系统的所有方面中，维护所需的成本是最高的。满足永不停歇的新功能需求，以及修改层出不穷的系统缺陷这些工作将会占去绝大部分的人力资源。</p>
+<p>系统维护的主要成本集中在“探秘”和“风险”这两件事上。其中，“探秘（spelunking）”的成本主要来自我们对于现有软件系统的挖掘，目的是确定新增功能或被修复问题的最佳位置和最佳方式。而“风险（risk）”，则是指当我们进行上述修改时，总是有可能衍生出新的问题，这种可能性就是风险成本。</p>
+<p>我们可以通过精雕细琢的架构设计极大地降低这两项成本。通过将系统切分为组件，并使用稳定的接口将组件隔离，我们可以将未来新功能的添加方式明确出来，并大幅度地降低在修改过程中对系统其他部分造成伤害的可能性。</p>
+<h4 id="413-保持可选项"><a class="markdownIt-Anchor" href="#413-保持可选项"></a> 4.1.3 保持可选项</h4>
+<p>正如我们在之前章节中所说的，软件有行为价值与架构价值两种价值。这其中的第二种价值又比第一种更重要，因为它正是软件之所以“软”的原因。<br>
+软件被发明出来就是因为我们需要一种灵活和便捷的方式来改变机器的行为。而软件的灵活性则取决于系统的整体状况、组件的布置以及组件之间的连接方式。<br>
+我们让软件维持“软”性的方法就是尽可能长时间地保留尽可能多的可选项。那么到底哪些选项是我们应该保留的？它们就是那些无关紧要的细节设计。<br>
+基本上，所有的软件系统都可以降解为策略与细节这两种主要元素。策略体现的是软件中所有的业务规则与操作过程，因此它是系统真正的价值所在。<br>
+而细节则是指那些让操作该系统的人、其他系统以及程序员们与策略进行交互，但是又不会影响到策略本身的行为。它们包括I/O设备、数据库、Web系统、服务器、框架、交互协议等。<br>
+软件架构师的目标是创建一种系统形态，该形态会以策略为最基本的元素，并让细节与策略脱离关系，以允许在具体决策过程中推迟或延迟与细节相关的内容。<br>
+如果在开发高层策略时有意地让自己摆脱具体细节的纠缠，我们就可以将与具体实现相关的细节决策推迟或延后，因为越到项目的后期，<strong>我们就拥有越多的信息来做出合理的决策</strong>。<br>
+<strong>一个优秀的软件架构师应该致力于最大化可选项数量。</strong></p>
+<h3 id="42-独立性"><a class="markdownIt-Anchor" href="#42-独立性"></a> 4.2 独立性</h3>
+<h4 id="421-用例"><a class="markdownIt-Anchor" href="#421-用例"></a> 4.2.1 用例</h4>
+<p>我们先来看第一个支持目标：用例。我们认为一个系统的架构必须能支持其自身的设计意图。也就是说，如果某系统是一个购物车应用，那么该系统的架构就必须非常直观地支持这类应用可能会涉及的所有用例。事实上，这本来就是架构师们首先要关注的问题，也是架构设计过程中的首要工作。<strong>软件的架构必须为其用例提供支持</strong>。</p>
+<p>然而，正如我们前面所讨论的，一个系统的架构对其行为并没有太大的影响。虽然架构也可以限制一些行为选项，但这种影响所涉及的范围并不大。<strong>一个设计良好的架构在行为上对系统最重要的作用就是明确和显式地反映系统设计意图的行为，使其在架构层面上可见。</strong></p>
+<h4 id="422-运行"><a class="markdownIt-Anchor" href="#422-运行"></a> 4.2.2 运行</h4>
+<p>架构在支持系统运行方面扮演着更实际的角色。如果某个系统每秒要处理100000个用户，该系统的架构就必须能支持这种级别的吞吐量和响应时间。同样的，如果某个系统要在毫秒级的时间内完成对大数据仓库的查询，那么该系统的架构也必须能支持这类操作。</p>
+<h4 id="423-开发"><a class="markdownIt-Anchor" href="#423-开发"></a> 4.2.3 开发</h4>
+<p>系统的架构在支持开发环境方面当然扮演着重要的角色，我们在这里可以引述一下康威定律：</p>
+<blockquote>
+<p>任何一个组织在设计系统时，往往都会复制出一个与该组织内沟通结构相同的系统。</p>
+</blockquote>
+<p>一个由多个不同目标的团队协作开发的系统必须具有相应的软件架构。这样，这些团队才可以各自独立地完成工作，不会彼此干扰。这就需要恰当地将系统切分为一系列隔离良好、可独立开发的组件。然后才能将这些组件分配给不同的团队，各自独立开发。</p>
+<h4 id="424-部署"><a class="markdownIt-Anchor" href="#424-部署"></a> 4.2.4 部署</h4>
+<p>一个系统的架构在其部署的便捷性方面起到的作用也是非常大的。设计目标一定是实现“立刻部署”。一个设计良好的架构通常不会依赖于成堆的脚本与配置文件，也不需要用户手动创建一堆“有严格要求”的目录与文件。总而言之，一个设计良好的软件架构可以让系统在构建完成之后立刻就能部署。</p>
+<p>同样的，这些也需要通过正确地划分、隔离系统组件来实现，这其中包括开发一些主组件，让它们将整个系统黏合在一起，正确地启动、连接并监控每个组件。同样的，这些也需要通过正确地划分、隔离系统组件来实现，这其中包括开发一些主组件，让它们将整个系统黏合在一起，正确地启动、连接并监控每个组件。</p>
+<h4 id="425-保留可选项"><a class="markdownIt-Anchor" href="#425-保留可选项"></a> 4.2.5 保留可选项</h4>
+<p>一个设计良好的架构应该充分地权衡以上所述的所有关注点，然后尽可能地形成一个可以同时满足所有需求的组件结构。这说起来还挺容易的，不是吗？</p>
+<p>事实上，要实现这种平衡是很困难的。主要问题是，我们在大部分时间里是无法预知系统的所有用例的，而且我们也无法提前预知系统的运行条件、开发团队的结构，或者系统的部署需求。更糟糕的是，就算我们能提前了解这些需求，随着系统生命周期的演进，这些需求也会不可避免地发生变化。总而言之，事实上我们想要达到的目标本身就是模糊多变的。真实的世界就这样。</p>
+<p>然而，我们还是可以通过采用一些实现成本较低的架构原则来做一些事情的。虽然我们没有清晰的目标，但采用一些原则总是有助于提前解决一些平衡问题。通过遵守这些原则可以帮助我们正确地将系统划分为一些隔离良好的组件，以便尽可能长时间地为我们的未来保留尽可能多的可选项。</p>
+<p><strong>一个设计良好的架构应该通过保留可选项的方式，让系统在任何情况下都能方便地做出必要的变更。</strong></p>
+<h4 id="426-按层解耦"><a class="markdownIt-Anchor" href="#426-按层解耦"></a> 4.2.6 按层解耦</h4>
+<p>一个系统可以被解耦成若干个水平分层——UI界面、应用独有的业务逻辑、领域普适的业务逻辑、数据库等。</p>
+<h4 id="427-用例的解耦"><a class="markdownIt-Anchor" href="#427-用例的解耦"></a> 4.2.7 用例的解耦</h4>
+<p>如果我们按照变更原因的不同对系统进行解耦，就可以持续地向系统内添加新的用例，而不会影响旧有的用例。如果我们同时对支持这些用例的UI和数据库也进行了分组，那么每个用例使用的就是不同面向的UI与数据库，因此增加新用例就更不太可能会影响旧有的用例了。</p>
+<h4 id="428-结构模式"><a class="markdownIt-Anchor" href="#428-结构模式"></a> 4.2.8 结构模式</h4>
+<p>SOA还是但单体？一个设计良好的架构总是要为将来多留一些可选项，这里所讨论的解耦模式也是这样的可选项之一。</p>
+<h4 id="429-开发独立性"><a class="markdownIt-Anchor" href="#429-开发独立性"></a> 4.2.9 开发独立性</h4>
+<p>我们进行架构设计的第三个目标是支持系统的开发。很显然，当系统组件之间被高度解耦之后，开发团队之间的干扰就大大减少了。譬如说，如果系统的业务逻辑与其UI无关，那么专注于UI开发的团队就不会对专注于业务逻辑开发的团队造成多大的影响。同样的，如果系统的各个用例之间相互隔离，那么专注于addOrder用例的团队就不太可能干扰到负责deleteOrder用例的团队。</p>
+<h4 id="4210-部署独立性"><a class="markdownIt-Anchor" href="#4210-部署独立性"></a> 4.2.10 部署独立性</h4>
+<p>这种按用例和水平分层的解耦也会给系统的部署带来极大的灵活性。实际上，如果解耦工作做得好，我们甚至可以在系统运行过程中热切换（hot-swap）其各个分层实现和具体用例。在这种情况下，我们增加新用例就只需要在系统中添加一些新的jar文件，或启动一些服务即可，其他部分将完全不受影响。</p>
+<h4 id="4211-重复"><a class="markdownIt-Anchor" href="#4211-重复"></a> 4.2.11 重复</h4>
+<p>架构师们经常会钻进一个牛角尖——害怕重复。</p>
+<p>当然，重复在软件行业里一般来说都是坏事。我们不喜欢重复的代码，当代码真的出现重复时，我们经常会感到作为一个专业人士，自己是有责任减少或消除这种重复的。</p>
+<p>但是重复也存在着很多种情况。其中有些是真正的重复，在这种情况下，每个实例上发生的每项变更都必须同时应用到其所有的副本上。重复的情况中也有一些是假的，或者说这种重复只是表面性的。如果有两段看起来重复的代码，它们走的是不同的演进路径，也就是说它们有着不同的变更速率和变更缘由，那么这两段代码就不是真正的重复。等我们几年后再回过头来看，可能就会发现这两段代码是非常不一样的了。</p>
+<h4 id="4212-再谈解耦模式"><a class="markdownIt-Anchor" href="#4212-再谈解耦模式"></a> 4.2.12 再谈解耦模式</h4>
+<p>让我们再回到解耦模式的问题上来。按水平分层和用例解耦一个系统有很多种方式。例如，我们可以在源码层次上解耦、二进制层次上解耦（部署），也可以在执行单元层次上解耦（服务）。</p>
+<ul>
+<li>源码层次：我们可以控制源代码模块之间的依赖关系，以此来实现一个模块的变更不会导致其他模块也需要变更或重新编译（例如Ruby Gem）。在这种解耦模式下，系统所有的组件都会在同一个地址空间内执行，它们会通过简单的函数调用来进行彼此的交互。这类系统在运行时是作为一个执行文件被统一加载到计算机内存中的。人们经常把这种模式叫作单体结构。</li>
+<li>部署层次：我们可以控制部署单元（譬如jar文件、DLL、共享库等）之间的依赖关系，以此来实现一个模块的变更不会导致其他模块的重新构建和部署。在这种模式下，大部分组件可能还是依然运行在同一个地址空间内，通过彼此的函数调用通信。但有一些别的组件可能会运行在同一个处理器下的其他进程内，使用跨进程通信，或者通过socket或共享内存进行通信。这里最重要的是，这些组件的解耦产生出许多可独立部署的单元，例如jar文件、Gem文件和DLL等。</li>
+<li>服务层次：我们可以将组件间的依赖关系降低到数据结构级别，然后仅通过网络数据包来进行通信。这样系统的每个执行单元在源码层和二进制层都会是一个独立的个体，它们的变更不会影响其他地方（例如，常见的服务或微服务就都是如此的）。</li>
+</ul>
+<h3 id="43-划分边界"><a class="markdownIt-Anchor" href="#43-划分边界"></a> 4.3 划分边界</h3>
+<p>软件架构设计本身就是一门划分边界的艺术。边界的作用是将软件分割成各种元素，以便约束边界两侧之间的依赖关系。其中有一些边界是在项目初期——甚至在编写代码之前——就已经划分好，而其他的边界则是后来才划分的。在项目初期划分这些边界的目的是方便我们尽量将一些决策延后进行，并且确保未来这些决策不会对系统的核心业务逻辑产生干扰。</p>
+<p>正如我们之前所说，架构师们所追求的目标是最大限度地降低构建和维护一个系统所需的人力资源。那么我们就需要了解一个系统最消耗人力资源的是什么？答案是系统中存在的耦合——尤其是那些过早做出的、不成熟的决策所导致的耦合。</p>
+<p>那么，怎样的决策会被认为是过早且不成熟的呢？答案是那些决策与系统的业务需求（也就是用例）无关。这部分决策包括我们要采用的框架、数据库、Web服务器、工具库、依赖注入等。在一个设计良好的系统架构中，这些细节性的决策都应该是辅助性的，可以被推迟的。一个设计良好的系统架构不应该依赖于这些细节，而应该尽可能地推迟这些细节性的决策，并致力于将这种推迟所产生的影响降到最低。</p>
+<h4 id="431-插件式架构"><a class="markdownIt-Anchor" href="#431-插件式架构"></a> 4.3.1 插件式架构</h4>
+<p>综上所述，我们似乎可以基于数据库和GUI这两个为例来建立一种向系统添加其他组件的模式。这种模式与支持第三方插件的系统模式是一样的。</p>
+<p>事实上，软件开发技术发展的历史就是一个如何想方设法方便地增加插件，从而构建一个可扩展、可维护的系统架构的故事。系统的核心业务逻辑必须和其他组件隔离，保持独立，而这些其他组件要么是可以去掉的，要么是有多种实现的。</p>
+<p>由于用户界面在这个设计中是以插件形式存在的，所以我们可以用插拔的方式切换很多不同类型的用户界面。可以是基于Web模式的、基于客户端/服务器端模式的、基于SOA模式的、基于命令行模式的或者基于其他任何类型的用户界面技术的。</p>
+<p>数据库也类似。因为我们现在是将数据库作为插件来对待的，所以它就可以被替换成不同类型的SQL数据库、NoSQL数据库，甚至基于文件系统的数据库，以及未来任何一种我们认为有必要发展的数据库技术。<br>
+当然，这些替换工作可能并不轻松，如果我们的系统一开始是按照Web方式部署的，那么为它写一个客户端/服务器端模型的UI插件就可能会比较困难一些。很可能业务逻辑与新UI之间的交互方式也要重新修改。但即使这样，插件式架构也至少为我们提供了这种实现的可能性。</p>
+<h4 id="433-插件式架构好处"><a class="markdownIt-Anchor" href="#433-插件式架构好处"></a> 4.3.3 插件式架构好处</h4>
+<p>将系统设计为插件式架构，就等于构建起了一面变更无法逾越的防火墙。换句话说，只要GUI是以插件形式插入系统的业务逻辑中的，那么GUI这边所发生的变更就不会影响系统的业务逻辑。</p>
+<p>所以，边界线也应该沿着系统的变更轴来画。也就是说，位于边界线两侧的组件应该以不同原因、不同速率变化着。</p>
+<p>一个系统的GUI与业务逻辑的变更原因、变更速率显然是不同的，所以二者中间应该有一条边界线。同样的，一个系统的业务逻辑与依赖注入框架之间的变更原因和变更速度也会不同，它们之间也应该画边界线。</p>
+<p><strong>这其实就是单一职责原则（SRP）的具体实现，SRP的作用就是告诉我们应该在哪里画边界线。</strong></p>
+<h3 id="44-边界剖析"><a class="markdownIt-Anchor" href="#44-边界剖析"></a> 4.4 边界剖析</h3>
+<h4 id="441-跨边界调用"><a class="markdownIt-Anchor" href="#441-跨边界调用"></a> 4.4.1 跨边界调用</h4>
+<p>在运行时，跨边界调用指的是边界线一侧的函数调用另一侧的函数，并同时传递数据的行为。构造合理的跨边界调用需要我们对源码中的依赖关系进行合理管控。</p>
+<p>为什么需要管控源码中的依赖关系呢？因为当一个模块的源码发生变更时，其他模块的源码也可能会随之发生变更或重新编译，并需要重新部署。所谓划分边界，就是指在这些模块之间建立这种针对变更的防火墙。</p>
+<h4 id="442-本地进程"><a class="markdownIt-Anchor" href="#442-本地进程"></a> 4.4.2 本地进程</h4>
+<p>系统架构还有一个更明显的物理边界形式，那就是本地进程。本地进程一般是由命令行启动或其他等价的系统调用产生的。本地进程往往运行于单个处理器或多核系统的同一组处理器上，但它们拥有各自不同的地址空间。一般来说，现有的内存保护机制会使这些进程无法共享其内存，但它们通常可以用某种独立的内存区域来实现共享。</p>
+<p>最常见的情况是，这些本地进程会用socket来实现彼此的通信。当然，它们也可以通过一些操作系统提供的方式来通信，例如共享邮件或消息队列。</p>
+<h4 id="443-服务"><a class="markdownIt-Anchor" href="#443-服务"></a> 4.4.3 服务</h4>
+<p>系统架构中最强的边界形式就是服务。一个服务就是一个进程，它们通常由命令行环境或其他等价的系统调用来产生。服务并不依赖于具体的运行位置，两个互相通信的服务既可以处于单一物理处理器或多核系统的同一组处理器上，也可以彼此位于不同的处理器上。服务会始终假设它们之间的通信将全部通过网络进行。</p>
+<p>服务之间的跨边界通信相对于函数调用来说，速度是非常缓慢的，其往返时间可以从几十毫秒到几秒不等。因此我们在划分架构边界时，一定要尽可能地控制通信次数。在这个层次上通信必须能够适应高延时情况。</p>
+<p>除此之外，我们可以在服务层次上使用与本地进程相同的规则。也就是让较低层次服务成为较高层次服务的“插件”。为此，我们要确保高层服务的源码中没有包含任何与低层服务相关的物理信息（例如URI）。</p>
+<h3 id="45-策略和层次"><a class="markdownIt-Anchor" href="#45-策略和层次"></a> 4.5 策略和层次</h3>
+<p>本质上，所有的软件系统都是一组策略语句的集合。是的，可以说计算机程序不过就是一组仔细描述如何将输入转化为输出的策略语句的集合。<br>
+在大多数非小型系统（nontrivial system）中，整体业务策略通常都可以被拆解为多组更小的策略语句。一部分策略语句专门用于描述计算部分的业务逻辑，另一部分策略语句则负责描述计算报告的格式。除此之外，可能还会有一些用于描述如何校验输入数据的策略。<br>
+软件架构设计的工作重点之一就是，将这些策略彼此分离，然后将它们按照变更的方式进行重新分组。其中变更原因、时间和层次相同的策略应该被分到同一个组件中。反之，变更原因、时间和层次不同的策略则应该分属于不同的组件。</p>
+<h4 id="451-层次"><a class="markdownIt-Anchor" href="#451-层次"></a> 4.5.1 层次</h4>
+<p>我们对“层次”是严格按照“输入与输出之间的距离”来定义的。也就是说，一条策略距离系统的输入/输出越远，它所属的层次就越高。而直接管理输入/输出的策略在系统中的层次是最低的。</p>
+<h3 id="46-业务逻辑"><a class="markdownIt-Anchor" href="#46-业务逻辑"></a> 4.6 业务逻辑</h3>
+<p>严格地讲，<strong>业务逻辑就是程序中那些真正用于赚钱或省钱的业务逻辑与过程</strong>。更严格地讲，无论这些业务逻辑是在计算机上实现的，还是人工执行的，它们在省钱/赚钱上的作用都是一样的。</p>
+<h4 id="461-业务实体"><a class="markdownIt-Anchor" href="#461-业务实体"></a> 4.6.1 业务实体</h4>
+<p>业务实体实际上就是计算机系统中的一种对象，这种对象中包含了一系列用于操作关键数据的业务逻辑。这些实体对象要么直接包含关键业务数据，要么可以很容易地访问这些数据。业务实体的接口层则是由那些实现关键业务逻辑、操作关键业务数据的函数组成的。</p>
+<h4 id="462-用例"><a class="markdownIt-Anchor" href="#462-用例"></a> 4.6.2 用例</h4>
+<p>并不是所有的业务逻辑都是一个纯粹的业务实体。例如，有些业务逻辑是通过定义或限制自动化系统的运行方式来实现赚钱或省钱的业务的。这些业务逻辑就不能靠人工来执行，它们只有在作为自动化系统的一部分时才有意义。</p>
+<h3 id="47-尖叫的软件架构"><a class="markdownIt-Anchor" href="#47-尖叫的软件架构"></a> 4.7 尖叫的软件架构</h3>
+<h4 id="471-架构设计的主题"><a class="markdownIt-Anchor" href="#471-架构设计的主题"></a> 4.7.1 架构设计的主题</h4>
+<p>软件的系统架构应该为该系统的用例提供支持。这就像住宅和图书馆的建筑计划满篇都在非常明显地凸显这些建筑的用例一样，软件系统的架构设计图也应该非常明确地凸显该应用程序会有哪些用例。</p>
+<p>架构设计不是（或者说不应该是）与框架相关的，这件事不应该是基于框架来完成的。对于我们来说，框架只是一个可用的工具和手段，而不是一个架构所规范的内容。如果我们的架构是基于框架来设计的，它就不能基于我们的用例来设计了。</p>
+<h4 id="472-架构设计的核心目标"><a class="markdownIt-Anchor" href="#472-架构设计的核心目标"></a> 4.7.2 架构设计的核心目标</h4>
+<p>一个良好的架构设计应该围绕着用例来展开，这样的架构设计可以在脱离框架、工具以及使用环境的情况下完整地描述用例。这就好像一个住宅建筑设计的首要目标应该是满足住宅的使用需求，而不是确保一定要用砖来构建这个房子。架构师应该花费很多精力来确保该架构的设计在满足用例需要的情况下，尽可能地允许用户能自由地选择建筑材料（砖头、石料或者木材）。</p>
+<p>而且，良好的架构设计应该尽可能地允许用户推迟和延后决定采用什么框架、数据库、Web服务以及其他与环境相关的工具。框架应该是一个可选项，良好的架构设计应该允许用户在项目后期再决定是否采用Rails、Spring、Hibernate、Tomcat、MySQL这些工具。同时，良好的架构设计还应该让我们很容易改变这些决定。总之，良好的架构设计应该只关注用例，并能将它们与其他的周边因素隔离。</p>
+<h4 id="473-框架是工具不是生活信条"><a class="markdownIt-Anchor" href="#473-框架是工具不是生活信条"></a> 4.7.3 框架是工具不是生活信条</h4>
+<p>当然，框架通常可以是非常强大、非常有用的。但框架作者往往对自己写出的框架有着极深的信念，他们所写出来的使用手册一般都是从如何成为该框架的虔诚信徒的角度来描绘如何使用这个框架的。甚至这些框架的使用者所写的教程也会出现这种传教士模式。他们会告诉你某个框架是能包揽一切、超越一切、解决一切问题的存在。</p>
+<p>这不应该成为你的观点。</p>
+<p>我们一定要带着怀疑的态度审视每一个框架。是的，采用框架可能会很有帮助，但采用它们的成本呢？我们一定要懂得权衡如何使用一个框架，如何保护自己。无论如何，<strong>我们需要仔细考虑如何能保持对系统用例的关注，避免让框架主导我们的架构设计</strong>。</p>
+<h4 id="474-可测试的框架设计"><a class="markdownIt-Anchor" href="#474-可测试的框架设计"></a> 4.7.4 可测试的框架设计</h4>
+<p>如果系统架构的所有设计都是围绕着用例来展开的，并且在使用框架的问题上保持谨慎的态度，那么我们就应该可以在不依赖任何框架的情况下针对这些用例进行单元测试。另外，我们在运行测试的时候不应该运行Web服务，也不应该需要连接数据库。我们测试的应该只是一个简单的业务实体对象，没有任何与框架、数据库相关的依赖关系。总而言之，我们应该通过用例对象来调度业务实体对象，确保所有的测试都不需要依赖框架。<br>
+本章小结</p>
+<h3 id="48-整洁架构"><a class="markdownIt-Anchor" href="#48-整洁架构"></a> 4.8 整洁架构</h3>
+<p>在过去的几十年中，我们曾见证过一系列关于系统架构的想法被提出，列举如下。</p>
+<ul>
+<li>六边形架构（Hexagonal Architecture）（也称为端口与适配器架构，Ports and Adpaters）：该架构由Alistair Cockburn首先提出。Steve Freeman和Nat Pryce在他们合写的著作Growing Object Oriented Software with Tests一书中对该架构做了隆重的推荐。</li>
+<li>DCI架构：由James Coplien和Trygve Reenskaug首先提出。</li>
+<li>BCE架构：由Ivar Jacobson在他的Object Oriented Software Engineering:A Use-Case Driven Approach一书中首先提出。</li>
+</ul>
+<p>虽然这些架构在细节上各有不同，但总体来说是非常相似的。它们都具有同一个设计目标：按照不同关注点对软件进行切割。也就是说，这些架构都会将软件切割成不同的层，至少有一层是只包含该软件的业务逻辑的，而用户接口、系统接口则属于其他层。</p>
+<p>按照这些架构设计出来的系统，通常都具有以下特点。</p>
+<ul>
+<li>独立于框架：这些系统的架构并不依赖某个功能丰富的框架之中的某个函数。框架可以被当成工具来使用，但不需要让系统来适应框架。</li>
+<li>可被测试：这些系统的业务逻辑可以脱离UI、数据库、Web服务以及其他的外部元素来进行测试。</li>
+<li>独立于UI：这些系统的UI变更起来很容易，不需要修改其他的系统部分。例如，我们可以在不修改业务逻辑的前提下将一个系统的UI由Web界面替换成命令行界面。</li>
+<li>独立于数据库：我们可以轻易将这些系统使用的Oracle、SQL Server替换成Mongo、BigTable、CouchDB之类的数据库。因为业务逻辑与数据库之间已经完成了解耦。</li>
+<li>独立于任何外部机构：这些系统的业务逻辑并不需要知道任何其他外部接口的存在。</li>
+</ul>
+<p>下面我们要通过下图将<strong>上述所有架构的设计理念综合成为一个独立的理念：整洁架构</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-129e4afc2e66c860.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="clean.png"></p>
+<h4 id="481-依赖关系规则"><a class="markdownIt-Anchor" href="#481-依赖关系规则"></a> 4.8.1  依赖关系规则</h4>
+<p>图中的同心圆分别代表了软件系统中的不同层次，通常越靠近中心，其所在的软件层次就越高。基本上，外层圆代表的是机制，内层圆代表的是策略。</p>
+<p>当然这其中有一条贯穿整个架构设计的规则，即它的依赖关系规则：</p>
+<p><strong>“源码中的依赖关系必须只指向同心圆的内层，即由低层机制指向高层策略。”</strong></p>
+<p>换句话说，就是任何属于内层圆中的代码都不应该牵涉外层圆中的代码，尤其是内层圆中的代码不应该引用外层圆中代码所声明的名字，包括函数、类、变量以及一切其他有命名的软件实体。</p>
+<p>同样的道理，外层圆中使用的数据格式也不应该被内层圆中的代码所使用，尤其是当数据格式是由外层圆的框架所生成时。总之，我们不应该让外层圆中发生的任何变更影响到内层圆的代码。</p>
+<h4 id="482-一个场景应用场景"><a class="markdownIt-Anchor" href="#482-一个场景应用场景"></a> 4.8.2 一个场景应用场景</h4>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ad1cd828a469b39d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="sence.png"></p>
+<h3 id="49-展示器和谦卑对象"><a class="markdownIt-Anchor" href="#49-展示器和谦卑对象"></a> 4.9 展示器和谦卑对象</h3>
+<p>我们引入了展示器（presenter）的概念，展示器实际上是采用谦卑对象（humble object）模式的一种形式，这种设计模式可以很好地帮助识别和保护系统架构的边界。事实上，第22章所介绍的整洁架构中就充满了大量谦卑对象的实现体。</p>
+<h4 id="491-谦卑对象模式"><a class="markdownIt-Anchor" href="#491-谦卑对象模式"></a> 4.9.1 谦卑对象模式</h4>
+<p>谦卑对象模式[11]最初的设计目的是帮助单元测试的编写者区分容易测试的行为与难以测试的行为，并将它们隔离。其设计思路非常简单，就是将这两类行为拆分成两组模块或类。其中一组模块被称为谦卑（Humble）组，包含了系统中所有难以测试的行为，而这些行为已经被简化到不能再简化了。另一组模块则包含了所有不属于谦卑对象的行为。</p>
+<p>例如，GUI通常是很难进行单元测试的，因为让计算机自行检视屏幕内容，并检查指定元素是否出现是非常难的事情。然而，GUI中的大部分行为实际上是很容易被测试的。这时候，我们就可以利用谦卑对象模式将GUI的这两种行为拆分成展示器与视图两部分。</p>
+<h4 id="492-展示器与视图"><a class="markdownIt-Anchor" href="#492-展示器与视图"></a> 4.9.2  展示器与视图</h4>
+<p>视图部分属于难以测试的谦卑对象。这种对象的代码通常应该越简单越好，它只应负责将数据填充到GUI上，而不应该对数据进行任何处理。</p>
+<p>展示器则是可测试的对象。展示器的工作是负责从应用程序中接收数据，然后按视图的需要将这些数据格式化，以便视图将其呈现在屏幕上。例如，如果应用程序需要在屏幕上展示一个日期，那么它传递给展示器的应该是一个Date对象。然后展示器会将该对象格式化成所需的字符串形式，并将其填充到视图模型中。</p>
+<p>如果应用程序需要在屏幕上展示金额，那么它应该将Currency对象传递给展示器。展示器随后会将这个对象按所需的小数位数进行格式化，并加上对应的货币标识符，形成一个字符串存放在视图模型中。如果需要将负数金额显示成红色，那么该视图模型中就应该有一个简单的布尔值被恰当地设置。</p>
+<p>另外，应用程序在屏幕上的每个按钮都应该有其对应的名称，这些名称也是由展示器在视图模型中设置的。如果某个按钮需要变灰，展示器就应该将相应的开关变量设置成对应的布尔值。同样，菜单中每个菜单项所显示的值，也应该是一个个由展示器加载到视图模型中的字符串。应用程序在屏幕上显示的每个单选项、多选项以及文本框的名字也都如此，在视图模型中都有相应的字符串和布尔值可供展示器做对应的设置。即使屏幕上要加载的是一个数值表，展示器也应该负责把这些数值格式化成具有表格属性的字符串，以供视图使用。</p>
+<p>总而言之，应用程序所能控制的、要在屏幕上显示的一切东西，都应该在视图模型中以字符串、布尔值或枚举值的形式存在。然后，视图部分除了加载视图模型所需要的值，不应该再做任何其他事情。因此，我们才能说视图是谦卑对象。</p>
+<h4 id="493-测试与架构"><a class="markdownIt-Anchor" href="#493-测试与架构"></a> 4.9.3 测试与架构</h4>
+<p>众所周知，强大的可测试性是一个架构的设计是否优秀的显著衡量标准之一。谦卑对象模式就是这方面的一个非常好的例子。我们将系统行为分割成可测试和不可测试两部分的过程常常就也定义了系统的架构边界。展示器与视图之间的边界只是多种架构边界中的一种，另外还有许多其他边界。</p>
+<h4 id="494-数据库网关"><a class="markdownIt-Anchor" href="#494-数据库网关"></a> 4.9.4 数据库网关</h4>
+<p>对于用例交互器（interactor）与数据库中间的组件，我们通常称之为数据库网关[13]。这些数据库网关本身是一个多态接口，包含了应用程序在数据库上所要执行的创建、读取、更新、删除等所有操作。例如，如果应用程序需要知道所有昨天登录系统的用户的姓，那么 UserGateway 接口就应该包含一个 getLastNamesOfUsers WhoLoggedInAfter方法，接收一个Date参数，并返回一个包含姓的列表。<br>
+另外，我们之前说过，SQL不应该出现在用例层的代码中，所以这部分的功能就需要通过网关接口来提供，而这些接口的实现则要由数据库层的类来负责。显然，这些实现也应该都属于谦卑对象，它们应该只利用SQL或其他数据库提供的接口来访问所需要的数据。与之相反，交互器则不属于谦卑对象，因为它们封装的是特定应用场景下的业务逻辑。不过，交互器尽管不属于谦卑对象，却是可测试的，因为数据库网关通常可以被替换成对应的测试桩和测试替身类。</p>
+<h4 id="495-数据映射器"><a class="markdownIt-Anchor" href="#495-数据映射器"></a> 4.9.5 数据映射器</h4>
+<p>让我们继续数据库方面的话题，现在我们来思考一下Hibernate这类的ORM框架应该属于系统架构中的哪一层呢？<br>
+首先，我们要弄清楚一件事：对象关系映射器（ORM）事实上是压根就不存在的。道理很简单，对象不是数据结构。至少从用户的角度来说，对象内部的数据应该都是私有的，不可见的，用户在通常情况下只能看到对象的公有函数。因此从用户角度来说，对象是一些操作的集合，而不是简单的数据结构体。</p>
+<p>与之相反，数据结构体则是一组公开的数据变量，其中不包含任何行为信息。所以ORM更应该被称为“数据映射器”，因为它们只是将数据从关系型数据库加载到了对应的数据结构中。</p>
+<p>那么，这样的ORM系统应该属于系统架构中的哪一层呢？当然是数据库层。ORM其实就是在数据库和数据库网关接口之间构建了另一种谦卑对象的边界。</p>
+<h4 id="496-服务监听器"><a class="markdownIt-Anchor" href="#496-服务监听器"></a> 4.9.6 服务监听器</h4>
+<p>如果我们的应用程序需要与其他服务进行某种交互，或者该应用本身要提供某一套服务，我们在相关服务的边界处也会看到谦卑对象模式吗？</p>
+<p>答案是肯定的。我们的应用程序会将数据加载到简单的数据结构中，并将这些数据结构跨边界传输给那些能够将其格式化并传递其他外部服务的模块。在输入端，服务监听器会负责从服务接口中接收数据，并将其格式化成该应用程序易用的格式。总而言之，上述数据结构可以进行跨服务边界的传输。</p>
+<h4 id="497-不完全边界"><a class="markdownIt-Anchor" href="#497-不完全边界"></a> 4.9.7 不完全边界</h4>
+<p>构建完整的架构边界是一件很耗费成本的事。在这个过程中，需要为系统设计双向的多态边界接口，用于输入和输出的数据结构，以及所有相关的依赖关系管理，以便将系统分割成可独立编译与部署的组件。这里会涉及大量的前期工作，以及大量的后期维护工作。</p>
+<p>在很多情况下，一位优秀的架构师都会认为设计架构边界的成本太高了——但为了应对将来可能的需要，通常还是希望预留一个边界。</p>
+<p>但这种预防性设计在敏捷社区里是饱受诟病的，因为它显然违背了YAGNI原则（“You Aren’t Going to Need It”，意即“不要预测未来的需要”）。然而，架构师的工作本身就是要做这样的预见性设计，这时候，我们就需要引入不完全边界（partial boundary）的概念了。</p>
+<h4 id="498-单向边界"><a class="markdownIt-Anchor" href="#498-单向边界"></a> 4.9.8 单向边界</h4>
+<p>在设计一套完整的系统架构边界时，往往需要用反向接口来维护边界两侧组件的隔离性。而且，维护这种双向的隔离性，通常不会是一次性的工作，它需要我们持续地长期投入资源维护下去。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bcdaa537e032f923.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="danxiang.png"></p>
+<p>在图中，你会看到一个临时占位的，将来可被替换成完整架构边界的更简单的结构。这个结构采用了传统的策略模式（strategy pattern）。如你所见，其Client使用的是一个由ServiceImpl类实现的ServiceBoundary接口。<br>
+￼</p>
+<p>很明显，上述设计为未来构建完整的系统架构边界打下了坚实基础。为了未来将Client与ServiceImpl隔离，必要的依赖反转已经做完了。同时，我们也能清楚地看到，图中的虚线箭头代表了未来有可能很快就会出现的隔离问题。由于没有采用双向反向接口，这部分就只能依赖开发者和架构师的自律性来保证组件持久隔离了。</p>
+<h4 id="499-门户模式"><a class="markdownIt-Anchor" href="#499-门户模式"></a> 4.9.9 门户模式</h4>
+<p>下面，我们再来看一个更简单的架构边界设计：采用门户模式（facade pattern），其架构如图所示。在这种模式下，我们连依赖反转的工作都可以省了。这里的边界将只能由Facade类来定义，这个类的背后是一份包含了所有服务函数的列表，它会负责将Client的调用传递给对Client不可见的服务函数。<br>
+￼<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-c9993498ceb02d3e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="menhu.png"></p>
+<p>但需要注意的是，在该设计中，Client会传递性地依赖于所有的Service类。在静态类型语言中，这就意味着对Service类的源码所做的任何修改都会导致Client的重新编译。另外，我们应该也能想象得到为这种结构建立反向通道是多容易的事。</p>
+<h3 id="410-层次与边界"><a class="markdownIt-Anchor" href="#410-层次与边界"></a> 4.10 层次与边界</h3>
+<p>为什么要将一个极为简单的、在Kornshell中只需200行代码就能写完的小程序扩展成具有这些系统架构边界的复杂程序？</p>
+<p>我们设计这个例子的目的就是为了证明架构边界可以存在于任何地方。作为架构师，我们必须要小心审视究竟在什么地方才需要设计架构边界。另外，我们还必须弄清楚完全实现这些边界将会带来多大的成本。</p>
+<p>同时，我们也必须要了解如果事先忽略了这些边界，后续再添加会有多么困难——哪怕有覆盖广泛的测试，严加小心的重构也于事无补。</p>
+<p>所以作为架构师，我们应该怎么办？这个问题恐怕没有答案。一方面，就像一些很聪明的人多年来一直告诉我们的那样，不应该将未来的需求抽象化。这就是YAGNI原则：“You aren’t going to need it”，臆想中的需求事实上往往是不存在的。这是一句饱含智慧的建议，因为过度的工程设计往往比工程设计不足还要糟糕。但另一方面，如果我们发现自己在某个位置确实需要设置一个架构边界，却又没有事先准备的时候，再添加边界所需要的成本和风险往往是很高的。</p>
+<p>现实就是这样。作为软件架构师，我们必须有一点未卜先知的能力。有时候要依靠猜测——当然还要用点脑子。软件架构师必须仔细权衡成本，决定哪里需要设计架构边界，以及这些地方需要的是完整的边界，还是不完全的边界，还是可以忽略的边界。</p>
+<p>而且，这不是一次性的决定。我们不能在项目开始时就决定好哪里需要设计边界，哪里不需要。相反，架构师必须持续观察系统的演进，时刻注意哪里可能需要设计边界，然后仔细观察这些地方会由于不存在边界而出现哪些问题。</p>
+<p>当出现问题时，我们还需要权衡一下实现这个边界的成本，并拿它与不实现这个边界的成本对比——这种对比经常需要反复地进行。我们的目标是找到设置边界的优势超过其成本的拐点，那就是实现该边界的最佳时机。</p>
+<p>持之以恒，一刻也不能放松。</p>
+<h3 id="411-main组件"><a class="markdownIt-Anchor" href="#411-main组件"></a> 4.11 Main组件</h3>
+<p>Main组件也可以被视为应用程序的一个插件——这个插件负责设置起始状态、配置信息、加载外部资源，最后将控制权转交给应用程序的其他高层组件。另外，由于Main组件能以插件形式存在于系统中，因此我们可以为一个系统设计多个Main组件，让它们各自对应于不同的配置。</p>
+<p>例如，我们既可以设计专门针对开发环境的Main组件，也可以设计专门针对测试的或者生产环境的Main组件。除此之外，我们还可以针对要部署的国家、地区甚至客户设计不同的Main组件。</p>
+<p>当我们将Main组件视为一种插件时，用架构边界将它与系统其他部分隔离开这件事，在系统的配置上是不是就变得更容易了呢？</p>
+<h3 id="412-宏观和微观"><a class="markdownIt-Anchor" href="#412-宏观和微观"></a> 4.12 宏观和微观</h3>
+<p>虽然服务化可能有助于提升系统的可扩展性和可研发性，但服务本身却并不能代表整个系统的架构设计。系统的架构是由系统内部的架构边界，以及边界之间的依赖关系所定义的，与系统中各组件之间的调用和通信方式无关。</p>
+<p>一个服务可能是一个独立组件，以系统架构边界的形式隔开。一个服务也可能由几个组件组成，其中的组件以架构边界的形式互相隔离。在极端情况下[19]，客户端和服务端甚至可能会由于耦合得过于紧密而不具备系统架构意义上的隔离性。</p>
+<h3 id="413-测试边界"><a class="markdownIt-Anchor" href="#413-测试边界"></a> 4.13 测试边界</h3>
+<p>测试并不是独立于整个系统之外的，恰恰相反，它们是系统的一个重要组成部分。我们需要精心设计这些测试，才能让它们发挥验证系统稳定性和预防问题复发的作用。没有按系统组成部分来设计的测试代码，往往是非常脆弱且难以维护的。这种测试最后常常会被抛弃，因为它们终究会出问题。</p>
+<h3 id="414-整洁的嵌入式架构"><a class="markdownIt-Anchor" href="#414-整洁的嵌入式架构"></a> 4.14 整洁的嵌入式架构</h3>
+<p>嵌入式编程人员应该多学习一些非嵌入式系统的编程经验。如果你从事的是嵌入式编程工作，相信你一定会从本章的建议中得到很多启发。</p>
+<p>为了让我们的产品能长期地保持健康，请别让你的代码都变成固件。如果一个系统的代码只能在目标硬件上测试，那么它的开发过程会变得非常艰难。总之，为产品的长期健康着想而采用一套整洁的嵌入式架构是很有必要的。</p>
+<h2 id="五-实现细节"><a class="markdownIt-Anchor" href="#五-实现细节"></a> 五、实现细节</h2>
+<h3 id="51-数据库只是细节"><a class="markdownIt-Anchor" href="#51-数据库只是细节"></a> 5.1 数据库只是细节</h3>
+<p>从系统架构的角度来看，数据库并不重要——它只是一个实现细节，在系统架构中并不占据重要角色。如果就数据库与整个系统架构的关系打个比方，它们之间就好比是门把手和整个房屋架构的关系。</p>
+<p>这个比喻肯定会招来非议。相信我，这种架我吵过很多次了。所以我在这里要把话说得清楚一点：这里讨论的不是数据模型。为应用程序中的数据设计结构，对于系统架构来说当然是很重要的，但是数据库并不是数据模型。数据库只是一款软件，是用来存取数据的工具。从系统架构的角度来看，工具通常是无关紧要的——因为这只是一个底层的实现细节，一种达成目标的手段。一个优秀的架构师是不会让实现细节污染整个系统架构的。</p>
+<h4 id="511-假设磁盘不存在会怎么样"><a class="markdownIt-Anchor" href="#511-假设磁盘不存在会怎么样"></a> 5.1.1 假设磁盘不存在会怎么样？</h4>
+<p>虽然硬盘现在还是很常见，但其实已经在走下坡路了。很快它们就会和磁带、软盘、CD一样成为历史，RAM正在替代一切。</p>
+<p>现在，我们要来考虑一下：如果所有的数据都存在内存中，应该如何组织它们呢？需要按表格存储并且用SQL查询吗？需要用文件形式存储，然后按目录查找吗？</p>
+<p>当然不，我们会将数据存储为链表、树、哈希表、堆栈、队列等各种各样的数据结构，然后用指针或者引用来访问这些数据——因为这对程序员来说是最自然的方式。</p>
+<p>事实上，如果你再仔细想想，就会发现我们已经在这样做了。即使数据保存在数据库或者文件系统中，我们最终也会将其读取到内存中，并按照最方便的形式将其组织成列表、集合、堆栈、队列、树等各种数据结构，继续按文件和表格的形式来操作数据是非常少见的</p>
+<h4 id="512-实现细节"><a class="markdownIt-Anchor" href="#512-实现细节"></a> 5.1.2 实现细节</h4>
+<p>上面所说的，就是为什么我们认为数据库只是一种实现细节的原因。数据库终究只是在硬盘与内存之间相互传输数据的一种手段而已，它真的可以被认为只是一个长期存储数据的、装满字节的大桶。我们通常并不会真的以这种形式来使用数据。</p>
+<p>因此，从系统架构的视角来看，真的不应该关心数据在旋转的磁盘表面上以什么样的格式存在。实际上，系统架构应该对磁盘本身的存在完全不关心。</p>
+<p>数据的组织结构，数据的模型，都是系统架构中的重要部分，但是从磁盘上存储/读取数据的机制和手段却没那么重要。关系型数据库强制我们将数据存储成表格并且以SQL访问，主要是为了后者。<strong>总而言之，数据本身很重要，但数据库系统仅仅是一个实现细节</strong>。</p>
+<h3 id="52-web只是细节"><a class="markdownIt-Anchor" href="#52-web只是细节"></a> 5.2 web只是细节</h3>
+<p>GUI只是一个实现细节。而Web则是GUI的一种，所以也是一个实现细节。作为一名软件架构师，我们需要将这类细节与核心业务逻辑隔离开来。</p>
+<p>其实我们可以这样考虑这个问题：Web只是一种I/O设备。早在20世纪60年代，我们就已经了解编写设备无关应用程序的重要性。这种独立性的重要性至今仍然没有变化，Web也不例外。</p>
+<p>是这样的吗？有人可能会辩称Web这样的GUI是非常特殊的，它能力强大，强大到让我们追求设备无关的架构变得毫无意义。当我们考虑到JavaScript数据校验的复杂程度、可拖拽的Ajax调用，以及无数可以轻松引入的设计组件时，很容易认为追求设备无关性是不现实的。</p>
+<p>从某种程度上来说，的确如此。应用程序和GUI之间的频繁交互的确是与GUI的类型密切相关的。浏览器与Web应用之间的交互模式也的确与桌面客户端/服务器之间的交互模式区别很大。想要让浏览器上的Web操作模仿我们在UNIX中对I/O设备那样的操作，将其抽象成界面交互模型几乎是不可能的。</p>
+<p>但我们其实可以从UI和应用程序之间的另一条边界出发来进行抽象化。因为业务逻辑可以被视为是一组用例的集合。而每个用例都是以用户的身份来执行某种操作的，所以它们都可以用输入数据、处理过程以及输出数据这个流程来描述。</p>
+<p>也就是说，在UI和应用程序之间的某一点上，输入数据会被认为达到了一个完整状态，然后用例就被允许进入执行阶段了。在用例执行完之后，其生成的返回数据又继续在UI与应用程序之间传递。</p>
+<p>这样一来，完整的输入数据，以及完整的输出数据就可以被标准化为数据结构，并提供给执行用例的进程了。通过这种方法，我们就可以认为用例都是以设备无关的方式在操作I/O设备。</p>
+<h3 id="53-应用程序框架只是细节"><a class="markdownIt-Anchor" href="#53-应用程序框架只是细节"></a> 5.3 应用程序框架只是细节</h3>
+<p>应用程序框架现在非常流行，这在通常情况下是一件好事。许多框架都非常有效，非常有用，而且是免费的。<br>
+但框架并不等同于系统架构——尽管有些框架确实以此为目标。</p>
+<h4 id="531-单向婚姻"><a class="markdownIt-Anchor" href="#531-单向婚姻"></a> 5.3.1 单向婚姻</h4>
+<p>我们与框架作者之间的关系是非常不对等的。我们要采用某个框架就意味着自己要遵守一大堆约定，但框架作者却完全不需要为我们遵守什么约定。</p>
+<p>请仔细想想这一关系，当我们决定采用一个框架时，就需要完整地阅读框架作者提供的文档。在这个文档中，框架作者和框架其他用户对我们提出进行应用整合的一些建议。一般来说，这些建议就是在要求我们围绕着该框架来设计自己的系统架构。譬如，框架作者会建议我们基于框架中的基类来创建一些派生类，并在业务对象中引入一些框架的工具。框架作者还会不停地催促我们将应用与框架结合得越紧密越好。</p>
+<p>对框架作者来说，应用程序与自己的框架耦合是没有风险的。毕竟作为作者，他们对框架有绝对的控制权，强耦合是应该的。</p>
+<p>与此同时，作者当然是非常希望让我们的应用与其框架紧密结合的，因为这意味着脱离框架会很困难。作为框架作者来说，没有什么比让一堆用户心甘情愿地基于他的框架基类来构建派生类更自豪的事情了。</p>
+<p>换句话说，框架作者想让我们与框架订终身——这相当于我们要对他们的框架做一个巨大而长期的承诺，而在任何情况下框架作者都不会对我们做出同样的承诺。这种婚姻是单向的。我们要承担所有的风险，而框架作者则没有任何风险。</p>
+<h4 id="532-风险"><a class="markdownIt-Anchor" href="#532-风险"></a> 5.3.2 风险</h4>
+<p>那么我们要承担的风险究竟有哪些呢？我们可以想到的至少有以下这几项：</p>
+<ul>
+<li>
+<p>框架自身的架构设计很多时候并不是特别正确的。框架本身可能经常违反依赖关系原则。譬如，框架可能会要求我们将代码引入到业务对象中——甚至是业务实体中。框架可能会想要我们将框架耦合在最内圈代码中。而我们一旦引入，就再也不会离开该框架了，这就像戴上结婚戒指一样，从此一生不离不弃了。</p>
+</li>
+<li>
+<p>框架可能会帮助我们实现一些应用程序的早期功能，但随着产品的成熟，功能要求很可能超出框架所能提供的范围。而且随着时间的推移，我们也会发现在应用的开发过程中，自己与框架斗争的时间要比框架帮助我们的时间长得多。</p>
+</li>
+<li>
+<p>框架本身可能朝着我们不需要的方向演进。也许我们会被迫升级到一个并不需要的新版本，甚至会发现自己之前所使用的旧功能突然消失了，或悄悄改变了行为。</p>
+</li>
+<li>
+<p>未来我们可能会想要切换到一个更新、更好的框架上。</p>
+</li>
+</ul>
+<h4 id="533-解决方案"><a class="markdownIt-Anchor" href="#533-解决方案"></a> 5.3.3 解决方案</h4>
+<p>解决方案是什么呢？</p>
+<p><strong>请不要嫁给框架！</strong></p>
+<p>我们可以使用框架——但要时刻警惕，别被它拖住。我们应该将框架作为架构最外圈的一个实现细节来使用，不要让它们进入内圈。</p>
+<p>如果框架要求我们根据它们的基类来创建派生类，就请不要这样做！我们可以创造一些代理类，同时把这些代理类当作业务逻辑的插件来管理。</p>
+<p>另外，不要让框架污染我们的核心代码，应该依据依赖关系原则，将它们当作核心代码的插件来管理。</p>
+<p>以Spring为例，它作为一个依赖注入框架是不错的，也许我们会需要用Spring来自动连接应用程序中的各种依赖关系。这不要紧，但是千万别在业务对象里到处写@autowired注解。业务对象应该对Spring完全不知情才对。</p>
+<p>反之，我们也可以利用Spring将依赖关系注入到Main组件中，毕竟Main组件作为系统架构中最低层、依赖最多的组件，它依赖于Spring并不是问题。</p>
+<h4 id="534-总结"><a class="markdownIt-Anchor" href="#534-总结"></a> 5.3.4 总结</h4>
+<p>总而言之。当我们面临框架选择时，尽量不要草率地做出决定。在全身心投入之前，应该首先看看是否可以部分地采用以增加了解。另外，请尽可能长时间地将框架留在架构边界之外，越久越好。因为谁知道呢，也许你可以不用买奶牛也能喝到牛奶</p>
+<h2 id="六-代码结构组织的几种方式"><a class="markdownIt-Anchor" href="#六-代码结构组织的几种方式"></a> 六、代码结构组织的几种方式</h2>
+<h3 id="61-按层封装"><a class="markdownIt-Anchor" href="#61-按层封装"></a> 6.1 按层封装</h3>
+<p>我们首先想到的，也可能是最简单的设计方式，就是传统的水平分层架构。在这个架构里，我们将代码从技术角度进行分类。这通常被称为“按层封装”。图34.1用UML类图展示了这种设计。</p>
+<p>在这种常见的分层架构中，Web代码分为一层，业务逻辑分为一层，持久化是另外一层。换句话说，我们对代码进行了水平分层，相同类型的代码在一层。在“严格的分层架构”中，每一层只能对相邻的下层有依赖关系。在Java中，分层的概念通常是用包来表示的。如图34.1所示，所有的分层（包）之间的依赖关系都是指向下的。这里包括了以下Java类。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-933587110d2dea90.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ceng.png"></p>
+<h3 id="62-按功能封装"><a class="markdownIt-Anchor" href="#62-按功能封装"></a> 6.2 按功能封装</h3>
+<p>另外一种组织代码的形式是“按功能封装”，即垂直切分，根据相关的功能、业务概念或者聚合根（领域驱动设计原则中的术语）来切分。在常见的实现中，所有的类型都会放在一个相同的包中，以业务概念来命名。</p>
+<p>图34.2展示了这种方式，类和接口与之前类似，但是相比之前，这次它们都被放到了同一个Java包中。相比“按层封装”，这只是一个小变化，但是现在顶层代码结构至少与业务领域有点相关了。我们可以看到这段代码是与订单有关的，而不是只能看到Web、服务及数据访问。另外一个好处是，如果需要修改“查看订单”这个业务用例，比较容易找到相关代码，毕竟它们都在一个包中，而不是分散在各处。</p>
+<p>软件研发团队常常一开始采用水平分层方式（即“按层封装”），遇到困难后再切换到垂直分层方式（即“按功能封装”）。我认为，两种方式都很不好。看完本书，你应该意识到还有更好的分类方式——没错。<br>
+￼<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-f37a25d4a07fbfc3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="gongneng.png"></p>
+<h3 id="63-端口和适配"><a class="markdownIt-Anchor" href="#63-端口和适配"></a> 6.3 端口和适配</h3>
+<p>如Bob大叔所说，通过采用“端口和适配器”“六边形架构”“边界、控制器、实体”等，我们可以创造出一个业务领域代码与具体实现细节（数据库、框架等）隔离的架构。总结下来，如图34.3所示，我们可以区分出代码中的内部代码（领域，Domain）与外部代码（基础设施，Infrastructure）。<br>
+￼<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-f9f764b06cb78736.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="domain1.png"></p>
+<p>内部区域包含了所有的领域概念，而外部区域则包含了与外界交互的部分（例如UI、数据库、第三方集成等）。这里主要的规则是，只有外部代码能依赖内部代码，反之则不能。图34.4展示了“查看订单”这个业务用例是如何用这种方式实现的。</p>
+<p>这里com.mycompnay.myapp.domain包是内部代码，另外一个包是外部代码。注意这里的依赖关系是由外向内的。眼尖的读者可以注意到之前的OrderRepository类现在被改名为Orders。这个概念基于领域驱动设计理念，其中要求内部代码都应该用独特的领域语言来描述。换句话说，我们在业务领域里面讨论的应该是“Orders”，而不是“OrdersRepository”。<br>
+￼<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-886e80f583106502.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="domain2.png"></p>
+<h3 id="64-宽松的分层架构"><a class="markdownIt-Anchor" href="#64-宽松的分层架构"></a> 6.4 宽松的分层架构</h3>
+<p>虽然我对本书中的SOLID、REP、CCP、CRP以及其他大部分建议完全认同，我想提出对代码组织方式的一个不同看法——“按组件封装”。一些背景信息：在我的职业生涯中，我基于Java构建了大量不同领域的企业软件，这些软件系统要求各异。大部分系统都是基于Web的，也有一些是CS架构[5]，或者是分布式架构的、基于消息的，或者其他的。虽然具体采用的技术不同，但大部分系统都是基于传统的分层架构的。</p>
+<p>我已经给出一些分层架构不好的理由，但这还不是全部。分层架构设计的目的是将功能相似的代码进行分组。处理Web的代码应该与处理业务逻辑的代码分开，同时也与处理数据访问的代码分开。正如我们在UML类图中所见，从实现角度讲，层就是代表了Java包。从代码可访问性角度来讲，如果需要OrdersController依赖OrderService接口，那么这个接口必须设置为public，因为它们在不同的包中。同样的，OrdersRepository接口也需要设置为public，这样才能被包外的类OrdersServiceImple使用。</p>
+<p>在严格分层的架构中，依赖指向的箭头应该永远向下，每一层只能依赖相邻的下一层。通过引入一些代码互相依赖的规则，我们就形成了一个干净、漂亮的单向依赖图。这里有一个大问题——只要通过引入一些不应该有的依赖来作弊，依然可以形成漂亮的单向依赖图。</p>
+<p>假设新员工加入了团队，你给新人安排了一个订单相关的业务用例的实现任务。由于这个人刚刚入职，他想好好表现，尽快完成这项功能。粗略看过代码之后，新人发现了OrdersController这个类，于是他将新的订单相关的Web代码都塞了进去。但是这段代码需要从数据库查找一些订单数据。这时候这个新人灵机一动：“代码已经有了一个OrdersRepository接口，只需要将它用依赖注入框架引入控制器就行，我真机智！”几分钟之后，功能已经正常了，但是UML结构图变成了图34.5这样。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c6c26c5e139690f0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="kuansong.png"></p>
+<p>依赖关系箭头依然向下，但是现在OrdersController在某些情况下绕过了OrderService类。这种组织形式被称为宽松的分层架构，允许某些层跳过直接相邻的邻居。在有些情况下，这是意料之中的——例如，如果我们在遵循CQRS设计模式[6]，这是合理的。但是更多的情况下，绕过业务逻辑层是不合理的，尤其是在业务逻辑层要控制权限的情况下。</p>
+<p>虽然新的业务用例可以正常工作，但是它可能不是按照合理方式实现的。作为咨询师，我曾经见过很多团队出现这种情况，只有他们开始仔细观察自己的代码结构图时才会发现。</p>
+<p>这里我们有的其实只是一个规范——一个架构设计原则——内容是“Web控制器永远不应该直接访问数据层”。这里的核心问题当然是如何强制执行。我遇见的很多团队仅仅通过采用“自律”或者“代码评审”方式来执行，“我相信我的程序员”。有这种自信当然很好，但是我们都知道当预算缩减、工期临近的时候会发生什么事情。</p>
+<p>有一小部分团队告诉我，他们会采用静态分析工具（例如Ndepend、Structure101、Checkstyle）来在构建阶段自动检查违反架构设计规则的代码。估计你见过这种代码，一般来说就是一段正则表达式，例如“包 xx/web下面的类型不允许访问 xx/data下面的类型”，这些检查在编译步骤之后执行。</p>
+<p>这种方式虽然简单粗暴，但是确实能起效果，可以锁定违反了团队定义的系统架构设计原则的情况，并且（理想情况下）导致构建失败。这两种方法的共同问题是容易出错，同时反馈循环时间太长了。如果不精心维护，整个代码库可能很快就变成“一团泥巴”[7]。我个人更倾向选择能够让编译器执法的做法。</p>
+<h3 id="65-按组件封装"><a class="markdownIt-Anchor" href="#65-按组件封装"></a> 6.5 按组件封装</h3>
+<p>那么，看一下“按组件封装”的做法。这种做法混合了我们之前讲的所有的方法，目标是将一个粗粒度组件相关的所有类放入一个Java包中。这就像是以一种面向服务的视角来构建软件系统，与微服务架构类似。这里，就像端口和适配器模式将Web视为一种交付手段一样，“按组件封装”将UI与粗粒度组件分离。图34.6展示了“查看订单”这个用例的设计图。<br>
+￼<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-c2f341fcfadd98ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="zujian.png"></p>
+<p>总的来说，这种方式将“业务逻辑”与“持久化代码”合并在一起，称为“组件”,Bob大叔在本书中对“组件”的定义如下：</p>
+<p>组件是部署单元。组件是系统中能够部署的最小单位，对应在Java里就是jar文件。</p>
+<p>我对组件的定义稍有不同：“在一个执行环境（应用程序）中的、一个干净、良好的接口背后的一系列相关功能的集合”。这个定义来自我的“C4软件架构模型”[8]。这个模型以一种层级模型讨论软件系统的静态结构，其中的概念包括容器、组件、类。这个模型认为，系统由一个或者多个容器组成（例如Web应用、移动App、独立应用、数据库、文件系统），每个容器包含一个或多个组件，每个组件由一个或多个类组成。每个组件具体存在于哪个jar文件中则是另外一个维度的事情。</p>
+<p>这种“按组件封装”的方式的一个好处是，如果我们需要编写和订单有关的代码，只有一个位置需要修改——OrdersComponet。在这个组件中，仍然应该关注重点隔离原则，但这是组件内部问题，使用者不需要关心。这就有点像采用微服务架构，或者是面向服务架构的结果——独立的OrderService会将所有订单相关的东西封装起来。这里关键的区别是解耦的方式。我们可以认为，单体程序中的一个良好定义的组件，是微服务化架构的一个前提条件。</p>
+<h3 id="66-总结"><a class="markdownIt-Anchor" href="#66-总结"></a> 6.6 总结</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e2d9b8ee5284084e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="summary.jpg"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

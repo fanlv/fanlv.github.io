@@ -1,0 +1,275 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>Redis 源码分析(六) ：quciklist</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 一、什么是quicklist
+由于考虑到链表adlist的附加空间相对太高，prev和next指针就要占去 16 个字节 (64bit系统的指针是8个字节)，另外每个节点的内存都是单独分配，会加剧内存的碎片化，影响内存管理效率。
+quicklist是一个3.2版本之后新增的基础数据结构，是redis自定义的一种复杂数据结构，将ziplist和adlist结合到了一个数据结构中。主要是作为list的基础数据结构。
+在3.2之前，list是根据元素数量的多少采用ziplist或者adlist作为基础数据结构，3.2之后统一改用quicklist，从数据结构的角度来说quicklist结合了两种数据结构的优缺点，复杂但是实用：
+
+链表在插入，删除节点的时间复杂度很低；但是内存利用率低，且由于内存不连续容易产生内.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">Redis 源码分析(六) ：quciklist</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E4%BB%80%E4%B9%88%E6%98%AFquicklist"><span class="toc-text"> 一、什么是quicklist</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#redis-list%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E7%89%B9%E7%82%B9"><span class="toc-text"> redis list数据结构特点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84"><span class="toc-text"> 二、数据结构</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#list-max-ziplist-size"><span class="toc-text"> list-max-ziplist-size</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#list-compress-depth"><span class="toc-text"> list-compress-depth</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-quicklist%E5%85%B8%E5%9E%8B%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C%E5%87%BD%E6%95%B0"><span class="toc-text"> 三、quicklist典型基本操作函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#create"><span class="toc-text"> Create</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#push"><span class="toc-text"> Push</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pop"><span class="toc-text"> Pop</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%8A%82%E7%82%B9%E5%8E%8B%E7%BC%A9"><span class="toc-text"> 节点压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8F%92%E5%85%A5"><span class="toc-text"> 插入</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text"> 总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-text"> 参考文章</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Redis"><i class="tag post-item-tag">Redis</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">Redis 源码分析(六) ：quciklist</h1><time class="has-text-grey" datetime="2019-08-11T16:10:29.000Z">2019-08-12</time><article class="mt-2 post-content"><h2 id="一-什么是quicklist"><a class="markdownIt-Anchor" href="#一-什么是quicklist"></a> 一、什么是quicklist</h2>
+<p>由于考虑到链表<code>adlist</code>的附加空间相对太高，<code>prev</code>和<code>next</code>指针就要占去 16 个字节 (64bit系统的指针是8个字节)，另外每个节点的内存都是单独分配，会加剧内存的碎片化，影响内存管理效率。</p>
+<p><code>quicklist</code>是一个3.2版本之后新增的基础数据结构，是redis自定义的一种复杂数据结构，将<code>ziplist</code>和<code>adlist</code>结合到了一个数据结构中。主要是作为<code>list</code>的基础数据结构。<br>
+在3.2之前，<code>list</code>是根据元素数量的多少采用<code>ziplist</code>或者<code>adlist</code>作为基础数据结构，3.2之后统一改用<code>quicklist</code>，从数据结构的角度来说<code>quicklist</code>结合了两种数据结构的优缺点，复杂但是实用：</p>
+<ul>
+<li>链表在插入，删除节点的时间复杂度很低；但是内存利用率低，且由于内存不连续容易产生内存碎片</li>
+<li>压缩表内存连续，存储效率高；但是插入和删除的成本太高，需要频繁的进行数据搬移、释放或申请内存</li>
+</ul>
+<p>而<code>quicklist</code>通过将每个压缩表用双向链表的方式连接起来，来寻求一种收益最大化。</p>
+<h3 id="redis-list数据结构特点"><a class="markdownIt-Anchor" href="#redis-list数据结构特点"></a> redis list数据结构特点</h3>
+<ul>
+<li>表<code>list</code>是一个能维持数据项先后顺序的双向链表</li>
+<li>在表<code>list</code>的两端追加和删除数据极为方便，时间复杂度为O(1)</li>
+<li>表<code>list</code>也支持在任意中间位置的存取操作，时间复杂度为O(N)</li>
+<li>表<code>list</code>经常被用作队列使用</li>
+</ul>
+<h2 id="二-数据结构"><a class="markdownIt-Anchor" href="#二-数据结构"></a> 二、数据结构</h2>
+<pre><code>typedef struct quicklistNode {
+    struct quicklistNode *prev; // 前一个节点
+    struct quicklistNode *next; // 后一个节点
+    unsigned char *zl;  // ziplist
+    unsigned int sz;             // ziplist的内存大小
+    unsigned int count : 16;     // zpilist中数据项的个数
+    unsigned int encoding : 2;   // 1为ziplist 2是LZF压缩存储方式
+    unsigned int container : 2;  
+    unsigned int recompress : 1;   // 压缩标志, 为1 是压缩
+    unsigned int attempted_compress : 1; // 节点是否能够被压缩,只用在测试
+    unsigned int extra : 10; /* more bits to steal for future usage */
+} quicklistNode;
+</code></pre>
+<p><code>quicklistNode</code>实际上就是对<code>ziplist</code>的进一步封装，其中包括：</p>
+<ul>
+<li>指向前后压缩表节点的两个指针</li>
+<li><code>zl</code>：<code>ziplist</code>指针</li>
+<li><code>sz</code>：<code>ziplist</code>的内存占用大小</li>
+<li><code>count</code>：<code>ziplist</code>内部数据的个数</li>
+<li><code>encoding</code>：<code>ziplist</code>编码方式，1为默认方式，2为LZF数据压缩方式</li>
+<li><code>recompress</code>：是否压缩，1表示压缩</li>
+</ul>
+<p>这里从变量<code>count</code>开始，都采用了位域的方式进行数据的内存声明，使得6个<code>unsigned int</code>变量只用到了一个<code>unsigned int</code>的内存大小。</p>
+<p>C语言支持位域的方式对结构体中的数据进行声明，也就是可以指定一个类型占用几位：</p>
+<ol>
+<li>如果相邻位域字段的类型相同，且其位宽之和小于类型的<code>sizeof</code>大小，则后面的字段将紧邻前一个字段存储，直到不能容纳为止；</li>
+<li>如果相邻位域字段的类型相同，但其位宽之和大于类型的<code>sizeof</code>大小，则后面的字段将从新的存储单元开始，其偏移量为其类型大小的整数倍；</li>
+<li>如果相邻的位域字段的类型不同，则各编译器的具体实现有差异，VC6采取不压缩方式，Dev-C++采取压缩方式；</li>
+<li>如果位域字段之间穿插着非位域字段，则不进行压缩；</li>
+<li>整个结构体的总大小为最宽基本类型成员大小的整数倍。</li>
+</ol>
+<p><code>sizeof(quicklistNode); // output:32</code>，通过位域的声明方式，<code>quicklistNode</code>可以节省24个字节。</p>
+<p>通过<code>quicklist</code>将<code>quicklistNode</code>连接起来就是一个完整的数据结构了</p>
+<pre><code>typedef struct quicklist {
+    quicklistNode *head;    // 头结点
+    quicklistNode *tail;    // 尾节点
+    unsigned long count;    // 所有数据的数量
+    unsigned int len;       // quicklist节点数量
+    int fill : 16;          // 单个ziplist的大小限制，由list-max-ziplist-size给定
+    unsigned int compress : 16;   // 压缩深度,由list-compress-depth给定
+} quicklist;
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bf8538664e279aaf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="redis_quick_list.png"></p>
+<p>由于<code>quicklist</code>结构包含了压缩表和链表，那么每个<code>quicklistNode</code>的大小就是一个需要仔细考量的点。如果单个<code>quicklistNode</code>存储的数据太多，就会影响插入效率；但是如果单个<code>quicklistNode</code>太小，就会变得跟链表一样造成空间浪费。<br>
+<code>quicklist</code>通过<code>fill</code>对单个<code>quicklistNode</code>的大小进行限制：<code>fill</code>可以被赋值为正整数或负整数，full的大小由<code>list-max-ziplist-size</code>给定。</p>
+<h3 id="list-max-ziplist-size"><a class="markdownIt-Anchor" href="#list-max-ziplist-size"></a> list-max-ziplist-size</h3>
+<p>1、<code>list-max-ziplist-size</code>取值，可以取正值，也可以取负值。</p>
+<p>当取正值的时候，表示按照数据项个数来限定每个<code>quicklist</code>节点上的<code>ziplist</code>长度。比如，当这个参数配置成5的时候，表示每个<code>quicklist</code>节点的<code>ziplist</code>最多包含5个数据项，最大为32768个。</p>
+<pre><code>#define FILL_MAX (1 &lt;&lt; 15)  // 32768
+void quicklistSetFill(quicklist *quicklist, int fill) { // set ziplist的单个节点最大存储数据量
+    if (fill &gt; FILL_MAX) {  // 个数
+        fill = FILL_MAX;
+    } else if (fill &lt; -5) { // 内存大小
+        fill = -5;
+    }
+    quicklist-&gt;fill = fill;
+}
+</code></pre>
+<p>当取负值的时候，表示按照占用字节数来限定每个<code>quicklist</code>节点上的<code>ziplist</code>长度。这时，它只能取-1到-5这五个值，每个值含义如下：</p>
+<ul>
+<li>-5: 每个<code>quicklist</code>节点上的<code>ziplist</code>大小不能超过64 Kb。（注：1kb =&gt; 1024 bytes）</li>
+<li>-4: 每个<code>quicklist</code>节点上的<code>ziplist</code>大小不能超过32 Kb。</li>
+<li>-3: 每个<code>quicklist</code>节点上的<code>ziplist</code>大小不能超过16 Kb。<br>
+-2: 每个<code>quicklist</code>节点上的<code>ziplist</code>大小不能超过8 Kb。（<strong>-2是Redis给出的默认值</strong>）</li>
+<li>-1: 每个<code>quicklist</code>节点上的<code>ziplist</code>大小不能超过4 Kb。</li>
+</ul>
+<p>2、<code>list-max-ziplist-size</code>配置产生的原因？</p>
+<p>每个<code>quicklist</code>节点上的<code>ziplist</code>越短，则内存碎片越多。内存碎片多了，有可能在内存中产生很多无法被利用的小碎片，从而降低存储效率。这种情况的极端是每个<code>quicklist</code>节点上的<code>ziplist</code>只包含一个数据项，这就蜕化成一个普通的双向链表了。</p>
+<p>每个<code>quicklist</code>节点上的<code>ziplist</code>越长，则为<code>ziplist</code>分配大块连续内存空间的难度就越大。有可能出现内存里有很多小块的空闲空间（它们加起来很多），但却找不到一块足够大的空闲空间分配给<code>ziplist</code>的情况。这同样会降低存储效率。这种情况的极端是整个<code>quicklist</code>只有一个节点，所有的数据项都分配在这仅有的一个节点的<code>ziplist</code>里面。这其实蜕化成一个<code>ziplist</code>了。</p>
+<p>可见，一个<code>quicklist</code>节点上的<code>ziplist</code>要保持一个合理的长度。那到底多长合理呢？Redis提供了一个配置参数<code>list-max-ziplist-size</code>，就是为了让使用者可以来根据实际应用场景进行调整优化。</p>
+<h3 id="list-compress-depth"><a class="markdownIt-Anchor" href="#list-compress-depth"></a> list-compress-depth</h3>
+<p>其表示一个<code>quicklist</code>两端不被压缩的节点个数。注：这里的节点个数是指<code>quicklist</code>双向链表的节点个数，而不是指<code>ziplist</code>里面的数据项个数。实际上，一个<code>quicklist</code>节点上的<code>ziplist</code>，如果被压缩，就是整体被压缩的。</p>
+<p>1、<code>list-compress-depth</code>的取值：</p>
+<ul>
+<li>0: 是个特殊值，表示都不压缩。这是Redis的默认值。</li>
+<li>1: 表示<code>quicklist</code>两端各有1个节点不压缩，中间的节点压缩。</li>
+<li>2: 表示<code>quicklist</code>两端各有2个节点不压缩，中间的节点压缩。</li>
+<li>3: 表示<code>quicklist</code>两端各有3个节点不压缩，中间的节点压缩。</li>
+</ul>
+<p>2、<code>list-compress-depth</code>配置产生原因？</p>
+<p>当表<code>list</code>存储大量数据的时候，最容易被访问的很可能是两端的数据，中间的数据被访问的频率比较低（访问起来性能也很低）。如果应用场景符合这个特点，那么<code>list</code>还提供了一个选项，能够把中间的数据节点进行压缩，从而进一步节省内存空间。Redis的配置参数<code>list-compress-depth</code>就是用来完成这个设置的。</p>
+<h2 id="三-quicklist典型基本操作函数"><a class="markdownIt-Anchor" href="#三-quicklist典型基本操作函数"></a> 三、quicklist典型基本操作函数</h2>
+<p>当我们使用<code>lpush</code>或<code>rpush</code>等命令第一次向一个不存在的<code>list</code>里面插入数据的时候，Redis会首先调用<code>quicklistCreate</code>接口创建一个空的<code>quicklist</code>。</p>
+<h3 id="create"><a class="markdownIt-Anchor" href="#create"></a> Create</h3>
+<pre><code>/* Create a new quicklist.
+ * Free with quicklistRelease(). */
+quicklist *quicklistCreate(void) {
+    struct quicklist *quicklist;
+
+    quicklist = zmalloc(sizeof(*quicklist));
+    quicklist-&gt;head = quicklist-&gt;tail = NULL;
+    quicklist-&gt;len = 0;
+    quicklist-&gt;count = 0;
+    quicklist-&gt;compress = 0;
+    quicklist-&gt;fill = -2;
+    return quicklist;
+}
+</code></pre>
+<p>从上述代码中，我们看到<code>quicklist</code>是一个不包含空余头节点的双向链表（<code>head</code>和<code>tail</code>都初始化为<code>NULL</code>）。</p>
+<h3 id="push"><a class="markdownIt-Anchor" href="#push"></a> Push</h3>
+<p><code>quicklist</code>只能在头尾插入节点，以在头部插入节点为例：</p>
+<pre><code>int quicklistPushHead(quicklist *quicklist, void *value, size_t sz) {   // 在头部插入数据
+    quicklistNode *orig_head = quicklist-&gt;head;
+
+    if (likely(_quicklistNodeAllowInsert(quicklist-&gt;head, quicklist-&gt;fill, sz))) {  // 判断是否能够被插入到头节点中
+        quicklist-&gt;head-&gt;zl = ziplistPush(quicklist-&gt;head-&gt;zl, value, sz, ZIPLIST_HEAD);  // 调用ziplist的api在头部插入数据
+        quicklistNodeUpdateSz(quicklist-&gt;head); // 更新节点的sz
+    } else {    // 需要新增节点
+        quicklistNode *node = quicklistCreateNode();    // 新建节点
+        node-&gt;zl = ziplistPush(ziplistNew(), value, sz, ZIPLIST_HEAD);  // 新建一个ziplist并插入一个节点
+
+        quicklistNodeUpdateSz(node);    // 更新节点的sz
+        _quicklistInsertNodeBefore(quicklist, quicklist-&gt;head, node);   // 将新节点插入到头节点之前
+    }
+    quicklist-&gt;count++; // count自增
+    quicklist-&gt;head-&gt;count++;
+    return (orig_head != quicklist-&gt;head);  // 返回0为用已有节点 返回1为新建节点
+}
+</code></pre>
+<p><code>quicklist</code>的主要操作基本都是复用<code>ziplist</code>的<code>api</code>，其中<code>likely</code>是针对条件语句的优化，告知编译器这种情况很可能出现，让编译器针对这种条件进行优化；与之对应的还有<code>unlikely</code>。由于绝大部分时候都不需要新增节点，因此用<code>likely</code>做了优化<br>
+在<code>_quicklistNodeAllowInsert</code>函数中，针对单个节点的内存大小做了校验</p>
+<pre><code>REDIS_STATIC int _quicklistNodeAllowInsert(const quicklistNode *node,
+                                           const int fill, const size_t sz) {   // 判断当前node是否还能插入数据
+    if (unlikely(!node))
+        return 0;
+
+    int ziplist_overhead;
+    /* size of previous offset */
+    if (sz &lt; 254)   // 小于254时后一个节点的pre只有1字节,否则为5字节
+        ziplist_overhead = 1;
+    else
+        ziplist_overhead = 5;
+
+    /* size of forward offset */
+    if (sz &lt; 64)    // 小于64字节当前节点的encoding为1
+        ziplist_overhead += 1;
+    else if (likely(sz &lt; 16384))    // 小于16384 encoding为2字节
+        ziplist_overhead += 2;
+    else    // encoding为5字节
+        ziplist_overhead += 5;
+
+    /* new_sz overestimates if 'sz' encodes to an integer type */
+    unsigned int new_sz = node-&gt;sz + sz + ziplist_overhead; // 忽略了连锁更新的情况
+    if (likely(_quicklistNodeSizeMeetsOptimizationRequirement(new_sz, fill)))   // // 校验fill为负数是否超过单存储限制
+        return 1;
+    else if (!sizeMeetsSafetyLimit(new_sz)) // 校验单个节点是否超过8kb，主要防止fill为正数时单个节点内存过大
+        return 0;
+    else if ((int)node-&gt;count &lt; fill)   // fill为正数是否超过存储限制
+        return 1;
+    else
+        return 0;
+}
+</code></pre>
+<p>同样，因为默认的<code>fill</code>为-2，所以针对为负数并且不会超过单个节点存储限制的条件做了<code>likely</code>优化；除此之外在计算的时候还忽略了<code>ziplist</code>可能发生的连锁更新；以及<code>fill</code>为正数时单个节点不能超过8kb</p>
+<h3 id="pop"><a class="markdownIt-Anchor" href="#pop"></a> Pop</h3>
+<pre><code>/* Default pop function
+ *
+ * Returns malloc'd value from quicklist */
+int quicklistPop(quicklist *quicklist, int where, unsigned char **data,
+                 unsigned int *sz, long long *slong) {
+    unsigned char *vstr;
+    unsigned int vlen;
+    long long vlong;
+    if (quicklist-&gt;count == 0)
+        return 0;
+    int ret = quicklistPopCustom(quicklist, where, &amp;vstr, &amp;vlen, &amp;vlong,
+                                 _quicklistSaver);
+    if (data)
+        *data = vstr;
+    if (slong)
+        *slong = vlong;
+    if (sz)
+        *sz = vlen;
+    return ret;
+}
+</code></pre>
+<p><code>quicklist</code>的<code>pop</code>操作是调用<code>quicklistPopCustom</code>来实现的。</p>
+<p><code>quicklistPopCustom</code>的实现过程基本上跟<code>quicklistPush</code>相反：</p>
+<ol>
+<li>从头部或尾部节点的<code>ziplist</code>中把对应的数据项删除；</li>
+<li>如果在删除后<code>ziplist</code>为空了，那么对应的头部或尾部节点也要删除；</li>
+<li>删除后还可能涉及到里面节点的解压缩问题。</li>
+</ol>
+<h3 id="节点压缩"><a class="markdownIt-Anchor" href="#节点压缩"></a> 节点压缩</h3>
+<p>由于<code>list</code>这个结构大部分时候只会用到头尾的数据，因此redis利用<code>lzf</code>算法对节点中间的元素进行压缩，以达到节省内存空间的效果。压缩节点的结构体和具体函数如下：</p>
+<pre><code>typedef struct quicklistLZF {  // lzf结构体
+    unsigned int sz; /* LZF size in bytes*/
+    char compressed[];
+} quicklistLZF;
+
+REDIS_STATIC int __quicklistCompressNode(quicklistNode *node) { // 压缩节点
+#ifdef REDIS_TEST
+    node-&gt;attempted_compress = 1;
+#endif
+
+    /* Don't bother compressing small values */
+    if (node-&gt;sz &lt; MIN_COMPRESS_BYTES)  // 小于48字节不进行压缩
+        return 0;
+
+    quicklistLZF *lzf = zmalloc(sizeof(*lzf) + node-&gt;sz);
+
+    /* Cancel if compression fails or doesn't compress small enough */
+    if (((lzf-&gt;sz = lzf_compress(node-&gt;zl, node-&gt;sz, lzf-&gt;compressed,
+                                 node-&gt;sz)) == 0) ||
+        lzf-&gt;sz + MIN_COMPRESS_IMPROVE &gt;= node-&gt;sz) {   // 如果压缩失败或压缩后节省的空间不到8字节放弃压缩
+        /* lzf_compress aborts/rejects compression if value not compressable. */
+        zfree(lzf);
+        return 0;
+    }
+    lzf = zrealloc(lzf, sizeof(*lzf) + lzf-&gt;sz);    // 重新分配内存
+    zfree(node-&gt;zl);    // 释放原有节点
+    node-&gt;zl = (unsigned char *)lzf;    // 将压缩节点赋值给node
+    node-&gt;encoding = QUICKLIST_NODE_ENCODING_LZF;   // 记录编码
+    node-&gt;recompress = 0;
+    return 1;
+}
+</code></pre>
+<h3 id="插入"><a class="markdownIt-Anchor" href="#插入"></a> 插入</h3>
+<p><code>quicklist</code>不仅实现了从头部或尾部插入，也实现了从任意指定的位置插入。<code>quicklistInsertAfter</code>和<code>quicklistInsertBefore</code>就是分别在指定位置后面和前面插入数据项。这种在任意指定位置插入数据的操作，情况比较复杂。</p>
+<ul>
+<li>当插入位置所在的<code>ziplist</code>大小没有超过限制时，直接插入到<code>ziplist</code>中就好了</li>
+<li>当插入位置所在的<code>ziplist</code>大小超过了限制，但插入的位置位于<code>ziplist</code>两端，并且相邻的<code>quicklist</code>链表节点的<code>ziplist</code>大小没有超过限制，那么就转而插入到相邻的那个<code>quicklist</code>链表节点的<code>ziplist</code>中</li>
+<li>当插入位置所在的<code>ziplist</code>大小超过了限制，但插入的位置位于<code>ziplist</code>两端，并且相邻的<code>quicklist</code>链表节点的<code>ziplist</code>大小也超过限制，这时需要新创建一个<code>quicklist</code>链表节点插入</li>
+<li>对于插入位置所在的<code>ziplist</code>大小超过了限制的其它情况（主要对应于在<code>ziplist</code>中间插入数据的情况），则需要把当前<code>ziplist</code>分裂为两个节点，然后再其中一个节点上插入数据</li>
+</ul>
+<h2 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h2>
+<p><code>quicklist</code>除了常用的增删改查外还提供了<code>merge</code>、将<code>ziplist</code>转换为<code>quicklist</code>等<code>api</code>，这里就不详解了，可以具体查看<code>quicklist.h</code>和<code>quicklist.c</code>文件。</p>
+<ul>
+<li><code>quicklist</code>是redis在<code>ziplist</code>和<code>adlist</code>两种数据结构的基础上融合而成的一个实用的复杂数据结构</li>
+<li><code>quicklist</code>在3.2之后取代<code>adlist</code>和<code>ziplist</code>作为<code>list</code>的基础数据类型</li>
+<li><code>quicklist</code>的大部分<code>api</code>都是直接复用<code>ziplist</code></li>
+<li><code>quicklist</code>的单个节点最大存储默认为8kb</li>
+<li><code>quicklist</code>提供了基于<code>lzf</code>算法的压缩<code>api</code>，通过将不常用的中间节点数据压缩达到节省内存的目的</li>
+<li><code>quicklist</code>将双向链表和<code>ziplist</code>两者的优点结合起来，在时间和空间上做了一个均衡，能较大程度上提高Redis的效率。<code>push</code>和<code>pop</code>等操作操作的时间复杂度也都达到了最优。</li>
+</ul>
+<h2 id="参考文章"><a class="markdownIt-Anchor" href="#参考文章"></a> 参考文章</h2>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/virgosnail/p/9542470.html">Redis—quickList(快速列表)</a></p>
+<p><a target="_blank" rel="noopener" href="http://czrzchao.com/redisSourceQuicklist#quicklist">redis源码解读(六):基础数据结构之quicklist</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/exceptioneye/p/7044341.html">Redis数据结构之quicklist</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

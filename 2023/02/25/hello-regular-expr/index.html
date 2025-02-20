@@ -1,0 +1,642 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《正则表达式必知必会》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="摘录与 《正则表达式必知必会》
+ 零、快速上手
+
+
+[abc] 匹配单个字符a、b、c
+
+
+. 匹配除换行符（\n、\r）之外的任何单个字符。
+
+
+[0-9]等价[0123456789] 含义是匹配一个数字，输入 123。 匹配三个结果 1、2、3。-（连字符）是一个特殊的元字符，它只有出现在[和]之间的时候才是元字符
+
+
+\d 等价上面的[0-9]
+\w 匹配字母、数字、下划线。等价于[A-Za-z0-9_]。
+^[0-9]表示匹配一个非数字。^有取反的意思
+[A-Za-z0-9]等价[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789].
+
+
+*  匹配前面的子表达式零次或多次。例如，zo* 能匹配z以及zoo。* 等价于{0,}.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《正则表达式必知必会》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E9%9B%B6-%E5%BF%AB%E9%80%9F%E4%B8%8A%E6%89%8B"><span class="toc-text"> 零、快速上手</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80-%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E7%94%A8%E9%80%94"><span class="toc-text"> 一、正则表达式用途</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C-%E5%8C%B9%E9%85%8D%E5%8D%95%E4%B8%AA%E5%AD%97%E7%AC%A6"><span class="toc-text"> 二、匹配单个字符</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89-%E5%8C%B9%E9%85%8D%E4%B8%80%E7%BB%84%E5%AD%97%E7%AC%A6"><span class="toc-text"> 三、匹配一组字符</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B-%E4%BD%BF%E7%94%A8%E5%85%83%E5%AD%97%E7%AC%A6"><span class="toc-text"> 四、使用元字符</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94-%E9%87%8D%E5%A4%8D%E5%8C%B9%E9%85%8D"><span class="toc-text"> 五、重复匹配</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD-%E4%BD%8D%E7%BD%AE%E5%8C%B9%E9%85%8D"><span class="toc-text"> 六、位置匹配</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83-%E4%BD%BF%E7%94%A8%E5%AD%90%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-text"> 七、使用子表达式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AB-%E5%8F%8D%E5%90%91%E5%BC%95%E7%94%A8"><span class="toc-text"> 八、反向引用</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B9%9D-%E7%8E%AF%E8%A7%86"><span class="toc-text"> 九、环视</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81-%E5%B5%8C%E5%85%A5%E5%BC%8F%E6%9D%A1%E4%BB%B6"><span class="toc-text"> 十、嵌入式条件</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%B8%80-%E5%B8%B8%E7%94%A8%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="toc-text"> 十一、常用正则表达式</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8D%81%E4%BA%8C-%E5%85%83%E5%AD%97%E7%AC%A6%E6%80%BB%E7%BB%93"><span class="toc-text"> 十二、元字符总结</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《正则表达式必知必会》</h1><time class="has-text-grey" datetime="2023-02-25T10:00:00.000Z">2023-02-25</time><article class="mt-2 post-content"><p>摘录与 <a target="_blank" rel="noopener" href="https://book.douban.com/subject/2269648/">《正则表达式必知必会》</a></p>
+<h1 id="零-快速上手"><a class="markdownIt-Anchor" href="#零-快速上手"></a> 零、快速上手</h1>
+<ul>
+<li>
+<p><code>[abc]</code> 匹配单个字符<code>a</code>、<code>b</code>、<code>c</code></p>
+</li>
+<li>
+<p><code>.</code> 匹配除换行符（<code>\n、\r</code>）之外的任何单个字符。</p>
+</li>
+<li>
+<p><code>[0-9]</code>等价<code>[0123456789]</code> 含义是匹配一个数字，输入 123。 匹配三个结果 <code>1</code>、<code>2</code>、<code>3</code>。<code>-</code>（连字符）是一个特殊的元字符，它只有出现在<code>[</code>和<code>]</code>之间的时候才是元字符</p>
+</li>
+<li>
+<p><code>\d</code> 等价上面的<code>[0-9]</code><br>
+<code>\w</code> 匹配字母、数字、下划线。等价于<code>[A-Za-z0-9_]</code>。<br>
+<code>^[0-9]</code>表示匹配一个非数字。<code>^</code>有取反的意思<br>
+<code>[A-Za-z0-9]</code>等价<code>[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]</code>.</p>
+</li>
+<li>
+<p><code>*</code>  匹配前面的子表达式零次或多次。例如，<code>zo*</code> 能匹配<code>z</code>以及<code>zoo</code>。<code>* 等价于{0,}</code>。</p>
+</li>
+<li>
+<p><code>+</code> 匹配前面的子表达式一次或多次。例如，<code>zo+</code>能匹配<code>zo</code>以及<code>zoo</code>，但不能匹配<code>z</code>。<code>+ 等价于 {1,}</code>。</p>
+</li>
+<li>
+<p><code>?</code> 匹配前面的子表达式零次或一次。例如，<code>do(es)?</code>可以匹配<code>do</code>或<code>does</code>。<code>? 等价于 {0,1}</code>。</p>
+</li>
+<li>
+<p><code>x|y</code> 匹配<code>x</code>或<code>y</code>。例如，<code>z|food</code>能匹配<code>z</code>或<code>food</code>。<code>(z|f)ood</code>则匹配<code>zood</code>或<code>food</code></p>
+</li>
+<li>
+<p><code>()</code>表示子表达式，比如我有个内容<code>&lt;h1&gt;Welcome to Echo!&lt;/h1&gt; &lt;h2&gt;Welcome to Echo!&lt;/h1&gt;</code>，使用<code>&lt;(h[12])&gt;.*&lt;/\1&gt;</code>只会匹配 <code>&lt;h1&gt;Welcome to Echo!&lt;/h1&gt;</code>, 不会匹配<code>&lt;h2&gt;Welcome to Echo!&lt;/h1&gt;</code>。<code>(h[12])</code>是一个子表达式，<code>\1</code>这里等价于<code>h1</code>，表示开始标签和结束标签内容应该一致。</p>
+</li>
+<li>
+<p><strong>防止过度匹配</strong> <code>*?</code>是<code>*</code>的懒惰型版本。</p>
+<pre><code>  内容：
+  This offer is not available to customers
+  living in &lt;b&gt;AK&lt;/b&gt; and &lt;b&gt;HI&lt;/b&gt;.
+  
+  正则：&lt;[Bb]&gt;.*&lt;\/[Bb]&gt;  （vscode 里面这种也默认是懒惰型，会返回两个结果）
+  匹配结果：&lt;b&gt;AK&lt;/b&gt; and &lt;b&gt;HI&lt;/b&gt; （一个结果，认为“AK&lt;/b&gt; and &lt;b&gt;HI” 匹配 .*）
+  正则：&lt;[Bb]&gt;.*?&lt;\/[Bb]&gt;
+  匹配结果：&lt;b&gt;AK&lt;/b&gt;  &lt;b&gt;HI&lt;/b&gt;  (两个结果)
+</code></pre>
+</li>
+<li>
+<p><strong>环视，也有叫零宽断言</strong>。加入我要取出<code>title</code>标签中的内容，我们正则可以这样写<code>(?&lt;=&lt;title&gt;).*(?=&lt;/title&gt;)</code></p>
+<pre><code>  &lt;head&gt;
+  &lt;title&gt;Ben Forta's Homepage&lt;/title&gt;
+  &lt;/head&gt;
+</code></pre>
+<ul>
+<li><code>?=</code>是向前查看，<code>.+(?=:)</code>匹配<code>https://mail.forta.com/</code>中的<code>https</code>。任何子表达式都可以转换为向前查看表达式，只要在其之前加上一个<code>?=</code>即可。</li>
+<li><code>?&lt;=</code>是先后查看，<code>(?&lt;=\$)[0-9.]+</code>匹配<code>ABC01: $23.45</code>中的<code>23.45</code>。<strong>向后查看模式则只能是固定长度</strong>。几乎所有的正则表达式实现都有此限制。</li>
+</ul>
+</li>
+</ul>
+<h1 id="一-正则表达式用途"><a class="markdownIt-Anchor" href="#一-正则表达式用途"></a> 一、正则表达式用途</h1>
+<p><strong>正则表达式语言是内置于其他语言或软件产品里的“迷你”语言</strong>。主要用户文本处理（查找替换）。</p>
+<h1 id="二-匹配单个字符"><a class="markdownIt-Anchor" href="#二-匹配单个字符"></a> 二、匹配单个字符</h1>
+<p><strong>匹配普通文本</strong></p>
+<pre><code>内容：
+Hello, my name is Ben. Please visit
+my website at http://www.forta.com/.
+
+正则：Ben // 则表达式是区分字母大小写的，所以Ben不匹配ben
+匹配结果：Ben
+</code></pre>
+<p><strong>匹配任意字符</strong></p>
+<p><code>.</code>字符（英文句号）可以匹配任意单个字符</p>
+<pre><code>内容：
+sales1.xls
+orders3.xls
+sales2.xls
+sales3.xls
+apac1.xls
+europe2.xls
+na1.xls
+na2.xls
+sa1.xls
+
+正则：sales.
+匹配结果：	
+sales2
+sales3
+</code></pre>
+<p><strong>匹配特殊字符（转移字符）</strong></p>
+<p>转义符<code>\</code>，比如<code>\.</code>表示<code>.</code>本身，<code>\\</code>表示<code>\</code>,<code>\*</code>表示<code>*</code></p>
+<h1 id="三-匹配一组字符"><a class="markdownIt-Anchor" href="#三-匹配一组字符"></a> 三、匹配一组字符</h1>
+<p><strong>匹配多个字符中的某一个</strong></p>
+<p><code>[Rr]</code>负责匹配字母<code>R</code>和<code>r</code>，<code>[Ee]</code>负责匹配字母<code>E</code>和<code>e</code></p>
+<pre><code>内容：
+The phrase "regular expression" is often
+abbreviated as RegEx or regex.
+正则：[Rr]eg[Ee]x
+匹配结果：RegEx、regex
+</code></pre>
+<p><strong>利用字符集合区间</strong></p>
+<p><code>[]</code>表示<strong>一个</strong>字符的<strong>集合</strong>，这意味着表达式将匹配方括号中列出的任何一个字符。<code>[0123456789]</code>匹配一个数字，等价与<code>[0-9]</code>，比如匹配数字<code>1</code>，不能匹配<code>12</code>。</p>
+<ul>
+<li><code>A-Z</code>，匹配从<code>A</code>到<code>Z</code>的所有大写字母。</li>
+<li><code>a-z</code>，匹配从<code>a</code>到<code>z</code>的所有小写字母。</li>
+<li><code>A-F</code>，匹配从A到F的所有大写字母。</li>
+<li><code>-</code>（连字符）是一个特殊的元字符，它只有出现在<code>[</code>和<code>]</code>之间的时候才是<strong>元字符</strong>。在字符集合以外的地方，-只是一个普通字符，只能与-本身相匹配。因此，在正则表达式里，-字符不需要被转义。</li>
+</ul>
+<p><code>[A-Za-z0-9]</code>等价<code>[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789]</code></p>
+<pre><code>内容
+body {  background-color: #fefbd8; }
+
+正则：#[0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]
+匹配：#fefbd8
+</code></pre>
+<p><strong>排除</strong></p>
+<p><code>[^0-9]</code>表示匹配的是任何不是数字的字符</p>
+<pre><code>内容：
+sam.xls
+na1.xls
+na2.xls
+sa1.xls
+
+
+正则：[ns]a[^0-9]\.xls
+匹配：sam.xls
+</code></pre>
+<h1 id="四-使用元字符"><a class="markdownIt-Anchor" href="#四-使用元字符"></a> 四、使用元字符</h1>
+<p><strong>匹配数字</strong></p>
+<pre><code>var myArray = new Array();
+...
+if (myArray[10086] == 0) {
+...
+}
+
+正则：myArray\[\d\]
+匹配：myArray[10086]
+</code></pre>
+<p><strong>匹配字母数字</strong></p>
+<pre><code>内容：
+1A213B
+A1C2E3
+
+正则：\w\d\w\d\w\d
+匹配：A1C2E3
+</code></pre>
+<p><strong>匹配空白字符</strong></p>
+<pre><code>内容：
+abcdef
+ab def
+
+正则：ab\s
+匹配：ab def
+</code></pre>
+<p><strong>匹配十六进制或八进制数值</strong></p>
+<p>十六进制值（基数为<code>16</code>）要用前缀<code>\x</code>来给出。比如说，<code>\x0A</code>（对应于ASCII字符10，也就是换行符）等价于<code>\n</code>。</p>
+<p>八进制值（基数为<code>8</code>）要用前缀<code>\0</code>来给出，数值本身可以是两位或三位数字。比如说，<code>\011</code>（对应于<code>ASCII</code>字符<code>9</code>，也就是制表符）等价于<code>\t</code>。</p>
+<p>PS: 有不少正则表达式实现还允许使用<code>\c</code>前缀来指定各种控制字符。比如说，<code>\cZ</code>可以匹配<code>Ctrl-Z</code>。不过，在实践中，<strong>极少会用到这种语法</strong>。</p>
+<p><strong>使用POSIX字符类</strong></p>
+<p>主要用于<code>grep</code>、<code>vim</code>这类工具支持</p>
+<table>
+<thead>
+<tr>
+<th>字符</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[:alnum:]：</code></td>
+<td>匹配所有的字母和数字字符。相当于 <code>[A-Za-z0-9]</code>。</td>
+</tr>
+<tr>
+<td><code>[:alpha:]：</code></td>
+<td>匹配所有的字母字符。相当于 <code>[A-Za-z]</code>。</td>
+</tr>
+<tr>
+<td><code>[:digit:]：</code></td>
+<td>匹配所有的数字字符。相当于 <code>[0-9]</code>。</td>
+</tr>
+<tr>
+<td><code>[:space:]：</code></td>
+<td>匹配所有的空白字符，包括空格、制表符、换行符等。</td>
+</tr>
+<tr>
+<td><code>[:blank:]：</code></td>
+<td>匹配所有的空格和制表符字符。</td>
+</tr>
+<tr>
+<td><code>[:lower:]：</code></td>
+<td>匹配所有的小写字母。</td>
+</tr>
+<tr>
+<td><code>[:upper:]：</code></td>
+<td>匹配所有的大写字母。</td>
+</tr>
+<tr>
+<td><code>[:print:]：</code></td>
+<td>匹配所有可打印的字符。</td>
+</tr>
+<tr>
+<td><code>[:punct:]：</code></td>
+<td>匹配所有的标点字符。</td>
+</tr>
+<tr>
+<td><code>[:graph:]：</code></td>
+<td>匹配所有的可见字符，包括字母、数字、标点符号等。</td>
+</tr>
+</tbody>
+</table>
+<h1 id="五-重复匹配"><a class="markdownIt-Anchor" href="#五-重复匹配"></a> 五、重复匹配</h1>
+<p><strong>+ 匹配一个或多个</strong></p>
+<p><code>[\w.]+</code>匹配字母数字字符、下划线和<code>.</code>的一次或多次重复出现</p>
+<pre><code>内容：
+Send personal email to ben@forta.com. For questions
+about a book use support@forta.com. Feel free to send
+unsolicited email to spam@forta.com (wouldn't it be
+nice if it were that simple, huh?).
+
+正则：[\w.]+@[\w.]+\.\w+
+匹配：ben@forta.com support@forta.com spam@forta.com
+</code></pre>
+<p><strong>匹配零个或多个字符</strong></p>
+<p><code>[\w.]*</code>匹配<code>.</code>或字母数字字符的零次或多次重复出现</p>
+<pre><code>内容：
+Hello hello.ben@forta.com.cn is my email address. support@forta.com
+
+正则：\w+[\w.]*@[\w.]+\.\w+
+匹配：hello.ben@forta.com.cn support@forta.com
+
+
+The URL is http://www.forta.com/, to connect
+securely use https://www.forta.com/ instead.
+正则：http[s]*://  等价 https?:// 
+匹配：http:// https://
+</code></pre>
+<p><code>https?://</code>，<code>?</code>在这里的含义是：前面的字符<code>s</code>要么不出现，要么最多出现一次。</p>
+<p><strong>匹配的重复次数</strong></p>
+<ul>
+<li><code>{n}</code> ，<code>n</code>是一个非负整数。匹配确定的<code>n</code>次。例如，<code>o{2}</code>不能匹配<code>Bob</code>中的<code>o</code>，但是能匹配<code>food</code>中的两个 <code>o</code>。</li>
+<li><code>{n,}</code>， <code>n</code> 是一个非负整数。至少匹配<code>n</code>次。例如，<code>o{2,}</code>不能匹配<code>Bob</code>中的<code>o</code>，但能匹配<code>foooood</code>中的所有 o。<code>o{1,}</code>等价于<code>o+</code>。<code>o{0,}</code>则等价于<code>o*</code>。</li>
+<li><code>{n,m}</code>， <code>m</code>和<code>n</code>均为非负整数，其中<code>n &lt;= m</code>。最少匹配<code>n</code>次且最多匹配<code>m</code>次。例如，<code>o{1,3}</code>将匹配<code>fooooood</code>中的前三个<code>o</code>。<code>o{0,1}</code>等价于<code>o?</code>。请注意在逗号和两个数之间不能有空格。</li>
+</ul>
+<p><strong>防止过度匹配</strong></p>
+<p><code>*?</code>是<code>*</code>的懒惰型版本。</p>
+<pre><code>内容：
+This offer is not available to customers
+living in &lt;b&gt;AK&lt;/b&gt; and &lt;b&gt;HI&lt;/b&gt;.
+
+正则：&lt;[Bb]&gt;.*&lt;\/[Bb]&gt;  （vscode 里面这种也默认是懒惰型，会返回两个结果）
+匹配结果：&lt;b&gt;AK&lt;/b&gt; and &lt;b&gt;HI&lt;/b&gt; （一个结果，认为“AK&lt;/b&gt; and &lt;b&gt;HI” 匹配 .*）
+正则：&lt;[Bb]&gt;.*?&lt;\/[Bb]&gt;
+匹配结果：&lt;b&gt;AK&lt;/b&gt;  &lt;b&gt;HI&lt;/b&gt;  (两个结果)
+
+
+
+贪婪型量词  | 懒惰型量词
+------------- | -------------
+*  | *？
++  | +？ 
+{n,}  | {n,}？ 
+</code></pre>
+<h1 id="六-位置匹配"><a class="markdownIt-Anchor" href="#六-位置匹配"></a> 六、位置匹配</h1>
+<p><strong>单词边界</strong></p>
+<p><code>\b</code>  | 匹配一个单词边界，也就是指单词和空格间的位置。例如，<code>er\b</code>可以匹配<code>never</code>中的<code>er</code>，但不能匹配<code>verb</code>中的<code>er</code>。简单说<code>\b</code>匹配的是字符之间的一个位置：一边是单词（能够被\w匹配的字母数字字符和下划线），另一边是其他内容（能够被\W匹配的字符）。</p>
+<pre><code>内容：
+The cat scattered his food all over the room.
+
+正则：\bcat\b
+匹配结果：cat
+</code></pre>
+<p><strong>字符串边界</strong></p>
+<pre><code>内容：
+This is bad, real bad!
+&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+&lt;wsdl:definitions targetNamespace="http://tips.cf"
+xmlns:impl="http://tips.cf" xmlns:intf="http://tips.cf"
+xmlns:apachesoap="http://xml.apache.org/xml-soap"
+
+正则：^\s*&lt;\?xml.*\?&gt;
+匹配结果：没有匹配到任何东西，必须是 &lt;\?xml.*\?&gt; 开头的才行。
+</code></pre>
+<p><strong>多行模式</strong></p>
+<p>许多正则表达式都支持使用一些特殊的元字符去改变另外一些元字符的行为，<code>(?m)</code>就是其中之一，它可用于启用多行模式<code>（multiline mode）</code>。<strong>多行模式迫使正则表达式引擎将换行符视为字符串分隔符</strong></p>
+<pre><code>内容：
+&lt;script&gt;
+function doSpellCheck(form, field) {
+    // Make sure not empty
+    if (field.value == '') {
+        return false;
+    }
+    // Init
+    var windowName='spellWindow';
+    var spellCheckURL='spell.cfm?formname=comment&amp;fieldname='+
+  field.name;
+...
+    // Done
+    return false;
+}
+&lt;/script&gt;
+
+正则：(?m)^\s*\/\/.*$
+匹配结果：所有注释 “// Make sure not empty”，“// Init”，“// Done”
+</code></pre>
+<p>包括<code>JavaScript</code>在内的许多正则表达式实现都不支持<code>(?m)</code></p>
+<h1 id="七-使用子表达式"><a class="markdownIt-Anchor" href="#七-使用子表达式"></a> 七、使用子表达式</h1>
+<p><strong>使用子表达式进行分组</strong></p>
+<p><code>(&amp;nbsp;)</code>是一个子表达式，它被视为单一的实体。因此，紧随其后的{2,}将作用于整个子表达式（而不仅仅是分号）</p>
+<pre><code>内容：
+Hello, my name is Ben&amp;nbsp;Forta, and I am
+the author of multiple books on SQL (including
+MySQL, Oracle PL/SQL, and SQL Server T-SQL),
+Regular&amp;nbsp;&amp;nbsp;Expressions, and other subjects.
+
+正则：(&amp;nbsp;){2,}
+匹配结果：&amp;nbsp;&amp;nbsp;	
+
+
+内容
+2000-10-11
+1999-08-01
+1899-11-28
+
+正则：(19|20)\d{2}
+匹配结果：2000 1999
+
+
+ip地址正则 (((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.){3}((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))
+匹配： 100.233.233.6
+</code></pre>
+<h1 id="八-反向引用"><a class="markdownIt-Anchor" href="#八-反向引用"></a> 八、反向引用</h1>
+<p><strong>反向引用匹配</strong></p>
+<pre><code>内容
+&lt;h1&gt;Welcome to Echo!&lt;/h1&gt;
+&lt;h2&gt;Welcome to Echo!&lt;/h1&gt;
+
+正则：&lt;[hH]([1-6])&gt;.*?&lt;\/[hH]\1&gt;
+匹配结果：&lt;h1&gt;Welcome to Echo!&lt;/h1&gt;
+</code></pre>
+<p>模式最后一部分是<code>\1</code>，这是对前面那个子表达式的反向引用，<code>\1</code>匹配的内容与第一个分组匹配的内容一样。所以<code>&lt;h1&gt; ... &lt;/h2&gt;</code>匹配不上。</p>
+<ul>
+<li>反向引用匹配通常从<code>1</code>开始计数（<code>\1</code>、<code>\2</code>等）。在许多实现里，第<code>0</code>个匹配（<code>\0</code>）可以用来代表整个正则表达式。</li>
+<li>一些比较新的正则表达式实现还支持“命名捕获”（<code>named capture</code>）：给某个子表达式起一个唯一的名称，随后用该名称（而不是相对位置）来引用这个子表达式。目前很多语音还没支持</li>
+</ul>
+<p><strong>替换操作</strong></p>
+<pre><code>内容
+313-555-1234
+248-555-9999
+810-555-9000
+
+正则：(\d{3})-(\d{3})-(\d{4})
+替换正则：$3-$1-$2
+
+替换结果：
+1234-313-555
+9999-248-555
+9000-810-555
+</code></pre>
+<p><strong>大小写转换</strong></p>
+<pre><code>内容
+&lt;body&gt;
+	&lt;h1&gt;Welcome to my Homepage&lt;/h1&gt;
+&lt;/body&gt;
+
+正则：(\d{3})-(\d{3})-(\d{4})
+替换正则：$1\U$2\E$3 （VScode 替换可以不用加\E）
+
+替换结果：
+&lt;body&gt;
+	&lt;h1&gt;WELCOME TO MY HOMEPAGE&lt;/h1&gt;
+&lt;/body&gt;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>元字符</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\E</code></td>
+<td>结束<code>\L</code>或<code>\u</code>转换</td>
+</tr>
+<tr>
+<td><code>\l</code></td>
+<td>把下一个字符转换为小写</td>
+</tr>
+<tr>
+<td><code>\L</code></td>
+<td>把<code>\L</code>到<code>\E</code>之间的字符全部转换为小写</td>
+</tr>
+<tr>
+<td><code>\u</code></td>
+<td>把下一个字符转换为大写</td>
+</tr>
+<tr>
+<td><code>\U</code></td>
+<td>把<code>\u</code>到<code>\E</code>之间的字符全部转换为大写</td>
+</tr>
+</tbody>
+</table>
+<h1 id="九-环视"><a class="markdownIt-Anchor" href="#九-环视"></a> 九、环视</h1>
+<pre><code>&lt;head&gt;
+&lt;title&gt;Ben Forta's Homepage&lt;/title&gt;
+&lt;/head&gt;
+
+正则：&lt;title&gt;.*&lt;/title&gt;
+匹配结果：&lt;title&gt;Ben Forta's Homepage&lt;/title&gt;
+</code></pre>
+<p>明知是自己不需要的东西，还把它们检索出来，然后再手动删除，这种做法毫无意义。你真正需要的是想办法构造出一种模式，该模式中包含一些不用被返回的匹配——这些匹配是为了找出正确的匹配位置，其自身不属于最终的匹配结果。换句话说，你需要进行“环视”。</p>
+<pre><code>&lt;head&gt;
+&lt;title&gt;Ben Forta's Homepage&lt;/title&gt;
+&lt;/head&gt;
+正则：(?&lt;=&lt;title&gt;).*(?=&lt;/title&gt;)
+匹配结果：Ben Forta's Homepage
+</code></pre>
+<p><code>?=</code>是向前查看，<code>.+(?=:)</code>匹配<code>https://mail.forta.com/</code>中的<code>https</code>。任何子表达式都可以转换为向前查看表达式，只要在其之前加上一个<code>?=</code>即可。</p>
+<p><code>?&lt;=</code>是先后查看，<code>(?&lt;=\$)[0-9.]+</code>匹配<code>ABC01: $23.45</code>中的<code>23.45</code>。<strong>向后查看模式则只能是固定长度</strong>。几乎所有的正则表达式实现都有此限制。</p>
+<ul>
+<li><code>(?&lt;!pattern)</code> |	反向否定预查，与正向否定预查类似，只是方向相反。例如<code>(?&lt;!95|98|NT|2000)Windows</code>能匹配<code>3.1Windows</code>中的<code>Windows</code>，但不能匹配<code>2000Windows</code>中的<code>Windows</code>。</li>
+<li><code>(?!pattern)</code>  | 正向否定预查(<code>asser</code>)，在任何不匹配pattern的字符串开始处匹配查找字符串。这是一个非获取匹配，也就是说，该匹配不需要获取供以后使用。例如<code>Windows(?!95|98|NT|2000)</code>能匹配<code>Windows3.1</code>中的<code>Windows</code>，但不能匹配<code>Windows2000</code>中的<code>Windows</code>。预查不消耗字符，也就是说，在一个匹配发生后，在最后一次匹配之后立即开始下一次匹配的搜索，而不是从包含预查的字符之后开始。</li>
+<li>向前查看和向后查看其实是有返回结果的，只不过结果永远都是零长度字符串。因此，环视操作有时也被称为<strong>零宽度</strong>（<code>zero-width</code>）匹配操作。</li>
+<li>用于查找在某些内容(但并不包括这些内容)之前或之后的东西，也就是说它们像<code>\b,^,$</code>那样用于指定一个位置，这个位置应该满足一定的条件(即断言)，因此它们也被称为<strong>零宽断言</strong>。
+<ul>
+<li><code>(?=exp)</code>也叫零宽度正预测先行断言。</li>
+<li><code>(?&lt;=exp)</code>也叫零宽度正回顾后发断言。</li>
+</ul>
+</li>
+</ul>
+<h1 id="十-嵌入式条件"><a class="markdownIt-Anchor" href="#十-嵌入式条件"></a> 十、嵌入式条件</h1>
+<p><strong>反向引用条件</strong></p>
+<p>反向引用条件<strong>仅在一个前面的子表达式得以匹配的情况下才允许使用另一个表达式</strong>。比如一个字符串<code>(123)</code>，左右括号需要同时出现才行</p>
+<pre><code>内容
+&lt;div&gt;
+&lt;a href="/home"&gt;&lt;img src="/images/home.gif"&gt;&lt;/a&gt;
+&lt;img src="/images/spacer.gif"&gt;
+&lt;a href="/search"&gt;&lt;img src="/images/search.gif"&gt;&lt;/a&gt;
+&lt;img src="/images/spacer.gif"&gt;
+&lt;a href="/help"&gt;&lt;img src="/images/help.gif"&gt;&lt;/a&gt;
+&lt;/div&gt;
+
+正则：(&lt;[Aa]\s+[^&gt;]+&gt;\s*)?&lt;[Ii][Mm][Gg]\s+[^&gt;]+&gt;(?(1)\s*&lt;\/[Aa]&gt;)
+</code></pre>
+<p><code>(&lt;[Aa]\s+[^&gt;]+&gt;\s*)?</code>匹配一个<code>&lt;A&gt;</code>或<code>&lt;a&gt;</code>标签（以及可能存在的任意属性），这个标签可有可无（因为这个子表达式的最后有一个<code>?</code>）。接下来，<code>&lt;[Ii][Mm][Gg]\s+[^&gt;]+&gt;</code>匹配一个<code>&lt;img&gt;</code>标签（大小写均可）及其任意属性。<code>(?(1)\s*&lt;\/[Aa]&gt;)</code>的起始部分是一个条件：<code>?(1)</code>表示仅当第一个反向引用（<code>&lt;A&gt;</code>标签）存在，才继续匹配<code>\s*&lt;\/[Aa]&gt;</code>（换句话说，只有当第一个<code>&lt;A&gt;</code>标签匹配成功，才去执行后面的匹配）。如果<code>(1)</code>存在，<code>\s*&lt;\/[Aa]&gt;</code>匹配结束标签<code>&lt;/A&gt;</code>之后出现的任意空白字符。</p>
+<p>用来定义这种条件的语法是<code>(?(backreference)true|false)</code>。此语法接受一个条件和两个分别在符合/不符合该条件时执行的表达式。</p>
+<pre><code>123-456-7890
+(123)456-7890
+(123)-456-7890
+(123-456-7890
+1234567890
+123 456 7890
+
+(\()?\d{3}(?(1)\)|-)\d{3}-\d{4}
+</code></pre>
+<p>从结果看，问题解决了，但它是如何解决的呢？和前面一样，<code>(\()?</code>负责检查左括号，但我们这次将其放入了括号中，这样就得到了一个子表达式。随后的<code>\d{3}</code>匹配<code>3</code>位数字的区号。依赖于是否满足条件，<code>(?(1)\)|-)</code>匹配<code>)</code>或<code>-</code>。如果<code>(1)</code>存在（也就是找到了一个左括号），必须匹配<code>\)</code>；否则，必须匹配<code>-</code>。这样一来，括号就只能成对出现。如果没有使用括号，电话区号和其余数字之间的-分隔符必须被匹配。为什么没有匹配第<code>4</code>行？因为左括号(没有与之匹配的右括号)，所以嵌入条件被视为无关文本，完全被忽略了。</p>
+<p><strong>并非所有的正则表达式实现都支持条件处理。</strong></p>
+<h1 id="十一-常用正则表达式"><a class="markdownIt-Anchor" href="#十一-常用正则表达式"></a> 十一、常用正则表达式</h1>
+<p><strong>IP地址：</strong>：</p>
+<pre><code>(((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.){3}((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))
+</code></pre>
+<p><strong>URL：</strong></p>
+<pre><code>https?:\/\/[-\w.]+(:\d+)?(\/([\w\/_.]*)?)?
+</code></pre>
+<p><code>https?:\/\/</code>匹配<code>http://</code>或<code>https://</code>（<code>?</code>使得字符<code>s</code>成为可选项）。<code>[-\w.]+</code>匹配主机名。<code>(:\d+)?</code>匹配一个可选的端口号（参见上例中的第<code>2</code>行和第<code>6</code>行）。<code>(\/([\w\/_.]*)?)?</code>匹配路径：外层的子表达式匹配<code>/</code>（如果存在的话），内层的子表达式匹配路径本身。如你所见，这个模式无法处理查询字符串，也不能正确解读嵌在<code>URL</code>之中的“<code>username:password</code>”（用户名:密码）。不过，它已经足以处理绝大多数的<code>URL</code>了（匹配主机名、端口号和路径）。</p>
+<p><strong>完整的URL：</strong></p>
+<pre><code>https?:\/\/(\w*:\w*@)?[-\w.]+(:\d+)?(\/([\w\/_.]*(\?\S+)?)?)?
+</code></pre>
+<p>该模式是在前一个例子的基础上改进而来的。这次紧跟在<code>https?: \/\/</code>后面的是<code>(\w*:\w*@)?</code>，它匹配嵌入在<code>URL</code>之中的用户名和密码（用户名和密码要用<code>:</code>隔开，后面还要跟上一个<code>@</code>字符），参见这个例子中的第<code>4</code>行。另外，路径之后的<code>(\?\S+)?</code>负责匹配查询字符串，出现在?后面的文本是可选的，这可以使用?来表示。</p>
+<p><strong>就性能来说，越复杂的模式，执行速度越慢。如果不需要额外的功能，还是不使用它比较好。</strong></p>
+<p><strong>电子邮件地址：</strong></p>
+<pre><code>(\w+\.)*\w+@(\w+\.)+[A-Za-z]+
+</code></pre>
+<p>决定电子邮件地址格式有效性的规则极其复杂。该模式无法验证所有可能的电子邮件地址。比如说，这个模式会认为<code>ben..forta@forta.com</code>是有效的（显然无效），也不允许主机名部分使用IP地址（这种形式是可以的）。还是那句话，它足以验证大部分的电子邮件地址，所以还是可以拿来一用的。</p>
+<p><strong>HTML注释：</strong></p>
+<pre><code>&lt;!-{2,}.*?-{2,}&gt;
+</code></pre>
+<p><code>&lt;!-{2,}</code>匹配<code>HTML</code>注释的开始标签，也就是<code>&lt;!</code>后面紧跟着两个或更多个连字符的情况。<code>.*?</code>匹配<code>HTML</code>注释的文字部分（这里用的是懒惰型量词）。<code>-{2,}&gt;</code>匹配<code>HTML</code>注释的结束标签。</p>
+<p><strong>JavaScript注释</strong></p>
+<pre><code>\/\/.*
+</code></pre>
+<h1 id="十二-元字符总结"><a class="markdownIt-Anchor" href="#十二-元字符总结"></a> 十二、元字符总结</h1>
+<table>
+<thead>
+<tr>
+<th>字符</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\</code></td>
+<td>转义符。例如序列<code>\\</code>匹配<code>\</code>而<code>\(</code>则匹配<code>(</code>。</td>
+</tr>
+<tr>
+<td><code>^</code></td>
+<td>匹配输入字符串的开始位置。<code>^&lt;xml?</code>表示必须配<code>&lt;xml? &gt;</code>开头的内容，<code>abc &lt;xml?&gt;</code>这种不能匹配</td>
+</tr>
+<tr>
+<td><code>$</code></td>
+<td>匹配输入字符串的结束位置。<code>&lt;/xml&gt;$</code>表示必须配<code>&lt;/xml&gt;</code>结束的内容，<code>&lt;/xml&gt; abc</code>这种不能匹配</td>
+</tr>
+<tr>
+<td><code>*</code></td>
+<td>匹配前面的子表达式零次或多次。例如，<code>zo*</code> 能匹配<code>z</code>以及<code>zoo</code>。<code>* 等价于{0,}</code>。</td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>匹配前面的子表达式一次或多次。例如，<code>zo+</code>能匹配<code>zo</code>以及<code>zoo</code>，但不能匹配<code>z</code>。<code>+ 等价于 {1,}</code>。</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>匹配前面的子表达式零次或一次。例如，<code>do(es)?</code>可以匹配<code>do</code>或<code>does</code>。<code>? 等价于 {0,1}</code>。</td>
+</tr>
+<tr>
+<td><code>{n}</code></td>
+<td><code>n</code>是一个非负整数。匹配确定的<code>n</code>次。例如，<code>o{2}</code>不能匹配<code>Bob</code>中的<code>o</code>，但是能匹配<code>food</code>中的两个 <code>o</code>。</td>
+</tr>
+<tr>
+<td><code>{n,}</code></td>
+<td><code>n</code> 是一个非负整数。至少匹配<code>n</code>次。例如，<code>o{2,}</code>不能匹配<code>Bob</code>中的<code>o</code>，但能匹配<code>foooood</code>中的所有 o。<code>o{1,}</code>等价于<code>o+</code>。<code>o{0,}</code>则等价于<code>o*</code>。</td>
+</tr>
+<tr>
+<td><code>{n,m}</code></td>
+<td><code>m</code>和<code>n</code>均为非负整数，其中<code>n &lt;= m</code>。最少匹配<code>n</code>次且最多匹配<code>m</code>次。例如，<code>o{1,3}</code>将匹配<code>fooooood</code>中的前三个<code>o</code>。<code>o{0,1}</code>等价于<code>o?</code>。请注意在逗号和两个数之间不能有空格。</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>当该字符紧跟在任何一个其他限制符 (<code>*, +, ?, {n}, {n,}, {n,m}</code>) 后面时，匹配模式是<code>非贪婪的</code>。<strong>非贪婪模式尽可能少的匹配所搜索的字符串</strong>，而默认的<strong>贪婪模式则尽可能多的匹配所搜索的字符串</strong>。例如，对于字符串<code>oooo</code>，<code>o+?</code>将匹配单个<code>o</code>，而<code>o+</code>将匹配所有<code>o</code>。</td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td>匹配除换行符（<code>\n、\r</code>）之外的任何单个字符。要匹配包括<code>\n</code>在内的任何字符，请使用像<code>(.|\n)</code>的模式。</td>
+</tr>
+<tr>
+<td><code>\d</code></td>
+<td>匹配一个数字字符。等价于 <code>[0-9]</code>。</td>
+</tr>
+<tr>
+<td><code>\D</code></td>
+<td>匹配一个非数字字符。等价于 <code>[^0-9]</code>。</td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td>匹配任何空白字符，包括空格、制表符、换页符等等。等价于 <code>[ \f\n\r\t\v]</code>。</td>
+</tr>
+<tr>
+<td><code>\S</code></td>
+<td>匹配任何非空白字符。等价于 <code>[^ \f\n\r\t\v]</code>。</td>
+</tr>
+<tr>
+<td><code>\w</code></td>
+<td>匹配字母、数字、下划线。等价于<code>[A-Za-z0-9_]</code>。</td>
+</tr>
+<tr>
+<td><code>\W</code></td>
+<td>匹配非字母、数字、下划线。等价于<code>[^A-Za-z0-9_]</code></td>
+</tr>
+<tr>
+<td><code>x|y</code></td>
+<td>匹配<code>x</code>或<code>y</code>。例如，<code>z|food</code>能匹配<code>z</code>或<code>food</code>。<code>(z|f)ood</code>则匹配<code>zood</code>或<code>food</code></td>
+</tr>
+<tr>
+<td><code>[xyz]</code></td>
+<td>字符集合。匹配所包含的任意一个字符。例如，<code>[abc]</code>可以匹配<code>plain</code>中的<code>a</code>。</td>
+</tr>
+<tr>
+<td><code>[^xyz]</code></td>
+<td>负值字符集合。匹配未包含的任意字符。例如，<code>[^abc]</code>可以匹配<code>plain</code>中的<code>p</code>、<code>l</code>、<code>i</code>、<code>n</code>。</td>
+</tr>
+<tr>
+<td><code>[a-z]</code></td>
+<td>字符范围。匹配指定范围内的任意字符。例如，<code>[a-z]</code>可以匹配<code>a</code>到<code>z</code>范围内的任意小写字母字符。</td>
+</tr>
+<tr>
+<td><code>[^a-z]</code></td>
+<td>负值字符范围。匹配任何不在指定范围内的任意字符。例如，<code>[^a-z]</code>可以匹配任何不在<code>a</code>到<code>z</code>范围内的任意字符。</td>
+</tr>
+<tr>
+<td><code>\b</code></td>
+<td>匹配一个单词边界，也就是指单词和空格间的位置。例如，<code>er\b</code>可以匹配<code>never</code>中的<code>er</code>，但不能匹配<code>verb</code>中的<code>er</code>。简单说<code>\b</code>匹配的是字符之间的一个位置：一边是单词（能够被<code>\w</code>匹配的字母数字字符和下划线），另一边是其他内容（能够被<code>\W</code>匹配的字符）。</td>
+</tr>
+<tr>
+<td><code>\B</code></td>
+<td>匹配非单词边界。<code>er\B</code>能匹配<code>verb</code>中的<code>er</code>，但不能匹配<code>never</code>中的<code>er</code>。</td>
+</tr>
+<tr>
+<td><code>(pattern)</code></td>
+<td>子表达式，例如，<code>(ab)+</code> 匹配连续出现的字符串<code>abab</code>，并将其捕获</td>
+</tr>
+<tr>
+<td><code>(?:pattern)</code></td>
+<td>匹配<code>patter</code>但不获取匹配结果，也就是说这是一个非获取匹配，不进行存储供以后使用。这在使用<code>或</code>字符 (<code>|</code>) 来组合一个模式的各个部分是很有用。例如，<code>industr(?:y|ies)</code> 就是一个比<code>industry|industries</code>更简略的表达式。</td>
+</tr>
+<tr>
+<td><code>(?=pattern)</code></td>
+<td>正向肯定预查（<code>ahead asser</code>）向前查看，在任何匹配<code>pattern</code>的字符串开始处匹配查找字符串。这是一个非获取匹配，也就是说，该匹配不需要获取供以后使用。例如，<code>Windows(?=95|98|NT|2000)</code>能匹配<code>Windows2000</code>中的<code>Windows</code>，但不能匹配<code>Windows3.1</code>中的<code>Windows</code>。预查不消耗字符，也就是说，在一个匹配发生后，在最后一次匹配之后立即开始下一次匹配的搜索，而不是从包含预查的字符之后开始。</td>
+</tr>
+<tr>
+<td><code>(?!pattern)</code></td>
+<td>正向否定预查(<code>asser</code>)，在任何不匹配pattern的字符串开始处匹配查找字符串。这是一个非获取匹配，也就是说，该匹配不需要获取供以后使用。例如<code>Windows(?!95|98|NT|2000)</code>能匹配<code>Windows3.1</code>中的<code>Windows</code>，但不能匹配<code>Windows2000</code>中的<code>Windows</code>。预查不消耗字符，也就是说，在一个匹配发生后，在最后一次匹配之后立即开始下一次匹配的搜索，而不是从包含预查的字符之后开始。</td>
+</tr>
+<tr>
+<td><code>(?&lt;=pattern)</code></td>
+<td>反向(<code>behin</code>)肯定预查向后查看，与正向肯定预查类似，只是方向相反。例如，<code>(?&lt;=95|98|NT|2000)Windows</code>能匹配<code>2000Windows</code>中的<code>Windows</code>，但不能匹配<code>3.1Windows</code>中的<code>Windows</code>。</td>
+</tr>
+<tr>
+<td><code>(?&lt;!pattern)</code></td>
+<td>反向否定预查，与正向否定预查类似，只是方向相反。例如<code>(?&lt;!95|98|NT|2000)Windows</code>能匹配<code>3.1Windows</code>中的<code>Windows</code>，但不能匹配<code>2000Windows</code>中的<code>Windows</code>。</td>
+</tr>
+</tbody>
+</table>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

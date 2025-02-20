@@ -1,0 +1,281 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>遍历二叉树的几种思路</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 一、背景
+最近在公司面试（一面、二面）候选人的时候，大多数候选人基本都能正确的写出非递归版的前序遍历和中序遍历二叉树，但是大多数人都不能正确的写出非递归版的后续遍历。跟一个曾经拿过NOI银牌同事私下讨论了下后续遍历算法到底难不难。结论是，说难也难说不难也不难，说不难是因为，如果你看过相关解法，你可以很快就就理解解法的思路。说难，是如果你没看过，或者看了过了很久又忘了，要在15分钟左右写个Bug free的版本还是有点难的。
+跟同事讨论下二叉树遍历的几种写法，所以就有了这篇文章。
+ 二、二叉树几种解法的思考
+ 2.1 递归版
+前序遍历递归
+func preOrderRecursion(node *TreeNode, ans *[]int) {
+	if node == nil {
+		return
+	}
+
+	.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">遍历二叉树的几种思路</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E8%83%8C%E6%99%AF"><span class="toc-text"> 一、背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E4%BA%8C%E5%8F%89%E6%A0%91%E5%87%A0%E7%A7%8D%E8%A7%A3%E6%B3%95%E7%9A%84%E6%80%9D%E8%80%83"><span class="toc-text"> 二、二叉树几种解法的思考</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#21-%E9%80%92%E5%BD%92%E7%89%88"><span class="toc-text"> 2.1 递归版</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#22-%E8%BF%AD%E4%BB%A3-%E6%A0%88"><span class="toc-text"> 2.2 迭代 - 栈</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#23-morris-%E9%81%8D%E5%8E%86"><span class="toc-text"> 2.3 Morris 遍历</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#24-%E5%9F%BA%E4%BA%8E%E6%A0%88%E5%B8%A7%E7%9A%84%E6%80%9D%E6%83%B3%E6%8A%8A%E9%80%92%E5%BD%92%E8%BD%AC%E6%88%90for%E5%BE%AA%E7%8E%AF"><span class="toc-text"> 2.4 基于栈帧的思想把递归转成for循环</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">遍历二叉树的几种思路</h1><time class="has-text-grey" datetime="2021-08-12T02:43:05.000Z">2021-08-12</time><article class="mt-2 post-content"><h2 id="一-背景"><a class="markdownIt-Anchor" href="#一-背景"></a> 一、背景</h2>
+<p>最近在公司面试（一面、二面）候选人的时候，大多数候选人基本都能正确的写出非递归版的<code>前序遍历</code>和<code>中序遍历</code>二叉树，但是大多数人都不能正确的写出非递归版的<code>后续遍历</code>。跟一个曾经拿过<code>NOI银牌</code>同事私下讨论了下<code>后续遍历</code>算法到底难不难。结论是，说难也难说不难也不难，说不难是因为，如果你看过相关解法，你可以很快就就理解解法的思路。说难，是如果你没看过，或者看了过了很久又忘了，要在15分钟左右写个<code>Bug free</code>的版本还是有点难的。</p>
+<p>跟同事讨论下二叉树遍历的几种写法，所以就有了这篇文章。</p>
+<h2 id="二-二叉树几种解法的思考"><a class="markdownIt-Anchor" href="#二-二叉树几种解法的思考"></a> 二、二叉树几种解法的思考</h2>
+<h3 id="21-递归版"><a class="markdownIt-Anchor" href="#21-递归版"></a> 2.1 递归版</h3>
+<p>前序遍历递归</p>
+<pre><code>func preOrderRecursion(node *TreeNode, ans *[]int) {
+	if node == nil {
+		return
+	}
+
+	*ans = append(*ans, node.Val)
+	postorderTraversal1(node.Left, ans)
+	postorderTraversal1(node.Right, ans)
+	return
+}
+</code></pre>
+<p>中序遍历递归</p>
+<pre><code>func inOrderRecursion(node *TreeNode, ans *[]int) {
+	if node == nil {
+		return
+	}
+
+	postorderTraversal1(node.Left, ans)
+	*ans = append(*ans, node.Val)
+	postorderTraversal1(node.Right, ans)
+	return
+}
+</code></pre>
+<p>后序遍历递归</p>
+<pre><code>func postOrderRecursion(node *TreeNode, ans *[]int) {
+	if node == nil {
+		return
+	}
+
+	postorderTraversal1(node.Left, ans)
+	postorderTraversal1(node.Right, ans)
+	*ans = append(*ans, node.Val)
+	return
+}
+</code></pre>
+<h3 id="22-迭代-栈"><a class="markdownIt-Anchor" href="#22-迭代-栈"></a> 2.2 迭代 - 栈</h3>
+<p>前序遍历 - 栈</p>
+<pre><code>func preOrder(root *TreeNode) []int {
+	res := make([]int, 0)
+	stack := []*TreeNode{root}
+	for len(stack) != 0 {
+		node := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		res = append(res, node.Val)
+
+		if node.Right != nil {
+			stack = append(stack, node.Right)
+		}
+		if node.Left != nil {
+			stack = append(stack, node.Left)
+		}
+	}
+
+	return res
+}
+</code></pre>
+<p>中序遍历 - 栈</p>
+<pre><code>func inOrder(root *TreeNode) []int {
+	res := make([]int, 0)
+	stack := make([]*TreeNode, 0)
+	node := root
+
+	for node != nil || len(stack) &gt; 0 {
+		if node != nil {
+			stack = append(stack, node)
+			node = node.Left
+			continue
+		}
+
+		node = stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		res = append(res, node.Val)
+		node = node.Right
+	}
+
+	return res
+}
+</code></pre>
+<p>后续遍历</p>
+<pre><code>func postOrder(root *TreeNode) []int {
+	res := make([]int, 0)
+	node := root
+	stack := make([]*TreeNode, 0)
+	var prev *TreeNode
+	for node != nil || len(stack) &gt; 0 {
+		if node != nil {
+			stack = append(stack, node)
+			node = node.Left
+			continue
+		}
+
+		node = stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		if node.Right == nil || node.Right == prev {
+			res = append(res, node.Val)
+			prev = node
+			node = nil
+		} else {
+			stack = append(stack, node)
+			node = node.Right
+		}
+	}
+
+	return res
+}
+</code></pre>
+<h3 id="23-morris-遍历"><a class="markdownIt-Anchor" href="#23-morris-遍历"></a> 2.3 Morris 遍历</h3>
+<p>前序遍历 - Morris</p>
+<pre><code>func preorderTraversal(root *TreeNode) (vals []int) {
+    var p1, p2 *TreeNode = root, nil
+    for p1 != nil {
+        p2 = p1.Left
+        if p2 != nil {
+            for p2.Right != nil &amp;&amp; p2.Right != p1 {
+                p2 = p2.Right
+            }
+            if p2.Right == nil {
+                vals = append(vals, p1.Val)
+                p2.Right = p1
+                p1 = p1.Left
+                continue
+            }
+            p2.Right = nil
+        } else {
+            vals = append(vals, p1.Val)
+        }
+        p1 = p1.Right
+    }
+    return
+}
+</code></pre>
+<p>中序遍历 - Morris</p>
+<pre><code>func inorderTraversal(root *TreeNode) (res []int) {
+	for root != nil {
+		if root.Left != nil {
+			// predecessor 节点表示当前 root 节点向左走一步，然后一直向右走至无法走为止的节点
+			predecessor := root.Left
+			for predecessor.Right != nil &amp;&amp; predecessor.Right != root {
+				// 有右子树且没有设置过指向 root，则继续向右走
+				predecessor = predecessor.Right
+			}
+			if predecessor.Right == nil {
+				// 将 predecessor 的右指针指向 root，这样后面遍历完左子树 root.Left 后，就能通过这个指向回到 root
+				predecessor.Right = root
+				// 遍历左子树
+				root = root.Left
+			} else { // predecessor 的右指针已经指向了 root，则表示左子树 root.Left 已经访问完了
+				res = append(res, root.Val)
+				// 恢复原样
+				predecessor.Right = nil
+				// 遍历右子树
+				root = root.Right
+			}
+		} else { // 没有左子树
+			res = append(res, root.Val)
+			// 若有右子树，则遍历右子树
+			// 若没有右子树，则整颗左子树已遍历完，root 会通过之前设置的指向回到这颗子树的父节点
+			root = root.Right
+		}
+	}
+	return
+}
+</code></pre>
+<p>后序遍历 - Morris</p>
+<pre><code>func reverse(a []int) {
+    for i, n := 0, len(a); i &lt; n/2; i++ {
+        a[i], a[n-1-i] = a[n-1-i], a[i]
+    }
+}
+
+func postorderTraversal(root *TreeNode) (res []int) {
+    addPath := func(node *TreeNode) {
+        resSize := len(res)
+        for ; node != nil; node = node.Right {
+            res = append(res, node.Val)
+        }
+        reverse(res[resSize:])
+    }
+
+    p1 := root
+    for p1 != nil {
+        if p2 := p1.Left; p2 != nil {
+            for p2.Right != nil &amp;&amp; p2.Right != p1 {
+                p2 = p2.Right
+            }
+            if p2.Right == nil {
+                p2.Right = p1
+                p1 = p1.Left
+                continue
+            }
+            p2.Right = nil
+            addPath(p1.Left)
+        }
+        p1 = p1.Right
+    }
+    addPath(root)
+    return
+}
+</code></pre>
+<h3 id="24-基于栈帧的思想把递归转成for循环"><a class="markdownIt-Anchor" href="#24-基于栈帧的思想把递归转成for循环"></a> 2.4 基于栈帧的思想把递归转成for循环</h3>
+<p>我们可以把递归版本的迭代，基于函数调用的栈帧思想，转成<code>for</code>循环，如下代码，我们知道递归调用对应了<code>4</code>行代码：</p>
+<pre><code>func postOrder(node *TreeNode, ans *[]int) {
+	if node == nil {return}       // line == 0
+	postOrder(node.Left, ans)     // line == 1
+	postOrder(node.Right, ans)    // line == 2
+	*ans = append(*ans, node.Val) // line == 3
+}
+</code></pre>
+<p>转成<code>for</code>循环如下，我们在每个<code>line</code>执行上面不同的逻辑操作。这种方法的好处是，无聊是前序、中序、后续算法，我们只要调整下面 <code>if line == xx</code>的逻辑就行了。理论上所有的递归转非递归都可以基于这个思想去做。</p>
+<pre><code>type DFSNode struct {
+	line int   // 表示代码行数
+	v    *TreeNode // 表示当前 node 
+}
+
+func postorderTraversal(root *TreeNode) []int {
+	stack := []*DFSNode{}
+	stack = append(stack, &amp;DFSNode{
+		v:    root,
+		line: 0,
+	})
+	
+	ans := []int{}
+	
+	for len(stack) &gt; 0 {
+		cur := stack[len(stack)-1]
+		if cur.line == 0 {  // 对应上面的 if node == nil {return}
+			if cur.v == nil { // 如果 node 为 nil ，出栈
+				stack = stack[0 : len(stack)-1]
+				continue
+			}
+		} else if cur.line == 1 {  // 对应上面 postOrder(node.Left, ans)
+			stack = append(stack, &amp;DFSNode{ // 函数调用，压栈
+				v:    cur.v.Left,
+				line: 0, // 从第 0 行 开始
+			})
+		} else if cur.line == 2 { // postOrder(node.Right, ans)  
+			stack = append(stack, &amp;DFSNode{ // 函数调用，压栈
+				v:    cur.v.Right,
+				line: 0, // 从第 0 行 开始
+			})
+		} else if cur.line == 3 { // 
+			ans = append(ans, cur.v.Val)
+			stack = stack[0 : len(stack)-1]
+		}
+		
+		cur.line++ // 执行下一行代码
+	}
+	return ans
+}
+</code></pre>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

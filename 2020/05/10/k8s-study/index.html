@@ -1,0 +1,210 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>K8S学习笔记</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+
+ 环境配置
+ Docker File 编写
+#源镜像
+FROM golang:latest
+# 容器环境变量添加，会覆盖默认的变量值
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GO111MODULE=&quot;on&quot;
+ENV test=&quot;on&quot;
+
+# 作者
+LABEL author=&quot;fanlv&quot;
+LABEL email=&quot;fanlvlgh@gmail.com&quot;
+#设置工作目录
+WORKDIR /go/src/gitee.com/fanlv/GolangDemo/GoTest/docker
+# 复制仓库源文件到容器里
+COPY . .
+
+# 编译可执行二进制文件(一定要写这些编译参数，指定了可执行程序的运行平台,参考：https://www.jianshu.com/p/.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">K8S学习笔记</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-text"> 环境配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#docker-file-%E7%BC%96%E5%86%99"><span class="toc-text"> Docker File 编写</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#docker-file-%E5%8F%91%E5%B8%83"><span class="toc-text"> Docker File 发布</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%BF%9B%E5%85%A5%E5%AE%B9%E5%99%A8"><span class="toc-text"> 进入容器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-minikube"><span class="toc-text"> 安装 minikube</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%83%A8%E7%BD%B2-application"><span class="toc-text"> 部署 Application</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#loadbalancer-deployments"><span class="toc-text"> LoadBalancer deployments</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#node"><span class="toc-text"> node</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pods"><span class="toc-text"> Pods</span></a></li><li class="toc-item toc-level-3"><a class="toc-link"><span class="toc-text"> </span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#kubectl-explain-%E6%9D%A5%E5%8F%91%E7%8E%B0%E5%8F%AF%E8%83%BD%E7%9A%84-api-%E5%AF%B9%E8%B1%A1%E5%AD%97%E6%AE%B5"><span class="toc-text"> kubectl explain 来发现可能的 API 对象字段</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-kubectl-create-%E6%9D%A5%E5%88%9B%E5%BB%BA-pod"><span class="toc-text"> 使用 kubectl create 来创建 pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%97%E5%88%B0%E8%BF%90%E8%A1%8C%E4%B8%AD-pod-%E7%9A%84%E5%AE%8C%E6%95%B4%E5%AE%9A%E4%B9%89"><span class="toc-text"> 得到运行中 pod 的完整定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pod-%E5%88%97%E8%A1%A8%E4%B8%AD%E6%9F%A5%E7%9C%8B%E6%96%B0%E5%88%9B%E5%BB%BA%E7%9A%84-pod"><span class="toc-text"> pod 列表中查看新创建的 pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E7%9C%8B%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%97%A5%E5%BF%97"><span class="toc-text"> 查看应用程序日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%86%E6%9C%AC%E5%9C%B0%E7%BD%91%E7%BB%9C%E7%AB%AF%E5%8F%A3%E8%BD%AC%E5%8F%91%E5%88%B0pod%E4%B8%AD%E7%9A%84%E7%AB%AF%E5%8F%A3"><span class="toc-text"> 将本地网络端口转发到pod中的端口</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%A0%87%E7%AD%BE%E7%BB%84%E7%BB%87pod"><span class="toc-text"> 使用标签组织pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8%E6%A0%87%E7%AD%BE%E9%80%89%E6%8B%A9%E5%99%A8%E5%88%97%E5%87%BA-pod"><span class="toc-text"> 使用标签选择器列出 pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9F%A5%E6%89%BE%E5%AF%B9%E8%B1%A1%E7%9A%84%E6%B3%A8%E8%A7%A3"><span class="toc-text"> 查找对象的注解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%81%9C%E6%AD%A2%E5%92%8C%E7%A7%BB%E9%99%A4pod"><span class="toc-text"> 停止和移除pod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B0%B4%E5%B9%B3%E7%BC%A9%E6%94%BE-pod"><span class="toc-text"> 水平缩放 pod</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Note"></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">K8S学习笔记</h1><time class="has-text-grey" datetime="2020-05-10T03:00:00.000Z">2020-05-10</time><article class="mt-2 post-content"><input type="hidden" name="hidden" id="hidden_id1" value="fanlv_blog_hidden_recenet_list">
+<input type="hidden" name="hidden" id="hidden_id2" value="fanlv_blog_hidden_list">
+<h2 id="环境配置"><a class="markdownIt-Anchor" href="#环境配置"></a> 环境配置</h2>
+<h3 id="docker-file-编写"><a class="markdownIt-Anchor" href="#docker-file-编写"></a> Docker File 编写</h3>
+<pre><code>#源镜像
+FROM golang:latest
+# 容器环境变量添加，会覆盖默认的变量值
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GO111MODULE="on"
+ENV test="on"
+
+# 作者
+LABEL author="fanlv"
+LABEL email="fanlvlgh@gmail.com"
+#设置工作目录
+WORKDIR /go/src/gitee.com/fanlv/GolangDemo/GoTest/docker
+# 复制仓库源文件到容器里
+COPY . .
+
+# 编译可执行二进制文件(一定要写这些编译参数，指定了可执行程序的运行平台,参考：https://www.jianshu.com/p/4b345a9e768e)
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o mem_test -gcflags "-N -l" gotest.go
+
+# 构建生产镜像，使用最小的linux镜像，只有5M
+# 同一个文件里允许多个FROM出现的，每个FROM被称为一个阶段，多个FROM就是多个阶段，最终以最后一个FROM有效，以前的FROM被抛弃
+# 多个阶段的使用场景就是将编译环境和生产环境分开
+# 参考：https://docs.docker.com/engine/reference/builder/#from
+FROM alpine:latest
+WORKDIR /root/
+# 从编译阶段复制文件
+# 这里使用了阶段索引值，第一个阶段从0开始，如果使用阶段别名则需要写成 COPY --from=build_stage /go/src/app/webserver /
+COPY --from=0 /go/src/gitee.com/fanlv/GolangDemo/GoTest/docker .
+#暴露端口
+EXPOSE 8000
+#最终运行docker的命令
+ENTRYPOINT  ["./mem_test"]
+</code></pre>
+<h3 id="docker-file-发布"><a class="markdownIt-Anchor" href="#docker-file-发布"></a> Docker File 发布</h3>
+<pre><code># 编译 docker file
+# docker build -t gomemtest .
+# 运行
+# docker run --name gomemtest -p 8000:8000 -d  gomemtest
+#发布docker
+# docker tag gomemtest fanlv/gomemtest
+# docker push fanlv/gomemtest
+
+# docker tag gomemtest fanlv/gomemtest:v1.0.0
+# docker push fanlv/gomemtest:tagname:v1.0.0
+</code></pre>
+<h3 id="进入容器"><a class="markdownIt-Anchor" href="#进入容器"></a> 进入容器</h3>
+<pre><code>docker exec -it gomemtest sh 
+</code></pre>
+<h3 id="安装-minikube"><a class="markdownIt-Anchor" href="#安装-minikube"></a> 安装 minikube</h3>
+<p><a target="_blank" rel="noopener" href="https://minikube.sigs.k8s.io/docs/start/">minikube Installation</a></p>
+<pre><code>brew install minikube
+
+brew install kubernetes-cli
+
+kubectl get po -A  
+
+minikube kubectl -- get po -A
+</code></pre>
+<h3 id="部署-application"><a class="markdownIt-Anchor" href="#部署-application"></a> 部署 Application</h3>
+<pre><code>kubectl create deployment mem --image=fanlv/gomemtest
+
+kubectl delete -n default deployment mem 
+
+kubectl get services mem
+
+minikube service mem  // web 访问服务端口
+
+kubectl port-forward service/mem 8000:8000
+</code></pre>
+<h3 id="loadbalancer-deployments"><a class="markdownIt-Anchor" href="#loadbalancer-deployments"></a> LoadBalancer deployments</h3>
+<pre><code>kubectl create deployment balanced --image=k8s.gcr.io/echoserver:1.4  
+kubectl expose deployment balanced --type=LoadBalancer --port=8080
+
+
+minikube tunnel
+kubectl get services balanced
+</code></pre>
+<h3 id="node"><a class="markdownIt-Anchor" href="#node"></a> node</h3>
+<pre><code>k get nodes // 获取node
+k describe node minikube // 输出显示了节点的状态、 CPU 和内存数据、系统信息、运行容器的节点等
+</code></pre>
+<h3 id="pods"><a class="markdownIt-Anchor" href="#pods"></a> Pods</h3>
+<pre><code>k get pods
+k get services
+</code></pre>
+<h3 id=""><a class="markdownIt-Anchor" href="#"></a> </h3>
+<p>k run mem --image=fanlv/gomemtest --port=8000 --generator=run/v1</p>
+<p>k expose rc mem --type=LoadBalancer --name mem-http</p>
+<h3 id="kubectl-explain-来发现可能的-api-对象字段"><a class="markdownIt-Anchor" href="#kubectl-explain-来发现可能的-api-对象字段"></a> kubectl explain 来发现可能的 API 对象字段</h3>
+<pre><code>kubectl explain pods
+
+kubectl explain pod.spec
+</code></pre>
+<h3 id="使用-kubectl-create-来创建-pod"><a class="markdownIt-Anchor" href="#使用-kubectl-create-来创建-pod"></a> 使用 kubectl create 来创建 pod</h3>
+<pre><code> kubectl create -f kubia-manual.yaml
+</code></pre>
+<h3 id="得到运行中-pod-的完整定义"><a class="markdownIt-Anchor" href="#得到运行中-pod-的完整定义"></a> 得到运行中 pod 的完整定义</h3>
+<pre><code> kubectl get po kubia-manual -o yaml
+ 
+ kubectl get po kubia-manual -o json
+</code></pre>
+<h3 id="pod-列表中查看新创建的-pod"><a class="markdownIt-Anchor" href="#pod-列表中查看新创建的-pod"></a> pod 列表中查看新创建的 pod</h3>
+<pre><code>kubectl get pods
+</code></pre>
+<h3 id="查看应用程序日志"><a class="markdownIt-Anchor" href="#查看应用程序日志"></a> 查看应用程序日志</h3>
+<pre><code>docker logs &lt;container id&gt;
+
+kubectl get &lt;pod name&gt;
+
+kubectl get &lt;pod name&gt; -c &lt;容器 名称&gt;
+</code></pre>
+<h3 id="将本地网络端口转发到pod中的端口"><a class="markdownIt-Anchor" href="#将本地网络端口转发到pod中的端口"></a> 将本地网络端口转发到pod中的端口</h3>
+<pre><code>kubectl port-forward kubia manual 8888:8080
+</code></pre>
+<h3 id="使用标签组织pod"><a class="markdownIt-Anchor" href="#使用标签组织pod"></a> 使用标签组织pod</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-10bd1c785d3dc87d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<pre><code>kubectl create -f kubia-manual-with-labels.yaml
+
+kubectl get po --show-labels
+	
+k label po balanced-5b47687d6d-n2svl evn=debug --overwrite
+</code></pre>
+<h3 id="使用标签选择器列出-pod"><a class="markdownIt-Anchor" href="#使用标签选择器列出-pod"></a> 使用标签选择器列出 pod</h3>
+<pre><code>kubectl get po -l creation_method=manual
+
+kubectl get po -l env
+</code></pre>
+<h3 id="查找对象的注解"><a class="markdownIt-Anchor" href="#查找对象的注解"></a> 查找对象的注解</h3>
+<pre><code>kubectl get po kubia-zxzij -o yaml
+
+// 添加和修改注解
+kubectl annotate pod kubia-manual mycompany . com/someannotation="foo bar ”
+
+kubectl describe pod kubia-manual
+</code></pre>
+<h3 id="停止和移除pod"><a class="markdownIt-Anchor" href="#停止和移除pod"></a> 停止和移除pod</h3>
+<pre><code>kubectl delete po kubia-gpu
+
+// 使用标签选择器删除 pod
+kubectl delete po -1 creation method=manual
+
+//
+kubectl delete po - 1 rel=canary
+
+// 删除命名空间中的（几乎）所有资源
+kubec tl delete all --all
+
+// 查看之前的日志
+k logs balanced-5b47687d6d-n2svl --previous
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-10bd1c785d3dc87d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<pre><code>kubectl create -f kubia-rc.yaml
+</code></pre>
+<h3 id="水平缩放-pod"><a class="markdownIt-Anchor" href="#水平缩放-pod"></a> 水平缩放 pod</h3>
+<pre><code>kubectl scale re kubia --replicas=lO
+</code></pre>
+<ol>
+<li>单体应用，方便部署。 不好水平扩展。</li>
+<li>微服务，扩容方便，只用针对单个服务扩容。</li>
+<li>微服务调试变得困难，依赖各个模块。 还需要做服务治理。</li>
+<li>环境差异。 依赖库版本不同。</li>
+</ol>
+<p>docker 好处。</p>
+<ol>
+<li>提供一致的开发环境。简单了部署流程，服务发布流程化。</li>
+<li>比虚拟机更轻量。</li>
+</ol>
+<p>k8s好处</p>
+<ol>
+<li>简化应用部署。</li>
+<li>更好利用硬件。</li>
+<li>健康检查和自修复。</li>
+<li>自动扩容</li>
+</ol>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

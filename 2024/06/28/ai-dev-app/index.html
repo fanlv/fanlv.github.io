@@ -1,0 +1,208 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>用AI开发一个APP可行吗？</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+ 背景
+平时空闲时间，乱七八糟的想法比较多，有时候希望能够快速记录一下当时的想法，每次拿手机打字感觉挺麻烦的，就想有个录音软件，但是系统自带的录音软件不支持iCloud同步，就感觉挺鸡肋的。然后就去Apple Store搜了下，找到了一个合适的APP，不过这玩意居然卖38 RMB，难以理解。当初搞APP开发的时候，我估计3天就能撸一个现成的。巅峰时期，心流状态下，帮一个朋友做APP 估的一个月的工作量，国庆5天就做完了。
+现在虽然7-8年没搞过APP开发了，加上iOS开发的技术栈都迭代几轮了。不过我觉得在AI加持下写个录音App应该So Easy。还有生成图片的大模型，UI设计我都不用去麻烦别人。
+ 功能拆解
+功能需求一句话总结：我就是要一个录音App，能方便的在我的iPhone和Apple Watch上.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">用AI开发一个APP可行吗？</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text"> 背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%9F%E8%83%BD%E6%8B%86%E8%A7%A3"><span class="toc-text"> 功能拆解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#uiux"><span class="toc-text"> UI&#x2F;UX</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%BE%E6%A0%87"><span class="toc-text"> 图标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%BBui"><span class="toc-text"> 画UI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#icloud-%E4%BA%91%E5%90%8C%E6%AD%A5"><span class="toc-text"> iCloud 云同步</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#shortcut-siri"><span class="toc-text"> ShortCut &amp;&amp; Siri</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#dynamicisland%E7%81%B5%E5%8A%A8%E5%B2%9B"><span class="toc-text"> DynamicIsland（灵动岛）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#apple-watch-app"><span class="toc-text"> Apple Watch App</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text"> 总结</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/iOS"><i class="tag post-item-tag">iOS</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">用AI开发一个APP可行吗？</h1><time class="has-text-grey" datetime="2024-06-28T14:08:00.000Z">2024-06-28</time><article class="mt-2 post-content"><img alt="cover" src="https://upload-images.jianshu.io/upload_images/12321605-a68393e0884f4e32.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<h2 id="背景"><a class="markdownIt-Anchor" href="#背景"></a> 背景</h2>
+<p>平时空闲时间，乱七八糟的想法比较多，有时候希望能够快速记录一下当时的想法，每次拿手机打字感觉挺麻烦的，就想有个录音软件，但是系统自带的录音软件不支持<code>iCloud</code>同步，就感觉挺鸡肋的。然后就去<code>Apple Store</code>搜了下，找到了一个合适的<code>APP</code>，不过这玩意居然卖<code>38 RMB</code>，难以理解。当初搞<code>APP</code>开发的时候，我估计<code>3天</code>就能撸一个现成的。巅峰时期，心流状态下，帮一个朋友做<code>APP</code> 估的一个月的工作量，国庆<code>5</code>天就做完了。</p>
+<p>现在虽然<code>7-8</code>年没搞过<code>APP</code>开发了，加上<code>iOS</code>开发的技术栈都迭代几轮了。不过我觉得在<code>AI</code>加持下写个录音<code>App</code>应该<code>So Easy</code>。还有生成图片的大模型，<code>UI</code>设计我都不用去麻烦别人。</p>
+<h2 id="功能拆解"><a class="markdownIt-Anchor" href="#功能拆解"></a> 功能拆解</h2>
+<p>功能需求一句话总结：我就是要一个录音<code>App</code>，能方便的在我的<code>iPhone</code>和<code>Apple Watch</code>上录音，能够进行<code>iCloud</code>同步，能够分享给其他人。</p>
+<h3 id="uiux"><a class="markdownIt-Anchor" href="#uiux"></a> UI/UX</h3>
+<p>最开始想法很简单，我跟<code>AI</code>说下我要做个什么<code>APP</code>有什么功能，<code>AI</code>帮我把所有的<code>UI</code>都生成好。网上搜了下，相关的产品还不少随便贴一个 <a target="_blank" rel="noopener" href="https://uxplanet.org/15-ai-tools-every-ui-ux-designer-must-try-a61c697649a2">15 AI tools every UI/UX designer must try</a> 。</p>
+<p>试了一圈下来，稍微靠谱的不是很多，试用下来完成度比较高的是 <a target="_blank" rel="noopener" href="https://app.uizard.io/">uizard</a>，但是生成的交互图太丑，如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bdb7c08a8ec23757.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>经过不断地优化调试<code>Prompt</code>，我最终放弃了<code>AI</code>生成交互的这条路。主要感受：</p>
+<ol>
+<li>图片生成速度太慢（算力），一张图片平均下来<code>5~8s</code>，这东西跟抽<code>盲盒</code>，不可能一次就满意，不满意来回换太耗时。也不支持细节调整。</li>
+<li>做为用户我也很难通过一段<code>Prompt</code>非常清楚的描述出自己要什么，我只能通过<code>录音</code>、<code>简约</code>这些抽象的词来告知<code>AI</code>我大致的需求。理想态是，<code>AI</code>能一下生成<code>10</code>或者<code>100</code>套来给用户选。</li>
+<li>总体感受，<code>AI for UI</code>目前最多只是能做个辅助（说辅助估计<code>UI&amp;UX</code>设计师都觉得高看它了），要想把所有的<code>UI&amp;UX</code>工作交给<code>AI</code>来做基本不可能。</li>
+</ol>
+<h3 id="图标"><a class="markdownIt-Anchor" href="#图标"></a> 图标</h3>
+<p>想着<code>UI</code>这边比较复杂的功能<code>AI</code>表现不行，那简单的<code>logo</code>、按钮图片应该没啥问题吧。国内支持生成图片的大模型还挺多的了。比如 <a target="_blank" rel="noopener" href="https://www.doubao.com/chat/create-image">豆包</a>、<a target="_blank" rel="noopener" href="https://yiyan.baidu.com/">文心一言</a> 都支持。不过 <a target="_blank" rel="noopener" href="https://www.doubao.com/chat/create-image">豆包</a>、<a target="_blank" rel="noopener" href="https://yiyan.baidu.com/">文心一言</a> 生成的图片都有水印，所以直接被我<code>Pass</code>了。</p>
+<p><code>AI</code>图片生成的网站挺多的，随便找了一些试用了下，跟上面生成<code>UI</code>一样，虽然能生成图片，但是跟自己想要的天差地别。也不支持生成的图片微调，总的来说要生成一个让自己的满意的图片挺难的。</p>
+<p>再就是一个<code>APP</code>里面的所有的按钮图标，风格需要保持一致，但是这个也不支持生成套图。所以最后只是把<code>APP Logo</code> 这个工作外包给了<code>AI</code>，<code>APP</code>内的各种图片图标还是用了苹果官方自带的一套图标库 <a target="_blank" rel="noopener" href="https://developer.apple.com/sf-symbols/">SF Symbols</a> ，虽然很简陋，但是整体风格也会跟统一一些。</p>
+<p>贴下<code>AI</code>生成的一些图片：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-656ed7a536fc960f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="画ui"><a class="markdownIt-Anchor" href="#画ui"></a> 画UI</h3>
+<p>以前我做<code>iOS</code>开发的时候主要是用的<code>Objective-C</code>来开发，当初主要是<code>MVC</code>的模式，我一般都是在<code>Controller</code>里面写画<code>UI</code>的代码。<code>demo</code>如下：</p>
+<pre><code>@property (nonatomic,assign) int count;
+@property (nonatomic,strong) UIButton *btn;
+
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+    _btn = [UIButton buttonWithType:UIButtonTypeCustom];
+    _btn.frame = CGRectMake(100,100,100,100);
+    [_btn setTitle:[NSString stringWithFormat:@"%d", _count] forState:UIControlStateNormal];
+    [_btn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    [_btn addTarget:self action:@selector(btnClick) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:_btn];
+}
+
+- (void)btnClick
+{
+    self.count += 1;
+    [_btn setTitle:[NSString stringWithFormat:@"%d", _count] forState:UIControlStateNormal];
+}
+</code></pre>
+<p>还有一种用的<code>StoreBoard</code>，可以通过通过拖拽控件的方式来画<code>UI</code>效果如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-a92bff39222f402c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>不过这<code>2019</code>年苹果推出了一个新的画<code>UI</code>的技术：<code>SwiftUI</code>，与早期的<code>UIKit</code>（上面介绍的两种都是<code>UIKite</code>模式）不同，<code>SwiftUI</code>使用声明式语法，这使得构建复杂界面和动画更加直观和简洁。支持实时预览，修改代码所见即所得（实际上大部分时候UI刷新比较慢）。<code>SwiftUI</code>非常适合于实现<code>MVVM（Model-View-ViewModel）</code>设计模式。</p>
+<pre><code>struct ContentView: View {
+    @State private var count = 0
+
+    var body: some View {
+        VStack {
+            Text("Count: \(count)")
+                .font(.largeTitle)
+            Button(action: {
+                count += 1
+            }) {
+                Text("Increase")
+            }
+            .padding()
+        }
+    }
+}
+</code></pre>
+<p>这个例子展示了如何使用<code>@State</code>管理状态，并将其绑定到视图上。当按钮被点击时，计数器增加，视图也会相应地更新。相比上面的<code>UIKit</code>的方式会简单直接很多。变量<code>count</code>跟文本控件绑定了，修改<code>count</code>就等于修改了<code>Text</code>上显示的内容，的确是方便了很多。</p>
+<p>虽然我没有学习过<code>Swift</code>也不知道<code>SwiftUI</code>任何基本用法，在<code>AI</code>的加持下我觉得还是用<code>SwiftUI</code>来画个界面问题不大。实际上<code>AI</code>给了我很大的惊喜，结合<code>gpt4o</code>的多模态的能力，我看到其他<code>APP</code>好的交互形式，我直接可以截图发送给<code>UI</code>，让他们帮我生成<code>SwiftUI</code>，大多时候它都能帮我正确的识别出截图中<code>字体</code>、<code>颜色</code>、<code>控件</code>等等，<strong>大大的提升了我在画界面时候的开发效率。</strong> 感觉<code>AI</code>在生成这种胶水代码方面真的是<strong>大有可为</strong>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3268414e717287ae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>但是在一些复杂的交互场景，<code>AI</code>局限性还是体现出来了，比如我要实现一个根据录音时候说话声音大小来展示的<code>声波图</code>，调教了很久，<code>AI</code>始终不能给我一个<code>Work</code>的<code>Demo</code>出来。所以这个功能我还是放弃使用<code>AI</code>了，最后自己实现。</p>
+<p>我需要实现的<code>声波图</code></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9b5ef6c8af6ab9ab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="icloud-云同步"><a class="markdownIt-Anchor" href="#icloud-云同步"></a> iCloud 云同步</h3>
+<p><code>iCloud</code>支持三种类型数据同步：</p>
+<ol>
+<li><code>Key-Value Storage</code>，是<code>iCloud</code>提供的一种简单存储机制，用于存储少量数据，如用户设置和偏好。每个键值对都会同步到用户的所有设备上。</li>
+<li><code>iCloud Documents</code>，<code>iCloud Documents</code>是用于在用户的所有设备上存储和共享文档的服务。它允许应用程序存储用户生成的内容并在所有设备上保持同步。</li>
+<li><code>CloudKit</code>，<code>CloudKit</code>是<code>iCloud</code>提供的高级云存储服务，用于存储结构化数据。它可以处理更复杂的数据模型和大规模数据同步需求，是一种更强大的解决方案。（看是很高大上，其实我感觉没啥用，我要云存储，我自己起个<code>Server</code>，存我自己<code>DB</code>不就行了，为毛要存你<code>iCloud</code>, 官方<code>CloudKit</code>文档晦涩难度，<code>API</code>使用麻烦的要命，强烈不推荐用这玩意）</li>
+</ol>
+<p>要调试<code>iCloud</code>这功能，居然还要开个苹果开发者资格才行（<code>668RMB</code>），这一点苹果不厚道。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-50f4236d0de40ab6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>我跟<code>AI</code>说了下，我要做<code>iCloud</code>文件同步的能力，<code>AI</code>很快就给我一个可以用的代码：</p>
+<pre><code>func saveFileToICloud() {
+    // 获取iCloud文档目录的URL
+    guard let iCloudURL = FileManager.default.url(forUbiquityContainerIdentifier: nil)?.appendingPathComponent("Documents") else {
+        print("iCloud is not available")
+        return
+    }
+
+    // 创建文本文件内容
+    let fileName = "example.txt"
+    let fileContent = "Hello, iCloud!"
+
+    // 构建文件路径
+    let fileURL = iCloudURL.appendingPathComponent(fileName)
+    
+    // 将内容写入文件
+    do {
+        try fileContent.write(to: fileURL, atomically: true, encoding: .utf8)
+        print("File saved to iCloud")
+    } catch {
+        print("Failed to save file: \(error.localizedDescription)")
+    }
+}
+</code></pre>
+<p>代码看出，如果只要用<code>iCloud</code>的文件同步能力，接口很简单，只用使用<code>FileManager.default.url(forUbiquityContainerIdentifier: nil)</code>去拿文件路径就行了，把文件写到这个路径下，<code>iOS</code>系统会去帮你做同步和状态管理，对于程序员来说，就跟读写本地文件一样。离线都可以正常读写，这点要夸下苹果，封装的好，<code>RD</code>心智负担小。</p>
+<p>上面这个文件虽然保存在<code>iCloud</code>里面了，但是我还想在<code>Mac</code>和<code>iOS</code>上<code>ICloud</code>文件管理里面能够看到这个文件夹。这么小的一个功能点，我跟<code>AI</code>来来回回交流了<code>10</code>几轮，都没搞定。最好还是自己<code>Google</code>搜了下，然后根据搜到的一些关键字，再加上我具体的意图，<code>AI</code>总于给了我一个可用的答案：</p>
+<p>在项目的<code>info.plist</code>里面添加上这些配置就好了。</p>
+<pre><code>&lt;key&gt;NSUbiquitousContainers&lt;/key&gt;
+&lt;dict&gt;
+	&lt;key&gt;iCloud.fanlv.fun.Melody&lt;/key&gt;
+	&lt;dict&gt;
+		&lt;key&gt;NSUbiquitousContainerIsDocumentScopePublic&lt;/key&gt;
+		&lt;true/&gt;
+		&lt;key&gt;NSUbiquitousContainerName&lt;/key&gt;
+		&lt;string&gt;Melody&lt;/string&gt;
+		&lt;key&gt;NSUbiquitousContainerSupportedFolderLevels&lt;/key&gt;
+		&lt;string&gt;Any&lt;/string&gt;
+	&lt;/dict&gt;
+&lt;/dict&gt;
+</code></pre>
+<p>这个了这个配置以后，在<code>iCloud</code>里面<code>App</code>存到<code>iCloud</code>的文件夹就能显示出来了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3ebc778c561b5b60.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="WechatIMG195.jpg"></p>
+<h3 id="shortcut-siri"><a class="markdownIt-Anchor" href="#shortcut-siri"></a> ShortCut &amp;&amp; Siri</h3>
+<p>iOS的快捷指令(<code>ShortCut</code>)，是一个很强大的功能，能够通知指令调度编排串联<code>iOS</code>上各种<code>APP</code>的各种能力，老互联人玩过<code>IFTTT</code>的应该都不陌生。</p>
+<p>举几个例子，我可以实现一个<code>截屏翻译</code>的<code>ShortCut</code>，他可以给我一键截屏 -&gt; <code>OCR</code>识别图片文字 -&gt; 然后帮我翻译 -&gt; 显示翻译的结果。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4d078974748a8b07.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>更高级一点玩法，可以跟智能家居联动，比如我指纹开门以后，自动打开我房间的灯/空调。</p>
+<p>有了<code>ShortCut</code>，就可以通过<code>Siri</code>来唤醒和调用<code>ShortCut</code>对应的能力。这样的好处是，我能通过我<code>iPhone</code>或者<code>AppleWatch</code>的<code>Siri</code>来调用<code>ShortCut</code>。比如控制家里任何<code>智能家居</code>或者执行各种复杂的<code>APP</code>功能。</p>
+<p>在这里我主要想实现一个简单功能：“通过<code>Siri</code>唤醒<code>APP</code>然后开始录音”，就这么简单一个功能，让我跟<code>AI</code>从周六晚上<code>6</code>点一直纠缠到了凌晨<code>1</code>点（话说写代码/搬砖 还是很容易进入心流模式的）。</p>
+<p>我跟<code>AI</code>说我要在我的<code>APP</code>识别我是不是已经添加过这个快捷指令了，添加了就显示已经添加，没有添加就显示点击按钮添加到<code>Siri</code>：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b9bc8be69c84b2a9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><code>AI</code>这厮一直跟我说苹果因为隐私原因没有提供查询所有快捷指令的<code>API</code>，不行最后还是各种<code>Google</code>搜关键字，然后结合别人给的一些接口，再去问<code>AI</code>，期间因为各种细节问题调了半天，最后实现其实很简单，核心代码如下：</p>
+<pre><code>	 // 添加 Shortcut 指令核心代码：
+	 let activity = NSUserActivity(activityType: "LaunchMelodyAppIntent")
+    activity.title = NSLocalizedString("oneKeyRecord", comment: "")
+    activity.userInfo = ["fan": "lv"]
+    activity.isEligibleForSearch = true
+    activity.isEligibleForPrediction = true
+    let shortCut = INShortcut(userActivity: activity)
+
+
+	 // 判断是否添加过这个指令核心代码：
+    INVoiceShortcutCenter.shared.getAllVoiceShortcuts { (shortcuts, error) in
+        guard error == nil else {
+            return
+        }
+        if let shortcuts = shortcuts {
+            for voiceShortcut in shortcuts {
+                if let userActivity = voiceShortcut.shortcut.userActivity,
+                   let userInfo = userActivity.userInfo,
+                   let fan = userInfo["fan"] as? String {
+                    if fan == "lv" {
+                        isAlreadyAddToSiri = true
+                    }
+                }
+            }
+        }
+    }
+</code></pre>
+<p>参考了下这个方案 <a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_43441647/article/details/133017285">iOS-自定义Intent及ShortCut，能通过快捷指令唤醒APP并跳转到指定页面<br>
+</a></p>
+<h3 id="dynamicisland灵动岛"><a class="markdownIt-Anchor" href="#dynamicisland灵动岛"></a> DynamicIsland（灵动岛）</h3>
+<p>灵动岛功能实现相对较简单，<code>AI</code>基本说的跟苹果官网的 <a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/activitykit/displaying-live-data-with-live-activities">Displaying live data with Live Activities<br>
+</a> 这个差不多。</p>
+<p>也没费太多力气，唯一一点需要注意的就是动态更新的话需要在宿主<code>APP</code>里面写代码定时更新灵动岛的数据，实现如下：</p>
+<pre><code>timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] timer in
+    for activity in Activity&lt;MelodyActivityAttributes&gt;.activities where activity.id == self.activityID {
+        Task {
+            await activity.update(using: MelodyActivityAttributes.ContentState(timerLabel:self.recordSecond.toSimpleRecordTimeString()))
+        }
+    }
+}
+</code></pre>
+<p>具体实现效果如下：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fb7e0cb42599083e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="WechatIMG208.jpg"></p>
+<h3 id="apple-watch-app"><a class="markdownIt-Anchor" href="#apple-watch-app"></a> Apple Watch App</h3>
+<p><code>Apple Watch App</code>功能基本是<code>iOS App</code>的阉割版，大部分代码都可以复用，唯一要说的就是，要想<code>ShortCut</code>能在<code>Apple Watch</code>上运行，也要新建一个。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ae91191f9a7404dd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b4bd8318ffb1ffb3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>不过也要吐槽一下<code>iOS</code>和<code>Apple Watch</code>共享代码的实现方法太<code>ugly</code>了，在把对应的源码文件所属的项目，勾选下<code>WatchApp</code>，在<code>WatchApp</code>工程里面就可以用了，完全没有<code>模块</code>的概念。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-93f30ae5bb88bc86.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="总结"><a class="markdownIt-Anchor" href="#总结"></a> 总结</h2>
+<ul>
+<li><code>UI&amp;UX</code>，目前想要<code>AI</code>来生成交互图，这个跟抽盲盒一样，可用性极低，还任重道远。</li>
+<li><code>UI</code>代码生成，<code>gpt4o</code>这一块能力有点惊艳到我，我想“借鉴“一些<code>App</code>设计，给他一个截图，很快就能给我生成相关的<code>UI</code>代码，可用性极高，基本贴过来，调整下细节就可以了。</li>
+<li>新功能调试，像<code>Shortcut</code>、<code>灵动岛</code>这种新功能，由于我之前没有开发过的，所以问的问题可能比较抽象（比如我要一个 xx 功能），这可能会让你在一个死胡同里面，跟<code>AI</code>花费大量时间来回拉扯，这个其实挺痛苦的。需要自己扩宽一下思路（<code>Google</code>了解基本的实现方式），再输入具体信息再来问，你又会发现柳暗花明又一村。</li>
+</ul>
+<p>总的来说，<code>AI</code>已经全面改变我的学习、生活方式了。想想当初学习新的技术时候，有<code>AI</code>的话一定可以事半功倍。还有当时搞什么技术讨论群，大家在群里为了一些技术问题争论的面红耳赤，有时候甚至会上升到人生攻击。现在有了<code>AI</code>，可以大大的减少一些技术上毫无意义的争论。</p>
+<p>随着算法和算力的不断优化和提升，相信<code>AI</code>以后还能有更大的突破。不拥抱变化，就要被变化淘汰。</p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

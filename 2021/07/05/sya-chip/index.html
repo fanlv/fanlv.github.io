@@ -1,0 +1,599 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>《说透芯片》</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 基础知识
+ 晶体管
+想了解晶体管，你得先了解它的“前身”——电子管。电子管是中文翻译后的名称，英文原文其实是真空管。从这个名字，你可以想象，它其实是把参与工作的金属薄片，也就是电极，封装在一个真空的容器内，真空容器一般指的是玻璃瓶。
+整个电子行业，并不是从芯片开始的，而是从电子管开始。电子管最鼎盛时期的代表作，就是世界上的第一台电子计算机。这台 1946 年诞生的电子计算机，占地 150 平方米，重达 30 吨，里面的电路使用了 17468 只电子管、7200 只电阻、10000 只电容、50 万条线。
+这台计算机虽然运算速度不快，但基本具备了现代计算机的主要结构和功能，这也是电子管能达到的最高成就了。其实从上图你也可以看出来，电子管最大的缺点就是，真空容器对于电子产品来说体积太大了。
+如果人类停留在电子.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">《说透芯片》</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text"> 基础知识</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%99%B6%E4%BD%93%E7%AE%A1"><span class="toc-text"> 晶体管</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9B%86%E6%88%90%E7%94%B5%E8%B7%AF"><span class="toc-text"> 集成电路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%91%A9%E5%B0%94%E5%AE%9A%E5%BE%8B"><span class="toc-text"> 摩尔定律</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%8E%E4%B8%80%E9%83%A8iphone%E6%89%8B%E6%9C%BA%E7%9C%8B%E8%8A%AF%E7%89%87%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-text"> 从一部iPhone手机看芯片的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%97-ic"><span class="toc-text"> 数字 IC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#cpu%E8%AE%A1%E7%AE%97%E8%AE%BE%E5%A4%87%E7%9A%84%E8%BF%90%E7%AE%97%E6%A0%B8%E5%BF%83%E5%92%8C%E6%8E%A7%E5%88%B6%E6%A0%B8%E5%BF%83"><span class="toc-text"> CPU：计算设备的运算核心和控制核心</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#gpu%E5%9B%BE%E5%BD%A2%E5%A4%84%E7%90%86%E5%99%A8"><span class="toc-text"> GPU：图形处理器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#asic%E4%B8%BA%E8%A7%A3%E5%86%B3%E7%89%B9%E5%AE%9A%E5%BA%94%E7%94%A8%E9%97%AE%E9%A2%98%E8%80%8C%E5%AE%9A%E5%88%B6%E8%AE%BE%E8%AE%A1%E7%9A%84%E9%9B%86%E6%88%90%E7%94%B5%E8%B7%AF"><span class="toc-text"> ASIC：为解决特定应用问题而定制设计的集成电路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%98%E5%82%A8%E8%8A%AF%E7%89%87dram-%E5%92%8C-nand-flash"><span class="toc-text"> 存储芯片：DRAM 和 NAND Flash</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#iphone-x-%E4%B8%AD%E7%9A%84%E6%A8%A1%E6%8B%9F-ic"><span class="toc-text"> iPhone X 中的模拟 IC</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E9%A2%97%E8%8A%AF%E7%89%87%E5%88%B0%E5%BA%95%E6%98%AF%E5%A6%82%E4%BD%95%E8%AF%9E%E7%94%9F%E7%9A%84"><span class="toc-text"> 一颗芯片到底是如何诞生的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%A7%E4%B8%9A%E9%93%BE%E5%88%86%E5%B7%A5%E8%A7%86%E8%A7%92%E8%AE%BE%E8%AE%A1-%E5%88%B6%E9%80%A0-%E5%B0%81%E8%A3%85-%E6%B5%8B%E8%AF%95%E7%9A%84%E5%88%86%E5%B7%A5%E5%90%88%E4%BD%9C"><span class="toc-text"> 产业链分工视角：设计、制造、封装、测试的分工合作</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#idm-%E6%A8%A1%E5%BC%8F"><span class="toc-text"> IDM 模式</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#top10-%E5%8D%8A%E5%AF%BC%E4%BD%93%E5%85%AC%E5%8F%B8"><span class="toc-text"> Top10 半导体公司</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#intel%E7%9A%84%E5%8F%91%E5%B1%95%E5%8F%B2%E5%B0%B1%E6%98%AF%E4%B8%80%E9%83%A8%E8%8A%AF%E7%89%87%E8%A1%8C%E4%B8%9A%E7%9A%84%E5%88%9B%E6%96%B0%E5%8F%B2"><span class="toc-text"> Intel的发展史就是一部芯片行业的创新史</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E6%98%9F%E8%B5%84%E6%9C%AC%E4%B8%8E%E6%8A%80%E6%9C%AF%E5%85%B1%E8%88%9E%E7%9A%8440%E5%B9%B4"><span class="toc-text"> 三星：资本与技术共舞的40年</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%B0%E7%A7%AF%E7%94%B5%E6%91%A9%E5%B0%94%E5%AE%9A%E5%BE%8B%E7%9A%84%E5%BF%A0%E5%AE%9E%E6%89%A7%E8%A1%8C%E8%80%85"><span class="toc-text"> 台积电：摩尔定律的忠实执行者</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#nvidia-%E4%B8%8Eai-%E8%8A%AF%E7%89%87%E8%B6%85%E8%B6%8A%E6%91%A9%E5%B0%94%E5%AE%9A%E5%BE%8B"><span class="toc-text"> Nvidia 与AI 芯片：超越摩尔定律</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BE%B7%E5%B7%9E%E4%BB%AA%E5%99%A8%E6%A8%A1%E6%8B%9F%E8%8A%AF%E7%89%87%E7%9A%84%E6%97%A0%E5%86%95%E4%B9%8B%E7%8E%8B"><span class="toc-text"> 德州仪器：模拟芯片的无冕之王</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B6%E4%BB%96%E5%8D%8A%E5%AF%BC%E4%BD%93%E5%85%AC%E5%8F%B8%E7%BE%8E%E5%9B%BD%E5%8F%8C%E9%80%9A%E4%B8%8E%E6%AC%A7%E6%B4%B2%E5%8F%8C%E9%9B%84"><span class="toc-text"> 其他半导体公司：美国双通与欧洲双雄</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%AD%E5%9B%BD%E7%9A%84%E6%9C%BA%E4%BC%9A"><span class="toc-text"> 中国的机会</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2000-%E5%B9%B4%E4%B9%8B%E5%89%8D%E5%9B%BD%E5%AE%B6%E8%AE%A1%E5%88%92%E4%B8%8E%E6%94%BF%E7%AD%96%E6%89%B6%E6%8C%81"><span class="toc-text"> 2000 年之前：国家计划与政策扶持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2000-%E5%B9%B4-2014-%E5%B9%B4%E5%B8%82%E5%9C%BA%E5%B8%A6%E5%8A%A8%E4%BA%A7%E4%B8%9A%E5%8F%91%E5%B1%95"><span class="toc-text"> 2000 年 -2014 年：市场带动产业发展</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2014-%E5%B9%B4%E5%90%8E%E6%8A%95%E8%B5%84%E4%BA%A7%E4%B8%9A%E6%97%B6%E4%BB%A3"><span class="toc-text"> 2014 年后：投资产业时代</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B4%AB%E5%85%89%E9%9B%86%E5%9B%A2"><span class="toc-text"> 紫光集团</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%AD%E5%9B%BD%E7%9A%84%E5%B7%A8%E5%A4%A7%E5%B8%82%E5%9C%BA%E6%9C%BA%E4%BC%9A"><span class="toc-text"> 中国的巨大市场机会</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Book"><i class="tag post-item-tag">Book</i></a><a href="/tags/Chip"><i class="tag post-item-tag">Chip</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">《说透芯片》</h1><time class="has-text-grey" datetime="2021-07-05T02:00:00.000Z">2021-07-05</time><article class="mt-2 post-content"><h2 id="基础知识"><a class="markdownIt-Anchor" href="#基础知识"></a> 基础知识</h2>
+<h3 id="晶体管"><a class="markdownIt-Anchor" href="#晶体管"></a> 晶体管</h3>
+<p>想了解晶体管，你得先了解它的“前身”——电子管。电子管是中文翻译后的名称，英文原文其实是真空管。从这个名字，你可以想象，它其实是把参与工作的金属薄片，也就是电极，封装在一个真空的容器内，真空容器一般指的是玻璃瓶。</p>
+<p>整个电子行业，并不是从芯片开始的，而是从电子管开始。电子管最鼎盛时期的代表作，就是世界上的第一台电子计算机。这台 1946 年诞生的电子计算机，占地 150 平方米，重达 30 吨，里面的电路使用了 17468 只电子管、7200 只电阻、10000 只电容、50 万条线。</p>
+<p>这台计算机虽然运算速度不快，但基本具备了现代计算机的主要结构和功能，这也是电子管能达到的最高成就了。其实从上图你也可以看出来，电子管最大的缺点就是，真空容器对于电子产品来说体积太大了。</p>
+<p>如果人类停留在电子管技术上，所用的电子设备，就会因为需要多个真空电子管而变得体积庞大，成本昂贵，还需要轻拿轻放。</p>
+<p>这个时候，科学家们开始积极寻找可以取代电子管的固体元器件材料：一种合适的半导体。</p>
+<p>什么是半导体呢？官方说法，半导体是指常温下导电性能介于导体与绝缘体之间的一类材料。简单地说，导体导电，绝缘体不导电，而半导体，在不同电流控制下可以表现出不同的导电，或者不导电的特性，这个特征和真空电子管做电信号放大器的特性吻合，因此半导体可以被用来做固体电子元器件的材料。</p>
+<p>科学家们对半导体材料的研究结果就是，<strong>半导体晶体管复刻了真空电子管的功能，可以全面地取而代之</strong>。使用半导体材料制成的晶体管，最大的优势就是可以不断缩小尺寸， 这为电子设备的微型化提供了可能。</p>
+<p><strong>更小的体积、更快的速度、更可靠的稳定性，让半导体做的晶体管取代电子管成为了整个电子行业的基本元器件</strong>。这也是晶体管被称为是二十世纪最重要发明的原因。发明者肖克利、巴丁、布拉顿三人因此获得了 1956 年的诺贝尔物理学奖。</p>
+<h3 id="集成电路"><a class="markdownIt-Anchor" href="#集成电路"></a> 集成电路</h3>
+<p>有了晶体管，集成电路也就成为可能。</p>
+<p>把多个晶体管和其它的电子元器件小型化，微型化集成在一起，以减少电器的大小，这个思路就是集成电路。关于两者的关系，你可以理解为，集成电路就是由大量晶体管搭建的。严谨一点说，集成电路的最小单元是逻辑门，逻辑门是由晶体管搭建而成。可以说，半导体行业，就是拿晶体管去堆集成电路的行业。</p>
+<p>现代的集成电路是由德州仪器的工程师杰克·基尔比在 1958 年发明的，当时发明的是锗集成电路，他本人也因此荣获 2000 年诺贝尔物理学奖。这里我还想提一个人，Intel 的第一任 CEO 罗伯特·诺伊斯，他后来发明了现在应用更广的硅集成电路，让集成电路真正进入了商用时代。可惜诺伊斯在 1990 年早逝，没有领到诺贝尔奖。</p>
+<p>在点开晶体管、集成电路这个全新的科技树之后，半导体行业，就走上了缩小晶体管体积 -&gt; 扩大集成电路规模 -&gt; 构建性能更强价格更优的电子设备 -&gt; 再次缩小晶体管体积 -&gt; 构建更大规模的集成电路支持更多功能 -&gt; 构建新一代性能更强价格更优的电子设备的高速路。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-701e6e3ee3fe2733.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>对于集成电路的发展你可以看下图，在最初的 20 年，集成电路的规模迅速扩大，单个集成电路可以集成的晶体管数目从 1 个发展到上百万个，增长了 10 万倍，而且增长势头不减，超大规模集成电路、特大规模集成电路、巨大规模集成电路… … 形容词都不够用了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-99a392590edac582.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>后来，业界索性放弃用集成电路的规模来定义行业发展阶段，而改用晶体管的特征尺寸来标识。你现在听到手机芯片的 28nm、20nm、14nm、10nm、7nm、5nm，这些数字都是晶圆工厂的制造工艺的名称，虽然并不直接代表晶体管的尺寸，但也是有所关联的。工艺制程的数字越小，意味着晶体管体积越小，这样单位面积可以集成的晶体管数目就越多，也就是所谓的晶体管密度高。</p>
+<p>下图是用制造工艺名称来标识的半导体行业发展路线图。横坐标是时间轴，纵坐标是工艺制程。你可以看到从 1987 年到 2019 年，制造工艺从 3 微米发展到了 5 纳米。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-329a70703ebed0de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>你可能要问，这个制造工艺代表什么呢？我给你举个例子，对于 iPhone12 里用的应用处理器 A14，我们一般都说是 5nm 的工艺。行内的人会留意到这是一个用台积电 N5 工艺生产的，面积为 88mm² 的芯片。N5 工艺指的就是台积电 5nm 工艺。</p>
+<p>苹果披露 A14 应用处理器是一颗集成了 118 亿个晶体管的芯片。如果是关心制造工艺的人，就会算一下，台积电 N5 工艺，官方的晶体管密度是 173 MTr/mm2，就是每平方毫米的面积上可以集成 1.73 亿个晶体管。那么苹果在 88 平方毫米的面积上集成了 118 亿个晶体管，是相当不错的数字了，算是非常高效地利用了最先进工艺带来的高密度。</p>
+<p>当然，评价一颗芯片，不能这么简单地只看晶体管密度，至少还要看 PPA 衡量标准，也就是 Power 功耗、 Performance 性能、Area 面积，这是后话，在接下来的课程中我会再讲到。</p>
+<h3 id="摩尔定律"><a class="markdownIt-Anchor" href="#摩尔定律"></a> 摩尔定律</h3>
+<p>看到上面那张图的时候，或者你听到我说 28nm、20nm、14nm、10nm、7nm、5nm 这组数字的时候，你心中或许有疑问，为什么选这些数字？有什么规律么？你问到重点了。基本上这是个相邻两个数字差 0.7 倍的数字序列，你看，10nmx0.7=7nm，7nmx0.7≈5nm，都是这样的规律。如果把晶体管的特征尺寸理解成正方形的边长，边长缩小 0.7 倍，0.7x0.7=0.49，那么一个正方形的面积就相当于小了一半。</p>
+<p>这种相差 0.7 倍的数字序列，想表达的意思就是，在 5nm 制造工艺下，晶体管的体积应该是前一代 7nm 工艺的一半，换另一个数据来说就是晶体管密度可以高一倍。前面说台积电 N5 工艺的密度是 173MTr/mm2，N7 是 96.5MTr/mm2。如果再加上时间轴的描述，你会发现台积电在 2018 年开始量产 N7 工艺的芯片，2020 开始量产 N5 工艺的芯片，两年工艺一更新。到这里，恭喜你，你已经自行发现了半导体行业的黄金定律：摩尔定律。</p>
+<p>摩尔定律是由英特尔公司联合创始人戈登·摩尔提出的概念，定律本身很简单：<strong>半导体芯片上集成的晶体管和电阻数量将每隔 24 月增加一倍</strong>。 从上面的推导过程，你可以知道，是晶体管的特征尺寸每代缩小 0.7 倍，因此单位面积可以集成的晶体管密度可以提高一倍。你可以在行业里的每一条产品线，每一个公司的发展历史，每一次技术革新背后看到摩尔定律的影子。</p>
+<p>再看看下面这张业界著名的摩尔定律图，这张图里横坐标是时间轴，纵坐标是一个实际的芯片产品所集成的晶体管数目，这意味着不仅仅技术上可以制造出密度翻倍的芯片，而且半导体公司能充分使用多出的晶体管，来设计出性能更高功能更强的芯片，并实现其经济价值。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-18c8f1dd2fb0be6e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>某种程度上，<strong>你可以用摩尔定律当尺子丈量半导体行业内的技术进步、产品迭代、公司发展。跟上摩尔定律的，就可以打一个“good”的标签</strong>，落后于摩尔定律的，可以给一个“？”，超越摩尔定律的，可以打一个“行业赢家”或者“very good”的标签。</p>
+<p>例如台积电一年一次工艺提升的稳定输出，苹果每年一代新的芯片，这些就是“good”的公司。</p>
+<p>而以英伟达 Nvidia 为首的 AI 公司，提供的算力以 2 年 10 倍的超摩尔速度增长，可以说“very good”。还有一些公司，开始说“摩尔定律在变慢”，因为它们 5 年才出一代新工艺，属于自己掉队，然后还想通过改规则，掩耳盗铃。嘻嘻，我就不提名字了。</p>
+<p>上面我也说了，摩尔定律它不是一个自然规律，而是人类创造力的定律，因此如果我们对自己有信心的话，给摩尔定律续命的方式多得是。例如，在设计和制造两个环节已经被充分挖掘了之后，一直被认为是技术门槛较低的封装环节，也开始技术创新加速。2.5D、3D 等异构封装技术遍地开花。</p>
+<h3 id="从一部iphone手机看芯片的分类"><a class="markdownIt-Anchor" href="#从一部iphone手机看芯片的分类"></a> 从一部iPhone手机看芯片的分类</h3>
+<p>首先，我可以负责任地告诉你，<strong>芯片肯定不全是集成电路</strong>。芯片里面，大约只有 80% 属于集成电路，其余的都是光电器件、传感器和分立器件，行业内把这些器件称为 O-S-D（Optoelectronic, Sensor, Discrete）。</p>
+<p>为了方便你理解，我按照半导体行业的专业分类方式，做了下面这张行业分类图。图里的数据都来自半导体行业权威的市场研究机构 IC Insights 的最新市场统计。能把这张图和别人讲清楚，我觉得你至少是一个半导体行业初级市场研究人员的水平了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e47884b5628f2ce0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>有这张图还不够，我另外整理了一张 iPhone X 物料表，在正中间那一列，我标明了每个物料所属的半导体种类。而且这张表的顺序，跟前面的分类图，基本上可以一一对应起来。考虑到公开信息的准确性，这张表我参考了知名市场研究机构 IHS Markit 的 iPhone X 拆解报告。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5807dee66dec0ee7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>对照完两张图，从宏观看，有两个信息你需要关注：</p>
+<ul>
+<li>第一，一部手机 80% 都是集成电路。所以，苹果是半导体产品全球排名第一的买家，这个就不难理解了吧？</li>
+<li>第二，一部 iPhone 几乎把前面分类图中的重要品类都用到了。你看，手机一点都不简单吧？</li>
+</ul>
+<p>从技术上，再看一下 A11 这颗处理器的细节，它集成了 6 颗 ARMv8 的 CPU 核，2 大 4 小；3 颗 GPU 核，一个神经网络处理器 NPU 用来加速人工智能算法，一个（照相机）图像信号处理器 ISP。<strong>这是一颗高度集成的 SoC (系统级芯片，System-on-Chip)</strong>。</p>
+<p>高度集成也是手机芯片的特点，像在 PC 或者服务器上，CPU、GPU、NPU 往往是三颗独立的芯片。对于 iPhone 手机来说，整个 iOS 系统都是跑在应用处理器上的，可以说手机中最重要的一颗芯片就是应用处理器了，系统是否顺滑，游戏是否顺畅，全看应用处理器的芯片。这也是苹果、华为、三星都要自研应用处理器的原因。</p>
+<p>在 A11 下面其实还压着一个存储芯片 DRAM（动态随机存取存储器，Dynamic Random Access Memory）。存储芯片，顾名思义，就是存储数据的芯片，也叫存储器。手机中的全部信息，包括输入的原始数据、应用程序、中间运行结果和最终运行结果都保存在存储器中。除此之外，iPhone X 还有一块重要的存储芯片，就是在下图中最大的一块芯片，东芝的 NAND Flash。</p>
+<p>DRAM 和 NAND Flash 的区别很好理解，我类比下。在 PC 机上，我们俗称的内存条，其实就是 DRAM，固态硬盘（SSD）就是 NAND Flash。</p>
+<h3 id="数字-ic"><a class="markdownIt-Anchor" href="#数字-ic"></a> 数字 IC</h3>
+<p>集成电路的英文是 Integrated Circuit，数字 IC 就是数字集成电路。回到专业视角，如果从用途上分类，数字集成电路可以简洁地分为，做计算控制的逻辑芯片和保存数据的存储芯片。不过业界习惯，把标准程度非常高的 CPU、GPU、MCU 合并为 MPU 微处理器来单独统计，把应用相关度高的 ASIC（下文会解释）和 SoC 算作逻辑芯片。</p>
+<h3 id="cpu计算设备的运算核心和控制核心"><a class="markdownIt-Anchor" href="#cpu计算设备的运算核心和控制核心"></a> CPU：计算设备的运算核心和控制核心</h3>
+<p>CPU（Central Processing Unit）是计算设备的运算核心和控制核心。它的功能主要是解释计算机指令以及处理计算机软件中的数据。CPU 的标准性很高，是最能体现摩尔定律的产品。</p>
+<p>苹果的手机应用处理器，永远使用的是最顶级的工艺。iPhone X 的 A11，在 2017 年上市的时候，就用了当时最先进的 10nm 工艺。到了 2020 年，苹果的应用处理器都已经用上 5nm 的工艺制程，桌面和服务器端才跟进到了 7nm。</p>
+<h3 id="gpu图形处理器"><a class="markdownIt-Anchor" href="#gpu图形处理器"></a> GPU：图形处理器</h3>
+<p>GPU（Graphics Processing Unit）也叫图形处理器，主要用来满足图像计算要求。相对来说 CPU 擅长逻辑判断和串行数据运算，而一个图片的每一个像素都需要相同的计算处理，GPU 就擅长图形计算这种并行的任务。因为 GPU 这种并行度高的特征，在品类上还衍生出弱化图像能力，专注于计算的通用 GPU。一般来说，通用 GPU 的数据处理性能是 CPU 的 10 倍、20 倍，甚至更高。</p>
+<p>作为加速器存在的 GPU，比 CPU 还要激进。摩尔定律中处理器性能每隔两年翻 1 倍，而英伟达的 CEO，Jason Huang，归纳说 GPU 将推动 AI 性能实现每年翻 1 倍，这个规律还被业界称为黄氏定律。</p>
+<h3 id="asic为解决特定应用问题而定制设计的集成电路"><a class="markdownIt-Anchor" href="#asic为解决特定应用问题而定制设计的集成电路"></a> ASIC：为解决特定应用问题而定制设计的集成电路</h3>
+<p>为解决特定应用问题而定制设计的集成电路，就是 ASIC（Application Specific IC）。当 ASIC 规模够大，逐渐通用起来，某类 ASIC 就会有一个专有名称，成为一个品类。例如现在用来解决人工智能问题的神经网络处理器。</p>
+<p>标准的 CPU 芯片，往往要配上不同的外围芯片，比如 Intel 管理外设的芯片组 Chipset，加速图形的 GPU，这样才能构成系统。而随着工艺制程的不断演进，我们有能力把越来越多的外围芯片集成进 CPU 芯片中，于是就有了 SoC。SoC 因其高集成度、高效率的特点，是目前 IC 设计的主流。SoC 也算是 ASIC 的一种。</p>
+<p>相较于我们常见的 CPU、GPU 等通用型芯片，ASIC 芯片的计算能力和计算效率都可以根据特定的需要进行定制，定制么，肯定体积小、功耗低、计算效率高，在这些方面有优势。但是缺点就是入门门槛高，这里的门槛，包括资金、技术，还有时间。</p>
+<h3 id="存储芯片dram-和-nand-flash"><a class="markdownIt-Anchor" href="#存储芯片dram-和-nand-flash"></a> 存储芯片：DRAM 和 NAND Flash</h3>
+<p>前面有介绍，数字 IC 中 2/3 是逻辑芯片，1/3 就是存储芯片。存储芯片就两个主要品类 DRAM 和 NAND Flash，占了 98% 的比例，其余可以忽略不计。</p>
+<p>存储芯片在设计方面跟前面的 CPU、GPU、ASIC 这类逻辑芯片有很大不同。CPU、GPU、ASIC 重在功能设计、逻辑设计。而存储芯片的设计比较简单，基本都是重复单元，但是对时序和布局布线有挑战性。</p>
+<p>好了，专业概念到这里就告一段落，让我们再回到 iPhone X 的物料表，讲一讲剩下 30% 的事情。存储芯片之后我列了三行模拟芯片，有射频芯片、电源芯片。那么为什么它们会被归类到模拟芯片，什么是模拟芯片呢？</p>
+<h3 id="iphone-x-中的模拟-ic"><a class="markdownIt-Anchor" href="#iphone-x-中的模拟-ic"></a> iPhone X 中的模拟 IC</h3>
+<p>上面我提到数字 IC 的时候没有展开讲概念，这里你可以跟模拟 IC 对比来看：处理数字信号的就是数字 IC，处理模拟信号的就是模拟 IC。它们两个是相对的。其实如果要逻辑严密，集成电路的分类应该还列上数模混合 IC 共三种，而实际上你可以理解为，以数字电路为主的归类到数字 IC，以模拟电路为主的归类到模拟 IC，两大类方便你记忆。</p>
+<p>数字 IC 基本上是一个追逐摩尔定律的品类，尽量采用最新工艺，利用新工艺制程带来的晶体管密度的提升，来提高性能同时降低成本。</p>
+<p>相对来说，模拟 IC 则更多的追求电路速度、分辨率、功耗等参数方面的提升，强调的是高信噪比、低失真、低耗电和高稳定性，因而产品一旦达到设计目标就具备长久的生命力，生命周期可长达 10 年以上。行业里有“一年数字，十年模拟”的说法。</p>
+<p><strong>那么，数字信号和模拟信号又是什么？</strong></p>
+<p>简单来说，0 和 1，就是数字信号。而声音、光、气压、无线电信号（Radio Frequency，也被翻译成射频，射频信号），这些现实中的信号，基本上都是连续的信号，而不是简单的用“有 -1”，“无 -0”来表示，它们都是模拟信号。</p>
+<p>数字 IC 这块，你好歹在日常中有见过、听过，甚至买过。而对于模拟 IC，你可能就不熟悉了。但手机其实就是一个大量使用模拟 IC 的电子设备。如果按照整个半导体行业的出货量来看，模拟 IC 的数量是超过数字 IC 的，但是单价不高，因此在销售收入上占比也不高。</p>
+<p>看下图，Quadplexer 四路复用器芯片，实现手机芯片频段载波聚合功能，载波聚合，是一种增加传输带宽的手段，把几个分散的频段通道整合成为一个更宽的数据通道；RF Switch 射频开关芯片，处理无线信号通道转换；NFC 芯片，用来处理近距无线通讯信号的；Wireless Charging 芯片，这个你熟悉，支持无线充电；还有 Audio Amp 音频放大器芯片等等，这些就都是在 iPhone X 中的模拟 IC。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-56f8545dc8daaf04.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>总的来说，射频器件、电源管理装置和数模 / 模数转换器是模拟 IC 的三大主要产品。</p>
+<ul>
+<li>射频器件是处理无线电信号的核心器件，包括 5G 信号、蓝牙、WIFI、NFC 等，凡是需要无线连接的地方必备射频器件，手机是射频器件的一个重要应用场景。</li>
+<li>任何电子设备都需要电源管理装置。电源管理芯片的任务就是完成电能的变换、分配、检测及其它电能管理。电源管理芯片占模拟芯片销售份额接近三成。射频芯片和电源管理芯片在手机里非常重要，你可以对着物料表，找一找。</li>
+<li>模数和数模转换器是模拟信号与数字信号之间起桥梁作用的电路。A/D 是模拟量到数字量的转换， D/A 是数字量到模拟量的转换，它们的道理是完全一样的，只是转换方向不同。例如我们要播放一首歌曲，歌曲是以数字形式存储的，手机经过一系列的数模转换，把数字信号变成连续的声音信号，通过麦克风播放出来，这就是一个 DAC(Digital to Aanalog Controller, 数模转换器) 数模转换过程。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d7f655906550a0b1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>一个小知识点，模拟 IC 的设计涉及了更加复杂的信号环节，并且其设计的自动化程度远不及数字 IC，通常需要大量的人工干预决定取舍。相对于数字 IC，模拟 IC 的设计对工程师的经验，权衡矛盾等方面的能力要求更为严格。所以，模拟 IC 设计被称为一门艺术。</p>
+<h3 id="一颗芯片到底是如何诞生的"><a class="markdownIt-Anchor" href="#一颗芯片到底是如何诞生的"></a> 一颗芯片到底是如何诞生的</h3>
+<p>为了方便大家记忆理解，我做了一张完整的流程图。重点有市场需求分析、芯片设计、晶圆制造、封装测试这四个流程，最后，封装测试好的芯片成品会交给设备厂商，完成电子设备硬件的制造组装和软件安装。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0286b5c865eb09ac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果只看芯片设计，它主要包含需求分析、架构设计、逻辑设计、物理实现和验证等几个部分。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-dfdef687507939b2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果说芯片项目和其他产品项目有什么不同，那就是芯片项目是人类历史上最细微也是最宏大的工程，研发投入大，项目收益高，<strong>试错成本极高</strong>。</p>
+<p>以 iPhone 的 A11 应用处理器为例，这颗处理器包含 43 亿的晶体管，工程师们要在有限的项目时间内，实现手机应用处理器所需要完成的功能任务，还需要在 88mm² 指甲盖大小的面积下放置下 43 亿晶体管和它们自己的连线，再要经过缜密的验证工程，以保证它在 2 亿台手机上都能正常工作 2-3 年。</p>
+<p><strong>FPGA</strong></p>
+<p>本来在买商业现成芯片，和定制芯片或者自制芯片之间，还有 FPGA 一个选择。FPGA 可以通过硬件编程语言，把芯片内的标准阵列器件重新组合，形成新的电路，完成类似定制芯片的功能，可以节省投片生产的开销和时间。</p>
+<p>但是，代价就是单片的价格偏高，功耗偏高，因此 FPGA 在数据中心的应用较多，在手机终端领域极少。</p>
+<p><strong>需求分析</strong></p>
+<p>其实可以想见当时一定是有多个芯片公司，发现了手机应用处理器这个真实需求。在芯片公司发现市场需求之后，通常会进行市场调查，总结出一个通用的市场需求清单出来。一般这个需求清单，会包括主要应用场景分析、软件栈、竞争分析、性能与定位、需求量与投资回报比分析、行规与标准，主要配套芯片的市场供应情况预测等多项内容。最终形成的就是一份市场需求文档。</p>
+<p>每个公司的文档流程不一样，有的公司，在做市场需求文档之前，还要做商业需求文档，重点在于分析投入产出比。在市场需求文档之后，还要做深入的产品需求文档和细分的功能需求文档。</p>
+<p><strong>架构设计</strong></p>
+<p>我们说，一个项目是否有商业价值，主要看需求分析。而一个芯片是否做得好，80% 是由架构设计决定的。</p>
+<p>在拿到需求分析文档后，高层设计人员，往往是以架构师为主的团队，需要开会对产品需求逐条进行可行性分析，并在此基础上确定基本架构和模块分解，最终设计出一个系统架构。我可以给你看看，苹果 A12 的一张系统架构图，你可以感受一下。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9d3bbc6a0cc3eff8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在基本架构确定之后，芯片的大目标，就是对 Power 功耗、 Performance 性能、Area 面积，也就是业内常提到的 PPA 衡量标准，要有明确的规划，这一般也就确定了要选择的制造工厂和工艺制程。接着，芯片设计公司要把需要向供应商购买的 IP 和自研的 IP，把它们的交付时间和接口逐一确认。苹果的 CPU 核一直是自研的，GPU，则从 IP 供应商那里购买过很长一段时间。</p>
+<p>如果采用先进封装技术进行小芯片（chiplet）的设计，此时封装方案和初步的布局规划也都应该确定了。在大多数情况下，一个芯片里面只封装一个集成电路硅片，但是有时候为了更高的性能，或者高密度的设计，当然还有成本因素，需要把多个硅片封装在一起，这种技术手段就叫先进封装。</p>
+<p>到架构设计这一步，最终输出的就是一份产品规格书和高层架构设计文档。<strong>这是一个将市场需求，翻译为可实现的芯片架构过程</strong>。</p>
+<p>架构确定了之后，通常架构团队和算法工程师团队会建模仿真，确保功能、性能、吞吐量等指标可实现。有了一个可行的芯片设计方案和芯片原型模型之后，架构团队就可以把文档和芯片模型移交给设计团队，开始逻辑设计。设计团队，会先输出微架构或者模块设计文档，然后进入编码阶段。</p>
+<p><strong>逻辑设计</strong></p>
+<p>前端设计与验证</p>
+<p>前端设计（逻辑设计）一般用硬件描述语言，例如 Verilog，将架构师的设计用编码实现。大型芯片项目，设计也是分层次的。先进行模块设计，底层的模块写完之后，把新写的模块、商业 IP、复用的旧 IP 等整合在一起，形成一个完整的设计。</p>
+<p>其实硬件描述语言，看起来跟 C 语言颇为类似，不过写 C 语言的人，心里想着“hello world”，写 Verilog HDL 的人，心里想着电路图。</p>
+<p>我给你展示一段编码，用 Verilog HDL 写的寄存器传输级设计如下图：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d5c4f1aa214ffbb4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>跟其它的软件项目一样，在设计的同时，验证也要并行进行。验证是芯片设计中最为耗时耗力的工序，ARM 的技术白皮书有统计，一般一个项目的 40% 资源是用在验证阶段的。</p>
+<p><strong>逻辑综合</strong></p>
+<p>设计验证完成之后，还有一个步骤，叫逻辑综合 （Logic Synthesis），就是用 EDA 工具把寄存器传输级设计 RTL 描述变网表（Netlist），非常类似于编译器把 C 语言翻译成机器语言的过程。从这一步开始，芯片的设计就和具体的晶圆代工厂和具体工艺绑定在一起，设计开始具有物理特征了。</p>
+<p>网表表示的电路如下图，它其实就是描述电路元件相互之间的连接关系。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e4c0e57a303322ff.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>逻辑综合，对于半导体设计公司不难，但是却是 EDA 公司的核心产品之一。在实现流程中，就背后算法而言，综合一定是最难最复杂的步骤。一个晶圆厂，并不仅仅要有先进工艺，提供给设计公司的设计工具包 PDK（Process Design Kit）和 EDA 厂商的支持也非常重要。</p>
+<p><strong>DFT（可测试性设计）</strong></p>
+<p>除了以上两步，前端设计还有一个步骤就是 DFT（Design For Test）。所谓 DFT，就是预先规划并插入各种用于芯片测试的逻辑电路。芯片制造后期，在封测阶段中，很多测试需要依赖 DFT 的设计。</p>
+<p>完成以上工作后，前端设计团队就可以将生成的网表交给后端实现团队，开始物理设计了。当然这个过程不是一蹴而就的，前端设计工程师往往要多次，不同层次的反复综合、验证，各种设计规则检查，既要确保设计的正确性，又要保证设计的布局布线可行且优化。</p>
+<p>整个逻辑设计阶段，你可以这样理解：<strong>架构师写在文档上的指标与功能，是需要设计团队通过一行行的代码实现出来的。</strong></p>
+<p><strong>物理实现</strong></p>
+<p>在前端设计结束后，后端也就是物理实现需要完成布局布线，这个时候，需要把网表转换成制造工厂可以看懂的文件，也就是转化为制造工厂可以用来制造光罩的图形文件。</p>
+<p>后端设计的主要步骤可以总结为：布局规划 Floorplan→布局 Placement→时钟树综合 CTS→布线 Routing →物理验证。</p>
+<p>布局规划就是在总体上确定各种电路的摆放位置，它是后端实现中最为重要的一个环节。我这里放了一张图，你可以看下苹果 A11 的布局规划是怎么样的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3d0589e8020a587c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>芯片的面积、时序收敛、稳定性、走线难易，基本上都是受布局规划的影响。在实际项目中，往往此时还有未完成的模块，就要预留位置。</p>
+<p>规划之后，在指定区域摆放元器件，就是布局，而把各个元器件连接起来，就是布线。一颗芯片的树状的时钟信号线路非常重要，往往需要单独布线，因此还有一个专门的名称：时钟树综合。最后，要做验证。</p>
+<p>我说得简单，其实这就是在指尖上建高楼，在小小的芯片上放置上百亿个晶体管，纳米级的单位，幸而有 EDA 工具辅助，这不是人力所及的工程。</p>
+<p><strong>一颗芯片做得好不好，在决策阶段取决于市场需求理解的是否深刻，在逻辑设计阶段取决于工程师的能力强不强，而在物理实现阶段基本取决于 EDA 工具玩得好不好。</strong></p>
+<p>在芯片设计进入纳米时代之后，布局布线的复杂度呈指数增长，从布局规划到布局布线，时钟树综合，每一步涉及到的算法在近年都有颠覆性的革新。这些步骤，都高度的依赖 EDA 工具。要对 EDA 工具有深度理解，并且要理解 EDA 工具背后的方法学。</p>
+<p>在项目后期，特别是在最后阶段发现个别电路小问题 ，可以进行工程更改（Engineering Change Order,ECO）。ECO 有专门的 EDA 工具和流程，我就不展开说了。</p>
+<p>物理设计完成之后就形成了下图展示的电路图。图中可以看到蓝、红等不同颜色，每种颜色就代表着一张光罩。这个时候的芯片设计就可以以 GDSII 的文件格式从设计公司移交给芯片代工厂了。自此，设计完成，制造流程开始。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c9cba112f428fade.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>如果仔细看每个晶体管，都是由硅基底（Silicon Substrate）、氧化层（Oxide）、鳍（Fin）、栅（Gate）构成的。鳍的高度，宽度都在十几、几十纳米；栅极长度，高度也在几十纳米的范围之内，是非常精致的纳米级器件。下图已经是简化过的抽象模型，随着半导体工艺的演进，实际的器件，其实比下图要更加复杂。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8f7e046b0b669280.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>而芯片的制造，就是要在平方毫米的尺寸上，制造上亿个纳米级晶体管的过程。我们在讲芯片的物理实现的时候说过，每个晶体管，都是被工程师们精心设计，放置在特定的位置上，要完成一定功能的，因此在制造过程中，任何一个晶体管的失效，都会导致最终芯片的一部分，或者整个芯片的失效。</p>
+<p><strong>芯片制造：晶圆厂的王国</strong></p>
+<p><strong>上游：晶圆材料准备</strong></p>
+<p>这阶段的重点是提炼单晶硅锭。生产单晶硅锭的公司会将硅元素，从沙子中提取出来，经过高温整形、多次提纯等手段得到高纯度的硅（EGS）。然后再将纯硅熔化，抽出圆柱形的单晶硅锭。</p>
+<p>硅锭切割之后，变成一片一片的圆盘，再经过打磨抛光，一片纯硅晶圆，就准备好了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-951178bd0e62333c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>直径为 300 毫米的纯硅晶圆，俗称 12 寸晶圆，大约是 400 美金。但尺寸并不是衡量硅晶圆的最重要指标，纯度才是。日本的信越公司可以生产 13 个 9 纯度的晶圆。</p>
+<p>其实，日本的信越、SUMCO（三菱住友株式会社），在晶圆市场上占据了近 60% 的市场份额，这让晶圆市场排名第三的台湾环球晶圆非常有压力，在 2020 年开展了并购排在第四的德国世创的计划。</p>
+<p>其实半导体产业的上游原材料，不仅仅是晶圆，像在光刻胶、键合引线、模压树脂及引线框架等重要材料方面，日本的企业在全球都占有很高份额。可以这么说，如果没有日本材料企业，全球的半导体制造都要受挫。因此 2019 年日本限制向韩国出口三种半导体核心原料（含氟聚酰亚胺、高纯度氟化氢、光阻剂）时，曾经一度让三星实际掌门人不得不四处奔走，为保证生产而努力。</p>
+<p><strong>中游：晶圆加工过程</strong></p>
+<p>有了硅晶圆，下一步就是把设计团队交付的电路图，通过光罩，移植到硅晶圆上。这个加工过程，有上百个步骤，一般需要 2 到 5 个月。感谢现代社会的精细分工，即使是半导体从业人员，甚至是在晶圆厂工作的人，只要不涉及工艺的研发，也无需完全掌握这些步骤，只需要各司其职，共同协作就好。</p>
+<p>我把加工的过程简化为 7 个步骤，给你逐步讲解一下。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e26df12be3c456af.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>第一步，纯硅晶圆，在加工之前， 需要打磨抛光。</p>
+<p>第二步，抛光完成后，通过高温，或者其他方式，在晶圆表面产生一层薄薄的二氧化硅保护膜，叫做镀膜。</p>
+<p>第三步，光刻，光刻是整个过程中最重要的一个环节。这个环节的重要性体现在两个方面，第一，它是设计和制造进行联系的唯一环节；第二它是最昂贵的一个环节。</p>
+<p>光刻的一个重要输入是光罩。在上一讲中，设计团队交付的 GDS II 文件，会被用来制成如下的光罩。这个光罩，有点像印钞时候的母版，也是设计和制造之间的纽带。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-89fe602e3382a1be.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>光罩，有专业的公司可以生产。因为光罩和晶圆制造紧密衔接，所以一般晶圆制造厂，都有自己的专业工厂来生产自身需要的光罩。为了制造一款芯片需要上百道工序，光罩也是不只有一张的，在 14nm 工艺制程上，大约需要 60 张光罩，7nm 可能需要 80 张光罩甚至更多。光罩层数的增加，也就代表着成本的增加。工艺提升，带来的光罩层数的增多，算是先进工艺成本越来越高的原因之一。</p>
+<p>使用特定波长的光，透过光罩，照射在涂有光刻胶的晶圆上，光罩上芯片的设计图像，就复制到晶圆上了，这就是光刻，这一步是由光刻机完成的，光刻机是芯片制造中光刻环节的核心设备。你可以把光刻理解为，就是用光罩这个母版，一次次在晶圆上印电路的过程。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bd0120caca45aec7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>刚刚我说，光刻是最贵的一个环节，一方面是光罩越来越多，越来越贵，另一方面光刻机也很贵。光刻机是半导体制造设备中价格占比最大，也是最核心的设备。2020 年荷兰公司 ASML 的极紫外光源（EUV）光刻机每台的平均售价是 1.45 亿欧元，而且全世界独家供货，年产量 31 台，有钱也未必能买得到。</p>
+<p>回顾光刻机的发展历史，从 1960 年代的接触式光刻机、接近式光刻机，到 1970 年代的投影式光刻机，1980 年代的步进式光刻机，到步进式扫描光刻机、浸入式光刻机和现在的深紫外光源（DUV）和极紫外光源（EUV）光刻机，一边是设备性能的不断提高，另一边是价格逐年上升，且供应商逐渐减少。</p>
+<p>到了 EUV 光刻机，ASML 就是独家供货了。</p>
+<p>EUV 作为下一代技术的代表，不需要多重曝光，一次就能曝出想要的精细图形，没有超纯水和晶圆接触，在产品生产周期、光学邻近校正（OPC）的复杂程度、工艺控制、良率等方面的优势明显。是 7nm 以下工艺必备的。</p>
+<p>光罩加光刻机，让光刻这个步骤 “贵”了起来。</p>
+<p>好，光刻之后，就到了第四步蚀刻，蚀刻就是去除多余物质。</p>
+<p>第五步，离子注入，在真空的环境下进行离子注射，在光刻的晶圆电路里注入导电材料，这样可以改变对应区域的导电特性。</p>
+<p>第六步，电镀，电镀这个步骤主要是用来制作铜导线的。</p>
+<p>一颗芯片通常有多层，每一层的线路不同，功能不同，使用的膜的材质不同。所以每一层的光罩也不同。因此，以上的 1-6 步需要根据实际的集成电路的设计层数重复进行几次到数十次。这里可以有一个小知识点，如果芯片有一些小 Bug，可以只对其中几层的光罩进行修正，而不用重做全部的光罩。</p>
+<p>第七步，测试，测试永远是重要环节。对于晶圆的测试可以分成两类，一类是制造工艺相关的晶圆验收测试，一类是电路功能测试。当然，当晶圆切割完毕，在封装之前，还会再进行测试。不过对于整个晶圆进行测试，效率要高过切割之后。</p>
+<p>这里我们可以复习一下上一讲逻辑设计中提到的 DFT 环节。在进行电路的前端设计时，就预先设计并插入用来测试的电路，这就是 DFT。后期，无论是晶圆的电路功能测试，还是封测阶段中最后的测试，都是依赖 DFT 设计的。</p>
+<p>芯片制造的中游环节，到这里就介绍完了。我一定要提一下价值问题，这么昂贵的工厂制造环节，究竟可以增值多少呢？据国际商业策略 IBS 公司（International Business Strategies）的推算，台积电一片 5nm 晶圆的加工费高达 12500 美金。根据台积电的财报推算，台积电平均每片晶圆可以产生近 4000 美金（300mm 晶圆）的利润。无论是哪个数字，对比 400 美金的纯硅晶圆原料来说，这都是一个至少增值 10 倍的高价值的加工过程。</p>
+<p><strong>下游：封装与测试</strong></p>
+<p>当晶圆制造进行测试之后，就会被送往下游的 IC 封装测试厂实施切割、封装和进一步的测试。</p>
+<p>整个晶圆在切割成单片之后，会针对每一个单片（芯片）进行电气测试。在封装前，还会使用显微镜对芯片进行复检。提前检测出有瑕疵的芯片，可以减少后续流程上的成本开销。</p>
+<p>封装的主要目的是将半导体材料集中在一个保护壳内，防止物理损坏和化学腐蚀。相对于测试，封装对芯片的最终形态，影响更大。</p>
+<p>半导体封装技术有三次大的技术进步：第一次是在 20 世纪 80 年代从引脚（Pin）插入式封装到表面贴片封装，表面贴片封装极大地提高了印刷电路板上的组装密度；第二次是在 20 世纪 90 年代球型矩阵封装的出现，满足了市场对高引脚的需求，改善了半导体器件的性能。</p>
+<p>第三次是 2D、2.5D、3D 封装等，混合了芯片堆叠、异构封装的先进封装。先进封装的最主要推动力来自手机，因为手机有着对封装面积最小的极致追求，其次推动力来自于数据中心对高性能芯片的追求。</p>
+<p>关于 2D、2.5D、3D 封装，我有一个朋友有个非常形象的比喻，“摊大饼摊不下去了，搞个千层饼试试”。总之，所谓的先进封装，就是把单独设计和制造的组件或者小芯片（chiplet），封装在一起，如下图。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-378c3bb962ca11ba.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>封装之后，还会对每个芯片进行最后的测试。这个环节是由 ATE 专业自动测试设备完成的。因为一般的公司，都是租用 ATE 机台，所以每个芯片的测试计划，测试时间等，都是成本的一部分。一般的经验是，一颗芯片的 1/3 的成本，是花在封测阶段的。</p>
+<p>基于测试的结果，将具有相同能力的芯片归属一类，可以根据芯片的最高工作频率，稳定性等规格制定等级，以便定价。该芯片就会被打标示，分类芯片的规格、型号及出厂日期等丝印，等待打包出厂了。有部分缺陷的芯片，在很多时候是可以作为低规格的正式产品出厂的。要做到这点，必须在架构设计阶段，就要规划好。一个优秀的架构师，考虑的不仅仅是功能和性能的竞争性，整个流程中的每一个与芯片成本相关的问题，都必须提前考虑周到。</p>
+<p>到这里，芯片制造的过程我就讲完了，目前除了极少数半导体设计公司还有工厂之外，芯片的制造是都由专业的晶圆厂代为制造，是晶圆厂的王国领地。上一讲我们提到的芯片设计，和这一讲分析的芯片制造与封测，并不需要一个公司完成，我给你总结了一个产业链的分工合作示意图：</p>
+<h3 id="产业链分工视角设计-制造-封装-测试的分工合作"><a class="markdownIt-Anchor" href="#产业链分工视角设计-制造-封装-测试的分工合作"></a> 产业链分工视角：设计、制造、封装、测试的分工合作</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-fe918fe88069f6a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h3 id="idm-模式"><a class="markdownIt-Anchor" href="#idm-模式"></a> IDM 模式</h3>
+<p>在半导体行业开始的三十多年，所有的半导体公司，都是从设计到制造全部自己完成。在下一讲介绍 Intel 的时候，我会提到当 IBM 向 Intel 订购芯片，Intel 会设计、制造、测试、封装，然后直接交付芯片。这种模式业界称为集成设备制造商，也就是 IDM 模式。</p>
+<p>这种模式，在 1987 年台积电创立之后，慢慢地改变了。台积电这样的代工厂，专注于芯片制造这个环节，服务整个半导体产业。越来越多的创业公司，选择放弃需要高额资金的建厂环节，专注在价值更高的设计芯片环节。设计和制造开始了分离。</p>
+<p>在摩尔定律的推进下，半导体行业高速运转，半导体工艺从 45nm，到 28nm，到 16nm 不断演进，随着晶体管体积不断变小，建造工厂的成本剧增。能够维持一定的生产规模，进行良性的商业循环的 IDM 模式公司在减少，甚至专业的晶圆厂都在逐步减少之中。</p>
+<p>下图是一张工厂对应工艺制程的总表。到了 10nm 工艺制程的时候，全世界晶圆厂也就只有三家了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7de463e18c3cbc6c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>那些原来的 IDM 模式的公司都怎样了呢，有的完全剥离工厂，成为无厂的纯设计公司，例如 AMD、IBM。有的放弃跟随新工艺，成为轻工厂模式，例如博通，德州仪器。</p>
+<h2 id="top10-半导体公司"><a class="markdownIt-Anchor" href="#top10-半导体公司"></a> Top10 半导体公司</h2>
+<h3 id="intel的发展史就是一部芯片行业的创新史"><a class="markdownIt-Anchor" href="#intel的发展史就是一部芯片行业的创新史"></a> Intel的发展史就是一部芯片行业的创新史</h3>
+<p>如果从现代集成电路被发明开始计算半导体行业的历史，Intel 基本上是最早的一批半导体公司。可以说 Intel 的历史基本上就是半部半导体行业发展史。</p>
+<p>Intel 从 1992 年就被财富杂志评为最大的半导体供应商，从此开始连续占据半导体行业排名第一的位置，仅仅在 2017 和 2018 两年，输给三星。这里插一句，常年第二的三星，走了一条和 Intel 截然不同的路线，Intel 之后我就分析三星。到了 2019 年和 2020 年的行业第一，还是 Intel。</p>
+<p>更牛的是，Intel 不仅仅排名第一，而且是非常有质量的第一。2021 年 1 月份，著名市场研究公司 Gartner 披露的 2020 年半导体厂商营收排名前十名里，第一名 Intel 的营收超 700 亿美元，比第 6 名到第 10 名的总和还多，占整个半导体市场的 15.6%。我这里提供了一张饼图，你可以自行感受一下。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3a6353d49ce40ef1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>四个发展阶段</strong></p>
+<p>我不知道你是不是听过仙童公司，它经常被叫做硅谷的黄埔军校。80 年代初出版的著名畅销书《硅谷热》中写到：“硅谷大约 70 家半导体公司的半数，是仙童公司的直接或间接后裔。在仙童公司供职是进入遍布于硅谷各地的半导体业的途径。1969 年在森尼维尔举行的一次半导体工程师大会上，400 位与会者中，未曾在仙童公司工作过的还不到 24 人。”</p>
+<p>1968 年 8 月，仙童八叛逆之中的诺伊斯与摩尔一起辞职，离开仙童，创办了 Intel 公司，而后格鲁夫作为第三名员工加入，这是一个重要的起点。以此为始，Intel 开启了它辉煌的旅程。为了方便理解，我把 Intel 的发展历史划分为以下四个阶段。</p>
+<ul>
+<li>第一阶段，发展初期，从 1968 年公司创立到 1992 年，Intel 虽然无奈退出存储器市场，但是随着 PC 市场的兴起，Intel 确立了以 CPU 为核心的产品路线，并确立了行业第一的地位。</li>
+<li>第二阶段，上升期，也可以称为前 Tick-Tock 时代，从 1992 年到 2005 年，跟随第一次互联网行业的大爆发，Intel 与 AMD 联手拿下服务器市场，同时通过高速高质量的产品迭代，彻底跑赢 AMD，坐稳行业第一。</li>
+<li>第三阶段，从 2005 年到 2015 年，Intel 提出 Tick-Tock 战略，持续领跑 ICT 行业，虽然保持了行业第一，但是在这个阶段，Intel 错失了移动互联网市场。</li>
+<li>第四阶段，从 2015 年之后，是 Intel 的徘徊期。因为错失了移动互联网，Tick-Tock 战略也出现了停摆，多元化经营策略效果亦并不明显，这个阶段的 Intel，虽然在行业第一的高位上，但是和第二梯队的距离，前所未有的被拉近了。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5c0b14c51c537be7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>完败存储器市场</strong></p>
+<p>现在的 Intel 是以处理器闻名的。但是在 1968 公司刚成立的时候， Intel 推出的第一款产品是 64bit 的 3101 静态随机访问存储器 SRAM，注意，是存储器。一直到公司成立的 4 年之后，Intel 才推出了全球第一个微处理器 4004。</p>
+<p>在 Intel 发展初期，存储芯片是这家创业公司的重要产品，现在你听说的全球第一块双极型半导体存储芯片、第一个 DRAM、第一个 1KB SRAM、第一块 EEPROM，都是 Intel 的作品。</p>
+<p>总体来说，存储类半导体是非常依赖工厂能力的。而 Intel 在初创时期，重要的战略之一就是全力建设自己的制造工厂。</p>
+<p>在那个时候，Intel 拥有存储芯片 100% 的市场份额。这意味着什么呢？即使把目光拉回到今天，整个半导体行业的销售额中，集成电路占 82%，而存储器是集成电路市场中最大的产品品类，约占集成电路市场的 30%，是一个 1100 亿美金的巨型市场。</p>
+<p>如果没有竞争，市场一帆风顺，Intel 左手内存，右手处理器，两条腿走路，估计就会成为拥有超 50% 市场份额的超级巨无霸。但是很不巧，就在这个时候，Intel 遇上了高速发展的日本半导体行业。</p>
+<p>日本企业怎么赢的？这段历史，我觉得中国政府和半导体行业可以借鉴。1976 年日本政府制订了“VLSI（超大规模集成电路）计划”，选定在存储器市场发力，组织多公司参与研发，投入大笔资金，饱和式攻坚，可谓举国之力。</p>
+<p>VLSI 计划开启第 4 年（1980 年），在惠普对 16K DRAM 内存的竞标中，日本的 NEC、日立和富士通完胜美国的 Intel、德州仪器和莫斯泰克（当时美国存储器领域的头部玩家）。</p>
+<p>更让人大跌眼镜的是，美国质量最好的 DRAM，不合格率比日本最差的公司还要高 6 倍。1985 年，日本电气 NEC 凭借存储器产品登上全球半导体厂商榜首，并在之后连续 7 年稳坐头把交椅。</p>
+<p>可以说，Intel 在公司的发展初期，选择对了产品（半导体最大的品类，存储器），而且技术创新领先（各种世界第一），也结合了自己的强项（工厂生产）。从一个初创公司角度，无论在技术，商业上都没大问题，但是输给了强大的竞争对手：日本政府。</p>
+<p>在存储器和处理器之间的选择是战败之选。1985 年，Intel 在总裁安迪·格鲁夫（2 年后出任 CEO）的主导下关闭了 7 座工厂，裁员 7200 人，结束了存储器业务。</p>
+<p><strong>选择 CPU 作为主产品</strong></p>
+<p>回到 CPU 这条产品线上，其实 Intel 的胜出，也没有那么一帆风顺。不过 CPU，是纯粹的技术产品的竞争，大家竞争的是研发效率。</p>
+<p>1971 年，Intel 发布的 4004 还只是微处理器的雏形，只能用来做计算器。即使是计算器，也需要 4001、4002、4003、4004 这组芯片套件，共 10 片，才能搭建完成。直到 1974 年的第三代 8080，才被认为是一款真正可用的微处理器。</p>
+<p>因为 8080 的出现，IT 行业的分工合作模式有了一些变化。在 8080 之前，当时的计算机系统厂商，如 IBM、惠普，需要独立完成整个计算机系统，从处理器到终端，再到操作系统、编译器和应用软件。</p>
+<p>8080 出现之后，一些小公司，例如 MITS，用 8080 搭建了第一个商用的个人电脑 Altair 8800，那个时候比尔·盖茨，还没有创建微软，就开始给 Altair 8800 写软件了。</p>
+<p>Altair 8800 系统和 Intel 8080 芯片的结合，让系统厂商看到了更大的机会。是的，他们可以采购商业的半导体芯片，来快速搭建系统。看，Intel 不仅仅创造半导体产品，还在创造新的商业模式。</p>
+<p>当时的 CPU 市场已经行情看涨，有 60 多家半导体公司进入，市场上最成功的 8 位处理器是 Zilog 的 Z80。Zilog 是 Intel 离职的技术骨干创立的公司，技术实力很强，同时期的摩托罗拉，也很优秀。这就是真实的世界，任何一个有前景的赛道上，都是拥挤的。</p>
+<p>这里交代一下 Zilog 的结局，它没有赢，虽然没有死但是影响力可以忽略不计（这也是一段很有意思的商业故事，你感兴趣可以查查）。Z80 的成功，某种程度是 Z80 和 Intel 8080 指令完全兼容，软件可以复用的相互成就。想想系统厂商，可以按自己的喜好，自由地二选一。而软件公司，写一个软件，可以在两种处理器上运行，享受大一倍的市场。</p>
+<p>最后 Intel 成功的关键在于，它在设计下一代产品 8086 的时候，保持了指令集的向后兼容性（就是新款 CPU 依然可以运行老版本的软件），但是 Zilog 并没有，而市场喜欢这种指令集的向后兼容性。</p>
+<p>这里要给所有的硬件小伙伴画一个重点，此时微软还是个刚刚成立的十几人的小公司，还没有强大的 Wintel 联盟，而 Intel 已经是个万人公司了。这是一个蛮荒时代，Intel 抓住了这个时间窗，确立了一个在软硬件之间的标准。</p>
+<p>硬件公司立软硬件接口标准，其实非常有难度，因为这意味着将软件公司锁定在一个平台上。在半导体行业，Intel 最先意识到指令集向后兼容的标准价值，也因此，它战胜了 Zilog 的 Z80，随后微软把这个标准价值进一步放大，几乎成为 IT 行业的底层标准，这也确立了 Intel 和微软随后多年的行业双霸主地位。</p>
+<p>持续努力的人，运气不会太差。Intel 在公司创立 10 年后，迎来了第一款重量级的处理器产品，8086 处理器，和随后的简化版 8088。</p>
+<p>8086 就是一个 16bit 的处理器（4004 是 4bit 的处理器），有将近 2.9 万个晶体管 （是 4004 的 10 倍，8 年集成晶体管的数目增长了 10 倍，完美的摩尔定律速度），芯片的面积为 33mm² （4004 是 12mm^2，面积仅仅大了 3 倍)，主频为 5 MHz（对比 4004 的 108KHz，快了 46 倍），3.2 微米的制程。从 1971 的 10 微米，经过 6 微米节点，到 1978 年的 3.2 微米制程，可以看到那个年代，工艺节点的进步速度之快，而且 Intel 就是领跑者。我放了一张 8086 Die（裸片）的照片如下。</p>
+<p>如果请 Intel 自己选一个历史最重要产品，那肯定是 8088。为什么呢？其实 8088，在产品规格上跟 8086 几乎一致，它是在完成 8086 之后，进行裁剪的简化版。这不是一个技术上的突破产品，但这是一次商业上的绝对成功。1981 年 IBM 选定它作为自己 PC 机的处理器，开启了 Intel CPU 的问鼎之路。Intel 还把拿下这个重要订单的销售名字，写入自己的公司史中。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-efd2201f786b98bf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>CPU 问鼎之路</strong></p>
+<p>从 8088 应用到 IBM PC 机上开始，个人电脑真正走进了人们的工作和生活之中，这是 PC 时代的开始，也是半导体行业的第一个风口，Intel 的问鼎之路，就是靠着 PC 市场的推动。</p>
+<p>为什么选择 8088？其实 IBM 在摩托罗拉和 Intel 之间犹豫了蛮久，传说是因为当时苹果的 Macintosh 就采用了据说技术更领先的摩托罗拉芯片 68020，而 IBM 不想走相同的路线，所以选择了 8088。8088 单从性能上看，还不如自家的 8086，但是 8bit 的数据通道，让外设的价格更低。这里划个重点，单品的性能很重要，但是更重要的是设备整体的总成本合理。</p>
+<p>PC，所谓的个人电脑是整个世界进入信息化的开端。正是依靠廉价且高速提升性能的 Intel 的 CPU，以及 IBM 一开始就采取的开放标准策略，使大批的兼容机生产厂商，和大量提供标准配件的厂商，分工合作，共同拉低了计算机系统的成本，让每个公司每个家庭（注意，是家庭不是个人，手机才让每个人）都可以拥有强大的算力，才有今天繁荣的 IT 行业。</p>
+<p>赢下 IBM PC 设计，基本上 Intel 的处理器产品发展就走上了快车道，而且因为 IBM 同时选了微软的操作系统，这也为后来的 Wintel，Windows+Intel 的生态奠定了大局。</p>
+<p>在整个 80 年代，Intel 就是在 8086 芯片的基础上，不断推出 80286（1982 年）、80386（1985 年）、80486（1990 年）等迭代版本，也因此，Intel 的芯片架构被称为“x86”系列。x 就是 2，3，4… … 代表产品系列的数字。1992 年，Intel 终于凭借处理器 CPU 在 PC 市场的胜利，成为世界最大的半导体供应商。</p>
+<p><strong>充分竞争</strong></p>
+<p>如果说 80 年代，Intel 是和一众日本企业在存储器市场上搏杀。那么在放弃存储器业务，Intel 把火力集中在处理器市场上之后，最强的竞争者就是同架构的兄弟 AMD。</p>
+<p>这个成立时间仅仅比 Intel 晚一年的 AMD，是一个既有技术先进性又有故事性的公司。AMD 的创始人杰里·桑德斯，可不像 Intel 的三位创始人一样是技术出身，他是销售出身，创业之路非常艰难。</p>
+<p>这里要同样要感谢 IBM。IBM 在决定采用 Intel 的 8088 做 PC 机的时候，为了防止因生产问题而出现断供，几乎是强制地促成 AMD 成为 8088 的第二供应商。Intel 向 AMD 开放技术，全面授权 AMD 生产 x86 系列处理器，而 AMD 则放弃了自己的竞争产品，成为 Intel 后备供应商。</p>
+<p>8086/8088 处理器不仅仅是 AMD 在生产，它们的生产厂商还包括前面提过的，靠存储器做过 7 年行业老大的日本电气 NEC，以及富士通 Fujitsu、美国军工企业 Harris、日本老牌企业 OKI、德国西门子 Simens AG、德州仪器 TI、日本三菱 Mitsubishi。为什么这么多日企？前面在讲惜败存储器市场的时候说了，日本政府给力，1980 年代，半导体公司前十名，日企占 6 名。日本半导体业的兴衰史，可以单独开一节，这里不提。</p>
+<p>1985 年，Intel 在做出放弃存储器业务，以处理器为主的决策之后，第一个操作就是“停止授权”，同时挥舞专利大棒清除那些克隆 8086 的半导体厂商，它意图也很明确，就是爷要摆脱备胎们，独霸整个处理器市场。</p>
+<p>其他克隆 8086/8088 处理器的半导体厂商，基本都退出市场。只有 AMD 据理力争，要求 Intel 继续执行 1982 年签署的有效期为 10 年的“交叉授权”协议。为此，双方打起了官司。</p>
+<p>这场官司旷日持久，最终判决直到 1995 年才兑现。AMD 从 Intel 那里得到了 1000 万美元经济补偿，并于 1993 年拿到了生产 386 处理器的资格，Intel 则从 AMD 这边总计得到了 5800 万美元的专利授权费。</p>
+<p>其实，对 Intel 而言，5800 万美元的专利费可以说微不足道，重要的是，在微处理器和 PC 高速发展的关键时期，Intel 借此成功地抑制住了 AMD 的发展和壮大。</p>
+<p>虽然 AMD 错过了 CPU 发展的关键时期，但是<strong>总算是赢得了 x86 指令集的永久知识产权</strong>，可以继续设计 x86 的处理器。AMD 1996 年收购设计公司 NexGen，1997 年迅速推出 K6 处理器。在三个版本的 K6 之后，AMD 进入到有史以来最成功的 K7 架构节点。</p>
+<p>1999 年，AMD 基于 K7 微架构的 Athlon 处理器诞生，综合性能超越同频的 Pentium III（奔腾），让所有的 DIY 用户为之震惊，后来，AMD 又抢先发布了 1GHz CPU。虽然 K7 最终版 Athlon XP 口碑很好，但因为主频落后，始终屈居在 Pentium 4 之下。</p>
+<p>AMD 在 2003 年抢先发布了 64bit ISA 的 K8 Athlon 64，2005 年发布了双核 Athlon 64 X2，由 32bit ISA，升级到 64bit ISA，在单核升双核的两个关键技术节点上反超了 Intel。 2006 年第一季度，AMD 达到了它的第一个最高峰，占据将近 25% 的市场份额。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4aaed339bc282f64.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>Intel 在这个期间，也是明星产品不断。在 486 之后，把 586 重新命名为 Pentium(奔腾) 系列。然后分离出针对工作站和服务器市场的 Pentium Pro（1995），就是后来的 Xeon(至强) 系列，同时继续推出 Pentium II（1997）、 Pentium III （1999），2001 年的 Pentium 4 把主频提到 2.0GHz，终于在和 AMD 之战中取得了性能的关键优势，后来演进为 Core（酷睿）系列。</p>
+<p>其实在 90 年代末，Intel 还出了低端的 Celeron（赛扬）系列，和给予高度希望却不太成功的 Itanium（安腾）系列。不过，某种程度上，赛扬和安腾都是竞争之下的产物。Xeon、Core，才是 Intel 的主流产品线，市场最终还是看产品说话。</p>
+<p>结束这场战斗的是 Intel 2006 年发布的高性能双核酷锐 Core，而 AMD 连续几代产品性能落后，又因为 2006 年收购 ATI 债台高筑，之后十年碌碌无为。Intel 稳稳地拿到了近 80% 的市场份额，坐稳了行业老大的位置，收入连创新高。</p>
+<p>一个市场的双供应商，其实是一个非常有益的状态，生态可以共享共建，消费者在两者之间反复横跳，可以极大地促进创新。1997-2006 年，AMD 与 Intel 展开针锋相对的拉锯战，是处理器市场的黄金岁月，两家竞争的市场超级繁荣，技术创新速度更是飞快。</p>
+<p>一方面体现在 PC 市场的出货量从 8000 万台，增长到 2.4 亿台，另一方面 PC 的平均价格从 2000 美金之上，下降到 726 美金（这是包括了笔记本电脑的平均售价），整个世界从中获益，中国的联想、方正，台湾的宏基，也是在这个时间段成长为一线系统厂商的。</p>
+<p>PC 市场是个主战场，相邻的服务器市场上其实也很热闹。从 1980 年到 2005 年，x86 双雄与微软并肩，战胜众多古典 RISC 架构厂商。2005 年 Windows 服务器（就是 x86 服务器）的市场份额第一次超过 Unix 服务器市场份额，到达了逆转点。</p>
+<p><strong>Tick-Tock 策略</strong></p>
+<p>从 2007 年开始，Intel 宣布了著名的时钟“嘀嗒”(Tick-Tock) 战略模式，把摩尔定律具体化了。“嘀嗒”意为钟摆的一个周期，“嘀”Tick 代表芯片工艺提升、晶体管变小，而“嗒”Tock 代表工艺不变，芯片核心架构的升级。一个“嘀嗒”代表完整的芯片发展周期，耗时两年。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-39a8c8939dee90a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>错失移动互联网</strong></p>
+<p>但是这个期间，Intel 犯了一个要命的错误，长期的第一，让它忽略了一个新兴的市场：智能手机处理器。它拿下了苹果的 Mac，却拒绝给 iPhone 设计处理器。如果有评选，这是 Intel 公司史上最贵的失误吧。Intel 花了 100 亿美金，试图纠正这个错误，仍然以失败黯然离场。</p>
+<p>而且更糟糕的是，到了 2016 年，工厂在研发新工艺方面，频频出现失误、延期、良率问题，一句话总结就是：工艺的进步，突然停止了，Intel Tick-Tock 的摩尔时钟停摆了。</p>
+<p>这时，Intel 尝试把 Tick-Tock 变成 PAO 策略，就是所谓的 Process（制程）-Architecture（架构）-Optimization（优化）三步走战略，3 年更新一次制程，但是实际上也并不成功。出现了 14nm 被打磨到 14nm+++ 的优化，优化，再优化的局面。</p>
+<p>在 2016 年 -2020 年这段时间，Intel 还尝试通过收购 FPGA 厂商 Altera、以色列自动驾驶技术公司 Mobileye、AI 芯片设计公司 Habana 来尝试多元化的道路。但是，至少从财务报表上看，最近 3 年，就是 2018、2019、2020 年，收入最高的仍然是 PC 业务 CCG，和服务器业务 DCG，其它业务的收入，相比之下，都低了一个数量级。</p>
+<p>到这里，我总结一下。错失手机处理器市场，对 Intel 是个损失，但是 Tick-Tock 的停摆才是致命伤。如果行业里的其它竞争者，可以搭乘台积电这样的工厂，保持摩尔速度，那么 Intel 再多的优势也会有被耗尽的一天。在半导体这个行业中，不出错的按照摩尔定律前进创新，才是一个公司的安身立命之本。</p>
+<p>历史真是有轮回性，2007 年帕特·基辛格向全世界介绍了 Tick-Tock 战略。2021 年 3 月 23 号，回归 Intel 出任第 8 任 CEO 不到一个月的帕特，向全世界宣布要重启 Tick-Tock 战略，以及要升级 IDM 模式到 2.0。</p>
+<h3 id="三星资本与技术共舞的40年"><a class="markdownIt-Anchor" href="#三星资本与技术共舞的40年"></a> 三星：资本与技术共舞的40年</h3>
+<p>有“最懂经济的市长”之称的黄奇帆说，一个公司的成功三要素是：市场、资金和技术。每个公司都想三要素齐备，但是如果因地缘问题，没法拥有一个有规模的本土市场，那就得在资金和技术方面多下功夫，以资金和技术赢得市场。三星就是这方面的楷模，一手技术，一手资本，打造了业界独一份的端到端的完整产业链。</p>
+<p>2017、2018 年三星电子的半导体业务分别以 659 亿美金、832 亿美金的销售额，超过我们上一讲介绍的 Intel，登顶世界半导体公司的第一。</p>
+<p>三星电子靠的是什么呢？靠的是存储芯片，就是让 Intel 败北的存储芯片业务。</p>
+<p>单从三星电子的半导体业务看，三星电子很像 Intel，是 IDM 模式，不过它是靠多年存储芯片市场第一，站稳半导体行业第二的位置的。但三星电子并不仅仅止步于存储芯片，它还控制着全球手机产业链的命脉，除了手机的存储器外，手机的液晶面板也做到全球第一。而且三星电子的手机业务，也排名世界第二。从这个角度看，三星电子很像苹果，它出手机，还自己设计手机应用处理器。</p>
+<p>但是与苹果专注于手机业务不同，三星电子深度参与产业链，无论是液晶面板、存储芯片，还是处理器，都供应给其它手机厂商。2017 年，三星电子把芯片代工业务独立出来，跟台积电竞争，很巧的是，芯片代工这项业务，三星电子也做到行业第二。</p>
+<p>三星电子绝对不是一个简单的“苹果 +Intel+ 台积电”的三合一的公司，它的商业策略和技术路径都是非常独特的。它从制造开始，沿着产业链一步步攀升，直至集大成的智能手机。这是一个真正的端到端打通，拥有完整产业链的一家垂直公司。而看上面三家公司，苹果没有工厂，Intel 没有手机，台积电只有制造。</p>
+<p>三星电子的成功，不只是技术领先，或是大手笔投资，单方面因素成就的，这是资本与技术长期相辅相成的结果。</p>
+<p>下面我画了一个 2020 财年三星电子的收入比例图。可以看出存储芯片业务在三星电子中占据了举足轻重的位置，同时三星存储芯片业务在全世界半导体行业中也一样的至关重要。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-83012c3774d16651.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>另外，你还可以看看下面这张图，显示了存储市场的两个主要产品：DRAM 和 NAND Flash 在 2019 年的供应商市场份额。通过之前的学习，你已经了解了在存储芯片市场，DRAM 和 NAND Flash 大约占了 98% 的市场销售额。而在这两个市场中，三星都是有压倒性优势的第一。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-222919023e14186a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>既然说三星是一手技术，一手资本，打造了业界独一份的端到端的完整产业链，对于一个完整的产业链肯定不是一篇文章能讲清楚的，这一讲我就通过分析最重点的三项业务：存储芯片，代工和手机处理器来鸟瞰一下。三星强的地方还很多，例如拥有智能手机屏市场份额的 50%，MEMS 传感器排名第二，这还仅仅是三星电子，三星集团就更厉害了。</p>
+<p><strong>三星存储芯片业务：逆周期投资</strong></p>
+<p>而 1983 年三星电子才刚刚开始，三星从当时规模还小的美光 Micron，拿到了 64K DRAM 的技术授权。技术授权，往往是行业后来者迅速赶上行业先进者的行之有效的方式。但是 1984 年，三星刚推出 64K DRAM，内存价格就暴跌，直接遭遇到行业的第一次衰退周期。当时内存价格从每片 4 美元跌至每片 30 美分，此时三星的成本是每片 1.3 美元。</p>
+<p>换句话说，每生产 1 片亏损 1 美元。到 1986 年底，累计亏损 3 亿美元，当时三星电子的股权资本全部亏空，要靠集团输血。</p>
+<p>那在这次存储芯片行业衰退周期，三星是怎么实现转机的呢？在此期间，美国提供了超过 20 亿美金的资金援助，韩国政府不但组织产学研共同投资，也提供了 6000 万美金的研发资金支持。三星电子，仅仅用了 3 年时间就一口气掌握了 16K 到 256K DRAM 的关键技术。</p>
+<p>到了 1987 年，苦熬多年的三星电子终于迎来行业转机。当年，美国向日本半导体企业发起反倾销诉讼，双方达成出口限制协议。受此影响，DRAM 价格回升，三星趁势崛起，不但实现了盈利，还开始在技术上领先日本。</p>
+<p>1992 年，三星率先推出全球第一个 64M DRAM，并于当年超越日本 NEC，成为全球最大的 DRAM 制造商。两年后，又率先推出 256M DRAM。三星的崛起，还带动整个韩国形成一个内存产业集群，除了三星，韩国的现代（2001 年后改称 SK 海力士）也跻身世界前三强。</p>
+<p>这里说一句，在 1993 年，全球内存芯片市场又开始下滑，迎来第二次衰退周期，三星再次采用逆周期的投资策略，投资兴建 8 英寸硅片生产线来生产 DRAM。相反，日本因为房地产泡沫破灭，整个行业退缩，最后在政府的主导下，将半导体行业企业一分为二，日立、NEC、三菱的 DRAM 部门整合成立了国企尔必达。</p>
+<p>这里重点说一下“逆周期”投资策略，要想“逆周期”投资，首先你得有钱。所谓逆周期，就是行业处在下行周期，不赚钱，甚至赔钱的时候，还进行投资。那投资的钱，从哪里来？这时候三星多业务的优势就体现出来了，存储业务在下行周期，但是还有手机业务在赚钱。三星集团的持续输血，让三星电子的逆周期投资成为可能。其次，你要有勇气，就是在一个业务赔钱的时候，“做赔钱生意”的勇气，这是三星最难得的意志，是对技术的笃定，也是对长期精神的信仰。</p>
+<p>行业的第三次衰退周期随着 2008 年金融危机爆发到来，DRAM 价格雪崩，从 2.25 美元狂跌至 0.31 美元。就在此时，三星把握机会，再次做出逆周期投资的决策：将三星电子上一年的利润全部用于扩大产能，故意扩大行业的亏损。很快，DRAM 价格就跌破材料成本。最先破产的是德国巨头奇梦达，这也成就了紫光集团接手奇梦达的机缘。</p>
+<p>日本的尔必达苦苦支撑数年，最终于 2012 年被美光收购，另一巨头东芝的闪存业务，也在 2017 年被美国贝恩资本收购。自此日本彻底退出存储芯片业务。整个 DRAM 行业只剩下三星、SK 海力士和美光三大玩家。</p>
+<p>进入 2016 年，在大数据、云计算、比特币挖矿等需求的带动下，存储芯片进入“超级上升周期”，三星存储芯片的业务收入，从 2017 年一季度到 2018 年一季度，增长 118%。三星电子的半导体业务在 2017、2018 年超越 Intel，成为行业第一。同样受益于存储芯片的周期，2017 年，SK 海力士、美光也分别上升为整个半导体行业的 3、4 名。</p>
+<p>让我们复习一下世界半导体公司前 10 强，和它们对应的市场份额。三星、SK 海力士、美光，存储行业的前三的营收，基本上占整个半导体行业的 1/4。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5607b6c4ffd0e720.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>在存储业务上，三星一手靠技术，自 1992 年起，三星的每一代产品、工艺都是领先竞争对手的；另一手靠大规模投资，特别是逆周期的投资，不仅仅帮助自己成为行业第一，而且还带动了韩国内存产业群。</p>
+<p><strong>三星代工业务：后发先至的逆袭之路</strong></p>
+<p>三星代工业务，一方面是存储芯片业务积累的先进制造工艺能力输出，另一方面逻辑芯片对于制程的提升，也反过来让其它业务收益。这是垂直型公司的优势，有关联的业务之间，商业上可以抱团一起赢单，技术上可以相互提升能力。</p>
+<p>三星的代工业务开始于 2005 年，一开始不过是产能与技术的溢出。在存储芯片业务的下降周期时，把自己过剩的产能和技术拿出来，卖点钱增加半导体业务部门的收入。这个起步时间相对于台积电，非常晚。但是从 2005 年到 2020 年的十几年内，三星的代工业务，一路 PK 掉 20 多家公司，成为唯二提供 7nm 工艺的两家代工厂之一。而且三星在 GAA（Gate-All-Around，环绕式栅极技术）的最新技术研发上，有领先之势。</p>
+<p>代工业务，也是一项既拼制造技术，又拼投资的业务。三星在代工业务上，一手抓技术赶超，一手放手投资，后发先到的逆袭之路，才是我国产业界需要学习的地方。</p>
+<p>前面提到，三星进入代工业务的底气，来自于在存储芯片的竞争中，建立起的先进工艺的制造技术。但是三星的代工业务，面对每一个节点上的大客户订单，似乎都是生死存亡之战。</p>
+<p>在 28nm 制程上，台积电是 2011 年最先进行 28nm 制程量产的，然后在 2012 年攻克了 28nm HKMG 制程。三星则是在 2012 年实现 28nm 的量产，并于 2013 年导入了 28nm HKMG，而 GF 公司和 UMC 台联电则在 2013 年才开始量产 28nm 芯片。至此，从技术角度看，三星晶圆代工业务已经进入前二。</p>
+<p>而在 2014 年，苹果把 A8 的订单转给台积电，这大大的刺激了三星加快转进 20nm 及以下先进制程的研发。2015 年 2 月，三星率先进行 14nm FinFET 芯片量产，重新拿回了苹果订单。历史上，非常罕见的出现了，一颗芯片 A9，同时在两个代工厂生产的局面。</p>
+<p>这样的同款手机不同处理器的对比是非常残酷的。很快就有用户发现了，苹果 iPhone 6s，同样的 A9，三星版本和台积电版本续航能力有差异，虽然苹果官方声称差异仅有 2%-3%，但是在专业测评机构的极致测试情况下，显示有 20%-30% 的差异。这次与台积电的较量失败，明显伤害了三星的代工业务。</p>
+<p>接着的 10nm 制程，三星落后于台积电。于是三星率先在 7nm 节点导入了 EUV 技术，却再次因为良率问题，错失先机。目前，三星宣布跳过 4nm，采用 GAA 架构实现 3nm，试图在 3nm 这代反超。</p>
+<p>三星技术上激进，资金投入上更是。相对来说，台积电是小心翼翼地在维护着投资与资金流的平衡。三星在晶圆代工业务上疯狂进行扩张，其依仗就是高额的研发投入。</p>
+<p>而纵观三星历年来的年报，2010 年时，三星对半导体的投资就首次超过了 100 亿美元，此后三星在半导体的投入也一直维持在百亿美元以上。IC Insights 曾经发布的调查报告显示，三星的半导体资本支出由 2016 年的 113 亿美元，增长到 2017 年的 260 亿美元，其投资金额已经成为了 Intel 及台积电全年资本支出的总和。</p>
+<p>2019 年 4 月三星电子又宣布，计划在 10 年之内投资 1160 亿美元用于推动半导体领域的研发和生产技术。虽然台积电也投资不小，但是台积电的市场份额是三星的 3 倍。相对市场份额来说，三星绝对是按照更大的目标进行的投资。</p>
+<p>其实，在 Intel 那讲，有关于半导体公司是保持 IDM 模式好，还是“设计 + 代工模式”更好的讨论？在三星这里，做存储芯片的制造和逻辑芯片制造，其实还是有不同的。如果三星把自己的目标仅仅定位为存储第一，甚至行业第一，那代工业务都不是那么重要。但是如果从端到端产业链的完整性上，晶圆工厂，特别是先进制程的晶圆工厂，是阿喀琉斯之踵。没有的话，那这个产业链就是不完整的。</p>
+<p>再次引用同一位业内大佬的话，“国家与国家之间的竞争，是端到端产业链能力的竞争”。</p>
+<p>说到 IDM 模式，三星的工厂，在最开始的时候，是给自己的高端手机 SoC 使用的。甚至到目前为止，三星自用的比例仍然超过 50%。所以，三星的工厂到底是产能与技术的溢出？还是有实力冲击行业第一的核心竞争力？我觉得这个问题，三星也是到了 2018 年，才明确下来的。三星要冲击行业第一，把工厂的制造能力打造成最核心竞争力。</p>
+<p><strong>三星的手机处理器</strong></p>
+<p>三星做手机处理器的起始点并不高，是从给苹果做定制服务开始的。</p>
+<p>而且据说苹果并不满意三星的定制芯片，因此才推出自研的 A4 处理器。客观的说，三星做了苹果要求的产品，但是苹果没有得到自己想要的处理器，这是苹果架构团队的问题，不是三星的问题。</p>
+<p>但是问题在于，三星的重心到底是做手机业务，还是在做手机处理器业务？对比苹果，苹果的策略很清晰，它专注在手机业务，做手机处理器只是为了更好地做手机。苹果的手机处理器不外卖，苹果的手机也不外购处理器。三星的手机，既用自己的处理器，也用高通的处理器。三星的手机处理器，也对外卖给小米、OPPO。无论是同机型不同处理器的配置，还是给竞争者供应手机处理器的操作，都挺迷惑的。</p>
+<p>其实，三星的这种全产业链模式的弊端就在这里，例如它替苹果代工，生产手机处理器，又同时自己也设计手机处理器，虽然三星自己声称部门与部门之间，有很好的保密体系，但终究是瓜田李下。2012 年苹果起诉三星专利侵权，就是这种生意模式的弊端的体现。</p>
+<p>对于大手机品牌，拥有自己的处理器肯定是有助于竞争的。</p>
+<p>对于手机处理器设计部门，供货给自己的手机部门，自产自销天然有优势，而且手机部门的系统知识，对设计部门收益良多。但是，手机处理器部门的利润和价值，也往往被手机部门所淹没。</p>
+<p>手机处理器，是技术和市场偏重的产品。前面说了，三星擅长技术和资金。但它本土市场有限是一个硬伤。美国有苹果，也有高通；中国有华为、小米、vivo、OPPO，中美都是有很大规模的本土市场的。没有一个有规模的本土市场，必然要拿其它的两项来补齐。</p>
+<p>三星在手机芯片这块，因为想在技术上领先，在 2015 年到 2019 年四年时间，尝试了自研的 CPU 核：猫鼬，猫鼬虽然曾经阶段性超过高通，但是 ARM 的公版 CPU 性能更为优秀，且更新节奏稳定，在高通转向 ARM 公版之后，三星团队最终也放弃了投资巨大，但是收效甚微的自研 CPU 核的努力，也回归 ARM 的公版核路线。</p>
+<p>不过，三星在技术上的追求并没有停止。2019 年在宣布放弃自研 CPU 核之后，2020 年，有爆料称，三星和 AMD 在合作研发移动 GPU。果然，2021 年三星官方证实了这一消息。CPU 这条路不通，就试 GPU 这条路，三星一直是一个屡败屡战的战士。</p>
+<p>而且三星不仅仅有处理器，还有基带芯片、图像传感器、IC、DDI 等产品，都让三星对手机设计的任何一个新动态，有敏锐的感觉。我想说，一个企业有市场前瞻性，有技术能力，持续迭代，仍然在市场中，就会一直有机会。</p>
+<p>手机处理器有三大技术能力：CPU、GPU 和基带，三星在 CPU 方向，4 年花了上千亿人民币，最终以失败退场；三星和 AMD 的合作，算是三星在 GPU 上的努力，效果尚未知。在基带方面，2020 年底三星虽然发布了首款 5nm 工艺 5G 基带芯片，但尚未自用。</p>
+<p>跟排在行业第一的存储芯片业务，以及稳居第二，冲击第一的代工业务相比，手机处理器这个品类，算是三星的半导体业务中唯一徘徊的业务了。</p>
+<h3 id="台积电摩尔定律的忠实执行者"><a class="markdownIt-Anchor" href="#台积电摩尔定律的忠实执行者"></a> 台积电：摩尔定律的忠实执行者</h3>
+<p>前两讲，我给你讲了 Intel、三星这两家公司，一个是处理器芯片第一，一个是存储芯片第一，都是好公司，都是业界楷模。如果 Intel 和三星出现意外停工停产的话，估计整个半导体行业会忙乱一阵，疯狂补位，瓜分它们的市场，重新排定座次；行业之外，都不会有什么太大影响。</p>
+<p>但是，今天讲的台积电就不一样了。如果台积电出现点问题，那整个半导体行业，可能死一半吧。行业之外，别的不说，手机价格应该会贵一倍，或者只有三星代工的芯片可以买了。</p>
+<p>当然我说得有点夸张，不过这是有前例的。2018 年 8 月 7 号，因为电脑病毒的攻击，台积电出现全线停产的问题，影响到已经定在 9 月 12 号上市的 iPhone 9 所需要的 A12 处理器的生产。当时 iPhone 9 的市场价，很快就被黄牛们炒到离谱的地步。</p>
+<p>那个时候，台积电决定优先生产苹果的 A12 处理器，将其它的处理器推后生产（其实就是华为麒麟）。当时台湾媒体，一直夸奖华为非常有绅士风度。因为华为的处理器也是由台积电生产的，而且华为的处理器生产量也不比苹果少，加之华为新机的发布也并不比苹果晚多久。由此，苹果和台积电都欠了华为一个很大的人情。</p>
+<p>华为的礼让，是有回报的。2019 年在美国发布实体清单之前，台积电积极帮助华为。它和高通、联发科、AMD、英伟达等公司沟通，请他们释放出来一部分 7nm 芯片产能来给华为公司应急生产制造。</p>
+<p>其实台积电不仅仅是半导体行业的咽喉要处，它还改写了半导体产业的格局。它是摩尔定律的忠实守护者，在 Intel 无法维持 Tick-Tock 的行业节奏之后，是台积电和苹果搭队，默默地为整个行业提供持续创新动力。其实在第四节我有提到，半导体一半设计，一半制造。在制造这方面，台积电以一己之力，支持了半个行业。这一讲，就让我介绍一下这家无冕之王。</p>
+<p><strong>重塑产业格局：激励创新</strong></p>
+<p>在第四节有提过，在台积电出现之前，半导体公司都是 IDM 模式。从设计到制造全部自己完成。AMD 的创始人兼第一任 CEO 曾经说过“真男人都有工厂”。在很长的一段时间内，芯片设计和工艺制程两者是紧耦合的，被看作是半导体公司的核心竞争力。行业老大 Intel，至今仍然坚持这条路线。</p>
+<p>但是，让我给你一个数字，你就能清楚的知道，如果半导体公司采取 IDM 模式，需要什么样的实力。</p>
+<p>一家并不是最新工艺的晶圆厂的建设成本为 30 亿美金，每年的折旧成本 + 运营成本约为 10 亿美金，这意味着半导体公司的营业额，必须在 50 亿美金以上。以 2020 年无厂半导体设计公司的收入来看，只有 5 家公司：高通、博通、英伟达、AMD 和联发科够这个标准（排在第 6 的 Xilinx 收入是 30 亿美金），但是这 5 家头部设计公司，全都是用的建设成本至少 100 亿美金起的先进工艺进行设计。</p>
+<p>台积电开创了芯片制造的代工业务，让半导体行业可以在 IDM 模式之外，出现“无厂设计公司 + 代工工厂”的模式。甚至，原有的 IDM 模式的公司，也可以有选择的保留部分工厂，而将其它的芯片生产制造，特别是昂贵的先进工艺制造，外包给代工工厂，变成“轻工厂”模式。</p>
+<p>无厂设计公司，大大的降低了半导体公司的创业资金门槛，促进了行业繁荣。换一个角度描述，如果没有台积电开创的这种 “无厂设计公司 + 代工工厂”的模式，大约 70% 的半导体公司都不存在了。可以说，没有台积电就没有目前的半导体行业格局。</p>
+<p>但是，开创一个新的产业模式从来都不是一件容易的事。在台积电之前，从来没有一个专业的只从事晶圆制造的工厂。晶圆厂的成功，是要产能满负荷运转的。即使到了 1995 年，有专业研究机构统计，全世界的设计公司的芯片，全给台积电，也不够喂饱台积电。</p>
+<p>无厂设计公司 + 代工厂，这个模式想运转起来，需要三个条件：</p>
+<ol>
+<li>代工工厂的工艺水平不能太差，不能拖设计的后腿，而这个“差”，是跟同期的 IDM 的工艺水平相比较的。</li>
+<li>设计公司的设计水平也不能太差，而且要有一定的出货量，才能填满代工厂产能。</li>
+<li>与同一个市场中竞争的 IDM 模式相比，要有良好的投资回报比，才能持续发展。</li>
+</ol>
+<p>换句话说，台积电要成功必须得同时满足这三个条件，分别代表了三个层面：要有工艺水平、有客户需求、要比 IDM 模式赚钱。 事实上，它也很好地完成了。我来一条线一条线跟你说。</p>
+<p><strong>提升工艺水平，成为行业第一</strong></p>
+<p>在台积电建立的头十年，在工艺技术上与当时的德州仪器、摩托罗拉等欧美大型 IDM 相比，还是有差距的。它真正的崛起有两个转折点，经过这两个转折点，才逐步奠定了它的地位。</p>
+<p>第一个转折点是 2000 年，台积电在铜铝工艺切换的时候，开始自主研发基于铜制程 0.13 微米技术，而不再仰仗欧美公司的技术转让。正如英伟达的 CEO 黄仁勋说：“0.13 制程改造了台积电。”领先的制程工艺，让台积电成为代工厂的技术第一。</p>
+<p>第二个转折点是 2007 年，台积电的林本坚提出浸没式光刻设想后，ASML 开始与台积电合作开发浸没式光刻机，并在 2007 年成功推出第一台浸没式光刻机。技术能力延展到制造设备侧，才是核心能力。而凭借这个能力，台积电决心“抢先半步”，走 40、28、20nm 的路线，自此和 Intel 的 45、32、22nm 路线分裂。接着创始人张忠谋的回归，大手笔投资 28nm 制程，将技术先进巩固为商业成功。</p>
+<p>真正要到 2018 年，台积电按时按计划发布了 7nm 制程并进入量产，才真正反超了一直困扰在 10nm 良率问题上的 Intel，开始领跑整个业界。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e7c6f07f24e3b23f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>先进的客户需求成重要助推器</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5f453f9d7b17ca98.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>回顾早期历史，1995 年台积电和 Altera 就合作在美国建晶圆厂，为芯片设计公司提供代工服务了。对 Altera 这家公司，你可能不熟悉，这是 FPGA 双雄之一，2016 年被 Intel 收购。FPGA 对于半导体制造工艺非常重要，因为 FPGA 的构造是大面积的重复单元，因此往往可以用来测试工艺制程。而 FPGA 这个品类，是强依赖最新工艺来提升竞争力的，这也是后来 Intel 要收购 Altera 的原因之一。</p>
+<p>接下来，我们看看台积电的客户们。</p>
+<p>高通，不太主动披露它的芯片制造商，但是 1998 年，高通的基带芯片 MSM3000，就是用的台积电 0.35 微米工艺生产的。之前几代，可分别用的是 LSI、IBM 和 Intel。而且 2002 年，高通的 CDMA 产品线的最佳供应商奖项是颁给了台积电。这是在台积电拿下苹果订单的 10 多年前。</p>
+<p>英伟达，是从 1995 年就投奔台积电了。漫长的合作历史上，常有精品，例如英伟达 2020 年 5 月发布的 Ampere A100，542 亿的晶体管，826 平方微米的 N7 工艺单 Die，这个芯片做成 PCIe 卡之后，售价为 12500 美金。</p>
+<p>在英伟达之前，只有博通能设计这么大的芯片了。博通也是台积电的很早期客户。</p>
+<p>2014 年台积电推出了基于 FinFET 工艺的 20nm 芯片。这一年台积电拿下了最重要的一张订单：苹果的 A8。从此，苹果成为每年为台积电贡献超 20% 收入的超级大客户。</p>
+<p>苹果手机芯片一年一代的更新节奏，反向制定了台积电的工艺升级的节奏。而台积电的工艺制程升级的节奏，也给全行业定了基调。其实从 2016 年，Intel 的 Tick- Tock 停摆之后，半导体行业的速度是台积电确立的，稳稳的摩尔定律速度。</p>
+<p><strong>与 IDM 模式竞争，保持产能与需求之间的平衡</strong></p>
+<p>其实，在台积电最初创立时期，Intel 是帮了台积电一把。但是，代工这种模式，本质是在和 IDM 模式的厂商在竞争制造机会。</p>
+<p>到了 2000 年，dotcom 泡沫破裂，很多半导体公司的投入减少。同时，12 寸厂成为新建晶圆厂主流，但一座晶圆厂造价高达 25 至 30 亿美元，不仅中小 IDM 负担不起，大型 IDM 要投资也常显吃力。此时台积电的技术实力也已经超越 Intel 之外的其它 IDM。</p>
+<p>2010 年，IDM 已较少自己生产 40nm 制程的芯片了，而台积电成功地预测到“做到 28nm 时几乎所有 IDM 都要靠代工”， 因此大规模投资 28nm 的产线，一举奠定胜局。</p>
+<p>整体而言，IDM 放弃自建晶圆厂已是大趋势，比如 AMD 便在 2008 年底将芯片制造剥离出去。近 20 年来只有所谓“轻晶圆厂”（fab-light）或“无晶圆厂”（Fabless）模式的兴起，而没有芯片设计公司反过来成为 IDM。</p>
+<p>总结看，IDM 模式，无论从产能预测、保密，还是工艺技术与设计结合的角度看，全部自己完成制造，有优势。但是，靠一个公司的产品填满产能，这对公司的研发能力有超强要求。台积电制胜的秘诀就是用最快的速度、最好的制程生产最多的芯片。</p>
+<p>当台积电可以提供给全行业最好的制程的时候，全行业的产能都自发的集中过来。而且在制程领先这个条件下，客户，特别是大客户关心的优先级，就是产能优先，价格第二了。特别在同一个市场拼杀的竞争者，每个都恨不得把产能全包，一个 Wafer 都不给其它人剩下。因此台积电的利润率，一直行业领先。</p>
+<p>“让晶圆厂持续高产能运转”，在产能和需求之间保持平衡，这是一项艺术。</p>
+<p><strong>稳健投资：摩尔定律的忠实执行者</strong></p>
+<p>“摩尔定律”使晶圆代工企业不断追求更先进的制程，而能在一两个原子大小的空间中雕刻回路的设备自然越来越昂贵，动辄数千万美元。为达到规模经济以抵消前期巨额投入，晶圆代工企业又追求更大的工厂和产能。</p>
+<p>台积电在不断追求更先进的制程路上，靠得不仅仅是技术的创新，还有不被行业繁荣与萧条的波动左右，持续大手笔投资的长远眼光。最难能可贵的是，我们这里说的投资不是像三星一样的逆周期投资，台积电用的是自身赚到的资金， 以远高于行业其它公司的金额，长期投资。在台积电精致地平衡业务赚到的营业现金流量（正现金流）和投资活动付出现金流量（负现金流）下，按照金融相关人士说，台积电“画出了一张教科书般的收支图表”。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-8a3beb8b2edf05e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>比起三星的大开大合式、用其它业务补贴式的投资策略。台积电这种稳健的投资，在研发和制造均需要巨额资金投入的半导体行业里，确保了自己的长期健康发展。</p>
+<p>台积电曾在提出的财务指标中强调，2018 年的投入资本回报率（ROIC）必须达到 15% 到 20%。投入资本回报率是显示投向业务活动的资金能在多大程度上产生回报的指标，台积电过去 5 年的平均值为 21.4%，高于 Intel 和三星，Intel 为 15.7%，三星约为 8%。</p>
+<p>既赢，又稳，这背后离不开领导者的经验、魄力与前瞻性。多年来，台积电一直保持着“高投入 - 低成本 - 高销量 - 高投入”的正向循环。</p>
+<p><strong>苹果：需要单独讲讲的超级客户</strong></p>
+<p>整个计算机硬件行业，有 3 次风口：第一次是 PC 机，第二次是手机与移动互联网，第三次是这一轮的 AI、5G 与 IoT。第一次的 PC，成就了行业第一的 Intel。第二次的手机浪潮，成就的就是台积电，而这里的关键票，是苹果投下的。</p>
+<p>苹果并不是一个半导体设计公司，苹果的前三代处理器，都是由三星设计并且生产的。直到 A4，苹果才进入自主研发的阶段。但是这个时候芯片生产还是三星在做。三星的代工价格，基本上是成本价，并且和存储芯片做了捆绑销售包，和只有代工服务的台积电相比，优势明显。因此苹果的 A4、A5、A6、A7 也都是三星生产的。</p>
+<p>但是三星的问题是，它的手机业务和苹果有竞争关系。三星 Galaxy 系列手机搭载的自己生产的猎户座（Exynos）系列手机处理器，看起来跟苹果的相似度太高。这时候问题就出现了，我们讲代工业务有一个特点，代工厂可以拿到设计公司的最终成果，因此客户对代工厂的信任度必须要高。2011 年苹果正式起诉三星 Galaxy 系列产品抄袭 iPhone 和 iPad，三星又反起诉苹果侵犯其 10 项技术专利，苹果与三星的专利诉讼战几乎遍及全世界，这严重破坏了信任度。</p>
+<p>台积电这边在争取苹果订单的时候，一方面遇到价格问题，台积电是一个纯代工工厂，肯定不能像三星那样，只是拿苹果的订单解决剩余产能，可以接受成本价。另一方面，台积电的产能基本满载，如果想拿下苹果订单，就需要给苹果单独建厂。另外，这里还涉及知识产权等问题，也是困难重重。最终台积电 20nm 制程领先三星，且产能扩张完毕，用实力说话，才首度拿下 iPhone 6 的 A8 处理器全部订单。</p>
+<p>而三星并不是一个会轻易认输的公司。它直接跳过 20nm，首先宣布量产 14nm，重新赢回了苹果 A9 的部分订单。这对刚刚扩大产能的台积电来说，真是个大危机。但正如我说过的，危险和机会，总是并存的。我在讲三星的时候说了，iPhone 6s 装载三星版 A9 和台积电版 A9，被发现在功耗上有显著的差异：台积电的芯片明显较三星的省电。对三星来说，这是一个悲剧，相反，台积电因此一战成名。从此，苹果的订单，再也没有离开过台积电。</p>
+<p>从官方披露的信息上看，苹果将在 2021 年推出 5nm+ 的 A15 处理器，2022 年推出 3nm 的 A16 处理器，2023 年推出 3nm+ 的 A17 处理器，目前，台积电和苹果正在携手研发 2nm 芯片，预计 2024 年推出 2nm 的 A18 处理器。</p>
+<p>为什么我说苹果是“超级客户”？2019 年、2020 年，苹果都是世界上最大的半导体产品买家，台积电所有业务中有 25％直接或间接来自苹果，除了代工苹果的自研芯片以外，苹果购买高通、博通、AMD、德州仪器、意法半导体、恩智浦和瑞萨等公司的产品也是台积电代工。想想，三星是一直手机出货量第一，是半导体产品的第二大买家（前 2019 年之前是最大买家），如果没有拿到苹果这一超级客户，后果不敢想。</p>
+<h3 id="nvidia-与ai-芯片超越摩尔定律"><a class="markdownIt-Anchor" href="#nvidia-与ai-芯片超越摩尔定律"></a> Nvidia 与AI 芯片：超越摩尔定律</h3>
+<p>另外要提一下，财经投资的朋友们可不是只动嘴巴夸夸英伟达，他们真的下场投资。如果论营收，看 2021 年 4 月中旬的数字，Intel 是英伟达的近 5 倍，但是如果论市值，英伟达是 Intel 的 1.5 倍。为什么？凭什么？营收算是行业内部给予一个公司的评价，真金白银的买产品；而市值，就是大众对于公司的社会价值的肯定，那么大众肯定的是什么？是跟我一样，看到的是超行业、超摩尔定律的速度？还是大众对于 AI 这个大浪潮更有想象力？</p>
+<p><strong>GPU 开局</strong></p>
+<p>让我先从英伟达的主要产品说起。看看下面这张英伟达财报中的表格，2020 年，英伟达收购成功 Mellanox，表格上“Compute&amp;Networking”那一行的收入就来源于此，如果不算这部分，英伟达就是一个 GPU 的公司。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c729f68cb2203c7d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>关于绘图的任务，我可以给你讲讲大概的原理。现在的显示器分辨率是 1080p，就是说这个显示器上的所有的图形，都是由水平方向 1920 行，垂直方向 1080 列的光点矩阵组成，算一下 1920x1080，也就是 207 万个光点组成。</p>
+<p>这些光点会被记录成一个二维数组，就是一张图。每一个光点，专业上称为像素，是由红绿蓝三种基本颜色调和而成。而这三个颜色，都是以 0-255 之间的一个数字表示。也就是一个像素，就是 3 个数字，例如一个红色的像素，就是（255，0，0）。那么，要生成一张红色的图，在 1080p 的分辨率下，就需要提供 207 万个（255，0，0）红色像素的数组。而且这只是一张静态的图像，如果是视频，每秒有 60 帧图像，那一秒就需要处理上亿个像素了。</p>
+<p>其实，在 GPU 处理图像，特别是 3D 图像的时候，倒不是一个像素一个像素处理的，而是把 3D 图形转换成可以在 2D 屏幕上展现出来的，由顶点构成的无数个三角形。然后，根据每个三角形的三个顶点，把这个三角形所覆盖区域换算成像素，然后再做颜色效果，基本上就得到了屏幕上的最终效果。</p>
+<p>从我上面说的图像处理的原理，可以看到，绘图任务需要并行处理海量数据，这对擅长做串行数据处理的 CPU 来说，既不合适，又负担很重。于是在 1980-1990 年代，图形加速卡这种外设开始出现。当 1993 年黄仁勋创建英伟达的时候，市面上有 100 多家图形加速相关的公司。这是一个可怕的在性能、标准、市场层面的混战，当时的市场主要是游戏和 PC 市场。</p>
+<p>当然 PC 和游戏市场的残酷，也给了英伟达两个非常宝贵的经验：第一，超摩尔速度，就是被业界称为“黄氏定律”的：“半年更新，一年换代”；第二，就是软硬件之间的标准的重要性。</p>
+<p>在游戏市场，英伟达和竞争对手竞争的早期，微软的 Direct X 可以说是能左右游戏开发生死的翻云覆雨手，它是一套优秀的应用程序编程接口，既为软件开发者提供与硬件的无关性，又为硬件开发提供策略。说白了，它就在做软硬件之间的标准。</p>
+<p>这也是英伟达花 10 年苦功，投入 CUDA 软件生态建设，把软硬件之间的标准，移到了自己一侧的动力。关于 CUDA，我下面会讲到。</p>
+<p>对于 GPU 开局这部分内容，当然我的重点不是分析传统的 GPU 市场，老实说，回顾英伟达的公司历史，至少从股价市值的方面，市场给予了 GPU 这个产品正常认可度。在 2016 年之前，英伟达的市值和跟营收曲线，基本上相符。GPU 这个产品存在的价值，就是从 CPU 上卸载图形处理工作，是依附在 PC 和游戏机这两个市场的。因此长期以来，英伟达是被放在 Intel 这个坐标系下评价的。这也是为什么如果固守 PC 和游戏机这两个已经成熟的市场，英伟达的发展有限。</p>
+<p>英伟达的转折点，或者用理论一点的术语描述，英伟达的第二曲线是我下面要说的 GPGPU 与 CUDA。</p>
+<p><strong>GPGPU：点亮并行计算的科技树</strong></p>
+<p>2007 年，英伟达首席科学家 David Kirk 非常前瞻性地提出 GPGPU 的概念，把英伟达和 GPU 从单纯图形计算拓展为通用计算，强调并行计算，鼓励开发者用 GPU 做计算，而不是局限在图形加速这个传统的领域。GPGPU，前面这个 GP，就是 General Purpose 通用的意思。</p>
+<p>而且英伟达这样一个芯片公司，以 12 分的努力和投入，开始建设 CUDA 这样的软件框架。GPGPU 和 CUDA 让英伟达从计算机图形学，开始走出来，把并行计算这个重要任务记在自己的名下。</p>
+<p>这里我要重点说一下 CUDA（Compute Unified Device Architecture，统一计算架构），CUDA 不仅仅是一个 GPU 计算的框架，它对下抽象了所有的英伟达出品的 GPU，对上构建了一个通用的编程框架，<strong>它实质上制定了一个 GPU 和上层软件之间的接口标准</strong>。</p>
+<p>前面有提到，在 GPU 市场的早期竞争中，英伟达认识到软硬件之间的标准的重要性，花了 10 年苦功，投入 CUDA 软件生态建设，把软硬件之间的标准，变成自己的核心竞争力。英伟达可以说是硬件公司中软件做得最好的。</p>
+<p>同样是生态强大，Wintel 的生态是微软帮忙建的，ARM-Android 的生态是 Google 建的，而 GPU-CUDA 的生态是英伟达自建的。</p>
+<p>这个标准有多重要？这么说吧，一流企业定标准，二流企业做品牌，三流企业做产品。在所有的半导体公司中，制定出软件与硬件之间的标准，而且现在还算成功的，只有 3 个，一个是 x86 指令集，一个是 ARM 指令集，还有一个就是 CUDA 了。</p>
+<p>2007 年，英伟达推出了基于 CUDA 的 GPGPU beta 版，之后公司的所有 GPU 都支持 CUDA，因此其实 GPGPU 和 GPU 可以完全通用。各种编程语言的工程师纷纷用英伟达的 GPU 进行开发，大大增强了 GPU 的开放性和通用性。而且因为英伟达是用 GPU 进行并行计算这个领域的第一，因此所有这个领域的软件、应用，都支持了 CUDA，CUDA 实际上成为并行计算的事实标准。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3fbf950f9622c22c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>GPGPU 提出之后，在提供算力这个方面上，每个英伟达的 GPU 都有了一个统一的框架。英伟达在算力和存储带宽两个方向上，对比 CPU，都以超 10 倍，甚至 100 倍的优势领先，如上图。GPU 相对 CPU 的 TOPS per Watt（花费每瓦特电能可以获得的算力）的差异竞争优势，它的本质就是将晶体管花在计算上，而不是逻辑判断上。</p>
+<p>在提出 GPGPU 和做 CUDA 的时候，英伟达面向的科学计算，就是冲着 HPC 和超算这个市场去的。也确实挺成功的。2020 年超级计算机 TOP500 更新榜单，可以看到 TOP10 的超级计算机中有 8 台采用了英伟达 GPU、InfiniBand 网络技术，或同时采用了两种技术。TOP500 榜单中，有 333 套（三分之二）采用了英伟达的技术。</p>
+<p>但是 HPC 和超算市场有限。有易用统一的 CUDA 编程标准，有算力和存储带宽都远超 CPU 的计算能力，有明确的技术优势，万事具备，英伟达的腾飞就差一个应用面更广大的通用问题了。</p>
+<p><strong>AI 的风口下，英伟达腾飞</strong></p>
+<p>深度学习依赖于数学和统计学计算。深度学习中的用到的各种神经网络，例如人工神经网络（ANN）、卷积神经网络（CNN）和循环神经网络（RNN），都是典型的并行结构，每个节点的计算简单且独立，但是数据庞大，通常深度学习的模型需要几百亿甚至几万亿的矩阵运算。因此深度学习的成功有两个要素：一，海量的训练数据；二，高速的并行计算能力。</p>
+<p>几百亿甚至几万亿的矩阵运算，这一听，就很 GPU，因为 GPU 在进行图像渲染时，就是做大量的矩阵乘法运算。</p>
+<p>每秒进行大量的矩阵乘法运算，这就是图形渲染和深度学习统一的地方。</p>
+<p>统一的问题，给出统一的答案：英伟达 GPU。</p>
+<p>搞算法的科学家，在用 CPU 的年代里无所作为，于是努力改进自己的算法，希望能少用一点计算，但并没有太大效果。后来，有人用上了 GPU，算法不变，算力提升 10 倍，效果立马就不一样了。混沌大学创办人李善友总是说，要注意差 10 倍的那种变量，一个方向上出现了差 10 倍的一个变量，一定有大事要发生了！</p>
+<p>英伟达一直保持相对于 CPU 的 10 倍的计算力，这个 10 倍速变量，让它成为一个合适问题的关键答案，也完美地验证了超越摩尔定律的都是好公司的业界通识。</p>
+<p>当然，作为从业人士，我其实是想提一个小悖论的。GPU 的计算性能比 CPU 高 10 倍，如果人类社会的任务比例是逻辑计算，就是适合 CPU，那些任务是 1，数据计算是 10 的话，CPU 和 GPU 的比例，是 1:1，英伟达的最高点就是跟 Intel 同规模。只有逻辑计算是 1，数据计算是 100，CPU 和 GPU 的比例，才是逆转的 1:10，英伟达才会有 Intel 的 10 倍规模。你可以理解我说的么？欢迎给我留言，我们一起讨论。</p>
+<h3 id="德州仪器模拟芯片的无冕之王"><a class="markdownIt-Anchor" href="#德州仪器模拟芯片的无冕之王"></a> 德州仪器：模拟芯片的无冕之王</h3>
+<p>今天我分享的这个老牌厂商，经过两次风口，起飞降落之后，最终决定另辟蹊径，在模拟器市场获得成功，它就是德州仪器。德州仪器的中国区总裁谢兵，曾经说过“企业的目标是做强而不是做大”，我觉得这句话非常精准的解释了德州仪器的公司策略。</p>
+<p>让我还是从历史开始，看看德州仪器的三次转型历程。</p>
+<p><strong>第一次转型：搭上半导体行业的火箭</strong></p>
+<p>德州仪器成立在 1930 年，最初是一个小型石油和天然气公司，叫“地球物理业务公司”(GSI)。这么早的历史，让德州仪器有望成为第一个半导体行业的百年老店，毕竟半导体是在 1947 年才发明的。GSI 的生意一直不错，到了二战期间，又得到了国防电子产品的订单，开始将信号处理技术应用在潜艇侦测、空军雷达系统等产品上。</p>
+<p>这里画一下重点：电子产品，信号处理技术，我们看到它在向科技方向转变了。</p>
+<p>在国防电子产品上的经验告诉他们，半导体行业是一个极具前景的行业，这个“火箭”马上要起飞了。因此 1946 年，GSI 创建了电子设备实验室和制造厂，1951 年重组并更名为“德州仪器”。1954 年，德州仪器购买了生产晶体管的专利，直接杀入晶体管制造和销售的市场。</p>
+<p>德州仪器在半导体发展早期，斩获颇丰：有 1954 年研制的第一个商用硅晶体管，还有 1958 年新员工杰克·基尔比研制出世界上第一块集成电路，德州仪器也是当时唯一能批量生产硅晶体管的公司。</p>
+<p>接着德州仪器进入微处理器领域，但在微处理器领域，它遇到了 Intel。</p>
+<p>德州仪器的开局，其实非常漂亮，两个行业第一，不亚于 Intel。但是德州仪器，并不是一个传统的半导体公司。它一开始就产品线很长。它有着电子设备商的特征，初期有很多消费电子产品，例如数字钟表、电子手表、便携式计算器、家用电脑等等。</p>
+<p>一个“不专心”的半导体公司，遇到一个专心做芯片的公司，你认为结果会怎么样呢？</p>
+<p>现在我们都知道结果了，Intel 是行业老大。而分析一场 40 多年前的产品竞争，我觉得也没有意义。因此让我们跳过过程，一起看看，在微处理器领域失败的德州仪器，后面又做了什么。</p>
+<p>德州仪器在 1979 年，输掉了和 Intel 的微处理器的比赛之后，开始制定微处理器之后的未来路线。它制定了发展数字信号处理器（DSP）和嵌入式处理器的策略。1983 年，TMS320 DSP 系列及其衍生产品开始贡献德州仪器总利润的近一半，有非常多的电子产品采用。其实，从这个时间开始，德州仪器的产品就有着明显的多用户、多使用场景的特征了。</p>
+<p>也就是这个 TMS320 产品家族中的 C5000 系列，在 1990 年代末被诺基亚和爱立信选中，德州仪器因此进入了手机市场。</p>
+<p><strong>第二次转型：进入手机处理器市场</strong></p>
+<p>在二十世纪 90 年代末到二十一世纪初，德州仪器一方面转让了国防、打印机、电脑、DRAM 等一系列业务，另一方面开始大力拓展手机芯片市场。这里给你说一个小八卦，当时在德州仪器任职，后来创建台积电的张忠谋，就是因为德州仪器放弃 DRAM 而离开的。</p>
+<p>复习一下，我在介绍三星手机处理器的时候有说过，手机处理器，有三项主要技术：CPU、GPU 和基带。德州仪器的 OMAP 系列处理器，CPU 用了 ARM，GPU 用了 Imagination 公司的 PowerVR，跟后来苹果 A 系列用的是一模一样的，德州仪器自己家也有信号质量非常过硬的 GSM/GPRS，就是 2G 基带芯片，因此三项技术皆强。</p>
+<p>客户方面，德州仪器拿下了 2G 时代最强的诺基亚和摩托罗拉，一时间风头无两。</p>
+<p>但是，凡事都怕但是，这个时候高通催动信息世界升级到了让自己占有绝对技术优势的 CDMA 时代，就是 3G 技术。刚我们说手机应用处理器有三项关键技术：CPU，GPU 和基带。没有 3G 基带芯片的 OMAP 处理器，跟瘸了一条腿似的，根本无法在市场立足。基带，也是高通纵横手机市场多年的杀手锏，至今每个手机也还在交“高通税”。</p>
+<p>好在德州仪器一直是一个多元化布局的公司。在手机芯片业务最好的时候，也没有耽误给车企造芯片，早在上世纪 80 年代，德州仪器就为福特和通用打造了名为 TLC542 的车载器件 8 位 ADC，2003 年还针对汽车推出了第一款信息娱乐系统，成为为数不多的几个汽车处理器供应商之一。</p>
+<p>因此在决定放弃手机移动芯片之后，德州仪器义无反顾地杀入模拟芯片市场。当然德州仪器的能够转型成功，也是因为那些“新”方向本来就是其原有业务中的强势产品。即使在没有以模拟芯片为主的时候，1995 年它在模拟市场上，也是排名第五的。</p>
+<p><strong>第三次转型：模拟市场加冕之路</strong></p>
+<p>德州仪器的第三次转型之路，也是个非常经典的企业转型案例。它主要在三个层面上做了努力：第一是在公司经营层面，消减无关业务，从“大而全”转为“专而精”。第二，大举收购模拟芯片公司，扩大市场份额，产品品类，引进人才，快速确立自己的行业第一地位。第三，在产品技术方面，大举建厂并率先引入 12 寸晶圆制造工艺，带着数字市场的先进经验降维打击模拟市场的原有同行。</p>
+<p><strong>转型：消减无关业务</strong></p>
+<p>所谓转型，放弃之前的强势产品线，这个其实非常见管理功力。多元化的布局，也并不是什么都做。放弃，才能把资源聚集在最有竞争力的产品和市场上。我大概梳理了个表格，你可以看看从二十世纪初开始，德州仪器是如何消减数字芯片业务的。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-07693a6020f44464.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>收购：市场份额与产品品类，引进人才</strong></p>
+<p>整体来说，模拟芯片业务稳定，又赚钱，但从公司经营的角度看，它的问题是品类特别多，市场比较零散。其次模拟芯片的生命周期长，一个新的设计，必须要等待合适的时间窗才有机会替换老产品。还有，模拟产品非常依赖资深工程师，非标准化的设计和生产。这三方面综合起来，收购公司就可以快速提高市场占有率，增加产品品类，同时引进人才。</p>
+<p>这里要说一下，美国的公司，一直非常重视通过收购和并购来增强公司的竞争力。麦肯锡曾经给出半导体产业的一个建议就是每个公司应该每年用自己市值的 3%-5%，来收购相邻技术的公司，扩张自己的领域。而德州仪器在收购公司方面一直比较活跃，我也列了一个德州仪器收购公司的时间表。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-debee2becc1ae676.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>2011 年德州仪器的模拟芯片销售额约为 64 亿美元，尤其是并购了美国国家半导体，给公司带来了 5 千名员工，以及多达 4.5 万种模拟集成电路产品和客户设计工具，极大程度地扩展了公司的模拟业务。</p>
+<p>1995 年德州仪器在模拟供应商中还排在第 5 位，而从 2011 年收购美国国家半导体公司之后，模拟供应商的第一把交椅就一直就是德州仪器的了。</p>
+<p><strong>建厂：构建最佳成本结构</strong></p>
+<p>德州仪器的第一可不仅仅靠收购，在做模拟芯片这件事上，也是有独到手段的。</p>
+<p>模拟芯片从产品技术上看，更高阶的工艺制程不一定能改善芯片的性能，一般公司会采用和设计匹配的工艺，因此模拟芯片以 8 寸产线为主，0.18um/0.13um 以上的制程。</p>
+<p>但是从数字芯片市场拼杀过的德州仪器，则不同，它是抓住传统模拟芯片制造工艺落后的劣势痛点，引进 12 寸晶圆，这一手，就是数字 IC 中最崇尚的扩大晶圆，减小晶体管，虽然对性能并无影响，但是斩获了 40% 的成本优势（未封装的芯片的成本）。在一个不是很讲摩尔定律的领域，用摩尔定律打败现存的竞争者。</p>
+<p>2009 年末，德州仪器以 1.725 亿美元的价格从破产的 DRAM 制造商奇梦达公司那里购买了 12 寸晶圆的制造工具，并将其转移到德克萨斯州现有的 Richardson 晶圆工厂中，成为第一家在 12 寸晶圆设备上制造模拟芯片的公司。</p>
+<p>2014 年德州仪器宣布将较老的 DMOS6 工厂转换为 12 寸晶圆的模拟芯片生产。</p>
+<p>2017 年，德州仪器的模拟芯片收入中，大约一半来自使用 12 寸晶圆制造的设备。12 寸晶圆的高毛利，让德州仪器，对比其它的模拟同行，具有更强大，且持续的成本架构。</p>
+<p>德州仪器 70% 以上的生产制造是在 9 个国家的 17 家内部工厂中完成的。模拟 IC 本身就跟工厂工艺强绑定，而且生产产能非常重要，在这点上德州仪器做的非常出色。德州仪器的晶圆产能可以排入晶圆厂产能的前 10，在中国成都也是有工厂的。</p>
+<p>自 2013 年开始到现在，德州仪器在模拟 IC 市场的营收就是行业老二亚德诺半导体（ADI）的两倍。</p>
+<p>没有一款电子设备不需要模拟芯片，在模拟芯片领域，德州仪器是无可争议的市场领导者，在整个半导体界有着举足轻重的地位。</p>
+<p>但是德州仪器的传奇，可没有止步于模拟芯片第一。它从来不是被动转型的公司，它是主动改革的弄潮儿。</p>
+<p><strong>主动改革的重要举措：取消代理分销</strong></p>
+<p>德州仪器最近最大的一次震惊业内，特别是亚洲地区的操作是 2019 年下半年接连取消了安富利、WPI 和文晔的代理权。仅仅保留了一家全球代理商 ARROW 的代理权。这等于全面进入了直销模式。</p>
+<p>要知道，德州仪器有 8 万多个产品，10 万多客户。2/3 的收入是来自代理。这种取消代理，依靠在线销售模式和直销的操作，在业界历史上，从来没有过。</p>
+<p>取消代理，一个直观的好处是德州仪器可以直接访问到客户的项目，每个项目的每颗芯片机会，对客户所作所为有非常直观的洞见，这是靠代理的竞争者所没有的优势。当然，砍掉代理商的利润，肯定也可以提高毛利。</p>
+<p>但是如德州仪器 CEO 所说，在取消代理一年之后，它的 2/3 收入直接来自客户。这个数字，可能会再高一点点，但是不会高很多了。这也意味着，低毛利的小客户的流失。</p>
+<h3 id="其他半导体公司美国双通与欧洲双雄"><a class="markdownIt-Anchor" href="#其他半导体公司美国双通与欧洲双雄"></a> 其他半导体公司：美国双通与欧洲双雄</h3>
+<p><strong>5 年内的前十名</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b1d5d3de7481c2c1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>美国双通：高通与博通</strong></p>
+<p>其实每一个电子设备，可以抽象为计算、存储和网络（也可以叫 I/O 输入和输出）三个主要的功能模块。CPU 做串行逻辑计算，GPU 做并行计算，Intel 和英伟达，就是凭借完成计算任务的能力，位列行业前茅。说到存储模块，三星、SK 海力士、美光、东芝，这些公司都是做存储的。</p>
+<p>还有一类，就是做网络。按照核心技术来分，高通和博通应该归为做网络的公司。从它们的名字可以看出来，都是跟通信有关系的。</p>
+<p>高通（QUALity COMMunications），我觉得中文的翻译还是很传神的，就是高质量的通信的意思。让我先来从这家公司开始。</p>
+<p><strong>高通：CDMA 标准的制定者</strong></p>
+<p>前面有说过，一流公司订标准。高通就是一家制定了 CDMA 无线通信标准，然后从中获益至今的公司。CDMA 无线通信标准就是 3G 通信的主要技术标准。</p>
+<p>如果按照无线通信的发展历史看，1G 是模拟制式的时代，用的是 FDMA，频分复用的技术。到了 2G 时代，欧洲同志们率先结盟，制定了 GSM 的标准，推广到全球。谁立的标准谁获益，诺基亚就是凭着 2G 标准崛起的。而高通，主推的通信性能更高的码分复用 CDMA，最后成为 3G 的标准。</p>
+<p>CDMA 系统在频谱的利用上有较大优势，可以更加高效地利用频谱资源，其实质就是可以支持更多的用户使用，拥有很大的商业价值。</p>
+<p>但是从技术优势，要转换为商业优势，是要花费巨大代价的。最初的高通，从拜访各国政府推动标准的制定，到说服每个运营商投资建网，与北电（Nortel）合作提供网络设备，到和手机生产商合作，提供 CDMA 手机，甚至自己动手制造支持 CDMA 的手机。可以说，高通公司动手参与了 CDMA 产业链的每一个环节。</p>
+<p>但是高通的这种产业链垂直集成的生意模式，并不是它的本意。它跟其它的美国公司类似，定位自己为先进技术 CDMA 的代表，而不是生产商。高通在初期参与设备制造、手机制造，只是为了推广标准，建立一个完整产业链。</p>
+<p>经过高通的努力，1993 年，CDMA 被美国电信工业协会采纳，成为行业标准；1995 年，CDMA 在香港实现商用，1996 年登陆韩国；到了 1999 年，国际电信联盟把 CDMA 选作是 3G 技术。</p>
+<p>1999 年，高通就决定不再做手机和系统设备的业务，转而完全集中在价值更高的技术开发和芯片研发上。这才有了现在的高通设计公司第一的行业地位。</p>
+<p>其实，手机处理器这个市场，堪称半导体公司的坟场，德州仪器的 OMAP 系列、英伟达 Tegra、Intel SoFIA、Marvell 美满电子的 ARMAD、Freescale 飞思卡尔的 <a target="_blank" rel="noopener" href="http://i.MX">i.MX</a> 现在都从手机市场上消失了。</p>
+<p>我们说手机处理器有三大技术能力：CPU、GPU 和基带，ARM 证明了自己在高能效 CPU 上的能力，GPU 还是一场正在进行中的战斗，高通则靠基带稳稳地站住了行业第一的位置。</p>
+<p>对于中国来说，出身网络市场的华为，本来是最有希望超越高通的，可惜中国的芯片产业链不够给力，被卡住脖子。高通的背后是世界顶级的产业链，有强烈的美国属性。</p>
+<p><strong>博通：半导体公司的并购史</strong></p>
+<p>如果说高通是无线通信的第一，那么博通就是有线通信之王。博通对自己的描述是 99.9% 的互联网流量都通过至少一片博通的芯片。很长一段时间，博通拥有以太网交换商业芯片 90% 以上的市场份额。具市场分析公司 Linley Group 的数据，2015 年，博通以太网交换芯片的市场份额是 94.5%。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5bd43bf62eac3ab0.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>为什么这么强？我给你看看博通的 Tomahawk 系列侧重于高性能的交换芯片的路标，图如下。你可以看到基本上就是每两年交换带宽加倍，标准的摩尔定律速度。如前所述，按照摩尔定律速度发展的公司，都是好公司。而且如果手机处理器芯片属于优衣库那样的大众成衣，交换芯片就属于芯片中的轻奢品，价格昂贵，是产品经理眼中的好产品。</p>
+<p>不过博通近年来更多的出现在公司并购的新闻中。世界著名的咨询公司麦肯锡，有一个半导体产业的报告。其中说到发展半导体行业的时候，收购与合并是一个重要手段。每个公司应该每年用自己市值的 3%-5%，来收购相邻技术的公司，扩张自己的领域。</p>
+<p>但是博通，不是这种小步迭代的状态。博通的历史简直是一部半导体公司的并购史。1991 年创建的“老博通”，从 2000 年到 2015 年，买了至少 16 家公司。“新博通”的前身安华高科技（Avago Technologies Limited），是从惠普剥离出来的半导体公司，在 2008 年之后也是活跃地进行公司收购和并购。最大的手笔，当然是 2015 年，以小吃大，以 370 亿美元并购博通，并采用“博通”作为合并之后的公司名，业界一般称为“新博通”。之后的新博通，更是采取“激进的买买买”策略。</p>
+<p>下面是博通的官方并购路线。想想，这还是收购高通未遂的状态。如果没有美国政府的干预，2018 年博通以 1300 亿美金成功收购高通，我都不能想象现在的半导体行业格局。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2c5bac2e267e7460.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>这样的大规模收购并购之后，我前面说的网络芯片业务，大约只占博通公司收入的 1/4 了。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f1dcd675c3e12904.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>欧洲双雄：恩智浦和英飞凌</strong></p>
+<p>如果看半导体公司的前 10，我们能看到恩智浦和英飞凌，如果把名单拉到前 20，或者看再早几年的数据，我们还能看到意法半导体。</p>
+<p>如果大家有兴趣，可以看看这三个公司的出身，例如恩智浦，前身是著名的飞利浦公司的半导体业务部。恩智浦在收购了美国的飞思卡尔半导体之后，这才超越英飞凌成了欧洲老大，可见收购至少对排名有贡献。</p>
+<p>英飞凌，也是系出名门，英飞凌科技公司前身是西门子集团的半导体部门，于 1999 年独立，2000 年就完成了上市。</p>
+<p>意法成立于 1987 年，是意大利 SGS 半导体公司和法国汤姆逊半导体公司合并后的新企业。</p>
+<p>我为什么把欧洲这三家企业放一起说？并不是因为它们是欧洲公司，而是因为它们都是汽车供应链上的半导体企业。其实在半导体行业内，我们以前分析一家公司不太看地域，而是看细分行业，比如手机、汽车。如果看汽车行业，我们常常谈论的就是欧洲三杰（英飞凌、恩智浦和意法半导体），再加一个日本的瑞萨和上一讲提到的德州仪器，2020 年，这五家公司占据了汽车半导体市场的 49% 市场份额。</p>
+<p>因为汽车行业在自动驾驶技术发展，以及特斯拉横空出世之前，都是 MCU（微控制器）的天下，因此这些汽车供应链上的半导体企业的 MCU 也都很强，还有传感器。说直白一点，之前的芯片厂商靠的都是汽车产业的技术溢出效果。</p>
+<p>半导体器件，到底是服务电子设备的。一个半导体公司，如果已经上车了，那么努力把车用半导体解决方案做全做强，就是一个非常合理的产品矩阵设计策略。而在一个主要市场内，解决了技术与规模问题之后，向相邻市场进行技术与产品的溢出，也是常见的策略。理解这两个市场策略之后，我们再看恩智浦，英飞凌，意法半导体和瑞萨的发展方向，基本上就非常清晰了。</p>
+<p>车用半导体市场本来格局清晰，但是在新能源车、车联网、自动驾驶来了之后，基本上所有的头部半导体公司，以及互联网巨头们都下场了，创业公司也蜂拥而至。但是友情提示一下，这四家传统车用半导体公司，都是有工厂的，属于 IDM 或者是轻工厂的模式，在控制成本结构上，有一定的主动权，不会轻易出局。</p>
+<h2 id="中国的机会"><a class="markdownIt-Anchor" href="#中国的机会"></a> 中国的机会</h2>
+<h3 id="2000-年之前国家计划与政策扶持"><a class="markdownIt-Anchor" href="#2000-年之前国家计划与政策扶持"></a> 2000 年之前：国家计划与政策扶持</h3>
+<p>1956 年，拿历史书上的话说，是中国半导体行业发展史上的具有里程碑意义的一年。那一年，在我国十二年科学技术发展远景规划中，半导体科学技术被列为当时国家新技术四大紧急措施之一。那个时候，产业界还在电子管时代，集成电路尚未发明。</p>
+<p>而到了七十年代初，集成电路价高利厚，需求巨大，引起了全国建设集成电路生产企业的热潮，共有四十多家集成电路工厂建成。中国 IC 行业形成了“两霸”：南霸是上无十九厂，北霸则为 878 厂。</p>
+<p>80 年底，中国进入改革开放时期。一方面国家期望企业摸索在开放市场中的发展能力，另一方面国防的需求骤减，这些原因对半导体产业的冲击非常明显。</p>
+<p>但是国家的策略很清晰，那就是集中力量建设半导体制造能力。因此才有了 “八五”规划，全国重点支持的 5 个集成电路重点企业：无锡华晶、绍兴华越、上海贝岭、上海飞利浦和北京首钢日电。1990 年，908 工程，无锡华晶成立。1996 年，909 工程，上海华虹 NEC 合资成立。目前半导体制造企业，多半出自此时，包括成为时代分水岭的中芯国际集成电路。</p>
+<p>其实，中国的半导体产业初期服务军工，自研能力不低，但是几乎全是国有企业。离开了政策的扶持，离开了军工的订单，这些国企并没有很好的度过军转民这一个弯，甚至在 80 年代改革开放后，进口半导体产品的冲击下，几乎停滞。2000 年左右，中国芯片设计公司，不足 100 家，总收入不到一亿美元。</p>
+<h3 id="2000-年-2014-年市场带动产业发展"><a class="markdownIt-Anchor" href="#2000-年-2014-年市场带动产业发展"></a> 2000 年 -2014 年：市场带动产业发展</h3>
+<p>2000 年，中芯国际成立，可以成为中国半导体历史上的另一个里程碑事件，因为中芯国际一开始就奔着“世界先进水平”的目标去的。仅仅在开工建设 13 个月后，2001 年 9 月 25 日，中芯国际一厂投产，4 个月后量产，投产和量产速度均创造了世界之最。</p>
+<p>不仅如此，中芯国际其实也是属于在经济衰退期建厂的。利用 2000 年 dotcom 泡沫破裂，连带的整个半导体产业低迷期，中芯国际用合理成本在 3 年内建成了 4 条 8 英寸生产线和 1 条 12 英寸生产线，2004 年完成上市，2005 年跻身世界晶圆代工厂前三。</p>
+<p>大手笔地投资建厂是一方面，中国的市场也给了中国半导体业更多机会。中国从 2005 年就开始成为全球半导体产品的最大市场。具体有哪些市场呢？我们一个一个来说。</p>
+<p><strong>电信市场</strong></p>
+<p>80 年代，中国电信市场还是“七国八制”时代，就是说我们总共有来自七个国家的八种制式的机型或网络。之后，有“巨大中华”之称的四大公司，包括巨龙通信、大唐电信还有华为和中兴，在 90 年代中后期快速崛起。一方面以质高价廉的设备替代了国外进口的高价设备，另一方面，由于成本的下降，中国运营商也蓬勃发展，开始步入大规模建网周期，整个国家的电信基础设施水平快速提升。</p>
+<p>电信市场的这波操作，最终的结果是，华为和中兴不但拿下国内市场，而且开始在全球市场进入第一梯队。</p>
+<p>电信设备的国际竞争化，让华为和中兴很快意识到芯片的重要性。华为在 1991 年成立的集成电路设计中心基础上，2004 年成立了海思半导体公司。中兴 1996 年就成立了 IC 设计部，专门从事芯片研发，并在 2003 年 11 月，成立了中兴微电子技术有限公司（简称“中兴微电子”）。</p>
+<p>在电信设备市场，海思和中兴微电子领先对手半年推出产品，靠的就是他们比别人先研发出的自己的芯片。</p>
+<p>这种在电信市场中积累的设计高性能复杂芯片的能力，让海思在后来的安防芯片、服务器芯片、手机应用处理器和基带芯片、人工智能芯片上都能快速出类拔萃，进入世界第一梯队。</p>
+<p>当然最终把海思送上世界半导体公司前十的（2020 年的上半年），且成为台积电第二大客户的，还是手机应用处理器麒麟系列。这也是半导体产品的特点，一颗好产品，在一个大市场中，拥有惊人的出货量和收益。</p>
+<p>再多说一点，手机处理器不仅要比拼工艺先进性，因为工艺先进性直接影响功耗和晶体管密度，反应在手机上，就是待机时间和性能高低，还要比拼先进工艺的良率爬坡能力。</p>
+<p>先进工艺能领先很重要，可以凭借工艺领先拿下时间敏感的手机客户，但是先进工艺的性能，产能和良率也同样重要。高通处理器出现过几次功耗过高的问题，都发生在台积电与三星代工厂切换的阶段。相对而言，苹果、海思、联发科 MTK 都稳定地在台积电生产，保证了先进工艺的性能提升，产能和良率。</p>
+<p><strong>手机市场</strong></p>
+<p>上面有提到海思凭借麒麟，在 2020 年上半年拿到全世界半导体排名前十，成为台积电第二大客户。但是中国繁荣的手机市场，可不仅仅只出了一家海思。</p>
+<p>2001 年，展讯通信有限公司（以下简称展讯）成立，并随着中国特有的山寨机市场，赚到第一桶金，先后在 2.5G 和 3G 芯片上做出了不错的成绩。2007 年，展讯在纳斯达克上市。</p>
+<p>另外一家公司，锐迪科（RDA），成立于 2004 年 4 月，是射频 IC、混合信号芯片和手机功率放大器 PA 的专家。锐迪科不仅仅在手机市场，还在无线连接和广播通信市场有多款创新产品。2010 年成功登陆纳斯达克的时候，锐迪科已经是中国市场第一名的功率放大器、蓝牙、FM 与 DVB-S 调谐器芯片供应商，GSM 基带的第二供应商。</p>
+<p>后来源自锐迪科系的创业公司，包括翱捷科技、恒玄科技等 8 家公司，撑起了中国射频芯片领域的半壁江山。</p>
+<p>如果从产品互补，两个同城兄弟联合起来做大做强，一起对抗同在手机市场，处在第二梯队的联发科的角度看，展讯和锐迪科是应该合并的。但是合并过程并不顺利，紫光集团在 2013、2014 年分别收购了展讯和锐迪科之后，2018 年才将两者合并为紫光展锐。合并之后的紫光展锐在手机应用处理器市场的市场份额可排在世界第六，无厂半导体设计公司的世界第 10。</p>
+<p>其实手机市场中，中国半导体公司除了应用处理器和基带芯片，还有指纹识别芯片、图像传感器芯片等等。汇顶科技成立于 2002 年，几乎所有手机都用了它家的指纹识别芯片，仅有三星采用了高通的芯片。豪威科技，后被威尔科技收购，在 CMOS 图像传感器芯片市场排名全球第三。</p>
+<p><strong>比特币矿机</strong></p>
+<p>因为比特币及其他数字货币发展迅猛的缘故，专用的矿机 ASIC 芯片发展速度有目共睹。说到矿机 ASIC 芯片上，由于挖矿的成本大头是电力，芯片功耗越低成本就越低，所以矿机 ASIC 芯片这两年在制程工艺升级上比移动处理器还要激进。</p>
+<p>其实说起来，近几年英伟达和 AMD 的收入中，来自比特币挖矿这个市场的比例不低。而这个市场中专业做矿机芯片的，是两个中国企业比特大陆和嘉楠耘智。</p>
+<p>比特大陆成立于 2013 年，不但在矿机芯片上世界第一，而且公司依靠自己在高性能芯片上的设计能力，积极拓展人工智能和高性能计算市场。比特大陆曾经一度超越海思，成为台积电大陆地区第一大客户。</p>
+<p>同年成立的嘉楠科技则是仅次于比特大陆的第二大矿机芯片厂商，虽然在矿机芯片上的营收位列第二，但是运气好，2019 年成功在美国纳斯达克上市。嘉楠科技同样要把从先进 ASIC 矿机芯片设计中积累的技术优势，投入在人工智能和高效能计算上。</p>
+<p><strong>其它市场上活跃的中国半导体公司</strong></p>
+<p>其实，这个时期成立的半导体公司还有很多，例如靠白牌平板电脑起家的瑞芯微、全志。凭借 NOR Flash 芯片进入苹果供应链的兆易创新，还有核高基项目重点支持的 CPU 公司：兆芯、龙芯、飞腾、海光等。还有 2014 年，长电科技以 7.8 亿美元收购新加坡星科金朋，成为全球封测第三。</p>
+<p>国际上，半导体产业格局稳定，巨头们忙着大鱼吃小鱼，搞收购兼并的时候，中国的半导体产业凭借着中国市场得天独厚的优势走出自己的节奏。</p>
+<h3 id="2014-年后投资产业时代"><a class="markdownIt-Anchor" href="#2014-年后投资产业时代"></a> 2014 年后：投资产业时代</h3>
+<p>2014 年国家集成电路产业大基金成立，简称大基金，一期幕资 1387 亿元，是当时国务院批准的最大规模的产业投资基金。大基金一改以往项目为主的资助形式，通过股权投资的方式，扶植产业链上的龙头企业，“只投行业前三”，加大对芯片制造业的投资力度，且兼顾设计和封测。</p>
+<p>中央政府资金，一向对于社会上商业资本有很强的带动作用。对于国家来说，掌握先进技术的公司（领头羊）、市场、资金是发展的三要素，这一轮是资金先开局，推动国内半导体产业发展进入第三阶段。第三阶段，有一个企业你需要重点了解，那就是紫光集团。</p>
+<h3 id="紫光集团"><a class="markdownIt-Anchor" href="#紫光集团"></a> 紫光集团</h3>
+<p>紫光集团是这个时期最为瞩目的企业，特别是几个大手笔的国内外企业并购重组活动，成为行业内都在关注的事情。先是 2013 年，用 17.8 亿美元收购展讯；2014 年，9 亿美元在海外私有化锐迪科；2015 年 5 月，从惠普手里收购了新华三 51% 的股权；同年对美光和美国西部数据（WD）发起收购邀约，被拒绝之后，紫光的策略从收购转为自建。2016 年 12 月，合并武汉新芯，成立长江存储，与西数合资成立紫光西数。此外还有一系列的封测和晶圆厂的动作。</p>
+<p>长江存储在量产 64 层 NAND Flash 之后，2020 年首发 192 层 3D NAND，被预测 2021 会拿下 8% 的 NAND Flash 份额。同时，在存储芯片领域，中国还有一家公司叫做长鑫存储，长鑫存储以唯一一家中国公司的名号，杀入 DRAM 领域。从世界著名的行业分析公司 Yole 公司的报告上，我看到长江存储和长鑫存储与三星、SK 海力士、美光和 Intel 齐头并进，还挺激动的。</p>
+<p>算上前面提过的兆易创新在 NOR Flash 的成就，我觉得在存储芯片领域，中国可以算得上有一份不错的成绩。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9105e0b1b0ec638b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>有金融行业的人总结，大基金一期在 2018 年年底，芯片设计投资占 19.7%，制造占 47.8%，封测业占 11%，半导体材料占 1.4%，半导体设备占 1.2%，产业生态建设占 19%，这是一份又全面又重点突出的投资图谱。</p>
+<h3 id="中国的巨大市场机会"><a class="markdownIt-Anchor" href="#中国的巨大市场机会"></a> 中国的巨大市场机会</h3>
+<p>我们整个专栏的第二部分是按照半导体公司销售收入世界前十的表格为索引的，这里让我给你另外一张表：半导体产品的十大买家。你可以看到，这张表里，大陆公司占了 4 个。表里的 BBK，是步步高集团，Garnter 是把一加、Oppo、vivo、Realme、爱酷都算在了步步高集团里。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-001f03e2576c7ebb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>中国不但拥有前十大买家中的 4 家，而且中国自 2005 年以来，就一直是世界上最大的 IC 市场，并且自那时开始市场规模就一直在增长。</p>
+<p>据 IC Insights 报告指出，2020 年，中国集成电路市场增至 1,434 亿美元，约占全球市场的 35%。如果再仔细看逻辑芯片、微处理器、DRAM 存储芯片的所占比例，基本上跟全球比例一致，可以说中国的半导体需求，是跟全球保持一致的。</p>
+<p>虽然中国是集成电路的最大消费国，但是中国公司出产的芯片，只占到全世界产量的 5%。</p>
+<p>其实无论外面议论得多热闹，中国产业界自己，对于现状还是非常清晰的。中国半导体协会曾经总结过国产芯片的比例，特别是在计算机系统、通用电子系统、通信装备、存储设备、显示及视频系统中的核心芯片占比，你可以看下面这张图。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-9bdcff716caeec1b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>35% 的全球半导体产品市场，这是一个巨大的市场空间，中国公司仅仅贡献了 5% 的产品，在核心芯片领域几乎可以忽略中国的市场份额，这里就是和国际产业的差距。但同时，我们也应该看到，10 大半导体产品买家中有 4 家中国公司，这就是机会。</p>
+<p>另一个发展的机会，是国家对半导体产业的期望。我在上一讲中反复提到集成电路发展一直是国家重要战略之一。2014 年出台的《国家集成电路产业发展纲要》和 2015 年的《中国制造 2025》文件中有明确提出：到 2020 年，集成电路产业与国际先进水平的差距逐步缩小；2020 年中国芯片自给率要达到 40%，2025 年要达到 50%。</p>
+<p>站在 2021 年看，半导体产业是没有完成这个 40% 的国家目标的。而且即使到 2025，40% 的目标也很难完成。不过，在存储芯片市场，有长江存储（YMTC）和长鑫存储（CXMT）的双雄崛起，无论是技术领先性，还是市场份额上，国产存储芯片市场，也许还有望达到 2025 的目标。在非存储市场，海思受阻之后的中国半导体设计行业，挑战非常大。</p>
+<p>看过中国市场现状之后，让我们看看前沿技术这边。一般前沿技术的创新，有机会打破既有的格局，是后来者的可能破局点。当然，先锋变先烈的事情年年有，而且是半导体行业特别多。这个行业最终是要落实到制造本身。</p>
+<p>再前沿的技术，也是工厂一颗芯片一颗芯片制造出来的。例如今年 5 月 6 号 IBM 首发了 2nm 工艺芯片的新闻，能制造出 2nm 工艺的芯片，和能稳定地高良率地大量制造出 2nm 芯片，中间至少有两年的时间差，需要晶圆工厂、设计公司、EDA 公司等多方面的共同努力。</p>
+<p><strong>破局点：先进技术方向</strong></p>
+<p>半导体前沿技术的推动力主要来自两个方面，一个是数据中心的 CPU、云端人工智能芯片、数据中心专用处理器，例如 DPU、交换芯片，这类“大”芯片的驱动。另一个是海量的手机芯片，手机芯片对于性能、功耗、尺寸以及经济成本的敏感性，都需要半导体产业不断创新。</p>
+<p>这两个市场都是极度追求最先进制程工艺，才能将最新设计落地。在芯片制造和设计领域，我们来看看都有哪些机会呢？</p>
+<p><strong>芯片制造：光刻机、晶体管架构、先进封装</strong></p>
+<p>芯片制造这个环节的所有努力都是在延续摩尔定律。</p>
+<p>目前看，得益于极紫外光刻机的技术进步和晶体管的新架构，在未来 8-10 年，摩尔定律仍然生效。光刻机有一个重要的技术指标，就是分辨率。光学投影的原理公式我就略过不讲了，直接说结论：短波长光源是提高光刻机分辨率的有效方法。因此看光刻机的发展历史，就从紫外光源（UV）、深紫外光源（DUV），发展到了现在的极紫外光源（EUV）。</p>
+<p>当光源的分辨率不够的时候，还可以采取多重曝光技术进行加强。但是多重曝光技术，需要相应地增加光罩层数，增加了经济成本。到了 1nm 节点上，晶圆工厂有望使用极紫外光刻的下一代光刻机。</p>
+<p>新光刻机，不换光源，也不搞多重曝光，而是换透镜来增加分辨率，把多重曝光重新转回为一次曝光，可以有效减少光罩的层数。这样经济成本、良率、制造时间都可以得到改善。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-cc12f52d1cf7c9de.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>晶体管的架构呢，也是持续稳定地演进的。标准单元的架构从 FinFET，到 Nanosheets，再到 Forksheets、CFETs，这是一条通往 1nm 工艺的路标。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7780dbb286261823.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>NAND 存储可以在现有的架构上，持续扩展，可以堆叠更多的层数，还可以换 FinFET 的晶体管。DRAM 的缩放虽然在放缓，但是可以用极紫外光刻技术做 3D DRAM。因此目前看，<strong>存储芯片技术在短时间内没有技术瓶颈。</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-dcb98d0114a5374a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>一方面是先进制程接着往 1nm 方向演进，另一方面先进封装技术的经济收益在持续上升。这么说吧，以前是架构、工艺制程的 Tick-Tock 的研究，后面大约是架构、工艺制程、换封装的三节式演进了。</p>
+<p>未来 SoC 设计，会更重视功能分区，把追求最新工艺的逻辑部分，追求高密度的存储芯片，和在新工艺上收益不显著的模拟部分，分开设计，然后再封装在一起，取得最佳的设计性价比。看看最新一代的 Intel 和 AMD 的云端大芯片，都是多 Die（裸片）异构封装了。</p>
+<p>什么叫多 Die 异构封装呢？看下面 Intel 的最新 7nm GPU 的芯片，把不同功能多个小硅片封装在一起。这里是 16 个 CPU Die、8 个 Cache Die、8 个 HBM Die、2 个 IO Die，还有几个未标明功能的填充或者测试用 Die，封装成一个 GPU 的芯片。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6213a17d1dcf6f82.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>芯片设计：存内计算、整 Wafer 芯片、光子计算和量子计算</strong></p>
+<p>比如，打破冯·诺伊曼架构，做存内计算。存内计算，顾名思义就是直接在存储内做计算。其具体实现方式有若干条技术路径。例如有望提高能效比 10 倍以上的模拟存内计算，就非常适合人工智能在边缘计算的场景。</p>
+<p>还有超摩尔定律的光子芯片、量子计算等。特别是光子芯片，相对于硅芯片，在延时、带宽、功耗方面都有超 10 倍的优势，而且已经有公司在进行商业化实现了。</p>
+<p>让人欣慰的是，在这些前沿领域，都有中国公司的身影。</p>
+<p>相对于这些非常前沿的技术，我个人倒是比较看好 2019 年在 Hotchips 上亮相的 Cerebras 公司，这家初创公司用下图这块晶圆做出了史上最大的芯片。首先，我要给你一个知识背景：光刻机有一个加工的最大尺寸，一般是 858mm²，而 Cerebras 和台积电紧密合作，做了一个 46255mm²，1.2T 个晶体管的世界第一大芯片。这也是超摩尔定律的一个突破。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-58754094b180f9f4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>我再补充一句，先进封装技术也可以帮助芯片设计公司打破这个光刻机加工尺寸的限制，博通和台积电也在合作中，“大”尺寸芯片是一个让人向往的方向。</p>
+<p>针对芯片工厂的就业机会，我给你总结了一张表格，你可以保存。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2ac3c2c670f0ac8a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

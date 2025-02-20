@@ -1,0 +1,831 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>网络安全基础（一）：常用的加密算法</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content=" 一、前言
+在数字信息时代，数据的安全性和隐私保护成为了至关重要的问题。随着信息技术的迅猛发展和互联网的普及，各种网络攻击和数据泄露事件屡见不鲜，给个人和企业都带来了很大的威胁。加密技术作为保护数据安全的重要手段，越来越受到重视。
+加密算法是指将敏感信息转化为不可读形式的数学方法，包括对称加密算法和非对称加密算法等。这些算法被广泛应用于各种场景，如在线支付、电子邮件、文件传输等，以确保数据在传输和存储过程中的安全性和完整性。
+本文将介绍几种常用的加密算法，理解它们的工作原理、优缺点以及应用场景。希望通过这篇博客，能够为大家提供一些有用的信息，帮助在实际应用中选择合适的加密技术来保护数据安全。
+ 二、常用的加密算法
+ 2.1、对称加密算法
+
+
+AES（Advanced Encryption Standard）.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">网络安全基础（一）：常用的加密算法</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80-%E5%89%8D%E8%A8%80"><span class="toc-text"> 一、前言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C-%E5%B8%B8%E7%94%A8%E7%9A%84%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="toc-text"> 二、常用的加密算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#21-%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="toc-text"> 2.1、对称加密算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95"><span class="toc-text"> 2.2、非对称加密算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95"><span class="toc-text"> 2.3、哈希算法</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89-%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95-aes"><span class="toc-text"> 三、对称加密算法 - AES</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#31-initial-round"><span class="toc-text"> 3.1、Initial round</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-%E5%AD%97%E8%8A%82%E4%BB%A3%E6%8D%A2subbytes"><span class="toc-text"> 3.2、字节代换(SubBytes)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-%E8%A1%8C%E7%A7%BB%E4%BD%8Dshiftrows"><span class="toc-text"> 3.3、⾏移位(ShiftRows)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-%E5%88%97%E6%B7%B7%E5%90%88mixcolumn"><span class="toc-text"> 3.4、列混合(MixColumn)</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-%E5%AF%86%E9%92%A5%E6%89%A9%E5%B1%95key-expansion"><span class="toc-text"> 3.5、密钥扩展（Key Expansion）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#36-%E5%8A%A0%E5%AF%86%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 3.6、加密模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#37-%E5%A1%AB%E5%85%85%E6%A8%A1%E5%BC%8F"><span class="toc-text"> 3.7、填充模式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B-%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95-rsa"><span class="toc-text"> 四、非对称加密算法 - RSA</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#41-%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="toc-text"> 4.1、基础知识</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-%E5%8A%A0%E8%A7%A3%E5%AF%86%E6%B5%81%E7%A8%8B"><span class="toc-text"> 4.2、加解密流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#43-%E8%A7%A3%E5%AF%86%E6%8E%A8%E5%AF%BC%E8%BF%87%E7%A8%8B"><span class="toc-text"> 4.3、解密推导过程</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94-%E5%93%88%E5%B8%8C%E7%AE%97%E6%B3%95"><span class="toc-text"> 五、哈希算法</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#51-md5"><span class="toc-text"> 5.1、MD5</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#52-sha-256"><span class="toc-text"> 5.2、SHA-256</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD-benchmarks"><span class="toc-text"> 六、benchmarks</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83-%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-text"> 七、参考文章</span></a></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/Security"><i class="tag post-item-tag">Security</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">网络安全基础（一）：常用的加密算法</h1><time class="has-text-grey" datetime="2024-07-20T02:08:00.000Z">2024-07-20</time><article class="mt-2 post-content"><h1 id="一-前言"><a class="markdownIt-Anchor" href="#一-前言"></a> 一、前言</h1>
+<p>在数字信息时代，数据的安全性和隐私保护成为了至关重要的问题。随着信息技术的迅猛发展和互联网的普及，各种网络攻击和数据泄露事件屡见不鲜，给个人和企业都带来了很大的威胁。加密技术作为保护数据安全的重要手段，越来越受到重视。</p>
+<p>加密算法是指将敏感信息转化为不可读形式的数学方法，包括对称加密算法和非对称加密算法等。这些算法被广泛应用于各种场景，如在线支付、电子邮件、文件传输等，以确保数据在传输和存储过程中的安全性和完整性。</p>
+<p>本文将介绍几种常用的加密算法，理解它们的工作原理、优缺点以及应用场景。希望通过这篇博客，能够为大家提供一些有用的信息，帮助在实际应用中选择合适的加密技术来保护数据安全。</p>
+<h1 id="二-常用的加密算法"><a class="markdownIt-Anchor" href="#二-常用的加密算法"></a> 二、常用的加密算法</h1>
+<h2 id="21-对称加密算法"><a class="markdownIt-Anchor" href="#21-对称加密算法"></a> 2.1、对称加密算法</h2>
+<ol>
+<li>
+<p><strong>AES（Advanced Encryption Standard）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>AES</code>是一种对称加密算法，广泛应用于各类数据加密场景。</li>
+<li><strong>密钥长度</strong>：<code>128</code>位、<code>192</code>位、<code>256</code>位。</li>
+<li><strong>优点</strong>：安全性高、性能好，被广泛认为是目前最安全的对称加密算法之一。</li>
+</ul>
+</li>
+<li>
+<p><strong>DES（Data Encryption Standard）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>DES</code>曾是广泛使用的对称加密算法，但由于密钥长度较短（<code>56</code>位），现已被认为不够安全。</li>
+<li><strong>密钥长度</strong>：56位。</li>
+<li><strong>优点</strong>：历史悠久，曾经被广泛使用。</li>
+</ul>
+</li>
+<li>
+<p><strong>3DES（Triple DES）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>3DES</code>是对<code>DES</code>算法的扩展，通过三次加密提高安全性。</li>
+<li><strong>密钥长度</strong>：<code>112</code>位或<code>168</code>位。</li>
+<li><strong>优点</strong>：比<code>DES</code>更安全，但性能较差。</li>
+</ul>
+</li>
+</ol>
+<h2 id="22-非对称加密算法"><a class="markdownIt-Anchor" href="#22-非对称加密算法"></a> 2.2、非对称加密算法</h2>
+<ol>
+<li>
+<p><strong>RSA（Rivest-Shamir-Adleman）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>RSA</code>是一种非对称加密算法，广泛应用于数据加密和数字签名。</li>
+<li><strong>密钥长度</strong>：<code>1024</code>位、<code>2048</code>位、<code>4096</code>位等。</li>
+<li><strong>优点</strong>：安全性高，适用于加密少量数据和密钥交换。</li>
+</ul>
+</li>
+<li>
+<p><strong>ECC（Elliptic Curve Cryptography）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>ECC</code>是一种基于椭圆曲线数学的非对称加密算法，提供相同安全级别的情况下，密钥长度更短。</li>
+<li><strong>密钥长度</strong>：<code>160</code>位、<code>224</code>位、<code>256</code>位等。</li>
+<li><strong>优点</strong>：高效且安全，适用于资源受限的环境。</li>
+</ul>
+</li>
+</ol>
+<h2 id="23-哈希算法"><a class="markdownIt-Anchor" href="#23-哈希算法"></a> 2.3、哈希算法</h2>
+<ol>
+<li>
+<p><strong>SHA-256（Secure Hash Algorithm 256-bit）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>SHA-256</code>是一种广泛使用的哈希算法，生成<code>256</code>位的哈希值。</li>
+<li><strong>优点</strong>：安全性高，广泛应用于数字签名和区块链技术。</li>
+</ul>
+</li>
+<li>
+<p><strong>MD5（Message Digest Algorithm 5）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>MD5</code>是一种常用的哈希算法，生成<code>128</code>位的哈希值。</li>
+<li><strong>优点</strong>：计算速度快，但已被证明存在安全漏洞，不推荐用于安全性要求高的场景。</li>
+</ul>
+</li>
+<li>
+<p><strong>SHA-1（Secure Hash Algorithm 1）</strong></p>
+<ul>
+<li><strong>简介</strong>：<code>SHA-1</code>生成<code>160</code>位的哈希值，曾经广泛使用，但已被认为不够安全。</li>
+<li><strong>优点</strong>：曾经广泛使用，但现在被认为不安全。</li>
+</ul>
+</li>
+</ol>
+<p><strong>加密哈希算法</strong></p>
+<ol>
+<li><strong>HMAC（Hash-based Message Authentication Code）</strong>
+<ul>
+<li><strong>简介</strong>：<code>HMAC</code>是一种基于哈希函数和密钥的消息认证码，用于验证消息的完整性和真实性。</li>
+<li><strong>优点</strong>：结合了哈希算法和密钥，提供了较高的安全性。</li>
+</ul>
+</li>
+</ol>
+<h1 id="三-对称加密算法-aes"><a class="markdownIt-Anchor" href="#三-对称加密算法-aes"></a> 三、对称加密算法 - AES</h1>
+<p><code>AES</code>（<code>Advanced Encryption Standard</code>，高级加密标准）是一种对称加密算法，用于加密和解密数据。它由美国国家标准与技术研究院（<code>NIST</code>）于<code>2001</code>年发布，取代了之前的<code>DES（Data Encryption Standard）</code>算法，成为新的加密标准。<code>AES</code>广泛应用于各种安全通信和数据保护场景，包括网络通信、文件加密、硬盘加密等。</p>
+<p><strong>主要特点：</strong></p>
+<ol>
+<li><strong>对称加密</strong>：<code>AES</code>是一种对称加密算法，这意味着加密和解密使用相同的密钥。</li>
+<li><strong>分组加密</strong>：<code>AES</code>是一种分组加密算法，处理固定长度的数据块（<code>128位</code>，即<code>16字节</code>）。</li>
+<li><strong>多种密钥长度</strong>：<code>AES</code>支持<code>128位</code>、<code>192位</code>和<code>256位</code>的密钥长度，提供不同级别的安全性。</li>
+<li><strong>高效性</strong>：<code>AES</code>设计高效，适合在硬件和软件中实现，具有较高的加密和解密速度。</li>
+</ol>
+<p><strong>粗略加密流程：</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3069bfe4750b2a0b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>放大看AES里面的加密过程：</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-be2ac4f127649834.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="31-initial-round"><a class="markdownIt-Anchor" href="#31-initial-round"></a> 3.1、Initial round</h2>
+<p>初始轮<code>AddRoundKey</code>操作是<code>AES</code>加密的第一步，<code>AddRoundKey</code>主要的工作就是把矩阵中的每一个字节都与该次回合密钥（<code>round key</code>）做<code>XOR</code>运算；<code>AddRoundKey</code>用的密钥依赖<code>密钥扩展</code></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3aba685aed73f274.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="32-字节代换subbytes"><a class="markdownIt-Anchor" href="#32-字节代换subbytes"></a> 3.2、字节代换(SubBytes)</h2>
+<p>字节代换（<code>SubBytes</code>）通过使用一个固定的<code>S-Box</code>（<code>Substitution box</code>）对状态矩阵中的每个字节进行替换，从而引入非线性变换，增加加密的复杂性和安全性。</p>
+<p><code>S-Box</code>通常是固定的（例如<code>DES</code>和<code>AES</code>加密算法）, 也有一些加密算法的<code>S-Box</code>是基于密钥动态生成的（例如<code>Blowfish</code>和<code>双鱼算法</code>加密算法）。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-99d078386a4a1c41.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="33-行移位shiftrows"><a class="markdownIt-Anchor" href="#33-行移位shiftrows"></a> 3.3、⾏移位(ShiftRows)</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2d3bb34fb10cbaac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="34-列混合mixcolumn"><a class="markdownIt-Anchor" href="#34-列混合mixcolumn"></a> 3.4、列混合(MixColumn)</h2>
+<p><code>MixColumns</code>操作的主要作用是将状态矩阵中的每一列视为一个多项式，并在有限域<code>GF(2^8)</code>上与一个固定的多项式矩阵相乘。这一步骤通过混合列内的字节，增加了数据的扩散性，使得单个字节的变化能够影响整个数据块。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1931eb48e9698fae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e61a32e132709e0e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>举例：</p>
+<pre><code>c‘0 = 02*d4 ⊕ 03*bf ⊕ 01*5d ⊕ 01*30
+</code></pre>
+<p>这里乘法不是普通意义上的乘法，而是<strong>有限域 GF(2^8) 上的乘法</strong>。在有限域<code>GF(2^8)</code>上，乘法是通过以下步骤进行的：</p>
+<ol>
+<li><strong>左移操作</strong>：将数值左移一位，相当于乘以<code>2</code>。</li>
+<li><strong>模约减</strong>：如果左移操作导致数值超过一个字节（即结果大于<code>0xFF</code>），则需要模约减（模多项式为<code>0x11B</code>）。模约减是通过按位异或<code>0x11B</code>来实现的。</li>
+</ol>
+<p>详细计算过程：</p>
+<ol>
+<li>
+<p><strong>左移操作</strong>：</p>
+<pre class="highlight"><code class="">0xd4 = 11010100 (二进制)
+0xd4 &lt;&lt; 1 = 110101000 (二进制) = 0x1A8 (十六进制)
+</code></pre>
+</li>
+<li>
+<p><strong>模约减</strong>：</p>
+<pre class="highlight"><code class="">0x1A8 = 110101000 (二进制)
+0x11B = 100011011 (二进制)
+0x1A8 XOR 0x11B = 110101000 XOR 100011011 = 010110101 (二进制) = 0xB5 (十六进制)
+</code></pre>
+</li>
+</ol>
+<h2 id="35-密钥扩展key-expansion"><a class="markdownIt-Anchor" href="#35-密钥扩展key-expansion"></a> 3.5、密钥扩展（Key Expansion）</h2>
+<p><code>AES128</code>、<code>AES192</code>、<code>AES256</code>，分别会使用<code>AddRoundKey</code>加密<code>11</code>、<code>13</code>、<code>15</code>轮，每轮需要用<code>16</code>字节的密钥，所以<code>AES128</code>、<code>AES192</code>、<code>AES256</code>分别需要<code>11*16=176</code>、<code>13*16=208</code>、<code>15*16=240</code>字节的密钥。</p>
+<p>拿<code>AES128</code>举例，第一轮<code>AddRoundKey</code>的<code>16Byte</code>的密钥，全部来自用户的输入（密钥长度是<code>128bit</code>），假设需要用用到的所有密钥是一个长度为<code>44</code>的<code>Word</code>（一个<code>Word</code>大小<code>4</code>个字节）数组 <code>W[i]</code>,<code>i</code>的范围是<code>0~43</code>。后面每一轮用到的密钥计算方式如下：</p>
+<ol>
+<li>如果<code>i</code>不是<code>4</code>的倍数（即 <code>i%4 != 0</code>）则计算方式：<code>W[i] = W[i-4] ⨁ W[i-1]</code><br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-b36c0fcca983b9a8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li>如果<code>i</code>是<code>4</code>的倍数（即 <code>i%4 == 0</code>），则：<code>W[i]=W[i-4]⨁T(W[i-1])</code>
+<ul>
+<li>函数<code>T</code>由<code>3</code>部分组成：字循环、字节代换和轮常量异或。</li>
+<li><strong>RotWord</strong>：对字进行循环左移一个字节。<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-79757c1f1667308f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li><strong>SubWord</strong>：对字的每个字节应用<code>S盒</code>（<code>Substitution box</code>）变换。<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-145a5852740a860a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+<li><strong>Rcon</strong>：轮常量（<code>Round Constant</code>），是一个特定的常量数组。<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-83e1a003c534e51e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></li>
+</ul>
+</li>
+</ol>
+<h2 id="36-加密模式"><a class="markdownIt-Anchor" href="#36-加密模式"></a> 3.6、加密模式</h2>
+<p><strong>ECB（Electronic Codebook）</strong></p>
+<ul>
+<li><strong>工作原理</strong>：每个数据块独立加密。</li>
+<li><strong>优点</strong>：实现简单，适合加密少量数据。</li>
+<li><strong>缺点</strong>：相同的明文块加密后会产生相同的密文块，容易被攻击者利用模式识别攻击。</li>
+<li><strong>应用场景</strong>：由于安全性较差，通常不推荐在实际应用中使用。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1d034d90a0f8cf25.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>CBC（Cipher Block Chaining）</strong></p>
+<ul>
+<li><strong>工作原理</strong>：每个明文块在加密前先与前一个<strong>密文</strong>块进行<code>XOR</code>操作，第一个块与初始化向量（<code>IV</code>）进行<code>XOR</code>。</li>
+<li><strong>优点</strong>：相同的明文块不会产生相同的密文块，增强了安全性。</li>
+<li><strong>缺点</strong>：加密是串行的，不能并行处理；<strong>解密可以并行处理</strong>。</li>
+<li><strong>应用场景</strong>：常用于文件加密和数据传输。</li>
+</ul>
+<!--![image.png](https://upload-images.jianshu.io/upload_images/12321605-6ef1898139c88563.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+-->
+<p>加密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-4c4c66904eccb8b4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>解密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-f95c6ca38bd9b06e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>CFB（Cipher Feedback）</strong></p>
+<ul>
+<li><strong>工作原理</strong>：将前一个密文块加密后，再与当前明文块进行<code>XOR</code>操作生成当前密文块。</li>
+<li><strong>优点</strong>：可以处理<code>任意长度的数据</code>，适合流式数据加密。</li>
+<li><strong>缺点</strong>：加密和解密都是串行的，不能并行处理。</li>
+<li><strong>应用场景</strong>：适用于流数据加密，如网络通信。</li>
+</ul>
+<!--![image.png](https://upload-images.jianshu.io/upload_images/12321605-6109d80ae93aaa5b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+-->
+<p>加密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-a44a54e1db43c52a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>
+解密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-5a5389ca59191d56.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>OFB（Output Feedback）</strong></p>
+<ul>
+<li><strong>工作原理</strong>：将前一个加密输出作为下一个块的输入，与当前明文块进行<code>XOR</code>操作生成当前密文块。</li>
+<li><strong>优点</strong>：类似于流密码，可以处理任意长度的数据；加密和解密可以并行处理。</li>
+<li><strong>缺点</strong>：对<code>IV</code>非常敏感，<code>IV</code>的重复会导致安全问题。</li>
+<li><strong>应用场景</strong>：适用于流数据加密和同步数据加密。</li>
+</ul>
+<!--![image.png](https://upload-images.jianshu.io/upload_images/12321605-c98f05e360e6c933.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+-->
+<p>加密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-d3603b93a3b1479f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>
+解密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-9276185b09834b26.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>CTR（Counter）</strong></p>
+<ul>
+<li><strong>工作原理</strong>：使用一个计数器值加密，与明文块进行<code>XOR</code>操作生成密文块。计数器值通常是一个不断增加的数值。</li>
+<li><strong>优点</strong>：可以并行处理加密和解密操作，效率高；可以随机访问加密数据。</li>
+<li><strong>缺点</strong>：对计数器的管理要求严格，计数器值不能重复。</li>
+<li><strong>应用场景</strong>：适用于高性能要求的场景，如磁盘加密、网络数据加密。</li>
+</ul>
+<!--![image.png](https://upload-images.jianshu.io/upload_images/12321605-b217bb4978574de6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+-->
+<p>加密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-ef1294dc26bd5610.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>
+解密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-6ec0e818921e9777.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><strong>GCM（Galois/Counter Mode）</strong></p>
+<ol>
+<li><strong>加密和认证</strong>：<code>GCM</code>模式不仅加密数据，还生成一个消息认证码（<code>MAC</code>），用于验证数据的完整性和真实性。</li>
+<li><strong>并行处理</strong>：<code>GCM</code>模式支持并行处理，能够提高加密和解密的效率。</li>
+<li><strong>计数器模式</strong>：<code>GCM</code>模式基于计数器模式（<code>CTR</code>），每个数据块使用一个唯一的计数器值进行加密。</li>
+<li><strong>Galois消息认证码</strong>：<code>GCM</code>模式使用<code>Galois</code>域上的乘法运算生成消息认证码（<code>GMAC</code>），<strong>确保数据的完整性和真实性</strong>。</li>
+</ol>
+<p>工作原理</p>
+<p><code>GCM</code>模式的工作流程可以分为两个主要部分：加密和认证。</p>
+<p>加密过程：</p>
+<ol>
+<li><strong>初始化向量（IV）</strong>：选择一个随机的初始化向量（<code>IV</code>）。</li>
+<li><strong>计数器初始化</strong>：将<code>IV</code>和一个计数器值（通常为<code>1</code>）结合，生成初始计数器值。</li>
+<li><strong>计数器加密</strong>：对初始计数器值进行<code>AES</code>加密，生成一个密钥流。</li>
+<li><strong>块加密</strong>：将密钥流与明文块进行<code>XOR</code>操作，生成密文块。</li>
+<li><strong>计数器递增</strong>：每加密一个块，计数器递增<code>1</code>。</li>
+</ol>
+<p>认证过程：</p>
+<ol>
+<li><strong>附加数据</strong>：<code>GCM</code>模式允许附加数据（<code>AAD</code>），这些数据不被加密，但需要认证。</li>
+<li><strong>生成认证标签</strong>：使用<code>Galois</code>域上的乘法运算，结合密文块和附加数据，生成一个消息认证码（<code>MAC</code>）。</li>
+<li><strong>附加认证标签</strong>：将生成的认证标签附加到密文后，形成最终的加密输出。</li>
+</ol>
+<p>解密过程：</p>
+<ol>
+<li><strong>计数器初始化</strong>：与加密过程相同，使用<code>IV</code>和初始计数器值。</li>
+<li><strong>计数器加密</strong>：对初始计数器值进行<code>AES</code>加密，生成密钥流。</li>
+<li><strong>块解密</strong>：将密钥流与密文块进行<code>XOR</code>操作，恢复明文块。</li>
+<li><strong>计数器递增</strong>：每解密一个块，计数器递增<code>1</code>。</li>
+<li><strong>验证认证标签</strong>：使用<code>Galois</code>域上的乘法运算，结合密文块和附加数据，验证消息认证码（<code>MAC</code>）。</li>
+</ol>
+<p>加密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-266037e1586088e5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"><br>
+解密过程：<br>
+<img src="https://upload-images.jianshu.io/upload_images/12321605-c93a92034cebf048.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="37-填充模式"><a class="markdownIt-Anchor" href="#37-填充模式"></a> 3.7、填充模式</h2>
+<p>在使用<code>AES（Advanced Encryption Standard）</code>加密算法时，加密的数据块大小必须是固定的<code>128</code>位（<code>16</code>字节）。然而，实际应用中待加密的数据长度通常不是<code>16</code>字节的整数倍，因此需要填充（<code>Padding</code>）机制来确保数据块的长度符合要求。</p>
+<p><strong>PKCS#7 填充</strong></p>
+<p><code>PKCS#7</code>是最常见的填充方式之一，广泛应用于各种加密标准中。</p>
+<ul>
+<li><strong>填充方法</strong>：在数据的末尾添加<code>N</code>个字节，每个字节的值都是<code>N</code>，其中<code>N</code>是需要填充的字节数。</li>
+<li><strong>示例</strong>：
+<ul>
+<li>如果数据长度为<code>14</code>字节，需要填充<code>2</code>字节，填充值为<code>0x02</code>。</li>
+<li>原始数据：<code>[0x01, 0x02, ..., 0x0E]</code></li>
+<li>填充后数据：<code>[0x01, 0x02, ..., 0x0E, 0x02, 0x02]</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>ANSI X.923 填充</strong></p>
+<p><code>ANSI X.923</code>填充方式在数据末尾添加零字节，最后一个字节是填充的字节数。</p>
+<ul>
+<li><strong>填充方法</strong>：在数据的末尾添加<code>N-1</code>个零字节，最后一个字节的值是<code>N</code>，其中<code>N</code>是需要填充的字节数。</li>
+<li><strong>示例</strong>：
+<ul>
+<li>如果数据长度为<code>14</code>字节，需要填充<code>2</code>字节。</li>
+<li>原始数据：<code>[0x01, 0x02, ..., 0x0E]</code></li>
+<li>填充后数据：<code>[0x01, 0x02, ..., 0x0E, 0x00, 0x02]</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>ISO/IEC 7816-4 填充</strong></p>
+<p><code>ISO/IEC 7816-4</code>填充方式在数据末尾添加一个<code>0x80</code>字节，然后添加零字节，直到数据块长度为16字节。</p>
+<ul>
+<li><strong>填充方法</strong>：在数据的末尾添加一个<code>0x80</code>字节，然后添加零字节，直到数据块长度为16字节。</li>
+<li><strong>示例</strong>：
+<ul>
+<li>如果数据长度为14字节，需要填充2字节。</li>
+<li>原始数据：<code>[0x01, 0x02, ..., 0x0E]</code></li>
+<li>填充后数据：<code>[0x01, 0x02, ..., 0x0E, 0x80, 0x00]</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>Zero Padding（零填充）</strong></p>
+<p><code>Zero Padding</code>在数据末尾添加零字节，直到数据块长度为<code>16</code>字节。</p>
+<ul>
+<li><strong>填充方法</strong>：在数据的末尾添加零字节，直到数据块长度为<code>16</code>字节。</li>
+<li><strong>示例</strong>：
+<ul>
+<li>如果数据长度为<code>14</code>字节，需要填充<code>2</code>字节。</li>
+<li>原始数据：<code>[0x01, 0x02, ..., 0x0E]</code></li>
+<li>填充后数据：<code>[0x01, 0x02, ..., 0x0E, 0x00, 0x00]</code></li>
+</ul>
+</li>
+<li><strong>注意</strong>：这种填充方式在解密时可能存在歧义，因为无法区分原始数据末尾的零字节和填充的零字节。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-92f6070ba2a64a98.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h1 id="四-非对称加密算法-rsa"><a class="markdownIt-Anchor" href="#四-非对称加密算法-rsa"></a> 四、非对称加密算法 - RSA</h1>
+<p><code>RSA（Rivest-Shamir-Adleman）</code>是一种广泛使用的非对称加密算法，由<code>Ron Rivest</code>、<code>Adi Shamir</code>和<code>Leonard Adleman</code>在<code>1977</code>年共同设计。<code>RSA</code>算法基于大整数分解的数学难题，其安全性依赖于大数分解的计算复杂性。<code>RSA</code>算法用于数据加密和数字签名，广泛应用于网络安全、电子商务和数字证书等领域。</p>
+<h2 id="41-基础知识"><a class="markdownIt-Anchor" href="#41-基础知识"></a> 4.1、基础知识</h2>
+<p><strong>质数</strong>：是指在⼤于<code>1</code>的⾃然数中，除了<code>1</code>和它本身以外不再有其他因数的⾃然数。<br>
+<strong>互质</strong>：是公约数只有<code>1</code>的两个整数，叫做互质整数。</p>
+<p><strong>欧拉函数</strong>：</p>
+<ul>
+<li>欧拉函数（<code>Euler's Totient Function</code>），通常记作<code>φ(n)</code>，是数论中的一个重要函数。对于一个正整数<code>n</code>， <code>φ(n)</code>表示小于<code>n</code>且与<code>n</code>互质的正整数的个数。这里，两个数互质的意思是它们的最大公约数（<code>GCD</code>）为<code>1</code>。</li>
+<li>对于两个互质数<code>m</code>和<code>n</code>，如果<code>m</code>和<code>n</code>互质，则欧拉函数满足乘法性质：<code>φ(mn) = φ(m) * φ(n)</code>
+<ul>
+<li><code>φ(6)</code> 在<code>1，2，3，4，5，6</code>中只有<code>1</code>和<code>5</code>与<code>6</code>是<code>互质</code>的，所以<code>φ(6) = 2</code></li>
+<li><code>φ(7)</code> 因为 <code>7</code>是质数，只能被自己和<code>1</code>整除，所以<code>φ(7) = 6</code></li>
+</ul>
+</li>
+</ul>
+<p><strong>同余符号</strong>：（<code>≡</code>）是数学中的同余符号，表示两个数在模运算下是同余的。具体来说，对于整数<code>a</code>、<code>b</code>和正整数<code>n</code>，如果<code>a</code>和<code>b</code>除以<code>n</code>的余数相同，则称<code>a</code>和<code>b</code>在模<code>n</code>下是同余的，记作：<code>a ≡ b (mod n)</code> 也等同于 <code>a - b = kn</code>，<code>k</code>是一个整数。举例：</p>
+<ul>
+<li><code>17 ≡ 5 （mod 12）</code></li>
+<li><code>23 ≡ 2 （mod 7）</code></li>
+</ul>
+<p><strong>同余的性质</strong>：</p>
+<ol>
+<li><strong>自反性</strong>：对于任意整数<code>a</code>和正整数<code>n</code>，有<code>a ≡ a (mod n)</code>。</li>
+<li><strong>对称性</strong>：如果<code>a ≡ b (mod n)</code>，则<code>b ≡ a (mod n)</code>。</li>
+<li><strong>传递性</strong>：如果<code>a ≡ b (mod n)</code> 且<code>b ≡ c (mod n)</code>，则<code>a ≡ c (mod n)</code>。</li>
+<li><strong>加法</strong>：如果<code>a ≡ b (mod n)</code> 且<code>c ≡ d (mod n)</code>，则<code>a+c ≡ b+d (mod n)</code>。</li>
+<li><strong>减法</strong>：如果<code>a ≡ b (mod n)</code> 且<code>c ≡ d (mod n)</code>，则<code>a-c ≡ b-d (mod n)</code>。</li>
+<li><strong>乘法</strong>：如果<code>a ≡ b (mod n)</code> 且<code>b ≡ c (mod n)</code>，则<code>a*c ≡ b*d (mod n)</code>。</li>
+</ol>
+<p><strong>模运算</strong></p>
+<ol>
+<li><strong>加法模运算</strong>：<code>(a+b) mod n = ((a mod n) + (b mod n)) mod n</code></li>
+<li><strong>减法模运算</strong>：<code>(a-b) mod n = ((a mod n) - (b mod n) + n) mod n</code></li>
+<li><strong>乘法模运算</strong>：<code>(a * b) mod n = ((a mod n) * (b mod n) ) mod n</code></li>
+<li><strong>指数模运算</strong>：(a<sup>b</sup>) mod n = ((a mod n)<sup>b</sup>) mod n</li>
+</ol>
+<p><strong>欧拉定理</strong>：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-0838909071b2c76a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>等同 a<sup>φ(m)</sup> - 1 = km</p>
+<p><strong>模反元素：</strong><br>
+模反元素（<code>Modular Inverse</code>）是数论中的一个概念，通常用于解决模运算中的方程。对于给定的整数<code>a</code>和模数<code>m</code>，模反元素是指一个整数<code>x</code>，使得： <code>a*x ≡ 1 （mod m）</code>，等同于 <code>a*x - 1 = k*m</code>。<br>
+模反元素<code>x</code>存在的条件是<code>a</code>和<code>m</code>互质，即最大公约数<code>gcd（a,m）=1</code> 。如果<code>a</code>和<code>m</code>不是互质的，则<code>a</code>在模<code>m</code>下没有模反元素。</p>
+<h2 id="42-加解密流程"><a class="markdownIt-Anchor" href="#42-加解密流程"></a> 4.2、加解密流程</h2>
+<p><code>RSA</code>算法包括密钥生成、加密和解密三个主要步骤。以下是<code>RSA</code>算法的详细原理和操作步骤。</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>说明</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>选择一对不相等且足够大的质数</td>
+<td>p, q</td>
+</tr>
+<tr>
+<td>2</td>
+<td>计算 p, q 的乘积</td>
+<td>n = p * q</td>
+</tr>
+<tr>
+<td>3</td>
+<td>计算 n 的欧拉函数</td>
+<td>φ(n) = (p - 1) * (q - 1)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>选一个与 φ(n) 互质的整数 <strong>e</strong></td>
+<td>1 &lt; e &lt; φ(n)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>计算出 e 对于 φ(n) 的模反元素 <strong>d</strong></td>
+<td>e*d ≡ 1 (mod φ(n)）=&gt; ed mod φ(n) = 1</td>
+</tr>
+<tr>
+<td>6</td>
+<td>公钥</td>
+<td>KU = (e, n)</td>
+</tr>
+<tr>
+<td>7</td>
+<td>私钥</td>
+<td>KR = (d, n)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>将明文 M 加密</td>
+<td>M<sup>e</sup> mod n = C</td>
+</tr>
+<tr>
+<td>9</td>
+<td>将密⽂ C 解密</td>
+<td>C<sup>d</sup> mod n = M</td>
+</tr>
+</tbody>
+</table>
+<p>举例</p>
+<ol>
+<li>假设 p = 3 、 q = 7 ，n = 21</li>
+<li>φ(n) = (q-1)(p-1) = 12</li>
+<li>公钥 e 要满足 1 &lt; e &lt; φ(n) ，随机选择 e = 5</li>
+<li>私钥 d 满足 e*d ≡ 1 (mod φ(n)），所以 d * 5 ≡ 1 (mod 12)，根据<strong>扩展欧几里得算法</strong>算的 d =5</li>
+<li>所以公钥就是 (e, n) = （5，21）</li>
+<li>私钥就是 (d, n) = (5,21)</li>
+<li>假设明文是 10，使用公钥加密 C = C = 10<sup>5</sup> mod 21 = 19</li>
+<li>解密过程， M = 19<sup>5</sup> mod 21 = 2476099 mod 21 = 10</li>
+</ol>
+<h2 id="43-解密推导过程"><a class="markdownIt-Anchor" href="#43-解密推导过程"></a> 4.3、解密推导过程</h2>
+<p>已知 M<sup>e</sup> mod n = C，求 C<sup>d</sup> mod n = M  是否成立？</p>
+<p>解：</p>
+<ul>
+<li>先把 M<sup>e</sup> mod n = C 带入到 C<sup>d</sup> mod n = M</li>
+<li>可以得到（M<sup>e</sup> mod n）<sup>d</sup> mod n = M</li>
+<li>根据模运算的性质，我们可以将其进一步简化</li>
+<li>M<sup>ed</sup> mod n = M</li>
+<li>ed mod φ(n) = 1 , 所以有 ed = 1 + k*φ(n)</li>
+<li>代入 M<sup>ed</sup> mod n = M</li>
+<li>得 M<sup>1 + k*φ(n)</sup> mod n = M</li>
+<li>M * (M<sup>φ(n)</sup>)<sup>k</sup>  mod n = M</li>
+<li>根据乘法模运算得 ( (M mod n) * ((M<sup>φ(n)</sup>)<sup>k</sup> mod n) ) mod n = M</li>
+<li>M 是一个明文，比如 ASCII 256， 由于 p, q 都是一个很大的质数，所以 n 也是一个远大于 M 的数据。</li>
+<li>所以只用证明 (M<sup>φ(n)</sup>)<sup>k</sup> mod n = 1 就行了</li>
+<li>根据指数模运算得  (M<sup>φ(n)</sup>)<sup>k</sup> mod n = (M<sup>φ(n)</sup> mod n )<sup>k</sup> mod n</li>
+<li>M &lt; p and M &lt; q and n = pq 的话，那 M 就一定跟 n 互质了</li>
+<li>根据欧拉定理我们知道，M 和 n 互质的话就有: M<sup>φ(n)</sup> ≡ 1 (mod n）</li>
+<li>所以 M<sup>φ(n)</sup> mod n = 1</li>
+<li>所以 (1)<sup>k</sup> = 1</li>
+<li>所以 (M<sup>φ(n)</sup>)<sup>k</sup> mod n = 1</li>
+</ul>
+<h1 id="五-哈希算法"><a class="markdownIt-Anchor" href="#五-哈希算法"></a> 五、哈希算法</h1>
+<p>哈希函数（<code>Hash Function</code>）是一种算法，它将任意长度的输入数据（通常称为消息）转换为固定长度的输出数据（通常称为哈希值或摘要）。哈希函数在计算机科学和密码学中有广泛的应用，主要用于数据完整性验证、数字签名、加密、数据检索等。</p>
+<p><strong>哈希函数的特点</strong></p>
+<ol>
+<li><strong>固定长度输出</strong>：无论输入数据的长度是多少，哈希函数都生成固定长度的输出。例如，<code>SHA-256</code>总是生成<code>256</code>位（<code>32</code>字节）的哈希值。</li>
+<li><strong>快速计算</strong>：哈希函数的计算应该是快速高效的，能够在短时间内处理大量数据。</li>
+<li><strong>不可逆性</strong>：哈希函数应具有单向性，即很难从哈希值反推出原始输入数据。</li>
+<li><strong>抗碰撞性</strong>：不同的输入数据应该生成不同的哈希值，找到两个不同的输入数据具有相同哈希值的可能性应该非常低。</li>
+<li><strong>雪崩效应</strong>：输入数据的微小变化（如改变一个比特）应导致输出哈希值的显著变化。</li>
+</ol>
+<p><strong>哈希函数的应用</strong></p>
+<ol>
+<li><strong>数据完整性验证</strong>：哈希函数用于验证数据在传输或存储过程中是否被篡改。例如，文件下载后可以通过计算哈希值与提供的哈希值进行比较，验证文件的完整性。</li>
+<li><strong>数字签名</strong>：在数字签名中，哈希函数用于生成消息的摘要，签名者对摘要进行签名，接收者可以验证签名的真实性和消息的完整性。</li>
+<li><strong>密码学</strong>：哈希函数在密码学中用于生成密钥、密码存储等。例如，用户密码通常通过哈希函数处理后存储在数据库中，以提高安全性。</li>
+<li><strong>数据检索</strong>：哈希函数用于快速数据检索和查找，如哈希表（<code>Hash Table</code>）和哈希集合（<code>Hash Set</code>）。</li>
+<li><strong>区块链</strong>：在区块链技术中，哈希函数用于生成区块的哈希值，确保区块链的安全性和不可篡改性。</li>
+</ol>
+<p><strong>常见的哈希函数</strong></p>
+<ol>
+<li><strong>MD5（Message Digest Algorithm 5）</strong>：生成<code>128</code>位（<code>16</code>字节）的哈希值，已被证明存在安全漏洞，不推荐用于安全性要求高的场景。</li>
+<li><strong>SHA-1（Secure Hash Algorithm 1）</strong>：生成<code>160</code>位（<code>20</code>字节）的哈希值，<code>1995</code>年发布，<code>SHA-1</code>在许多安全协议中广为使用，包括<code>TLS</code>、<code>GnuPG</code>、<code>SSH</code>、<code>S/MIME</code>和<code>IPsec</code>，是<code>MD5</code>的后继者。但<code>SHA-1</code>的安全性在<code>2010</code>年以后已经不被大多数的加密场景所接受。<code>2017</code>年荷兰密码学研究小组<code>CWI</code>和<code>Google</code>正式宣布攻破了<code>SHA-1[1]</code>。</li>
+<li><strong>SHA-2（Secure Hash Algorithm 2）</strong>：<code>2001</code>年发布，包括<code>SHA-224</code>、<code>SHA-256</code>、<code>SHA-384</code>、<code>SHA-512</code>、<code>SHA-512/224</code>、<code>SHA-512/256</code>。<code>SHA-2</code>目前没有出现明显的弱点。虽然至今尚未出现对<code>SHA-2</code>有效的攻击，但它的算法跟<code>SHA-1</code>基本上仍然相似。</li>
+<li><strong>SHA-3（Secure Hash Algorithm 3）</strong>：基于<code>Keccak</code>算法设计，提供更高的安全性，适用于高安全性需求的应用。<code>2015</code>年正式发布，由于对<code>MD5</code>出现成功的破解，以及对<code>SHA-0</code>和<code>SHA-1</code>出现理论上破解的方法，<code>NIST</code>感觉需要一个与之前算法不同的，可替换的加密散列算法，也就是现在的<code>SHA-3</code>。</li>
+</ol>
+<h2 id="51-md5"><a class="markdownIt-Anchor" href="#51-md5"></a> 5.1、MD5</h2>
+<p><code>MD5（Message Digest Algorithm 5）</code>是一种广泛使用的哈希函数，用于生成数据的<code>128</code>位（<code>16</code>字节）哈希值。尽管<code>MD5</code>已经被证明存在安全漏洞，不再适合用于安全性要求高的场景，但它在数据完整性验证等领域仍然有一定的应用。以下是<code>MD5</code>算法的工作原理和操作步骤。</p>
+<ol>
+<li>消息填充</li>
+</ol>
+<p>消息填充的目的是使消息的长度满足特定条件，即长度模<code>512</code>等于<code>448</code>。这是为了确保消息长度（以位为单位）加上填充后的长度是<code>512</code>的倍数。</p>
+<ul>
+<li><strong>添加一个’1’位</strong>：在消息末尾添加一个<code>'1'</code>位（即<code>0x80</code>）。</li>
+<li><strong>填充’0’位</strong>：在<code>'1'</code>位之后添加足够的<code>'0'</code>位，使得消息长度模<code>512</code>等于<code>448</code>。</li>
+<li><strong>附加消息长度</strong>：在填充后的消息末尾附加消息的原始长度（以位为单位），长度为<code>64</code>位。</li>
+</ul>
+<ol start="2">
+<li>初始化MD缓冲区</li>
+</ol>
+<p><code>MD5</code>算法使用四个<code>32</code>位的寄存器<code>（A、B、C、D）</code>作为缓冲区，并将其初始化为特定的常量：</p>
+<pre class="highlight"><code class="">A = 0x67452301
+B = 0xefcdab89
+C = 0x98badcfe
+D = 0x10325476
+</code></pre>
+<ol start="3">
+<li>处理消息块</li>
+</ol>
+<p>消息被分成<code>512</code>位（<code>64</code>字节）的块，每个块进一步划分为<code>16</code>个<code>32</code>位的子块。<code>MD5</code>算法对每个<code>512</code>位的消息块进行四轮变换，每轮包括<code>16</code>次操作。每次操作使用一个非线性函数、一个常量和当前消息块中的一个子块。</p>
+<ul>
+<li>
+<p><strong>四个非线性函数</strong>：</p>
+<ul>
+<li><code>F(X, Y, Z) = (X &amp; Y) | (~X &amp; Z)</code></li>
+<li><code>G(X, Y, Z) = (X &amp; Z) | (Y &amp; ~Z)</code></li>
+<li><code>H(X, Y, Z) = X ^ Y ^ Z</code></li>
+<li><code>I(X, Y, Z) = Y ^ (X | ~Z)</code></li>
+</ul>
+</li>
+<li>
+<p><strong>每轮变换</strong>：</p>
+<ol>
+<li><strong>第一轮</strong>：使用函数<code>F</code>和消息块中的子块。</li>
+<li><strong>第二轮</strong>：使用函数<code>G</code>和消息块中的子块。</li>
+<li><strong>第三轮</strong>：使用函数<code>H</code>和消息块中的子块。</li>
+<li><strong>第四轮</strong>：使用函数<code>I</code>和消息块中的子块。</li>
+</ol>
+</li>
+</ul>
+<p>每轮变换包括以下步骤：</p>
+<ul>
+<li>将当前的缓冲区值（<code>A、B、C、D</code>）与非线性函数的结果、消息块中的一个子块和一个常量进行加法运算。</li>
+<li>将结果进行左循环移位。</li>
+<li>将移位后的结果加到当前缓冲区值上。</li>
+</ul>
+<ol start="4">
+<li>输出最终哈希值</li>
+</ol>
+<p>所有消息块处理完毕后，缓冲区中的四个寄存器（<code>A、B、C、D</code>）包含了最终的哈希值。将这四个寄存器按小端序连接起来，得到<code>128</code>位的哈希值。</p>
+<p><strong>以下是MD5算法的详细计算过程：</strong></p>
+<ol>
+<li>
+<p><strong>消息填充</strong>：</p>
+<ul>
+<li>假设原始消息长度为<code>L</code>位。</li>
+<li>在消息末尾添加一个<code>'1'</code>位（即<code>0x80</code>）。</li>
+<li>添加<code>k</code>个<code>'0'</code>位，使得<code>L + 1 + k ≡ 448 (mod 512)</code>。</li>
+<li>在填充后的消息末尾附加消息的原始长度<code>L</code>，长度为<code>64</code>位。</li>
+</ul>
+</li>
+<li>
+<p><strong>初始化MD缓冲区</strong>：</p>
+<ul>
+<li><code>A = 0x67452301</code></li>
+<li><code>B = 0xefcdab89</code></li>
+<li><code>C = 0x98badcfe</code></li>
+<li><code>D = 0x10325476</code></li>
+</ul>
+</li>
+<li>
+<p><strong>处理消息块</strong>：</p>
+<ul>
+<li>将消息分成若干个<code>512</code>位（<code>64</code>字节）的块，每个块进一步划分为<code>16</code>个<code>32</code>位的子块。</li>
+<li>对每个消息块，执行四轮变换，每轮包括<code>16</code>次操作。</li>
+</ul>
+</li>
+<li>
+<p><strong>四轮变换</strong>：</p>
+<ul>
+<li><strong>第一轮</strong>：使用函数<code>F</code>和消息块中的子块。</li>
+<li><strong>第二轮</strong>：使用函数<code>G</code>和消息块中的子块。</li>
+<li><strong>第三轮</strong>：使用函数<code>H</code>和消息块中的子块。</li>
+<li><strong>第四轮</strong>：使用函数<code>I</code>和消息块中的子块。</li>
+</ul>
+</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d84b8cc5e6a25d19.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>伪代码：</p>
+<pre><code>//Note: All variables are unsigned 32 bits and wrap modulo 2^32 when calculating
+var int[64] r, k
+
+//r specifies the per-round shift amounts
+r[ 0..15]：= {7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22} 
+r[16..31]：= {5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20}
+r[32..47]：= {4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23}
+r[48..63]：= {6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21}
+
+//Use binary integer part of the sines of integers as constants:
+for i from 0 to 63
+    k[i] := floor(abs(sin(i + 1)) × 2^32)
+
+//Initialize variables:
+var int h0 := 0x67452301
+var int h1 := 0xEFCDAB89
+var int h2 := 0x98BADCFE
+var int h3 := 0x10325476
+
+//Pre-processing:
+append "1" bit to message
+append "0" bits until message length in bits ≡ 448 (mod 512)
+append bit length of message as 64-bit little-endian integer to message
+
+//Process the message in successive 512-bit chunks:
+for each 512-bit chunk of message
+    break chunk into sixteen 32-bit little-endian words w[i], 0 ≤ i ≤ 15
+
+    //Initialize hash value for this chunk:
+    var int a := h0
+    var int b := h1
+    var int c := h2
+    var int d := h3
+
+    //Main loop:
+    for i from 0 to 63
+        if 0 ≤ i ≤ 15 then
+            f := (b and c) or ((not b) and d)
+            g := i
+        else if 16 ≤ i ≤ 31
+            f := (d and b) or ((not d) and c)
+            g := (5×i + 1) mod 16
+        else if 32 ≤ i ≤ 47
+            f := b xor c xor d
+            g := (3×i + 5) mod 16
+        else if 48 ≤ i ≤ 63
+            f := c xor (b or (not d))
+            g := (7×i) mod 16
+ 
+        temp := d
+        d := c
+        c := b
+        b := leftrotate((a + f + k[i] + w[g]),r[i]) + b
+        a := temp
+    Next i
+    //Add this chunk's hash to result so far:
+    h0 := h0 + a
+    h1 := h1 + b 
+    h2 := h2 + c
+    h3 := h3 + d
+End ForEach
+var int digest := h0 append h1 append h2 append h3 //(expressed as little-endian)
+</code></pre>
+<h2 id="52-sha-256"><a class="markdownIt-Anchor" href="#52-sha-256"></a> 5.2、SHA-256</h2>
+<p><code>SHA-256（Secure Hash Algorithm 256-bit）</code>是<code>SHA-2（Secure Hash Algorithm 2）</code>家族中的一种哈希函数，广泛应用于密码学、数据完整性验证和数字签名等领域。<code>SHA-256</code>将任意长度的输入数据转换为固定长度的<code>256</code>位（<code>32</code>字节）哈希值。以下是<code>SHA-256</code>算法的工作原理和具体步骤。</p>
+<p><strong>SHA-256 算法原理</strong></p>
+<p><code>SHA-256</code>通过一系列的位操作、逻辑运算和非线性函数，将输入数据转换为固定长度的哈希值。其主要步骤包括消息填充、初始化哈希值、消息分块处理和输出最终的哈希值。</p>
+<ol>
+<li>消息填充</li>
+</ol>
+<p>消息填充的目的是使消息的长度满足特定条件，即长度模<code>512</code>等于<code>448</code>。这是为了确保消息长度（以位为单位）加上填充后的长度是<code>512</code>的倍数。</p>
+<ul>
+<li><strong>添加一个’1’位</strong>：在消息末尾添加一个<code>'1'</code>位（即<code>0x80</code>）。</li>
+<li><strong>填充’0’位</strong>：在<code>'1'</code>位之后添加足够的<code>'0'</code>位，使得消息长度模<code>512</code>等于<code>448</code>。</li>
+<li><strong>附加消息长度</strong>：在填充后的消息末尾附加消息的原始长度（以位为单位），长度为<code>64</code>位。</li>
+</ul>
+<ol start="2">
+<li>初始化哈希值</li>
+</ol>
+<p><code>SHA-256</code>算法使用<code>8</code>个<code>32</code>位的寄存器作为初始哈希值，这些寄存器被初始化为特定的常量：</p>
+<pre class="highlight"><code class="">H0 = 0x6a09e667
+H1 = 0xbb67ae85
+H2 = 0x3c6ef372
+H3 = 0xa54ff53a
+H4 = 0x510e527f
+H5 = 0x9b05688c
+H6 = 0x1f83d9ab
+H7 = 0x5be0cd19
+</code></pre>
+<ol start="3">
+<li>处理消息块</li>
+</ol>
+<p>消息被分成<code>512</code>位（<code>64</code>字节）的块，每个块进一步划分为<code>16</code>个<code>32</code>位的子块。<code>SHA-256</code>算法对每个<code>512</code>位的消息块进行<code>64</code>轮变换，每轮使用一个非线性函数、一个常量和当前消息块中的一个子块。</p>
+<ul>
+<li><strong>消息扩展</strong>：将<code>16</code>个<code>32</code>位的子块扩展为<code>64</code>个<code>32</code>位的字。</li>
+<li><strong>循环变换</strong>：对每个消息块执行<code>64</code>轮变换，每轮使用一个非线性函数、一个常量和当前消息块中的一个字。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e24b3cfb4895a954.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-92f9983813f3e9bc.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>每一轮都把<code>256</code>位缓冲区的值<code>abcdefgh</code>作为输入,并更新缓冲区的值。每一轮会用到一个<code>32</code>位的值<code>W</code>，该值由当前被处理的<code>512</code>比特的消息分组<code>M</code>导出，导出算法是消息扩展算法。每一轮还将使用附加的常数<code>K</code>,其中 <code>0&lt;t≤64</code>,用来使每轮的运算不同。</p>
+<ol start="4">
+<li>轮函数</li>
+</ol>
+<p><code>SHA-256</code>使用以下非线性函数和常量进行变换：</p>
+<ul>
+<li><strong>选择函数（Ch）</strong>：<code>Ch(x, y, z) = (x AND y) XOR (~x AND z)</code></li>
+<li><strong>多数函数（Maj）</strong>：<code>Maj(x, y, z) = (x AND y) XOR (x AND z) XOR (y AND z)</code></li>
+<li><strong>Σ0函数</strong>：<code>Σ0(x) = ROTR(2, x) XOR ROTR(13, x) XOR ROTR(22, x)</code></li>
+<li><strong>Σ1函数</strong>：<code>Σ1(x) = ROTR(6, x) XOR ROTR(11, x) XOR ROTR(25, x)</code></li>
+<li><strong>σ0函数</strong>：<code>σ0(x) = ROTR(7, x) XOR ROTR(18, x) XOR SHR(3, x)</code></li>
+<li><strong>σ1函数</strong>：<code>σ1(x) = ROTR(17, x) XOR ROTR(19, x) XOR SHR(10, x)</code></li>
+</ul>
+<ol start="5">
+<li>常量表（K）</li>
+</ol>
+<p><code>SHA-256</code>使用<code>64</code>个<code>32</code>位的常量表，这些常量是前<code>64</code>个素数的立方根的小数部分：</p>
+<pre class="highlight"><code class="">K = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+    0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    ...
+    0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c,
+    0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f,
+    0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814,
+    0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7,
+    0xc67178f2
+]
+</code></pre>
+<ol start="6">
+<li>轮函数计算</li>
+</ol>
+<p>每个轮次的计算如下：</p>
+<pre class="highlight"><code class="">for i in range(64):
+    T1 = H + Σ1(E) + Ch(E, F, G) + K[i] + W[i]
+    T2 = Σ0(A) + Maj(A, B, C)
+    H = G
+    G = F
+    F = E
+    E = D + T1
+    D = C
+    C = B
+    B = A
+    A = T1 + T2
+</code></pre>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b9cdbd4e9b0587cf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<ol start="7">
+<li>更新哈希值</li>
+</ol>
+<p>每处理完一个消息块后，更新哈希值：</p>
+<pre class="highlight"><code class="">H0 = H0 + A
+H1 = H1 + B
+H2 = H2 + C
+H3 = H3 + D
+H4 = H4 + E
+H5 = H5 + F
+H6 = H6 + G
+H7 = H7 + H
+</code></pre>
+<ol start="8">
+<li>输出最终哈希值</li>
+</ol>
+<p>所有消息块处理完毕后，连接<code>8</code>个<code>32</code>位的寄存器，得到<code>256</code>位的哈希值。</p>
+<p>伪代码：</p>
+<pre class="highlight"><code class="">初始化
+（以下是前8個質數2..19平方根小數部分的前32位元）：
+h0 := 0x6a09e667
+h1 := 0xbb67ae85
+h2 := 0x3c6ef372
+h3 := 0xa54ff53a
+h4 := 0x510e527f
+h5 := 0x9b05688c
+h6 := 0x1f83d9ab
+h7 := 0x5be0cd19
+
+
+初始化每輪用的常數
+（前64個質數2..311的立方根小數部分的前32位元）：
+k[0..63] :=
+   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+   0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+   0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+   0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+   0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+   0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+   0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+   0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+
+預處理：
+訊息後接上一個位元'1'
+再接上k個'0'，其中k為最小的非負整數，使所得的訊息長度（位元數）同余於448(mod 512)
+將預處理前訊息的長度（位元數）寫成64位元大端序整數，接在最尾
+
+
+將訊息分成若干連續段處理，每段512位元：
+將訊息分成512位元的分段
+for 每段
+    將該段再分成十六個32位元的字組，看成大端序的整數w[0..15]
+
+
+    從該十六個字組，計算多四十八個同樣長度的字組，得到總共六十四個32位元字組：
+    for i from 16 to 63
+        s0 := (w[i-15] rightrotate 7) xor (w[i-15] rightrotate 18) xor(w[i-15] rightshift 3)
+        s1 := (w[i-2] rightrotate 17) xor (w[i-2] rightrotate 19) xor(w[i-2] rightshift 10)
+        w[i] := w[i-16] + s0 + w[i-7] + s1
+
+
+    初始化此段的雜湊值：
+    a := h0
+    b := h1
+    c := h2
+    d := h3
+    e := h4
+    f := h5
+    g := h6
+    h := h7
+
+    主迴圈：
+    for i from 0 to 63
+        s0 := (a rightrotate 2) xor (a rightrotate 13) xor(a rightrotate 22)
+        maj := (a and b) xor (a and c) xor(b and c)
+        t2 := s0 + maj
+        s1 := (e rightrotate 6) xor (e rightrotate 11) xor(e rightrotate 25)
+        ch := (e and f) xor ((not e) and g)
+        t1 := h + s1 + ch + k[i] + w[i]
+        h := g
+        g := f
+        f := e
+        e := d + t1
+        d := c
+        c := b
+        b := a
+        a := t1 + t2
+        
+    將此段的雜湊值加進總和：
+    h0 := h0 + a
+    h1 := h1 + b
+    h2 := h2 + c
+    h3 := h3 + d
+    h4 := h4 + e
+    h5 := h5 + f
+    h6 := h6 + g
+    h7 := h7 + h
+
+
+輸出最總的雜湊值（大端序）：
+digest = hash = h0 append h1 append h2 append h3 append h4 append h5 append h6 append h7
+
+
+</code></pre>
+<h1 id="六-benchmarks"><a class="markdownIt-Anchor" href="#六-benchmarks"></a> 六、benchmarks</h1>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-16dd1e937ece3abd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="2-Figure1-1.png"></p>
+<h1 id="七-参考文章"><a class="markdownIt-Anchor" href="#七-参考文章"></a> 七、参考文章</h1>
+<p><a target="_blank" rel="noopener" href="https://cs.nju.edu.cn/daihp/ns_course/04HaipengDai_SymmetricCrypto_2.pdf">Advanced Encryption Standard (AES)</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1XA411C7oj/?spm_id_from=333.337.search-card.all.click&amp;vd_source=e4232537ff74b9e716e0a46a825f3ead">密码之基础篇之ECB_CBC_CFB_OFB加密模式</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1c34y1M7NW/?spm_id_from=333.880.my_history.page.click&amp;vd_source=e4232537ff74b9e716e0a46a825f3ead">HMAC | MAC | 基于哈希函数的消息认证码| 消息认证码 |HMAC-MD5</a></p>
+<p><a target="_blank" rel="noopener" href="https://fsjournal.cpu.edu.tw/content/vol5.no.1/01(p1-p11).pdf">Image authentication for digital image evidence</a></p>
+<p><a target="_blank" rel="noopener" href="https://zh.wikipedia.org/wiki/SHA%E5%AE%B6%E6%97%8F">SHA WIKI</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1YQ4y1a7n1/?spm_id_from=333.337.top_right_bar_window_history.content.click&amp;vd_source=e4232537ff74b9e716e0a46a825f3ead">RSA加密过程详解</a></p>
+<p><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Az4y1A78q/?spm_id_from=333.880.my_history.page.click&amp;vd_source=e4232537ff74b9e716e0a46a825f3ead">哈希函数 (SHA256/SHA3-Keccak)</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

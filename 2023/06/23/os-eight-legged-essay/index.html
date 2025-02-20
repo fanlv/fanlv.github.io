@@ -1,0 +1,506 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>操作系统基础</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="其他 OS 相关技术沉淀文章
+
+Linux内核虚拟地址空间
+Linux0.11启动过程
+
+ 一、基础
+ 1.1 进程、线程、协程区别
+
+进程：进程是操作系统管理和调度的基本单位，拥有独立的内存空间和系统资源，通常适用于不同程序的并发执行。
+线程：进程内的执行单位，共享相同的内存空间和资源，适用于一个程序内部的并发和多任务处理。
+协程：编程语言实现的轻量级线程，在单个线程上实现多任务的协作式并发，适用于高并发场景和异步任务处理。
+
+ 1.2 进程、线程上下文切换
+进程上下文切换开销：
+进程上下文切换涉及保存当前运行进程的**CPU寄存器状态、程序计数器、堆栈指针、内存管理信息（如页表）**等，并恢复新进程的上下文信息。这些操作会带来很大的开销，因为：
+
+上下文切换需要CPU从用户态切换到内核态，导致额外的运行.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">操作系统基础</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80-%E5%9F%BA%E7%A1%80"><span class="toc-text"> 一、基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#11-%E8%BF%9B%E7%A8%8B-%E7%BA%BF%E7%A8%8B-%E5%8D%8F%E7%A8%8B%E5%8C%BA%E5%88%AB"><span class="toc-text"> 1.1 进程、线程、协程区别</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12-%E8%BF%9B%E7%A8%8B-%E7%BA%BF%E7%A8%8B%E4%B8%8A%E4%B8%8B%E6%96%87%E5%88%87%E6%8D%A2"><span class="toc-text"> 1.2 进程、线程上下文切换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13-ipc-%E8%BF%9B%E7%A8%8B%E9%80%9A%E4%BF%A1%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="toc-text"> 1.3 IPC 进程通信的方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14-copy-on-write%E5%86%99%E6%97%B6%E5%A4%8D%E5%88%B6"><span class="toc-text"> 1.4 copy on write(写时复制）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15-linux%E4%B8%8B%E7%BA%BF%E7%A8%8B%E6%A0%88%E5%A4%A7%E5%B0%8F%E6%98%AF%E5%A4%9A%E5%B0%91"><span class="toc-text"> 1.5 Linux下线程栈大小是多少</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#16-linux%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AE%97%E6%B3%95buddy-system-slab"><span class="toc-text"> 1.6 Linux内存分配算法buddy system、slab</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#17-%E8%BF%9B%E7%A8%8B%E7%8A%B6%E6%80%81-%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%E5%92%8C%E5%AD%A4%E5%84%BF%E8%BF%9B%E7%A8%8B"><span class="toc-text"> 1.7 进程状态、僵尸进程和孤儿进程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#18-memory-model"><span class="toc-text"> 1.8 Memory Model</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#19-%E5%B0%BE%E9%80%92%E5%BD%92%E4%BC%98%E5%8C%96"><span class="toc-text"> 1.9 尾递归优化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#110-%E7%94%A8%E6%88%B7%E6%80%81%E5%92%8C%E5%86%85%E6%A0%B8%E6%80%81%E4%BB%80%E4%B9%88%E5%8C%BA%E5%88%AB%E7%94%A8%E6%88%B7%E6%80%81%E5%88%87%E6%8D%A2%E5%88%B0%E5%86%85%E6%A0%B8%E6%80%81%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-text"> 1.10 用户态和内核态什么区别？用户态切换到内核态的几种方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#111-%E7%A1%AC%E4%B8%AD%E6%96%AD-%E8%BD%AF%E4%B8%AD%E6%96%AD"><span class="toc-text"> 1.11 硬中断、软中断</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#112-cpu%E6%93%8D%E4%BD%9C%E5%9F%BA%E6%9C%AC%E5%8D%95%E4%BD%8D%E5%86%85%E5%AD%98%E6%93%8D%E4%BD%9C%E5%9F%BA%E6%9C%AC%E5%8D%95%E4%BD%8D%E7%A3%81%E7%9B%98%E6%93%8D%E4%BD%9C%E5%9F%BA%E6%9C%AC%E5%8D%95%E4%BD%8D"><span class="toc-text"> 1.12 CPU操作基本单位？内存操作基本单位？磁盘操作基本单位？</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C-%E5%86%85%E5%AD%98%E5%9F%BA%E7%A1%80"><span class="toc-text"> 二、内存基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#21-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BC%BA%E9%A1%B5%E4%B8%AD%E6%96%AD"><span class="toc-text"> 2.1 什么是缺页中断？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#22-%E9%A1%B5%E9%9D%A2%E7%BD%AE%E6%8D%A2%E7%AE%97%E6%B3%95"><span class="toc-text"> 2.2 页面置换算法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#23-%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E6%8A%80%E6%9C%AFlinux%E7%9A%84%E8%BF%9B%E7%A8%8B%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%A9%BA%E9%97%B4"><span class="toc-text"> 2.3 虚拟内存技术？Linux的进程虚拟地址空间？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#24-%E6%A0%88%E5%92%8C%E5%A0%86%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text"> 2.4 栈和堆的区别？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#25-%E5%86%85%E5%AD%98%E5%88%86%E9%A1%B5%E6%9C%BA%E5%88%B6%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E4%BD%BF%E7%94%A8%E5%86%85%E5%AD%98%E5%88%86%E9%A1%B5-%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%A4%9A%E7%BA%A7%E9%A1%B5%E8%A1%A8"><span class="toc-text"> 2.5 内存分页机制？为什么要使用内存分页? 为什么要多级页表?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#26-mmu%E5%A6%82%E4%BD%95%E6%8A%8A%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E7%BF%BB%E8%AF%91%E6%88%90%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E7%9A%84"><span class="toc-text"> 2.6 MMU如何把虚拟地址翻译成物理地址的?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#27-cacheline-false-sharding"><span class="toc-text"> 2.7 Cacheline、False Sharding？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#28-%E8%99%9A%E6%8B%9F%E5%9C%B0%E5%9D%80%E5%A4%9A%E5%B0%91%E4%BD%8D%E7%89%A9%E7%90%86%E5%9C%B0%E5%9D%80%E5%A4%9A%E5%B0%91%E4%BD%8D"><span class="toc-text"> 2.8 虚拟地址多少位？物理地址多少位？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#29-windows%E4%B8%8B32%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%A6%82%E4%BD%95%E7%AA%81%E7%A0%B44g%E5%86%85%E5%AD%98%E9%99%90%E5%88%B6"><span class="toc-text"> 2.9 Windows下32位操作系统如何突破4G内存限制？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#210-mmap"><span class="toc-text"> 2.10 mmap</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#211-page-cache-%E6%98%AF%E5%A6%82%E4%BD%95%E8%AF%9E%E7%94%9F%E7%9A%84"><span class="toc-text"> 2.11 Page Cache 是如何“诞生”的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#212-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-pagecache"><span class="toc-text"> 2.12 为什么需要 PageCache</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#213-kswap-%E7%BA%BF%E7%A8%8B"><span class="toc-text"> 2.13 KSwap 线程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#214-%E5%86%85%E5%AD%98%E5%9B%9E%E6%94%B6%E8%BF%87%E7%A8%8B"><span class="toc-text"> 2.14 内存回收过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#215-memory-cgroup-protection"><span class="toc-text"> 2.15 Memory cgroup protection</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#216-linux-%E6%98%AF%E5%A6%82%E4%BD%95%E7%BB%84%E7%BB%87%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98%E7%9A%84"><span class="toc-text"> 2.16 Linux 是如何组织虚拟内存的</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89-cpu-cache-%E6%89%A9%E5%B1%95%E7%9F%A5%E8%AF%86"><span class="toc-text"> 三、CPU Cache 扩展知识</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#31-cpu-cache-%E7%9A%84%E4%BA%A7%E7%94%9F%E8%83%8C%E6%99%AF"><span class="toc-text"> 3.1 CPU Cache 的产生背景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#32-cpu-cache-%E6%A8%A1%E5%9E%8B"><span class="toc-text"> 3.2 CPU Cache 模型</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#33-%E4%BB%80%E4%B9%88%E6%98%AF-cache-line"><span class="toc-text"> 3.3 什么是 Cache Line</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#34-flase-sharing-%E9%97%AE%E9%A2%98"><span class="toc-text"> 3.4 Flase Sharing 问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#35-%E5%A6%82%E4%BD%95%E8%A7%A3%E5%86%B3false-sharding%E9%97%AE%E9%A2%98"><span class="toc-text"> 3.5 如何解决False Sharding问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#36-cpu-cache-%E6%98%AF%E5%A6%82%E4%BD%95%E5%AD%98%E6%94%BE%E6%95%B0%E6%8D%AE%E7%9A%84"><span class="toc-text"> 3.6 CPU Cache 是如何存放数据的</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#37-cpu-cache-%E5%AF%BB%E5%9D%80%E8%BF%87%E7%A8%8B"><span class="toc-text"> 3.7 CPU Cache 寻址过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#38-cpu-cache-%E4%B8%89%E7%A7%8D%E5%AF%BB%E5%9D%80%E6%96%B9%E5%BC%8F"><span class="toc-text"> 3.8 CPU Cache 三种寻址方式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#39-cpu-cache-%E7%9A%84%E7%BB%84%E7%BB%87%E6%96%B9%E5%BC%8F"><span class="toc-text"> 3.9 CPU Cache 的组织方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#vivtvirtual-index-virtual-tag"><span class="toc-text"> VIVT(Virtual Index Virtual Tag)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#viptvirtual-index-physical-tag"><span class="toc-text"> VIPT(Virtual Index Physical Tag)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#piptphysical-index-physical-tag"><span class="toc-text"> PIPT(Physical Index Physical Tag)</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B-%E5%85%B6%E4%BB%96%E5%9F%BA%E7%A1%80"><span class="toc-text"> 四、其他基础</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#41-zero-copy-%E6%9C%89%E5%93%AA%E4%BA%9B%E5%AE%9E%E7%8E%B0"><span class="toc-text"> 4.1 Zero copy 有哪些实现</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#42-%E5%8A%A0%E5%AF%86%E7%AE%97%E6%B3%95%E6%AF%94%E8%BE%83"><span class="toc-text"> 4.2 加密算法比较</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#43-elf"><span class="toc-text"> 4.3 ELF</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#44-%E9%94%81%E4%BC%98%E5%8C%96%E6%96%B9%E5%90%91"><span class="toc-text"> 4.4 锁优化方向</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#45-%E7%B3%BB%E7%BB%9F%E5%90%AF%E5%8A%A8%E8%BF%87%E7%A8%8B"><span class="toc-text"> 4.5 系统启动过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#46-%E5%B8%B8%E7%94%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E6%8E%92%E6%9F%A5%E9%97%AE%E9%A2%98%E5%B7%A5%E5%85%B7"><span class="toc-text"> 4.6 常用的一些排查问题工具</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#47-%E5%85%B6%E4%BB%96"><span class="toc-text"> 4.7 其他</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/ele"><i class="tag post-item-tag">ele</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">操作系统基础</h1><time class="has-text-grey" datetime="2023-06-23T02:00:18.000Z">2023-06-23</time><article class="mt-2 post-content"><p><strong>其他 OS 相关技术沉淀文章</strong></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://fanlv.fun/2021/07/25/linux-mem/">Linux内核虚拟地址空间</a></li>
+<li><a target="_blank" rel="noopener" href="https://fanlv.fun/2022/12/25/linux-start-up/">Linux0.11启动过程</a></li>
+</ul>
+<h1 id="一-基础"><a class="markdownIt-Anchor" href="#一-基础"></a> 一、基础</h1>
+<h2 id="11-进程-线程-协程区别"><a class="markdownIt-Anchor" href="#11-进程-线程-协程区别"></a> 1.1 进程、线程、协程区别</h2>
+<ul>
+<li>进程：进程是操作系统管理和调度的基本单位，拥有独立的内存空间和系统资源，通常适用于不同程序的并发执行。</li>
+<li>线程：进程内的执行单位，共享相同的内存空间和资源，适用于一个程序内部的并发和多任务处理。</li>
+<li>协程：编程语言实现的轻量级线程，在单个线程上实现多任务的协作式并发，适用于高并发场景和异步任务处理。</li>
+</ul>
+<h2 id="12-进程-线程上下文切换"><a class="markdownIt-Anchor" href="#12-进程-线程上下文切换"></a> 1.2 进程、线程上下文切换</h2>
+<p><strong>进程上下文切换开销：</strong></p>
+<p>进程上下文切换涉及保存当前运行进程的**CPU寄存器状态、程序计数器、堆栈指针、内存管理信息（如页表）**等，并恢复新进程的上下文信息。这些操作会带来很大的开销，因为：</p>
+<ol>
+<li>上下文切换需要<code>CPU</code>从用户态切换到内核态，导致额外的运行时间。</li>
+<li>需要保存和恢复大量寄存器、内存管理信息等，占用内存和计算资源。</li>
+<li>进程上下文切换引起<code>Cache</code>和<code>TLB</code>的失效，导致额外的<code>Cache Miss</code>和<code>TLB Miss</code>。</li>
+</ol>
+<p>因此，进程上下文切换的开销相对较大，影响系统性能。</p>
+<p><strong>线程上下文切换开销：</strong></p>
+<p>线程上下文切换主要涉及保存和恢复线程的<code>CPU</code>寄存器状态、程序计数器、堆栈指针等。由于同一进程内的线程共享内存空间和内存管理信息（如页表），线程切换时不需要进行这部分信息的保存和恢复。因此，线程上下文切换相较于进程上下文切换的开销较小。然而，它仍然可能引起<code>Cache</code>和<code>TLB</code>的失效，导致额外的开销。</p>
+<h2 id="13-ipc-进程通信的方式"><a class="markdownIt-Anchor" href="#13-ipc-进程通信的方式"></a> 1.3 IPC 进程通信的方式</h2>
+<p>进程间通信（<code>IPC，Inter-Process Communication</code>）是指多个进程如何共享数据、发送消息和协同工作的机制。以下是一些常用的<code>IPC</code>方法：</p>
+<ol>
+<li>
+<p>**管道（Pipe）：**管道是父子进程之间用于单向数据传输的<code>IPC</code>机制。数据从管道一端输入，在另一端输出，且数据传输为顺序、无缓冲的。管道主要用于父子进程之间。</p>
+</li>
+<li>
+<p>**有名管道（Named Pipe，FIFO）：**也称作<code>FIFO</code>（<code>First In First Out</code>，先进先出），有名管道是在文件系统中创建的一个特殊文件，可在不相关的进程之间传输数据。它与普通管道类似，但可以实现更广泛的通信场景。</p>
+</li>
+<li>
+<p>**信号（Signal）：**信号是一种异步通知机制，允许一个进程中断或通知另一个进程。信号可以处理一些特定的情况，如停止进程、进程异常终止、子进程终止等，但信号实际上无法传递复杂数据。</p>
+</li>
+<li>
+<p>**消息队列（Message Queue）：**消息队列是一种实现进程间通信的数据结构。消息队列可以在多个进程之间传递结构化数据，并遵循先进先出（<code>FIFO</code>）的原则。消息队列既可以用于同一个系统的进程间通信，也可以用于不同机器之间的通信。</p>
+</li>
+<li>
+<p>**共享内存（Shared Memory）：**共享内存将一段内存空间映射到多个进程的地址空间中，这样多个进程可以直接访问同一段内存空间来交换数据。共享内存是一种非常高效的<code>IPC</code>方式，但同步和一致性问题需要通过其他手段解决（如信号量、互斥锁等）。</p>
+</li>
+<li>
+<p>**信号量（Semaphore）：**信号量是一个同步原语，用于实现进程间或同一进程不同线程之间的同步和互斥操作。信号量本身不能传递数据，但常与共享内存结合使用，解决共享资源的同步问题。</p>
+</li>
+<li>
+<p>**套接字（Socket）：**套接字是一种跨网络的进程间通信机制。套接字支持在不同主机间的进程进行通信，有多种类型（如<code>TCP</code>、<code>UDP</code> 和 <code>UNIX Domain Socket</code>）以满足不同的通信需求和性能目标。</p>
+</li>
+</ol>
+<h2 id="14-copy-on-write写时复制"><a class="markdownIt-Anchor" href="#14-copy-on-write写时复制"></a> 1.4 copy on write(写时复制）</h2>
+<p>写时复制（<code>Copy-On-Write</code>，简称 <code>COW</code>）是一种计算机程序优化策略，主要用于减少数据结构复制和内存分配的开销。在采用该策略时，只有在需要修改数据时才会产生数据的实际副本。</p>
+<p>写时复制的基本原理如下：当多个程序、进程或线程共享同一数据对象时，它们最初只保留该对象的只读引用，而非立即创建副本。只有当某个程序或线程试图修改共享数据时，才会创建一个实际副本。创建副本后，正在执行修改操作的程序或线程将操作副本，而其他程序或线程仍然保持指向原始数据。这样，只在实际需要时进行昂贵的数据复制操作，提高了程序性能。</p>
+<h2 id="15-linux下线程栈大小是多少"><a class="markdownIt-Anchor" href="#15-linux下线程栈大小是多少"></a> 1.5 Linux下线程栈大小是多少</h2>
+<p>默认是<code>8M</code>，<code>ulimit -s</code>可以查看</p>
+<h2 id="16-linux内存分配算法buddy-system-slab"><a class="markdownIt-Anchor" href="#16-linux内存分配算法buddy-system-slab"></a> 1.6 Linux内存分配算法buddy system、slab</h2>
+<p><strong>Buddy System算法</strong> 和 <strong>Slab分配算法</strong> 是<code>Linux</code>内核中用于内存分配的两种主要方法。这两种算法旨在优化内存分配，提高内存分配的效率及减少内存碎片。</p>
+<p><strong>Buddy System算法</strong>是一种二次幂的内存分配方法，目的在于使得高速内存的分配和释放变得相对简单且减少内存碎片。其主要机制如下：</p>
+<ol>
+<li>把所有的空闲页框分组为<code>11</code>个块链表，每个块链表分别包含大小为<code>1</code>，<code>2</code>，<code>4</code>，<code>8</code>，<code>16</code>，<code>32</code>，<code>64</code>，<code>128</code>，<code>256</code>，<code>512</code>和<code>1024</code>个连续的页框，对<code>1024</code>个页框的最大请求对应着<code>4MB</code>大小的连续<code>RAM</code>块。</li>
+<li>为了简化分配过程，分配器通过一个名为<code>自由列表数组</code>的数据结构来记录可用内存的块。</li>
+<li>当一个内存请求来時，分配器根据需求分配最接近请求大小的整数次幂内存块。</li>
+<li>当内存被释放时，分配器会判断是否有相邻闲置内存块，并与这些相邻内存块结合成更大的内存块。</li>
+</ol>
+<p><strong>Slab分配算法</strong>致力于<strong>提高小内存对象</strong>的分配和释放效率。通过将内存分割成相同大小的<code>Slabs</code>，它们可以在相应的内存缓存中存储相同类型的对象。主要特点如下：</p>
+<ol>
+<li>内核中相同类型的对象存储在同一缓存中，这些缓存称为 <code>Slab缓存</code>。</li>
+<li>每个<code>Slab缓存</code>包含一个或多个大小相等的内存块。</li>
+<li>内存块被分成若干用于存储数据对象的空间，称为<code>Slab对象</code>。</li>
+<li>操作系统同时维护空闲和已经用完的<code>Slab列表</code>。</li>
+</ol>
+<p><code>Slab</code>分配算法通过回收已经释放的对象并存储在相应的<code>Slab</code>缓存中，以便在后续需求时快速分配给新对象，从而降低分配的时间复杂度，提高内存的使用效率。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-d02684dcf77c8971.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Slub Allocator.png"></p>
+<h2 id="17-进程状态-僵尸进程和孤儿进程"><a class="markdownIt-Anchor" href="#17-进程状态-僵尸进程和孤儿进程"></a> 1.7 进程状态、僵尸进程和孤儿进程</h2>
+<p><code>R</code>运行状态（<code>running</code>）: 并不意味着进程一定在运行中，它表明进程要么是在运行中要么在运行队列 里。<br>
+<code>S</code>睡眠状态（<code>sleeping</code>): 意味着进程在等待事件完成（这里的睡眠有时候也叫做可中断睡眠 （<code>interruptible sleep</code>）。<br>
+<code>D</code>磁盘休眠状态（<code>Disk sleep</code>）有时候也叫不可中断睡眠状态（<code>uninterruptible sleep</code>），在这个状态的 进程通常会等待IO的结束。<br>
+<code>T</code>停止状态（<code>stopped</code>）： 可以通过发送<code>SIGSTOP</code>信号给进程来停止（<code>T</code>）进程。这个被暂停的进程可以通过发送 <code>SIGCONT</code>信号让进程继续运行。<br>
+<code>X</code>死亡状态（<code>dead</code>）：这个状态只是一个返回状态，你不会在任务列表里看到这个状态。<br>
+<code>Z</code>僵死状态（<code>zombie</code>）</p>
+<p><strong>僵尸进程</strong>：简单来说，<strong>当进程退出时</strong>但是父进程并没有调用<code>wait</code>或<code>waitpid</code>获取子进程的状态信息时就会产生僵尸进程<br>
+其实，僵尸进程是有危害的。进程的退出状态必须被维持下去，因为它要告诉关心它的进程（父进程），你交给我的任务，我办的怎么样了。可父进程如果一直不读取，那子进程就一直处于<code>Z</code>状态。维护退出状态本身就是要用数据维护，也属于进程基本信息，所以保存在<code>task_struct(PCB)</code>中，换句话说，当一个进程一直处于<code>Z</code>状态，那么它的<code>PCB</code>也就一直都要被维护。因为<code>PCB</code>本身就是一个结构体会占用空间，僵尸进程也就会造成资源浪费，所以我们应该避免僵尸进程的产生。</p>
+<p><strong>孤儿进程</strong>：则是指当一个父进程退出，而它的一个或多个子进程还在运行，那么那些子进程将成为孤儿进程。孤儿进程将被<code>init</code>进程(进程号为<code>1</code>)所收养，并由<code>init</code>进程对它们完成状态收集工作。</p>
+<h2 id="18-memory-model"><a class="markdownIt-Anchor" href="#18-memory-model"></a> 1.8 Memory Model</h2>
+<p><code>Memory Model</code>其实是一个概念，表示在多线程场景下，如何保证数据同步的正确性。&nbsp;内存模型非常重要，因为它们决定程序如何访问和操作内存，以确保程序的一致性和可靠性。</p>
+<p><code>Happens Before</code>是<code>Memory Model</code>中一个通用的概念。主要是用来保证内存操作的可见性。如果要保证<code>E1</code>的内存写操作能够被<code>E2</code>读到，那么需要满足。</p>
+<h2 id="19-尾递归优化"><a class="markdownIt-Anchor" href="#19-尾递归优化"></a> 1.9 尾递归优化</h2>
+<p>尾递归优化是一种编译器优化技术，它可以优化递归函数的执行效率，节省栈空间的使用。</p>
+<p>在递归函数中，每次递归调用都会将当前函数的状态信息存储在栈中，包括函数参数、局部变量、返回地址等信息。当递归调用次数较多时，栈会不断增长，导致栈溢出等问题。尾递归优化的目的就是减少栈的使用，避免栈溢出等问题。</p>
+<p>具体地说，尾递归优化会将递归调用转化为一个循环，从而避免在每次递归调用时都要保存当前函数的状态信息。在转化后的代码中，递归函数的返回值会不断更新，直到最终结果被计算出来。</p>
+<p>尾递归优化可以解决<strong>递归函数效率低、栈溢出</strong>等问题，提高程序的性能和健壮性。但需要注意的是，并不是所有的递归函数都可以进行尾递归优化，只有满足尾递归条件的函数才能进行此种优化。同时，不同的编程语言也对尾递归优化的支持程度不同，需要具体了解每种编程语言的情况。</p>
+<h2 id="110-用户态和内核态什么区别用户态切换到内核态的几种方式"><a class="markdownIt-Anchor" href="#110-用户态和内核态什么区别用户态切换到内核态的几种方式"></a> 1.10 用户态和内核态什么区别？用户态切换到内核态的几种方式</h2>
+<p><strong>用户态</strong>是指应用程序运行时使用的资源，例如<code>CPU</code>、内存、磁盘等，应用程序只能访问自己的内存空间，而不<strong>能直接访问操作系统的资源</strong>。在用户态下，应用程序不能直接执行内核代码，必须通过系统调用等特定机制向内核发出请求，由内核来执行相应的操作。</p>
+<p><strong>内核态</strong>是指操作系统运行时使用的资源，包括<code>CPU</code>、内存等，操作系统可以直接访问硬件资源，执行各种内核代码，例如设备驱动程序、文件系统、网络协议栈等。在内核态下，操作系统可以访问所有资源，并直接执行内核代码，没有受到任何限制。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-454ff0afd04132f2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>当应用程序需要执行某些特权操作时，必须切换到内核态。用户态切换到内核态的几种方式如下：</p>
+<ol>
+<li>系统调用：使用软中断指令（<code>int 0x80</code>）向内核发出系统调用请求，并将参数传递给内核，内核根据请求处理并将结果返回给用户程序。</li>
+<li>异常/中断处理：当硬件出现异常或中断时，处理器会自动切换到内核态执行相应的异常/中断处理程序。</li>
+<li>信号处理：当应用程序收到信号时，处理器会切换到内核态执行信号处理程序。</li>
+<li>调试处理：调试程序可以通过特定的机制要求处理器切换到内核态执行调试程序。</li>
+</ol>
+<p>总之，用户态和内核态是操作系统中两个不同的执行级别，用户态比内核态更受限制，只能执行受限的代码，而内核态则更加特权和自由，可以执行各种操作系统代码。切换方式主要有系统调用、异常、中断处理、信号处理、调试处理等。</p>
+<h2 id="111-硬中断-软中断"><a class="markdownIt-Anchor" href="#111-硬中断-软中断"></a> 1.11 硬中断、软中断</h2>
+<p><strong>硬中断</strong>是由计算机硬件发出的中断请求，通常是由外部设备（如键盘、鼠标、网卡等）向处理器发出的信号，告诉处理器有一个事件需要处理。硬中断是立即发生的，处理器必须立即响应中断请求，停止当前运行中的程序，进行中断服务程序的处理。</p>
+<p>软中断是由操作系统内部的程序（如系统调用）发起的中断请求，它通常是通过特定的指令（如<code>int 0x80</code>）或函数调用（如<code>sysenter</code>）触发，向处理器发出中断请求。软中断是由程序主动发起的，处理器同样要停止当前运行中的程序，进行中断服务程序的处理。</p>
+<p>硬中断和软中断的区别主要有以下几点：</p>
+<ol>
+<li>发起方式不同：硬中断由外部设备发起，软中断由内部程序发起。</li>
+<li>触发时机不同：硬中断是立即发生的，中断服务程序必须立即响应处理。软中断是由程序主动发起的，处理延迟相对较短。</li>
+<li>处理方式不同：硬中断的处理程序通常由硬件设备提供，例如外部设备的驱动程序。软中断的处理程序则由操作系统提供，例如系统调用处理程序。</li>
+<li>硬中断是可屏蔽的，软中断不可屏蔽。</li>
+</ol>
+<h2 id="112-cpu操作基本单位内存操作基本单位磁盘操作基本单位"><a class="markdownIt-Anchor" href="#112-cpu操作基本单位内存操作基本单位磁盘操作基本单位"></a> 1.12 CPU操作基本单位？内存操作基本单位？磁盘操作基本单位？</h2>
+<ul>
+<li><code>CPU</code>读取基本单位是<code>Cacheline</code>，大小默认是<code>64 Byte</code>，可以通过命令<code>getconf LEVEL1_DCACHE_LINESIZE</code> 查看。</li>
+<li>内存操作的基本单位是<code>Page</code>，默认<code>4K</code>，也有大页<code>4M</code>，可以通过命令<code>getconf PAGE_SIZE</code> 查看。</li>
+<li>磁盘操作的基本单位是<code>磁盘块</code>，默认也是<code>4K</code>，也有<code>8K</code>，可以通过命令<code>sudo blockdev --getbsz /dev/sda</code></li>
+</ul>
+<h1 id="二-内存基础"><a class="markdownIt-Anchor" href="#二-内存基础"></a> 二、内存基础</h1>
+<h2 id="21-什么是缺页中断"><a class="markdownIt-Anchor" href="#21-什么是缺页中断"></a> 2.1 什么是缺页中断？</h2>
+<p>缺页中断（英语：<code>Page fault</code>，又名硬错误、硬中断、分页错误、寻页缺失、缺页中断、页故障等）指的是当软件试图访问已映射在虚拟地址空间中，但是目前并未被加载在物理内存中的一个分页时，由中央处理器的内存管理单元所发出的中断。</p>
+<p>通常情况下，用于处理此中断的程序是操作系统的一部分。如果操作系统判断此次访问是有效的，那么操作系统会尝试将相关的分页从硬盘上的虚拟内存文件中调入内存。而如果访问是不被允许的，那么操作系统通常会结束相关的进程。</p>
+<p>缺页中断发生时的事件顺序如下：</p>
+<ol>
+<li>硬件陷入内核，在内核堆栈中保存程序计数器。大多数机器将当前指令的各种状态信息保存在特殊的CPU寄存器中。</li>
+<li>启动一个汇编代码例程保存通用寄存器和其他易失的信息，以免被操作系统破坏。这个例程将操作系统作为一个函数来调用。</li>
+<li>当操作系统发现一个缺页中断时，尝试发现需要哪个虚拟页面。通常一个硬件寄存器包含了这一信息，如果没有的话，操作系统必须检索程序计数器，取出这条指令，用软件分析这条指令，看看它在缺页中断时正在做什么。</li>
+<li>一旦知道了发生缺页中断的虚拟地址，操作系统检查这个地址是否有效，并检查存取与保护是否一致。如果不一致，向进程发出一个信号或杀掉该进程。如果地址有效且没有保护错误发生，系统则检查是否有空闲页框。如果没有空闲页框，执行页面置换算法寻找一个页面来淘汰。</li>
+<li>如果选择的页框“脏”了，安排该页写回磁盘，并发生一次上下文切换，挂起产生缺页中断的进程，让其他进程运行直至磁盘传输结束。无论如何，该页框被标记为忙，以免因为其他原因而被其他进程占用。</li>
+<li>一旦页框“干净”后（无论是立刻还是在写回磁盘后），操作系统查找所需页面在磁盘上的地址，通过磁盘操作将其装入。该页面被装入后，产生缺页中断的进程仍然被挂起，并且如果有其他可运行的用户进程，则选择另一个用户进程运行。</li>
+<li>当磁盘中断发生时，表明该页已经被装入，页表已经更新可以反映它的位置，页框也被标记为正常状态。</li>
+<li>恢复发生缺页中断指令以前的状态，程序计数器重新指向这条指令。</li>
+<li>调度引发缺页中断的进程，操作系统返回调用它的汇编语言例程。</li>
+<li>该例程恢复寄存器和其他状态信息。</li>
+</ol>
+<h2 id="22-页面置换算法"><a class="markdownIt-Anchor" href="#22-页面置换算法"></a> 2.2 页面置换算法</h2>
+<p>页面置换算法是操作系统在内存管理中使用的一种技术，用于将在内存中的页面进行淘汰和替换。通过向主存中加载新的页面，可以提供更高效和优化的内存使用方式。操作系统常用的页面置换算法包括：</p>
+<ol>
+<li>
+<p>最优页置换算法（<code>Optimal replacement algorithm</code>）：最优页置换算法是一种理论上最佳的页面置换算法。它基于未来访问方式，选择将最长时间内不会被访问的页面从内存中淘汰。</p>
+</li>
+<li>
+<p>先进先出置换算法（<code>FIFO replacement algorithm</code>）：先进先出置换算法是一种简单的置换算法，它选择最先被加载到内存中的页面进行淘汰，即最老的页面被淘汰。</p>
+</li>
+<li>
+<p>最近最久未使用置换算法（<code>Least Recently Used replacement algorithm，LRU</code>）：<code>LRU</code>置换算法选择最近一段时间内最长时间未被使用的页面进行淘汰。该算法需要维护页面的使用记录，因此需要更多的计算和存储资源。</p>
+</li>
+<li>
+<p>时钟置换算法（<code>Clock replacement algorithm</code>）：时钟置换算法类似于<code>FIFO</code>算法，但使用了一个“时钟”指针来遍历内存中所有页面。当需要淘汰页面时，时钟指针找到最老的页面，然后将页面的访问位设置为<code>0</code>，直到找到一个页面访问位为<code>0</code>，表示该页面未被访问。然后选择该页面进行淘汰，同时更新页面的状态。</p>
+</li>
+</ol>
+<h2 id="23-虚拟内存技术linux的进程虚拟地址空间"><a class="markdownIt-Anchor" href="#23-虚拟内存技术linux的进程虚拟地址空间"></a> 2.3 虚拟内存技术？Linux的进程虚拟地址空间？</h2>
+<p>很多时候我们使用点了开了很多占内存的软件，这些软件占用的内存可能已经远远超出了我们电脑本身具有的物理内存。为什么可以这样呢？&nbsp;正是因为&nbsp;<strong>虚拟内存</strong>&nbsp;的存在，通过&nbsp;<strong>虚拟内存</strong>&nbsp;可以让程序可以拥有超过系统物理内存大小的可用内存空间。另外，<strong>虚拟内存为每个进程提供了一个一致的、私有的地址空间，它让每个进程产生了一种自己在独享主存的错觉（每个进程拥有一片连续完整的内存空间）</strong>。这样会更加有效地管理内存并减少出错。</p>
+<p><strong>虚拟内存的核心原理是</strong>：为每个程序设置一段"连续"的虚拟地址空间，把这个地址空间分割成多个具有连续地址范围的页 (<code>page</code>)，并把这些页和物理内存做映射，在程序运行期间动态映射到物理内存。当程序引用到一段在物理内存的地址空间时，由硬件立刻执行必要的映射；而当程序引用到一段不在物理内存中的地址空间时，由操作系统负责将缺失的部分装入物理内存并重新执行失败的指令。</p>
+<p><strong>Linux的进程虚拟地址空间：</strong></p>
+<ul>
+<li>内核空间，内核总是驻留在内存中，是操作系统的一部分。内核空间为内核保留，不允许应用程序读写该区域的内容或直接调用内核代码定义的函数。</li>
+<li>栈(<code>stack</code>)，栈又称堆栈，由编译器自动分配释放，行为类似数据结构中的栈(先进后出)。</li>
+<li>内存映射段(<code>mmap</code>)，内核将硬盘文件的内容直接映射到内存, 任何应用程序都可通过<code>Linux</code>的<code>mmap()</code>系统调用。内存映射是一种方便高效的文件<code>I/O</code>方式， 因而被用于装载动态共享库。</li>
+<li>堆(<code>heap</code>)，堆用于存放进程运行时动态分配的内存段，可动态扩张或缩减。堆中内容是匿名的，不能按名字直接访问，只能通过指针间接访问。</li>
+<li><code>BSS段</code>，<code>BSS(Block Started by Symbol)</code>段中通常存放程序中以下符号：
+<ul>
+<li>未初始化的全局变量和静态局部变量</li>
+<li>初始值为<code>0</code>的全局变量和静态局部变量(依赖于编译器实现)</li>
+<li>未定义且初值不为<code>0</code>的符号(该初值即<code>common block</code>的大小)</li>
+</ul>
+</li>
+<li>数据段(<code>Data</code>)，数据段通常用于存放程序中已初始化且初值不为<code>0</code>的全局变量和静态局部变量。数据段属于静态内存分配(静态存储区)，可读可写。</li>
+<li>代码段(<code>text</code>)代码段也称正文段或文本段，通常用于存放程序执行代码(即<code>CPU</code>执行的机器指令)。一般<code>C</code>语言执行语句都编译成机器代码保存在代码段。通常代码段是可共享的，因此频繁执行的程序只需要在内存中拥有一份拷贝即可。代码段通常属于只读，以防止其他程序意外地修改其指令(对该段的写操作将导致段错误)。某些架构也允许代码段为可写，即允许修改程序。代码段指令中包括操作码和操作对象(或对象地址引用)。若操作对象是立即数(具体数值)，将直接包含在代码中；若是局部数据，将在栈区分配空间，然后引用该数据地址；若位于<code>BSS</code>段和数据段，同样引用该数据地址。</li>
+<li>保留区，位于虚拟地址空间的最低部分，未赋予物理地址。任何对它的引用都是非法的，用于捕捉使用空指针和小整型值指针引用内存的异常情况。</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1130f80a38cf2b95.png" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-bf69be90f29657ad.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="x86.jpg"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-93d48efa364c03c8.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="x64.jpg"></p>
+<h2 id="24-栈和堆的区别"><a class="markdownIt-Anchor" href="#24-栈和堆的区别"></a> 2.4 栈和堆的区别？</h2>
+<p>栈（<code>stack</code>）和堆（<code>heap</code>）是计算机内存中两种不同的数据结构，它们在程序运行时用于存储数据。它们之间的主要区别是数据的分配和释放方式、内存管理和访问速度等。</p>
+<p>栈和堆的主要区别：</p>
+<ul>
+<li>内存分配和释放：栈是一种自动管理的内存区域，存储局部变量和函数调用相关信息。当函数被调用时，其相关数据（如局部变量）会被自动压入栈中，函数返回时会自动弹出。而堆内存的分配和释放需要程序员手动进行，通过内存分配函数如<code>malloc</code>或<code>new</code>来分配内存，通过<code>free</code>或<code>delete</code>来释放内存。</li>
+<li>内存管理：栈内存受到操作系统严格管理，其大小是固定的，当栈空间不足时会出现栈溢出错误。堆内存的管理相对灵活，可以动态地分配空间，但也容易导致内存泄漏、碎片化等问题。</li>
+<li>访问速度：栈内存的访问速度通常比堆内存更快，因为栈使用连续的内存地址和<code>LIFO</code>（后进先出）的数据结构，这使得<code>CPU</code>缓存更容易预测和优化对栈内存的访问。另一方面，堆内存的地址空间可能是分散的，访问速度相对较慢。</li>
+<li>生命周期：栈上的数据的生命周期与函数的调用周期相关，函数返回后，其栈帧上的数据会被销毁。而堆上的数据在手动释放之前一直存在，可以跨越函数调用的边界。</li>
+<li>数据大小：栈上的数据大小受到限制，因为栈的大小是固定的。堆上的数据大小则相对灵活，可以动态分配大块内存空间。</li>
+</ul>
+<h2 id="25-内存分页机制为什么要使用内存分页-为什么要多级页表"><a class="markdownIt-Anchor" href="#25-内存分页机制为什么要使用内存分页-为什么要多级页表"></a> 2.5 内存分页机制？为什么要使用内存分页? 为什么要多级页表?</h2>
+<p><strong>内存分页机</strong>制是一种内存管理方式，将物理内存划分成固定大小的页（<code>Page</code>），将进程的虚拟内存划分成大小相等的页框（<code>Page Frame</code>），一一对应关系。其中，虚拟内存是指每个进程所能访问的地址空间，包含了代码、数据、堆栈等。</p>
+<p>使用内存分页的主要<strong>目的是实现虚拟内存，使进程能够访问比物理内存更大的地址空间</strong>，以及实现<strong>内存保护和共享，提高内存的使用效率和安全性</strong>。此外，内存分页还有助于处理非连续的内存分配申请，同时也方便了操作系统进行物理内存管理。</p>
+<p><strong>多级页表</strong> ：<code>32</code>位下页表是<code>10、10、12</code>三级， <code>64</code>位页表<code>9、9、9、9、12</code>共<code>48</code>位</p>
+<p>在<code>32</code>的系统中，系统分配给每个进程的虚拟地址为<code>4G</code>，对于每个虚拟地址页建立一个记录，这样也需要<code>4G/4k(page)</code>个，假设每条记录大小为<code>4B</code>，这样对于每个进程需要<code>4M</code>的页表，对于一个<code>helloworld</code>程序而言，不足<code>4K</code>的程序需要<code>4M</code>的页表，未免有些浪费。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1c103f9b04a73ba9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="VPNVPO.png"></p>
+<h2 id="26-mmu如何把虚拟地址翻译成物理地址的"><a class="markdownIt-Anchor" href="#26-mmu如何把虚拟地址翻译成物理地址的"></a> 2.6 MMU如何把虚拟地址翻译成物理地址的?</h2>
+<p>先看<code>TLB</code>能不能命中，不能命中去一级级查页表</p>
+<h2 id="27-cacheline-false-sharding"><a class="markdownIt-Anchor" href="#27-cacheline-false-sharding"></a> 2.7 Cacheline、False Sharding？</h2>
+<p><code>Cacheline</code>是<code>Cache</code>和<code>RAM</code>交换数据的最小单位，通常为 <code>64Byte</code>。当<code>CPU</code>把内存的数据载入<code>Cache</code>时，会把临近的共<code>64Byte</code>的数据一同放入同一个<code>Cache line</code>，因为空间局部性：临近的数据在将来被访问的可能性大。</p>
+<p>由于<code>CPU Cache</code>缓存数据最小的单位是一个<code>Cache Line</code>，如果两个<code>Core</code>读取了同一个<code>Cache Line</code>，并对<code>Cacheline</code>中的数据频繁读写，就会有<code>Flase Sharing</code>的问题。</p>
+<h2 id="28-虚拟地址多少位物理地址多少位"><a class="markdownIt-Anchor" href="#28-虚拟地址多少位物理地址多少位"></a> 2.8 虚拟地址多少位？物理地址多少位？</h2>
+<p><strong>48位- 256TB  52位 4 PB</strong></p>
+<h2 id="29-windows下32位操作系统如何突破4g内存限制"><a class="markdownIt-Anchor" href="#29-windows下32位操作系统如何突破4g内存限制"></a> 2.9 Windows下32位操作系统如何突破4G内存限制？</h2>
+<p>使用<code>Physical Address Extension（PAE）</code>： <code>PAE</code>（物理地址扩展）是一种支持超过<code>4GB</code>物理内存的技术。启用<code>PAE</code>，<code>32</code>位操作系统就可以利用大于<code>32</code>位的物理地址空间。但是，即使启用<code>PAE</code>，单个进程仍然受限于<code>4GB</code>虚拟内存空间。</p>
+<h2 id="210-mmap"><a class="markdownIt-Anchor" href="#210-mmap"></a> 2.10 mmap</h2>
+<p><code>mmap</code>（内存映射）是一种在<code>Unix</code>和类<code>Unix</code>系统（如<code>Linux</code>）下将文件或其他内核对象映射到进程虚拟地址空间的技术。映射后，进程可以通过对应的内存地址直接访问文件或相关对象，而无需显式地进行文件读写操作。这种方法有诸多优势，如减少拷贝开销、提高数据访问速度、更好地支持文件共享等。</p>
+<p>当使用<code>mmap</code>函数创建内存映射时，实现以下操作：</p>
+<ol>
+<li>将文件或其他对象映射到进程的虚拟地址空间。</li>
+<li>指定映射区域的大小、访问权限（只读、读写等）以及映射的类型（私有映射、共享映射等）。</li>
+<li>返回指向创建映射区域起始地址的指针。</li>
+</ol>
+<p>一旦内存映射创建成功，进程可以直接通过虚拟地址访问映射文件。操作系统负责按需在内存与磁盘文件之间传输数据（即按需分页）。这允许进程使用其自然的内存访问机制（如指针和数组索引）在虚拟地址空间上操作文件数据。</p>
+<p>与传统的文件读写方法相比，<code>mmap</code>有一些优势：</p>
+<ol>
+<li><strong>性能提升</strong>：减少了数据在用户空间和内核空间之间的拷贝次数，因为内核可以直接映射磁盘文件页到用户进程的虚拟地址空间。</li>
+<li><strong>简化操作</strong>：实现对文件的读写操作可以像访问普通内存一样自然地进行，无需使用<code>read</code>和<code>write</code>等文件操作函数。</li>
+<li><strong>内存共享</strong>：<code>mmap</code>允许多个进程同时映射同一个文件，进程间可以通过共享内存区域进行高效的数据交互。</li>
+</ol>
+<p><code>mmap</code>的使用场景包括内存映射文件访问、共享内存的进程间通信（<code>IPC</code>）和匿名内存映射等。需要注意的是，当使用<code>mmap</code>时，要确保正确处理文件大小变化，以避免数据丢失。最后，完成操作后，务必使用<code>munmap</code>函数撤销映射，释放内存资源。</p>
+<h2 id="211-page-cache-是如何诞生的"><a class="markdownIt-Anchor" href="#211-page-cache-是如何诞生的"></a> 2.11 Page Cache 是如何“诞生”的</h2>
+<p><code>Page Cache</code>的产生有两种不同的方式：</p>
+<ul>
+<li><strong>Buffered I/O（标准 I/O）；</strong></li>
+<li><strong>Memory-Mapped I/O（存储映射 I/O）。</strong></li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-65c29fd4d53203bf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="212-为什么需要-pagecache"><a class="markdownIt-Anchor" href="#212-为什么需要-pagecache"></a> 2.12 为什么需要 PageCache</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-39d96a51ad47ada2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>红色的地方就是<code>Page Cache</code>，很明显，<code>Page Cache</code><strong>是内核管理的内存，也就是说，它属于内核不属于用户</strong>。</p>
+<p>通过第一张图你其实已经可以直观地看到，标准<code>I/O</code>和内存映射会先把数据写入到<code>Page Cache</code>，这样做会通过减少<code>I/O </code>次数来提升读写效率</p>
+<p><code>Page Cache</code>存在的意义：减少<code>I/O</code>，提升应用的<code>I/O</code>速度。</p>
+<h2 id="213-kswap-线程"><a class="markdownIt-Anchor" href="#213-kswap-线程"></a> 2.13 KSwap 线程</h2>
+<ul>
+<li><code>rest_init</code>：<code>0</code>号进程，唯一一个没有通过<code>fork</code>或<code>kernel_thread</code>产生的进程，是进程列表的第一个。</li>
+<li><code>kernel_init</code>：<code>1</code>号进程是用户态祖先进程。</li>
+<li><code>KThreadAdd</code>： <code>2</code>号进程是内核态所有线程运行的祖先。</li>
+<li><code>kswapd0</code>：父进程是<code>2</code>号进程，专门的内核线程用来定期回收内存，也就是<code>kswapd0</code>。为了衡量内存的使用情况，<code>kswapd0</code> 定义了三个内存阈值（<code>watermark</code>，也称为水位），分别是</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b0650f5e793358dd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="pages_ free.png"></p>
+<h2 id="214-内存回收过程"><a class="markdownIt-Anchor" href="#214-内存回收过程"></a> 2.14 内存回收过程</h2>
+<p>应用在申请内存的时候，即使没有<code>free</code>内存，只要还有足够可回收的<code>Page Cache</code>，就可以通过回收<code>Page Cache</code>的方式来申请到内存，回收的方式主要是两种：<strong>直接回收和后台回收</strong>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-730d8ee8baaae66c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="215-memory-cgroup-protection"><a class="markdownIt-Anchor" href="#215-memory-cgroup-protection"></a> 2.15 Memory cgroup protection</h2>
+<p><code>Linux</code>内核实现了从系统层面调整来保护重要数据的机制，这个机制就是 <code>memory cgroup protection</code>。</p>
+<p><strong>如果你想要保护你的 Page Cache 不被回收，你就可以考虑将你的业务进程放在一个 memory cgroup 中，然后设置 memory.{min,low} 来进行保护；与之相反，如果你想要尽快释放你的 Page Cache，那你可以考虑设置 memory.high 来及时的释放掉不活跃的 Page Cache。</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-3401a8f3dcd30f5b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<h2 id="216-linux-是如何组织虚拟内存的"><a class="markdownIt-Anchor" href="#216-linux-是如何组织虚拟内存的"></a> 2.16 Linux 是如何组织虚拟内存的</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-6f22cb8adcded0fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="vrLnext.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5725f6cd3ec482fd.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="struct vm area struct.jpeg"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-7b49a7ce8f76d1d9.jpeg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="struct vm area struct.jpeg"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-b815583371db9d63.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="9.7.2 Linux 虚揪内存系統.png"></p>
+<h1 id="三-cpu-cache-扩展知识"><a class="markdownIt-Anchor" href="#三-cpu-cache-扩展知识"></a> 三、CPU Cache 扩展知识</h1>
+<h2 id="31-cpu-cache-的产生背景"><a class="markdownIt-Anchor" href="#31-cpu-cache-的产生背景"></a> 3.1 CPU Cache 的产生背景</h2>
+<p>计算机中的所有运算操作都是由<code>CPU</code>的寄存器来完成的，<code>CPU</code>指令的执行过程需要涉及数据的读取和写入，这些数据只能来自于计算机主存（通常指<code>RAM</code>）。</p>
+<p><code>CPU</code>的处理速度和内存的访问速度差距巨大，直连内存的访问方式使得<code>CPU</code>资源没有得到充分合理的利用，于是产生了在<code>CPU</code>与主存之间增加高速缓存<code>CPU Cache</code>的设计。</p>
+<h2 id="32-cpu-cache-模型"><a class="markdownIt-Anchor" href="#32-cpu-cache-模型"></a> 3.2 CPU Cache 模型</h2>
+<p><code>CPU Cache</code>模型，缓存分为三级<code>L1/L2/L3</code>，由于指令和数据的行为和热点分布差异很大，因此将L1按照用途划分为<code>L1i（instruction）</code>和<code>L1d（data</code>）.</p>
+<p>在多核<code>CPU</code>的结构中，<code>L1</code>和<code>L2</code>是<code>CPU</code>私有的，<code>L3</code>则是所有<code>CPU</code>共享的。</p>
+<h2 id="33-什么是-cache-line"><a class="markdownIt-Anchor" href="#33-什么是-cache-line"></a> 3.3 什么是 Cache Line</h2>
+<p><code>Cache line</code> 是 <code>Cache</code> 和 <code>RAM</code> 交换数据的最小单位，通常为 <code>64 Byte</code>。当 CPU 把内存的数据载入 <code>Cache</code> 时，会把临近的共 <code>64 Byte</code> 的数据一同放入同一个<code>Cache line</code>，因为空间局部性：临近的数据在将来被访问的可能性大。</p>
+<p>由于<code>CPU Cache</code>缓存数据最小的单位是一个<code>Cache Line（64节）</code>，如果两个<code>Core</code>读取了同一个<code>Cache Line</code>，并对<code>Cache Line</code>中的数据频繁读写，就会有<code>Flase Sharing</code>的问题。</p>
+<h2 id="34-flase-sharing-问题"><a class="markdownIt-Anchor" href="#34-flase-sharing-问题"></a> 3.4 Flase Sharing 问题</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-c5f64abf377deb6e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>上图中 <code>thread1</code> 位于 <code>core1</code> ，而 <code>thread2</code> 位于 <code>core2</code> ，二者均想更新彼此独立的两个变量，但是由于两个变量位于不同核心中的同一个 <code>L1</code> 缓存行中，此时可知的是两个缓存行的状态应该都是 <code>Shared</code> ，而对于同一个缓存行的操作，不同的 <code>core</code> 间必须通过发送 <code>RFO</code> 消息来争夺所有权 (<code>ownership</code>) ，如果 <code>core1</code> 抢到了， <code>thread1</code> 因此去更新该缓存行，把状态变成 <code>Modified</code> ，那就会导致 <code>core2</code> 中对应的缓存行失效变成 <code>Invalid</code> ，当 <code>thread2</code> 取得所有权之后再去更新该缓存行时必须先让 <code>core1</code> 把对应的缓存行刷回 <code>L3</code> 缓存/主存，然后它再从 <code>L3</code> 缓存/主存中加载该缓存行进 <code>L1</code> 之后才能进行修改。然而，这个过程又会导致 <code>core1</code> 对应的缓存行失效变成 <code>Invalid</code> ，这个过程将会一直循环发生，从而导致 <code>L1</code> 高速缓存并未起到应有的作用，反而会降低性能；轮番夺取所有权不但带来大量的 <code>RFO</code> 消息，而且如果某个线程需要读此行数据时，<code>L1</code> 和 <code>L2</code> 缓存上都是失效数据，只有 <code>L3</code> 缓存上是同步好的数据，而从前面的内容可以知道，<code>L3</code> 的读取速度相比 <code>L1/L2</code> 要慢了数十倍，性能下降很大；更坏的情况是跨槽读取，<code>L3</code> 都不能命中，只能从主存上加载，那就更慢了。</p>
+<p><strong>CPU 缓存的最小的处理单位永远是缓存行 (Cache Line)，所以当某个核心发送 RFO 消息请求把其他核心对应的缓存行设置成Invalid 从而使得 var1 缓存失效的同时，也会导致同在一个缓存行里的 var2 失效，反之亦然。</strong></p>
+<p><code>Cache Line</code>缓存测试</p>
+<pre><code>func main() {
+
+	arr := make([][]int, 64*1024)
+	for i := 0; i &lt; len(arr); i++ {
+		arr[i] = make([]int, 1024)
+	}
+	now := time.Now()
+	for i := 0; i &lt; len(arr); i++ {
+		for j := 0; j &lt; 1024; j++ {
+			arr[i][j]++
+		}
+	}
+	timeSpan := time.Since(now).Microseconds()
+	fmt.Println("横向遍历耗时：", timeSpan)
+	now = time.Now()
+	for j := 0; j &lt; 1024; j++ {
+		for i := 0; i &lt; len(arr); i++ {
+			arr[i][j]++
+		}
+	}
+	timeSpan = time.Since(now).Microseconds()
+	fmt.Println("纵向遍历耗时：", timeSpan)
+}
+
+横向遍历耗时： 485995  //因为横向写数据的时候，会一直命中CPU缓存，所以比纵向更快一些
+纵向遍历耗时： 1705150
+</code></pre>
+<h2 id="35-如何解决false-sharding问题"><a class="markdownIt-Anchor" href="#35-如何解决false-sharding问题"></a> 3.5 如何解决False Sharding问题</h2>
+<p>对一些热点数据，如果想避免<code>cache line</code>被其他<code>Core</code>设置为失效，可以通过Pading的方式把每个项凑齐<code>cache line</code>的长度，即可实现隔离，虽然这不可避免的会浪费一些内存。</p>
+<p>我们可以看到<code>golang</code>的源码里面 <code>p struct</code>的也用了<code>CacheLinePad</code>的方式来避免了<code>False Sharding</code>的问题</p>
+<pre><code>type p struct {
+
+	上面省略
+	.....
+		
+	runSafePointFn uint32 // if 1, run sched.safePointFn at next safe point
+
+	pad cpu.CacheLinePad
+}
+</code></pre>
+<p><code>CacheLinePad</code> 是<code>cpu</code>包下面定义的一个64字节的数组</p>
+<pre><code>const CacheLinePadSize = 64
+// CacheLinePad is used to pad structs to avoid false sharing.
+type CacheLinePad struct{ _ [CacheLinePadSize]byte }
+</code></pre>
+<p>这样能保证<code>p</code>的数据不管怎么拼接都不会跟其他数据在同一个<code>cache line</code>中。</p>
+<h2 id="36-cpu-cache-是如何存放数据的"><a class="markdownIt-Anchor" href="#36-cpu-cache-是如何存放数据的"></a> 3.6 CPU Cache 是如何存放数据的</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2371408216d4ce6e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>由上图可以知<code>Cache</code>是由<code>Set</code>组成，<code>Set</code>由<code>Cache Line</code>组成，<code>Cache Line</code>由<code>Valid Bit</code>（MESI协议中这个是2个字节），<code>Tag</code>和<code>Data</code>组成。其中<code>Data</code>是真正要缓存的内存地址中的数据，而<code>Tag</code>是用来搜索<code>Cache Line</code>的标签。</p>
+<p>假设<code>L1 Cache</code>总大小为<code>32KB</code>，8路组相连（<code>每个Set有8个Cache Line</code>），每个<code>Cache Line</code>的大小为<code>64Byte</code>。</p>
+<p>我们可以得到一个</p>
+<p>Set大小 = 8 * Cache Line = 512Byte</p>
+<p>Set个数 = 32*1024 /512 = 64</p>
+<p>Cache Line Count = 32*1024 / 64 = 512个</p>
+<h2 id="37-cpu-cache-寻址过程"><a class="markdownIt-Anchor" href="#37-cpu-cache-寻址过程"></a> 3.7 CPU Cache 寻址过程</h2>
+<p>先看下内存地址表示的含义</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-aca00ba0744852fd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p>内存被分成了<code>TAG</code>、Set Index、<code>Block Offset</code> 三部分。</p>
+<ol>
+<li>根据地址中的<code>Set Index</code>找到对应的缓存中对应的Set</li>
+<li>根据<code>Tag</code>与<code>Set</code>中所有<code>CacheLine</code>的<code>Tag</code>一一对比，遇到相等的表示找到缓存。</li>
+<li>查看<code>Cache Line</code> 的<code>Validate Bit</code>是不是有效的。有效的表示命中<code>Cache</code>。</li>
+<li>根据<code>Block Offset</code>读取<code>Cache Line</code>中<code>Block Data</code>对应的值。</li>
+</ol>
+<h2 id="38-cpu-cache-三种寻址方式"><a class="markdownIt-Anchor" href="#38-cpu-cache-三种寻址方式"></a> 3.8 CPU Cache 三种寻址方式</h2>
+<ul>
+<li>直接映射（<code>direct mapped cache</code>），相当于每个set只有1个<code>cache line</code>（E=1）。那么相隔2^(s+b)个单元的2个内存单元，会被映射到同一个<code>cache line</code>中。</li>
+<li>组关联（<code>set associative cache</code>），多个<code>set</code>，每个<code>set</code>多个<code>cache line</code>。一般每个<code>set</code>有<code>n</code>个<code>cache line</code>，就说<code>n-ways associative cache</code>。</li>
+<li>全相联（<code>fully associative cache</code>），相当于只有1个<code>set</code>，每个内存单元都能映射到任意的<code>cache line</code>。带有这样<code>cache</code>的处理器几乎没有。可以想见这种方式不适合大的缓存。想想看，如果4M 的大缓存　<code>linesize</code>为<code>32Byte</code>，采用全相联的话，就意味着4 * 1024 * 1024/32 = 128K 个<code>line</code>挨个比较，来确定是否命中，这是多要命的事情。</li>
+</ul>
+<h2 id="39-cpu-cache-的组织方式"><a class="markdownIt-Anchor" href="#39-cpu-cache-的组织方式"></a> 3.9 CPU Cache 的组织方式</h2>
+<h3 id="vivtvirtual-index-virtual-tag"><a class="markdownIt-Anchor" href="#vivtvirtual-index-virtual-tag"></a> VIVT(Virtual Index Virtual Tag)</h3>
+<p>使用虚拟地址做索引，虚拟地址做<code>Tag</code>。早期的<code>ARM</code>处理器一般采用这种方式，在查找<code>cache line</code>过程中不借助物理地址，这种方式会导致<code>cache</code>别名(<code>cache alias</code>)问题。比如当两个虚拟地址对应相同物理地址，并且没有映射到同一<code>cache</code>行，那么就会产生问题。另外，当发生进程切换时，由于页表可能发生变化，所以要对<code>cache</code>进行<code>invalidate</code>等操作，效率较低。</p>
+<h3 id="viptvirtual-index-physical-tag"><a class="markdownIt-Anchor" href="#viptvirtual-index-physical-tag"></a> VIPT(Virtual Index Physical Tag)</h3>
+<p>使用虚拟地址做索引，物理地址做<code>Tag</code>。在利用虚拟地址索引<code>cache</code>同时，同时会利用<code>TLB/MMU</code>将虚拟地址转换为物理地址。然后将转换后的物理地址，与虚拟地址索引到的<code>cache line</code>中的<code>Tag</code>作比较，如果匹配则命中。这种方式要比<code>VIVT</code>实现复杂，当进程切换时，不在需要对<code>cache</code>进行<code>invalidate</code>等操作(因为匹配过程中需要借物理地址)。但是这种方法仍然存在<code>cache</code>别名的问题(即两个不同的虚拟地址映射到同一物理地址，且位于不同的<code>cache line</code>)，但是可以通过一定手段解决。</p>
+<h3 id="piptphysical-index-physical-tag"><a class="markdownIt-Anchor" href="#piptphysical-index-physical-tag"></a> PIPT(Physical Index Physical Tag)</h3>
+<p>使用物理地址做索引，物理地址做<code>Tag</code>。现代的<code>ARM Cortex-A</code>大多采用<code>PIPT</code>方式，由于采用物理地址作为<code>Index</code>和<code>Tag</code>，所以不会产生<code>cache alias</code>问题。不过<code>PIPT</code>的方式在芯片的设计要比<code>VIPT</code>复杂得多，而且需要等待<code>TLB/MMU</code>将虚拟地址转换为物理地址后，才能进行<code>cache line</code>寻找操作。</p>
+<h1 id="四-其他基础"><a class="markdownIt-Anchor" href="#四-其他基础"></a> 四、其他基础</h1>
+<h2 id="41-zero-copy-有哪些实现"><a class="markdownIt-Anchor" href="#41-zero-copy-有哪些实现"></a> 4.1 Zero copy 有哪些实现</h2>
+<p><strong>mmap()</strong></p>
+<p><code>void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);</code></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-eadb94baaab23c9f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Urer buller.png"></p>
+<p><strong>sendfile()</strong></p>
+<p><code>ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count)</code></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-dc50785ef046f509.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="CPU#JITE.png"></p>
+<p><strong>sendﬁle() with&nbsp;DMA Scatter/Gather Copy</strong></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-636d059fa58f08a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Linux IO sendfile with DMA gather.png"></p>
+<p><strong>splice()</strong></p>
+<p><code>ssize_t splice(int fd_in, loff_t *off_in, int fd_out, loff_t *off_out, size_t len, unsigned int flags);</code></p>
+<p><code>sendfile()&nbsp;+ DMA Scatter/Gather</code>的零拷贝方案虽然高效，但是也有两个缺点：</p>
+<ul>
+<li>这种方案需要引入新的硬件支持；</li>
+<li>虽然<code>sendfile()</code>的输出文件描述符在<code>Linux kernel 2.6.33</code>版本之后已经可以支持任意类型的文件描述符，<strong>但是输入文件描述符依然只能指向文件</strong>。</li>
+</ul>
+<p>这两个缺点限制了<code>sendfile()&nbsp;+ DMA Scatter/Gather</code>方案的适用场景。为此，<code>Linux</code>在<code>2.6.17</code>版本引入了一个新的系统调用<code>splice()</code>，它在功能上和<code>sendfile()</code>非常相似，但是能够实现在任意类型的两个文件描述符时之间传输数据；而在底层实现上，<code>splice()</code>又比<code>sendfile()</code>少了一次<code>CPU</code>拷贝，也就是等同于<code>sendfile()&nbsp;+ DMA Scatter/Gather</code>，完全去除了数据传输过程中的<code>CPU</code>拷贝。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-5bf970bd1a77b6c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Urer bulfer.png"></p>
+<p><strong>send() with MSG_ZEROCOPY</strong></p>
+<ul>
+<li>绕过内核的直接<code>I/O</code></li>
+<li>用户直接访问硬件</li>
+<li>内核控制访问硬件</li>
+<li>内核缓冲区和用户缓冲区之间的传输优化</li>
+<li>动态重映射与写时拷贝 (<code>Copy-on-Write</code>)</li>
+<li>缓冲区共享 (<code>Buffer Sharing</code>)</li>
+</ul>
+<h2 id="42-加密算法比较"><a class="markdownIt-Anchor" href="#42-加密算法比较"></a> 4.2 加密算法比较</h2>
+<p><strong>Hash ：MD5、SHA-1</strong></p>
+<p><strong>对称算法：DES、3DES、AES</strong></p>
+<p><strong>非对称算法 ： RSA 、DSA</strong></p>
+<p><strong>SHA-1</strong></p>
+<ul>
+<li>安全性高</li>
+<li>速度慢</li>
+</ul>
+<p><strong>MD5</strong></p>
+<ul>
+<li>安全性低</li>
+<li>速度快</li>
+</ul>
+<p><strong>DES</strong></p>
+<ul>
+<li>秘钥长度56位</li>
+<li>速度中，消耗资源中</li>
+<li>安全性低</li>
+</ul>
+<p><strong>3DES</strong></p>
+<ul>
+<li>秘钥长度112、168位</li>
+<li>速度慢、消耗资源高</li>
+<li>安全性中</li>
+</ul>
+<p><strong>AES</strong></p>
+<ul>
+<li>秘钥长度128、192、256位</li>
+<li>速度快、消耗资源低</li>
+<li>安全性高</li>
+</ul>
+<p><strong>RSA</strong></p>
+<ul>
+<li>安全性取决于密码长度，越长越安全</li>
+<li>速度慢，消耗资源高</li>
+<li>可以加密数据、数字签名</li>
+<li>RSA这种加密算法应用非常广泛，如SSH、HTTPS、TLS、电子证书、电子签名、电子身份证等</li>
+</ul>
+<p><strong>DSA</strong></p>
+<ul>
+<li>安全性取决于密码长度，越长越安全</li>
+<li>运算快，消耗资源低</li>
+<li>只能做数字签名</li>
+</ul>
+<h2 id="43-elf"><a class="markdownIt-Anchor" href="#43-elf"></a> 4.3 ELF</h2>
+<p><code>ELF</code>（可执行可链接格式，<code>Executable and Linkable Format</code>）是一种用于编译过程中的二进制文件的通用格式。主要应用于操作系统如<code>Linux</code>、<code>Unix</code>、<code>Solaris</code>和<code>FreeBSD</code>等。它支持多种处理器体系结构，可用于存储程序可执行文件、可重定位目标文件和共享库。</p>
+<p>这些都是<code>ELF</code>文件中常见的节区，主要包含程序的各种数据，协助实现编译、链接和执行过程。以下是各节区的详细介绍：</p>
+<ol>
+<li>
+<p><strong>.text</strong>：通常存储程序的可执行代码。它是只读的，因此连续的代码段可以合并以节省内存。在程序运行时，<code>.text</code>节区通常被加载到一块只读内存区域。</p>
+</li>
+<li>
+<p><strong>.rodata</strong>：存放只读数据，例如常量、字符串字面量等。这一节区也是只读的，可以与其他只读数据段合并。</p>
+</li>
+<li>
+<p><strong>.data</strong>：包含已初始化的全局变量和静态变量。这些变量在程序启动前就由操作系统赋予初始值。与<code>.text</code>和<code>.rodata</code>节区不同，<code>.data</code>节区允许读写访问。这些变量在程序执行过程中可读取或修改。</p>
+</li>
+<li>
+<p><strong>.bss</strong>：存放未初始化的全局变量和静态变量。由于所有变量在开始时都为<code>0</code>或空指针，因此无需在<code>ELF</code>文件中为它们分配存储空间，只需记录其大小。当程序加载到内存后，这部分变量会被置零。与<code>.data</code>节区类似，<code>.bss</code>节区也允许读写访问。</p>
+</li>
+<li>
+<p><strong>.symtab</strong>：存放符号表，包含全局和局部符号的信息。符号表对链接过程至关重要，它可以定位变量和函数的地址。</p>
+</li>
+<li>
+<p><strong>.strtab</strong>：存放字符串表，其中包括符号名、节区名等字符串。这些字符串在链接和加载过程中用于解析符号引用和查找节区等操作。</p>
+</li>
+<li>
+<p><strong>.rel.text/.rela.text</strong> 和 <strong>.rel.data/.rela.data</strong>：这些节区包含重定位信息。它们帮助链接器进行符号和地址引用的修正。<code>.rel</code>表示使用相对重定位，<code>.rela</code>表示使用绝对重定位。</p>
+</li>
+<li>
+<p><strong>.debug</strong>：含有调试信息，如变量名、行号等。该节区在正常执行过程中并非必须，主要用于调试和错误排查。</p>
+</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-02b97b5982e96815.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="image.png"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-18ad79d5292edfbd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="elf.png"></p>
+<h2 id="44-锁优化方向"><a class="markdownIt-Anchor" href="#44-锁优化方向"></a> 4.4 锁优化方向</h2>
+<ol>
+<li>优化锁的粒度</li>
+<li>读写分离</li>
+<li>减少锁持有时间。</li>
+<li>使用<code>Atomic（CAS）</code></li>
+</ol>
+<h2 id="45-系统启动过程"><a class="markdownIt-Anchor" href="#45-系统启动过程"></a> 4.5 系统启动过程</h2>
+<p><code>PC</code>机通电-&gt; 读取<code>BIOS</code>固件 -&gt; 根据读取启动设备(磁盘前<code>512</code>字节)-&gt; <code>GRUB</code>引导 -&gt; 加载磁盘系统<code>iso</code>镜像 -&gt;<code>OS</code></p>
+<p><a target="_blank" rel="noopener" href="https://fanlv.fun/2022/12/25/linux-start-up/">Linux0.11启动过程</a></p>
+<h2 id="46-常用的一些排查问题工具"><a class="markdownIt-Anchor" href="#46-常用的一些排查问题工具"></a> 4.6 常用的一些排查问题工具</h2>
+<pre><code>从 vmstat 的输出可以得到上下文切换次数、中断次数、运行状态和不可中断状态的进程数。 
+从 pidstat 的输出可以得到进程的用户 CPU 使用率、系统 CPU 使用率、以及自愿上下文切换和非自愿上下文切换情况。 
+mpstat：使用mpstat -P ALL 1则可以查看每一秒的 CPU 每一核变化信息 - CPU密集/IO密集型查看
+vmstat 1 -Sm 工具可以查看系统的内存、CPU 上下文切换以及中断次数
+perf top -g -p &lt;pid&gt; 分析内部CPU情况 -g开启调用关系分析，-p指定进程号21515
+free 查看内存信息
+sar -n DEV 表示显示网络收发的报告，间隔1秒输出一组数据
+tcpdump -i eth0 -n tcp port 80  抓tcp prot 80的包
+使用blktrace跟踪磁盘I/O，注意指定应用程序正在操作的磁盘
+dstat 10 1 CPU、磁盘 I/O
+iostat -d -x -k 1 10 磁盘详细统计信息
+ss -ltnp | head -n 3 查看队列，fd数量
+ss -lnt 查看当前LISTEN数,
+netstat -s 显示网络统计信息、协议栈统计信息
+systemtap
+memleak
+ftrace
+strace
+</code></pre>
+<p><a target="_blank" rel="noopener" href="https://fanlv.fun/2020/09/13/linux-optimize/">《Linux性能优化实战》</a></p>
+<h2 id="47-其他"><a class="markdownIt-Anchor" href="#47-其他"></a> 4.7 其他</h2>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-cd02d3132027d78a.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="Ox00000000r.jpg"></p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-30db9d50b7af29ef.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ZONE NORMAL 16MR-0818L.png"></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>

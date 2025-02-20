@@ -1,0 +1,125 @@
+<!DOCTYPE html><html class="appearance-auto" lang="zh-CN"><head><meta charset="UTF-8"><title>二叉树、2-3 树、红黑树</title><meta name="description" content="行万里路，读万卷书"><meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, initial-scale=1"><!-- Google Analytics --><!-- End Google Analytics -->
+<!-- Baidu Analytics --><script>var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?" + '2c076421eb9f21a0a143f8ee9c4ab171';
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();</script><!-- End Baidu Analytics --><meta name="referrer" content="no-referrer"><link rel="icon" href="/null"><link rel="stylesheet" href="/style/common/bulma.css"><link rel="stylesheet" href="/style/base.css"><link rel="stylesheet" href="/style/common/helper.css"><script src="/js/common.js"></script><link rel="stylesheet" href="/style/post.css"><link rel="stylesheet" href="/style/themes/highlight-theme-light.css"><script src="/js/highlight.pack.js"></script><meta name="description" content="
+有序数组的优势在于二分查找，链表的优势在于数据项的插入和数据项的删除。但是在有序数组中插入数据就会很慢，同样在链表中查找数据项效率就很低。综合以上情况，二叉树可以利用链表和有序数组的优势，同时可以合并有序数组和链表的优势，二叉树也是一种常用的数据结构。
+
+ 一、满二叉树
+一个二叉树，如果每一个层的结点数都达到最大值，则这个二叉树就是满二叉树。也就是说，如果一个二叉树的层数为 K，且结点总数是(2^k) -1 ，则它就是满二叉树。
+
+ 二、完全二叉树
+若设二叉树的深度为 h，除第 h 层外，其它各层 (1 ～ h-1) 的结点数都达到最大个数，第 h 层所有的结点都连续集中在最左边，这就是完全二叉树。
+
+ 三、二叉查找树
+二叉查找树（Binary Search Tree），（又：二叉搜索树，二叉排序树）它或.."><!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.4.2">
+<style>.github-emoji { position: relative; display: inline-block; width: 1.2em; min-height: 1.2em; overflow: hidden; vertical-align: top; color: transparent; }  .github-emoji > span { position: relative; z-index: 10; }  .github-emoji img, .github-emoji .fancybox { margin: 0 !important; padding: 0 !important; border: none !important; outline: none !important; text-decoration: none !important; user-select: none !important; cursor: auto !important; }  .github-emoji img { height: 1.2em !important; width: 1.2em !important; position: absolute !important; left: 50% !important; top: 50% !important; transform: translate(-50%, -50%) !important; user-select: none !important; cursor: auto !important; } .github-emoji-fallback { color: inherit; } .github-emoji-fallback img { opacity: 0 !important; }</style>
+</head><body class="is-flex is-flex-direction-column"><header class="header-widget is-flex-shrink-0 is-hidden-mobile"><div class="container is-fullhd is-flex is-justify-content-space-between is-align-items-center is-full-height"><section class="is-hidden-mobile is-flex-shrink-0"><h2><a href="/">Ryo's blog</a></h2></section><h3 class="is-hidden-mobile is-family-serif is-full-height is-flex is-align-items-center is-flex-shrink-0"><div class="is-full-height" id="postTopic"><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">二叉树、2-3 树、红黑树</p><p class="is-full-height is-flex-shrink-0 is-flex is-align-items-center is-justify-content-center">点击返回顶部</p></div></h3><aside class="is-flex-shrink-0"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></aside></div></header><header class="is-flex header-widget is-flex-shrink-0 is-align-items-center is-justify-content-center is-hidden-tablet"><h3 class="is-inline-block"><a href="/">首页</a></h3><h3 class="is-inline-block"><a href="/about">关于</a></h3><h3 class="is-inline-block"><a href="/archives">归档</a></h3></header><main><main class="container is-max-widescreen content section post-page pt-4 px-4"><div class="columns is-flex-desktop is-justify-content-center is-flex-direction-row-reverse"><div class="column is-3 is-hidden-mobile"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80-%E6%BB%A1%E4%BA%8C%E5%8F%89%E6%A0%91"><span class="toc-text"> 一、满二叉树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C-%E5%AE%8C%E5%85%A8%E4%BA%8C%E5%8F%89%E6%A0%91"><span class="toc-text"> 二、完全二叉树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89-%E4%BA%8C%E5%8F%89%E6%9F%A5%E6%89%BE%E6%A0%91"><span class="toc-text"> 三、二叉查找树</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B-%E5%B9%B3%E8%A1%A1%E4%BA%8C%E5%8F%89%E6%A0%91"><span class="toc-text"> 四、平衡二叉树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#41-%E6%8F%92%E5%85%A5%E5%8E%9F%E7%90%86"><span class="toc-text"> 4.1 插入原理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#42-%E6%97%8B%E8%BD%AC%E9%97%AE%E9%A2%98"><span class="toc-text"> 4.2 旋转问题</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#43-%E6%97%8B%E8%BD%AC%E6%93%8D%E4%BD%9C"><span class="toc-text"> 4.3 旋转操作</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#431-%E5%8D%95%E6%97%8B%E8%BD%AC"><span class="toc-text"> 4.3.1 单旋转</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#432-%E5%8F%8C%E6%97%8B%E8%BD%AC"><span class="toc-text"> 4.3.2 双旋转</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94-%E5%B9%B3%E8%A1%A1%E6%9F%A5%E6%89%BE%E6%A0%91%E4%B9%8B-2-3-%E6%9F%A5%E6%89%BE%E6%A0%912-3-search-tree"><span class="toc-text"> 五、平衡查找树之 2-3 查找树(2-3 Search Tree)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#51-%E5%B0%86%E6%95%B0%E6%8D%AE%E9%A1%B9%E6%94%BE%E5%85%A5-2-3-%E6%A0%91%E8%8A%82%E7%82%B9%E4%B8%AD%E7%9A%84%E8%A7%84%E5%88%99%E6%98%AF"><span class="toc-text"> 5.1 将数据项放入 2-3 树节点中的规则是：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#52-%E6%9E%84%E9%80%A0-2-3-%E6%A0%91"><span class="toc-text"> 5.2 构造 2-3 树</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#521-%E4%BC%98%E7%82%B9"><span class="toc-text"> 5.2.1 优点</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#522-%E7%BC%BA%E7%82%B9"><span class="toc-text"> 5.2.2 缺点</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD-%E7%BA%A2%E9%BB%91%E6%A0%91"><span class="toc-text"> 六、红黑树</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#61-%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%A2%E9%BB%91%E6%A0%91"><span class="toc-text"> 6.1 什么是红黑树</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#62-%E7%BA%A2%E9%BB%91%E6%A0%91%E7%9A%84%E6%9C%AC%E8%B4%A8"><span class="toc-text"> 6.2 红黑树的本质：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#63-%E7%BA%A2%E9%BB%91%E6%A0%91%E9%93%BE%E6%8E%A5%E7%B1%BB%E5%9E%8B"><span class="toc-text"> 6.3 红黑树链接类型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#64-%E7%BA%A2%E9%BB%91%E6%A0%91%E9%A2%9C%E8%89%B2%E8%A1%A8%E7%A4%BA"><span class="toc-text"> 6.4 红黑树颜色表示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#65-%E7%BA%A2%E9%BB%91%E6%A0%91%E6%97%8B%E8%BD%AC"><span class="toc-text"> 6.5 红黑树旋转</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#67-%E7%BA%A2%E9%BB%91%E6%A0%91%E6%8F%92%E5%85%A5"><span class="toc-text"> 6.7 红黑树插入</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#67-%E4%B8%80%E9%A2%97%E7%BA%A2%E9%BB%91%E6%A0%91%E7%9A%84%E6%9E%84%E9%80%A0%E5%85%A8%E8%BF%87%E7%A8%8B"><span class="toc-text"> 6.7 一颗红黑树的构造全过程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%AB%A0"><span class="toc-text"> 参考文章</span></a></li></ol></li></ol></div><div class="column is-9"><header class="my-4"><a href="/tags/DataStructure"><i class="tag post-item-tag">DataStructure</i></a></header><h1 class="mt-0 mb-1 is-family-serif" id="postTitle">二叉树、2-3 树、红黑树</h1><time class="has-text-grey" datetime="2018-08-12T07:29:52.000Z">2018-08-12</time><article class="mt-2 post-content"><blockquote>
+<p>有序数组的优势在于二分查找，链表的优势在于数据项的插入和数据项的删除。但是在有序数组中插入数据就会很慢，同样在链表中查找数据项效率就很低。综合以上情况，二叉树可以利用链表和有序数组的优势，同时可以合并有序数组和链表的优势，二叉树也是一种常用的数据结构。</p>
+</blockquote>
+<h2 id="一-满二叉树"><a class="markdownIt-Anchor" href="#一-满二叉树"></a> 一、满二叉树</h2>
+<p>一个二叉树，如果每一个层的结点数都达到最大值，则这个二叉树就是满二叉树。也就是说，如果一个二叉树的层数为 K，且结点总数是(2^k) -1 ，则它就是满二叉树。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-cb32d1d0f03e0d3c.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="mbt.jpg"></p>
+<h2 id="二-完全二叉树"><a class="markdownIt-Anchor" href="#二-完全二叉树"></a> 二、完全二叉树</h2>
+<p>若设二叉树的深度为 h，除第 h 层外，其它各层 (1 ～ h-1) 的结点数都达到最大个数，第 h 层所有的结点都连续集中在最左边，这就是完全二叉树。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-776d7b0f8a8a6747.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="cbt.jpg"></p>
+<h2 id="三-二叉查找树"><a class="markdownIt-Anchor" href="#三-二叉查找树"></a> 三、二叉查找树</h2>
+<p>二叉查找树（Binary Search Tree），（又：二叉搜索树，二叉排序树）它或者是一棵空树，或者是具有下列性质的二叉树： 若它的左子树不空，则左子树上所有节点的值均小于它的根节点的值； 若它的右子树不空，则右子树上所有节点的值均大于它的根节点的值； 它的左、右子树也分别为二叉排序树。“中序遍历”可以让节点有序。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-58121e9e2ff697da.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="bst.png"></p>
+<h2 id="四-平衡二叉树"><a class="markdownIt-Anchor" href="#四-平衡二叉树"></a> 四、平衡二叉树</h2>
+<p>平衡二叉树（Balanced Binary Tree）是二叉查找树的一个进化体，也是第一个引入平衡概念的二叉树。1962 年，G.M. Adelson-Velsky 和 E.M. Landis 发明了这棵树，所以它又叫 AVL 树。平衡二叉树要求对于每一个节点来说，它的左右子树的高度之差不能超过 1，如果插入或者删除一个节点使得高度之差大于 1，就要进行节点之间的旋转，将二叉树重新维持在一个平衡状态。这个方案很好的解决了二叉查找树退化成链表的问题，把插入，查找，删除的时间复杂度最好情况和最坏情况都维持在 O(logN)。但是频繁旋转会使插入和删除牺牲掉 O(logN)左右的时间，不过相对二叉查找树来说，时间上稳定了很多。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-4642d4482a16a894.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="bbt.jpg"></p>
+<h3 id="41-插入原理"><a class="markdownIt-Anchor" href="#41-插入原理"></a> 4.1 插入原理</h3>
+<p>根据二叉平衡树的定义，一定保持左右子树深度绝对值小于 1.在平衡二叉树插入工作一定考虑深度差，在 AVL 树进行插入工作时候，困难在于可能破坏 AVL 树的平衡属性。需要根据树的实际结构进行几种简单的旋转（rotation）操作就可以让树恢复 AVL 树的平衡性质</p>
+<h3 id="42-旋转问题"><a class="markdownIt-Anchor" href="#42-旋转问题"></a> 4.2 旋转问题</h3>
+<p>对于一个平衡的节点，由于任意节点最多有两个儿子，因此高度不平衡时，此节点的两颗子树的高度差 2.容易看出，这种不平衡出现在下面四种情况：</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-1e5eaae43f6fd0be.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="nbbt.jpg"></p>
+<ol>
+<li>
+<p>6 节点的左子树 3 节点高度比右子树 7 节点大 2，左子树 3 节点的左子树 1 节点高度大于右子树 4 节点，这种情况成为左左。</p>
+</li>
+<li>
+<p>6 节点的左子树 2 节点高度比右子树 7 节点大 2，左子树 2 节点的左子树 1 节点高度小于右子树 4 节点，这种情况成为左右。</p>
+</li>
+<li>
+<p>2 节点的左子树 1 节点高度比右子树 5 节点小 2，右子树 5 节点的左子树 3 节点高度大于右子树 6 节点，这种情况成为右左。</p>
+</li>
+<li>
+<p>2 节点的左子树 1 节点高度比右子树 4 节点小 2，右子树 4 节点的左子树 3 节点高度小于右子树 6 节点，这种情况成为右右。</p>
+</li>
+</ol>
+<p>从图 2 中可以可以看出，1 和 4 两种情况是对称的，这两种情况的旋转算法是一致的，只需要经过一次旋转就可以达到目标，我们称之为单旋转。2 和 3 两种情况也是对称的，这两种情况的旋转算法也是一致的，需要进行两次旋转，我们称之为双旋转。</p>
+<h3 id="43-旋转操作"><a class="markdownIt-Anchor" href="#43-旋转操作"></a> 4.3 旋转操作</h3>
+<h4 id="431-单旋转"><a class="markdownIt-Anchor" href="#431-单旋转"></a> 4.3.1 单旋转</h4>
+<p><strong>单旋转是针对于左左和右右这两种情况的解决方案</strong>，这两种情况是对称的，只要解决了左左这种情况，右右就很好办了。图 3 是左左情况的解决方案，节点 k2 不满足平衡特性，因为它的左子树 k1 比右子树 Z 深 2 层，而且 k1 子树中，更深的一层的是 k1 的左子树 X 子树，所以属于左左情况。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-724ef0b89acd93bc.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="dxz.jpg"></p>
+<h4 id="432-双旋转"><a class="markdownIt-Anchor" href="#432-双旋转"></a> 4.3.2 双旋转</h4>
+<p><strong>对于左右和右左这两种情况，单旋转不能使它达到一个平衡状态，要经过两次旋转。双旋转是针对于这两种情况的解决方案</strong>，同样的，这样两种情况也是对称的，只要解决了左右这种情况，右左就很好办了。图 4 是左右情况的解决方案，节点 k3 不满足平衡特性，因为它的左子树 k1 比右子树 Z 深 2 层，而且 k1 子树中，更深的一层的是 k1 的右子树 k2 子树，所以属于左右情况。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-12f2746f02f7952d.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="ddxz.jpg"></p>
+<h2 id="五-平衡查找树之-2-3-查找树2-3-search-tree"><a class="markdownIt-Anchor" href="#五-平衡查找树之-2-3-查找树2-3-search-tree"></a> 五、平衡查找树之 2-3 查找树(2-3 Search Tree)</h2>
+<p>2-3 树是最简单的 B-树（或-树）结构，<strong>其每个非叶节点都有两个或三个子女，而且所有叶都在统一层上。2-3 树不是二叉树</strong>，其节点可拥有 3 个孩子。不过，2-3 树与满二叉树相似。若某棵 2-3 树不包含 3-节点，则看上去像满二叉树，其所有内部节点都可有两个孩子，所有的叶子都在同一级别。另一方面，2-3 树的一个内部节点确实有 3 个孩子，故比相同高度的满二叉树的节点更多。高为 h 的 2-3 树包含的节点数大于等于高度为 h 的满二叉树的节点数，即至少有 2^h-1 个节点。换一个角度分析，包含 n 的节点的 2-3 树的高度不大于 log2(n+1) (即包含 n 个节点的二叉树的最小高度)。</p>
+<p>为了保证查找树的平衡性，我们需要一些灵活性，因此在这里我们允许树中的一个结点保存多个键。</p>
+<p>2- 结点，含有一个键（及其对应的值）和两条链接，左链接指向的 2-3 树中的键都小于该结点，右链接指向的 2-3 树中的键都大于该结点，右链接指向的 203 树中的键都大于该结点</p>
+<p>3-结点：含有两个键(及值)和三条链接，左链接指向的 2-3 树中的键都小于该结点，中链接指向的 2-3 树中的键都位于该结点的两个键之间，右链接指向的 2-3 树中的键都大于该结点。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-ba63f849e9092326.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="2-3node.jpg"></p>
+<h3 id="51-将数据项放入-2-3-树节点中的规则是"><a class="markdownIt-Anchor" href="#51-将数据项放入-2-3-树节点中的规则是"></a> 5.1 将数据项放入 2-3 树节点中的规则是：</h3>
+<p>先找插入结点，若结点有空(即 2-结点)，则直接插入。如结点没空(即 3-结点)，则插入使其临时容纳这个元素，然后分裂此结点，把中间元素移到其父结点中。对父结点亦如此处理。（中键一直往上移，直到找到空位，在此过程中没有空位就先搞个临时的，再分裂。）</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-49abdc47d5f492db.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="2-3nodei.jpg"></p>
+<h3 id="52-构造-2-3-树"><a class="markdownIt-Anchor" href="#52-构造-2-3-树"></a> 5.2 构造 2-3 树</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-46901e9bcf22ad93.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="2-3nodeic.jpg"></p>
+<h4 id="521-优点"><a class="markdownIt-Anchor" href="#521-优点"></a> 5.2.1 优点</h4>
+<p>2-3 树在最坏情况下仍有较好的性能。每个操作中处理每个结点的时间都不会超过一个很小的常数，且这两个操作都只会访问一条路径上的结点，所以任何查找或者插入的成本都肯定不会超过对数级别。</p>
+<p>完美平衡的 2-3 树要平展的多。例如，含有 10 亿个结点的一颗 2-3 树的高度仅在 19 到 30 之间。我们最多只需要访问 30 个结点就能在 10 亿个键中进行任意查找和插入操作。</p>
+<h4 id="522-缺点"><a class="markdownIt-Anchor" href="#522-缺点"></a> 5.2.2 缺点</h4>
+<p>我们需要维护两种不同类型的结点，查找和插入操作的实现需要大量的代码，而且它们所产生的额外开销可能会使算法比标准的二叉查找树更慢。</p>
+<p>平衡一棵树的初衷是为了消除最坏情况，但我们希望这种保障所需的代码能够越少越好。</p>
+<h2 id="六-红黑树"><a class="markdownIt-Anchor" href="#六-红黑树"></a> 六、红黑树</h2>
+<h3 id="61-什么是红黑树"><a class="markdownIt-Anchor" href="#61-什么是红黑树"></a> 6.1 什么是红黑树</h3>
+<p>理解红黑树一句话就够了：<strong>红黑树就是用红链接表示 3-结点的 2-3 树</strong>。那么红黑树的插入、构造就可转化为 2-3 树的问题，即：在脑中用 2-3 树来操作，得到结果，再把结果中的 3-结点转化为红链接即可。而 2-3 树的插入，前面已有详细图文，实际也很简单：有空则插，没空硬插，再分裂。 这样，我们就不用记那么复杂且让人头疼的红黑树插入旋转的各种情况了。只要清楚 2-3 树的插入方式即可。</p>
+<p>红黑树的另一种定义是满足下列条件的二叉查找树：</p>
+<ol>
+<li>红链接均为左链接。</li>
+<li>没有任何一个结点同时和两条红链接相连。</li>
+<li>该树是完美黑色平衡的，即任意空链接到根结点的路径上的黑链接数量相同。</li>
+</ol>
+<p>如果我们将<strong>一颗红黑树中的红链接画平</strong>，那么所有的空链接到根结点的距离都将是相同的。<strong>如果我们将由红链接相连的结点合并，得到的就是一颗 2-3 树</strong>。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-77e4bcb8a1f79d5b.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="rba23t.jpg"></p>
+<h3 id="62-红黑树的本质"><a class="markdownIt-Anchor" href="#62-红黑树的本质"></a> 6.2 红黑树的本质：</h3>
+<p>★ 红黑树是对 2-3 查找树的改进，它能用一种统一的方式完成所有变换。</p>
+<p>★ 红黑树背后的思想是用标准的二叉查找树（完全由 2-结点构成）和一些额外的信息（替换 3-结点）来表示 2-3 树。</p>
+<h3 id="63-红黑树链接类型"><a class="markdownIt-Anchor" href="#63-红黑树链接类型"></a> 6.3 红黑树链接类型</h3>
+<p>我们将树中的链接分为两种类型：红链接将两个 2-结点连接起来构成一个 3-结点，黑链接则是 2-3 树中的普通链接。确切地说，我们将 3-结点表示为由一条左斜的红色链接相连的两个 2-结点。</p>
+<p>这种表示法的一个优点是，我们无需修改就可以直接使用标准二叉查找树的 get()方法。对于任意的 2-3 树，只要对结点进行转换，我们都可以立即派生出一颗对应的二叉查找树。我们将用这种方式表示 2-3 树的二叉查找树称为红黑树。</p>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-f2031959f8dba913.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="rbt.jpg"></p>
+<h3 id="64-红黑树颜色表示"><a class="markdownIt-Anchor" href="#64-红黑树颜色表示"></a> 6.4 红黑树颜色表示</h3>
+<p>因为每个结点都只会有一条指向自己的链接（从它的父结点指向它），我们将链接的颜色保存在表示结点的 Node 数据类型的布尔变量 color 中（若指向它的链接是红色的，那么该变量为 true，黑色则为 false）。</p>
+<p>当我们提到一个结点颜色时，我们指的是指向该结点的链接的颜色。</p>
+<h3 id="65-红黑树旋转"><a class="markdownIt-Anchor" href="#65-红黑树旋转"></a> 6.5 红黑树旋转</h3>
+<p>在我们实现的某些操作中可能会出现红色右链接或者两条连续的红链接，但在操作完成前这些情况都会被小心地旋转并修复。</p>
+<h3 id="67-红黑树插入"><a class="markdownIt-Anchor" href="#67-红黑树插入"></a> 6.7 红黑树插入</h3>
+<p>在插入时我们可以使用旋转操作帮助我们保证 2-3 树和红黑树之间的一一对应关系，因为旋转操作可以保持红黑树的两个重要性质：<strong>有序性和完美平衡性</strong>。</p>
+<ol>
+<li>向一个只含有一个 2-结点的 2-3 树中插入新键后，2-结点变为 3-结点。我们再把这个 3-结点转化为红结点即可）</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-44aca235dec34ec4.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="rbti1.jpg"></p>
+<ol start="2">
+<li>向一颗双键树（即一个 3-结点）中插入新键<br>
+（向红黑树中插入操作时，想想 2-3 树的插入操作。你把红黑树当做 2-3 树来处理插入，一切都变得简单了）<br>
+（向 2-3 树中的一个 3-结点插入新键，这个 3 结点临时成为 4-结点，然后分裂成 3 个 2 结点）</li>
+</ol>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-e1d5fed10b3da7d9.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="rbti2.jpg"></p>
+<h3 id="67-一颗红黑树的构造全过程"><a class="markdownIt-Anchor" href="#67-一颗红黑树的构造全过程"></a> 6.7 一颗红黑树的构造全过程</h3>
+<p><img src="https://upload-images.jianshu.io/upload_images/12321605-2d355d154b11a395.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="rbtc.png"></p>
+<h3 id="参考文章"><a class="markdownIt-Anchor" href="#参考文章"></a> 参考文章</h3>
+<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/polly333/p/4798944.html">浅谈数据结构-平衡二叉树</a></p>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/yang_yulei/article/details/26066409">查找（一）史上最简单清晰的红黑树讲解</a></p>
+<p><a target="_blank" rel="noopener" href="http://www.cnblogs.com/yangecnu/p/Introduce-2-3-Search-Tree.html">浅谈算法和数据结构: 八 平衡查找树之 2-3 树<br>
+</a></p>
+</article><section class="jump-container is-flex is-justify-content-space-between my-6"><!-- em is empty placeholder--><em></em></section><article class="mt-6 comment-container"><script async repo="fanlv/blog" src="https://utteranc.es/client.js" issue-term="pathname" theme="preferred-color-scheme"></script></article></div></div></main></main><footer class="is-flex is-flex-direction-column is-align-items-center is-flex-shrink-0 is-family-serif"><section class="sns-container"><!-- Github--><a title="github" target="_blank" rel="noopener nofollow" href="//github.com/fanlv"><i class="iconfont icon-github"></i></a><!-- Ins--><a title="instagram" target="_blank" rel="noopener nofollow" href="//www.instagram.com/fanlvlgh"><i class="iconfont icon-ins"></i></a><!-- RSS--><!-- 知乎--><!-- 领英--><!-- 脸书--></section><p><span>Copyright ©</span><span> Ryo 2025</span></p><div class="is-flex is-justify-content-center is-flex-wrap-wrap"><p class="is-flex is-justify-content-center"><a title="备案号：鄂ICP备2022016224号-2" target="_blank" rel="noopener" href="http://www.beian.miit.gov.cn/">备案号：鄂ICP备2022016224号-2 &nbsp;</a></p></div><div><span>博学之，审问之，慎思之，明辨之，笃行之</span></div></footer><script async defer src="https://buttons.github.io/buttons.js"></script><script src="/js/post.js"></script></body></html>
