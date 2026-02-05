@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI System Prompts Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 320px;
+            background: #161b22;
+            border-right: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .sidebar-header h1 {
+            font-size: 18px;
+            color: #58a6ff;
+            margin-bottom: 12px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px 12px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 14px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 0;
+        }
+
+        .category {
+            margin-bottom: 8px;
+        }
+
+        .category-header {
+            padding: 8px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .category-header:hover {
+            color: #c9d1d9;
+        }
+
+        .category-header .arrow {
+            transition: transform 0.2s;
+        }
+
+        .category.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .category.collapsed .category-files {
+            display: none;
+        }
+
+        .file-item {
+            padding: 8px 20px 8px 32px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #8b949e;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-item:hover {
+            background: #21262d;
+            color: #c9d1d9;
+        }
+
+        .file-item.active {
+            background: #1f6feb33;
+            color: #58a6ff;
+            border-left: 2px solid #58a6ff;
+            padding-left: 30px;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .content-header {
+            padding: 16px 24px;
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-header h2 {
+            font-size: 16px;
+            color: #c9d1d9;
+            font-weight: 500;
+        }
+
+        .content-header .file-path {
+            font-size: 12px;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 6px 12px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #c9d1d9;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn:hover {
+            background: #30363d;
+        }
+
+        .content-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .prompt-content {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 20px;
+            white-space: pre-wrap;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #c9d1d9;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .welcome {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #8b949e;
+            text-align: center;
+        }
+
+        .welcome h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #c9d1d9;
+        }
+
+        .welcome p {
+            font-size: 14px;
+            max-width: 400px;
+        }
+
+        .stats {
+            margin-top: 24px;
+            display: flex;
+            gap: 24px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: #58a6ff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #8b949e;
+            margin-top: 4px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+
+            .content {
+                height: 60vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>🤖 AI System Prompts</h1>
+                <input type="text" class="search-box" placeholder="搜索文件..." id="searchInput">
+            </div>
+            <div class="file-list" id="fileList"></div>
+        </div>
+        <div class="content">
+            <div class="content-header" id="contentHeader" style="display: none;">
+                <div>
+                    <h2 id="fileName"></h2>
+                    <div class="file-path" id="filePath"></div>
+                </div>
+                <div class="content-actions">
+                    <button class="btn" onclick="copyContent()">📋 复制</button>
+                    <button class="btn" onclick="toggleWrap()">↔️ 换行</button>
+                </div>
+            </div>
+            <div class="content-body">
+                <div class="welcome" id="welcome">
+                    <h2>欢迎使用 Prompt 浏览器</h2>
+                    <p>从左侧列表选择一个文件来查看其内容。这里收集了各种 AI 工具的系统提示词。</p>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stat-value" id="totalCategories">0</div>
+                            <div class="stat-label">分类</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="totalFiles">0</div>
+                            <div class="stat-label">文件</div>
+                        </div>
+                    </div>
+                </div>
+                <pre class="prompt-content hidden" id="promptContent"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const files = {
+            "Anthropic": [
+                { name: "Claude Code/Prompt.txt", path: "Anthropic/Claude Code/Prompt.txt" },
+                { name: "Claude Code/Tools.json", path: "Anthropic/Claude Code/Tools.json" },
+                { name: "Claude for Chrome/Prompt.txt", path: "Anthropic/Claude for Chrome/Prompt.txt" },
+                { name: "Claude for Chrome/Tools.json", path: "Anthropic/Claude for Chrome/Tools.json" },
+                { name: "Claude Code 2.0.txt", path: "Anthropic/Claude Code 2.0.txt" },
+                { name: "Sonnet 4.5 Prompt.txt", path: "Anthropic/Sonnet 4.5 Prompt.txt" }
+            ],
+            "Amp": [
+                { name: "claude-4-sonnet.yaml", path: "Amp/claude-4-sonnet.yaml" },
+                { name: "gpt-5.yaml", path: "Amp/gpt-5.yaml" }
+            ],
+            "Augment Code": [
+                { name: "claude-4-sonnet-agent-prompts.txt", path: "Augment Code/claude-4-sonnet-agent-prompts.txt" },
+                { name: "claude-4-sonnet-tools.json", path: "Augment Code/claude-4-sonnet-tools.json" },
+                { name: "gpt-5-agent-prompts.txt", path: "Augment Code/gpt-5-agent-prompts.txt" },
+                { name: "gpt-5-tools.json", path: "Augment Code/gpt-5-tools.json" }
+            ],
+            "Cluely": [
+                { name: "Default Prompt.txt", path: "Cluely/Default Prompt.txt" },
+                { name: "Enterprise Prompt.txt", path: "Cluely/Enterprise Prompt.txt" }
+            ],
+            "CodeBuddy Prompts": [
+                { name: "Chat Prompt.txt", path: "CodeBuddy Prompts/Chat Prompt.txt" },
+                { name: "Craft Prompt.txt", path: "CodeBuddy Prompts/Craft Prompt.txt" }
+            ],
+            "Comet Assistant": [
+                { name: "System Prompt.txt", path: "Comet Assistant/System Prompt.txt" },
+                { name: "tools.json", path: "Comet Assistant/tools.json" }
+            ],
+            "Cursor Prompts": [
+                { name: "Agent CLI Prompt 2025-08-07.txt", path: "Cursor Prompts/Agent CLI Prompt 2025-08-07.txt" },
+                { name: "Agent Prompt 2.0.txt", path: "Cursor Prompts/Agent Prompt 2.0.txt" },
+                { name: "Agent Prompt 2025-09-03.txt", path: "Cursor Prompts/Agent Prompt 2025-09-03.txt" },
+                { name: "Agent Prompt 2026-01-21.txt", path: "Cursor Prompts/Agent Prompt 2026-01-21.txt" },
+                { name: "Agent Prompt v1.0.txt", path: "Cursor Prompts/Agent Prompt v1.0.txt" },
+                { name: "Agent Prompt v1.2.txt", path: "Cursor Prompts/Agent Prompt v1.2.txt" },
+                { name: "Agent Tools 2026-01-21.txt", path: "Cursor Prompts/Agent Tools 2026-01-21.txt" },
+                { name: "Agent Tools v1.0.json", path: "Cursor Prompts/Agent Tools v1.0.json" },
+                { name: "Chat Prompt.txt", path: "Cursor Prompts/Chat Prompt.txt" }
+            ],
+            "Devin AI": [
+                { name: "DeepWiki Prompt.txt", path: "Devin AI/DeepWiki Prompt.txt" },
+                { name: "Prompt.txt", path: "Devin AI/Prompt.txt" }
+            ],
+            "Emergent": [
+                { name: "Prompt.txt", path: "Emergent/Prompt.txt" },
+                { name: "Tools.json", path: "Emergent/Tools.json" }
+            ],
+            "Google": [
+                { name: "Antigravity/Fast Prompt.txt", path: "Google/Antigravity/Fast Prompt.txt" },
+                { name: "Antigravity/planning-mode.txt", path: "Google/Antigravity/planning-mode.txt" },
+                { name: "Gemini/AI Studio vibe-coder.txt", path: "Google/Gemini/AI Studio vibe-coder.txt" }
+            ],
+            "Junie": [
+                { name: "Prompt.txt", path: "Junie/Prompt.txt" }
+            ],
+            "Kiro": [
+                { name: "Mode_Clasifier_Prompt.txt", path: "Kiro/Mode_Clasifier_Prompt.txt" },
+                { name: "Spec_Prompt.txt", path: "Kiro/Spec_Prompt.txt" },
+                { name: "Vibe_Prompt.txt", path: "Kiro/Vibe_Prompt.txt" }
+            ],
+            "Leap.new": [
+                { name: "Prompts.txt", path: "Leap.new/Prompts.txt" },
+                { name: "tools.json", path: "Leap.new/tools.json" }
+            ],
+            "Lovable": [
+                { name: "Agent Prompt.txt", path: "Lovable/Agent Prompt.txt" },
+                { name: "Agent Tools.json", path: "Lovable/Agent Tools.json" }
+            ],
+            "Manus Agent": [
+                { name: "Agent loop.txt", path: "Manus Agent Tools & Prompt/Agent loop.txt" },
+                { name: "Modules.txt", path: "Manus Agent Tools & Prompt/Modules.txt" },
+                { name: "Prompt.txt", path: "Manus Agent Tools & Prompt/Prompt.txt" },
+                { name: "tools.json", path: "Manus Agent Tools & Prompt/tools.json" }
+            ],
+            "NotionAi": [
+                { name: "Prompt.txt", path: "NotionAi/Prompt.txt" },
+                { name: "tools.json", path: "NotionAi/tools.json" }
+            ],
+            "Open Source": [
+                { name: "Bolt/Prompt.txt", path: "Open Source prompts/Bolt/Prompt.txt" },
+                { name: "Cline/Prompt.txt", path: "Open Source prompts/Cline/Prompt.txt" },
+                { name: "Codex CLI/Prompt.txt", path: "Open Source prompts/Codex CLI/Prompt.txt" },
+                { name: "Codex CLI/openai-codex-cli-system-prompt-20250820.txt", path: "Open Source prompts/Codex CLI/openai-codex-cli-system-prompt-20250820.txt" },
+                { name: "Gemini CLI/google-gemini-cli-system-prompt.txt", path: "Open Source prompts/Gemini CLI/google-gemini-cli-system-prompt.txt" },
+                { name: "Lumo/Prompt.txt", path: "Open Source prompts/Lumo/Prompt.txt" },
+                { name: "RooCode/Prompt.txt", path: "Open Source prompts/RooCode/Prompt.txt" }
+            ],
+            "Orchids.app": [
+                { name: "Decision-making prompt.txt", path: "Orchids.app/Decision-making prompt.txt" },
+                { name: "System Prompt.txt", path: "Orchids.app/System Prompt.txt" }
+            ],
+            "Perplexity": [
+                { name: "Prompt.txt", path: "Perplexity/Prompt.txt" }
+            ],
+            "Poke": [
+                { name: "Poke agent.txt", path: "Poke/Poke agent.txt" },
+                { name: "Poke_p1.txt", path: "Poke/Poke_p1.txt" },
+                { name: "Poke_p2.txt", path: "Poke/Poke_p2.txt" },
+                { name: "Poke_p3.txt", path: "Poke/Poke_p3.txt" },
+                { name: "Poke_p4.txt", path: "Poke/Poke_p4.txt" },
+                { name: "Poke_p5.txt", path: "Poke/Poke_p5.txt" },
+                { name: "Poke_p6.txt", path: "Poke/Poke_p6.txt" }
+            ],
+            "Qoder": [
+                { name: "Quest Action.txt", path: "Qoder/Quest Action.txt" },
+                { name: "Quest Design.txt", path: "Qoder/Quest Design.txt" },
+                { name: "prompt.txt", path: "Qoder/prompt.txt" }
+            ],
+            "Replit": [
+                { name: "Prompt.txt", path: "Replit/Prompt.txt" },
+                { name: "Tools.json", path: "Replit/Tools.json" }
+            ],
+            "Same.dev": [
+                { name: "Prompt.txt", path: "Same.dev/Prompt.txt" },
+                { name: "Tools.json", path: "Same.dev/Tools.json" }
+            ],
+            "Trae": [
+                { name: "Builder Prompt.txt", path: "Trae/Builder Prompt.txt" },
+                { name: "Builder Prompt-2026-01-09.txt", path: "Trae/Builder Prompt-2026-01-09.txt" },
+                { name: "Builder Tools.json", path: "Trae/Builder Tools.json" },
+                { name: "Builder Tools-2026-02-05.txt", path: "Trae/Builder Tools-2026-02-05.txt" },
+                { name: "Chat Prompt.txt", path: "Trae/Chat Prompt.txt" },
+                { name: "Solo Prompt-2026-01-09.txt", path: "Trae/Solo Prompt-2026-01-09.txt" },
+                { name: "Solo Tools-2026-02-05.txt", path: "Trae/Solo Tools-2026-02-05.txt" }
+            ],
+            "Traycer AI": [
+                { name: "phase_mode_prompts.txt", path: "Traycer AI/phase_mode_prompts.txt" },
+                { name: "phase_mode_tools.json", path: "Traycer AI/phase_mode_tools.json" },
+                { name: "plan_mode_prompts", path: "Traycer AI/plan_mode_prompts" },
+                { name: "plan_mode_tools.json", path: "Traycer AI/plan_mode_tools.json" }
+            ],
+            "VSCode Agent": [
+                { name: "Prompt.txt", path: "VSCode Agent/Prompt.txt" },
+                { name: "chat-titles.txt", path: "VSCode Agent/chat-titles.txt" },
+                { name: "claude-sonnet-4.txt", path: "VSCode Agent/claude-sonnet-4.txt" },
+                { name: "gemini-2.5-pro.txt", path: "VSCode Agent/gemini-2.5-pro.txt" },
+                { name: "gpt-4.1.txt", path: "VSCode Agent/gpt-4.1.txt" },
+                { name: "gpt-4o.txt", path: "VSCode Agent/gpt-4o.txt" },
+                { name: "gpt-5-mini.txt", path: "VSCode Agent/gpt-5-mini.txt" },
+                { name: "gpt-5.txt", path: "VSCode Agent/gpt-5.txt" },
+                { name: "nes-tab-completion.txt", path: "VSCode Agent/nes-tab-completion.txt" }
+            ],
+            "Warp.dev": [
+                { name: "Prompt.txt", path: "Warp.dev/Prompt.txt" }
+            ],
+            "Windsurf": [
+                { name: "Prompt Wave 11.txt", path: "Windsurf/Prompt Wave 11.txt" },
+                { name: "Tools Wave 11.txt", path: "Windsurf/Tools Wave 11.txt" }
+            ],
+            "Xcode": [
+                { name: "DocumentAction.txt", path: "Xcode/DocumentAction.txt" },
+                { name: "ExplainAction.txt", path: "Xcode/ExplainAction.txt" },
+                { name: "MessageAction.txt", path: "Xcode/MessageAction.txt" },
+                { name: "PlaygroundAction.txt", path: "Xcode/PlaygroundAction.txt" },
+                { name: "PreviewAction.txt", path: "Xcode/PreviewAction.txt" },
+                { name: "System.txt", path: "Xcode/System.txt" }
+            ],
+            "Z.ai Code": [
+                { name: "prompt.txt", path: "Z.ai Code/prompt.txt" }
+            ],
+            "dia": [
+                { name: "Prompt.txt", path: "dia/Prompt.txt" }
+            ],
+            "v0 Prompts and Tools": [
+                { name: "Prompt.txt", path: "v0 Prompts and Tools/Prompt.txt" },
+                { name: "Tools.json", path: "v0 Prompts and Tools/Tools.json" }
+            ]
+        };
+
+        let currentFile = null;
+        let wrapEnabled = true;
+
+        function init() {
+            renderFileList();
+            updateStats();
+            document.getElementById('searchInput').addEventListener('input', handleSearch);
+        }
+
+        function renderFileList(filter = '') {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+
+            const sortedCategories = Object.keys(files).sort();
+
+            for (const category of sortedCategories) {
+                const categoryFiles = files[category].filter(file => 
+                    filter === '' || 
+                    file.name.toLowerCase().includes(filter.toLowerCase()) ||
+                    category.toLowerCase().includes(filter.toLowerCase())
+                );
+
+                if (categoryFiles.length === 0) continue;
+
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+
+                const header = document.createElement('div');
+                header.className = 'category-header';
+                header.innerHTML = `<span class="arrow">▼</span> ${category} (${categoryFiles.length})`;
+                header.onclick = () => categoryDiv.classList.toggle('collapsed');
+
+                const filesDiv = document.createElement('div');
+                filesDiv.className = 'category-files';
+
+                for (const file of categoryFiles) {
+                    const fileDiv = document.createElement('div');
+                    fileDiv.className = 'file-item';
+                    fileDiv.textContent = file.name;
+                    fileDiv.onclick = () => loadFile(file.path, file.name, category);
+                    fileDiv.dataset.path = file.path;
+                    filesDiv.appendChild(fileDiv);
+                }
+
+                categoryDiv.appendChild(header);
+                categoryDiv.appendChild(filesDiv);
+                fileList.appendChild(categoryDiv);
+            }
+        }
+
+        function handleSearch(e) {
+            renderFileList(e.target.value);
+        }
+
+        async function loadFile(path, name, category) {
+            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`[data-path="${path}"]`)?.classList.add('active');
+
+            document.getElementById('welcome').classList.add('hidden');
+            document.getElementById('promptContent').classList.remove('hidden');
+            document.getElementById('contentHeader').style.display = 'flex';
+            document.getElementById('fileName').textContent = `${category} / ${name}`;
+            document.getElementById('filePath').textContent = path;
+
+            try {
+                const response = await fetch(path);
+                if (!response.ok) throw new Error('File not found');
+                const content = await response.text();
+                document.getElementById('promptContent').textContent = content;
+                currentFile = { path, name, content };
+            } catch (error) {
+                document.getElementById('promptContent').textContent = `无法加载文件: ${error.message}\n\n请确保在本地服务器环境下运行此页面。\n\n可以使用以下命令启动本地服务器:\n  python -m http.server 8000\n  或\n  npx serve`;
+            }
+        }
+
+        function copyContent() {
+            if (currentFile) {
+                navigator.clipboard.writeText(currentFile.content).then(() => {
+                    alert('已复制到剪贴板');
+                });
+            }
+        }
+
+        function toggleWrap() {
+            const content = document.getElementById('promptContent');
+            wrapEnabled = !wrapEnabled;
+            content.style.whiteSpace = wrapEnabled ? 'pre-wrap' : 'pre';
+        }
+
+        function updateStats() {
+            const categories = Object.keys(files).length;
+            const totalFiles = Object.values(files).reduce((sum, arr) => sum + arr.length, 0);
+            document.getElementById('totalCategories').textContent = categories;
+            document.getElementById('totalFiles').textContent = totalFiles;
+        }
+
+        init();
+    </script>
+</body>
+</html>
