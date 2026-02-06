@@ -43,6 +43,12 @@
             margin-bottom: 12px;
         }
 
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .search-box {
             width: 100%;
             padding: 10px 12px;
@@ -56,6 +62,109 @@
         .search-box:focus {
             outline: none;
             border-color: #58a6ff;
+        }
+
+        .search-mode-toggle {
+            display: flex;
+            gap: 4px;
+        }
+
+        .search-mode-btn {
+            flex: 1;
+            padding: 6px 10px;
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            color: #8b949e;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .search-mode-btn:hover {
+            background: #30363d;
+            color: #c9d1d9;
+        }
+
+        .search-mode-btn.active {
+            background: #1f6feb;
+            border-color: #1f6feb;
+            color: #fff;
+        }
+
+        .search-status {
+            font-size: 11px;
+            color: #8b949e;
+            padding: 4px 0;
+        }
+
+        .search-status.loading {
+            color: #f0883e;
+        }
+
+        .search-status.ready {
+            color: #3fb950;
+        }
+
+        .search-result-item {
+            padding: 10px 20px 10px 32px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #8b949e;
+            transition: all 0.15s;
+            border-bottom: 1px solid #21262d;
+        }
+
+        .search-result-item:hover {
+            background: #21262d;
+            color: #c9d1d9;
+        }
+
+        .search-result-item .result-title {
+            color: #58a6ff;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .search-result-item .result-path {
+            color: #8b949e;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+
+        .search-result-item .result-preview {
+            font-size: 12px;
+            color: #c9d1d9;
+            background: #0d1117;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 80px;
+            overflow: hidden;
+        }
+
+        .search-result-item .result-preview .highlight {
+            background: #f0883e;
+            color: #0d1117;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+
+        .search-results-header {
+            padding: 8px 20px;
+            font-size: 12px;
+            color: #8b949e;
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+        }
+
+        .prompt-content .highlight {
+            background: #f0883e;
+            color: #0d1117;
+            padding: 1px 2px;
+            border-radius: 2px;
         }
 
         .file-list {
@@ -274,7 +383,14 @@
         <div class="sidebar">
             <div class="sidebar-header">
                 <h1>🤖 AI System Prompts</h1>
-                <input type="text" class="search-box" placeholder="搜索文件..." id="searchInput">
+                <div class="search-container">
+                    <input type="text" class="search-box" placeholder="搜索..." id="searchInput">
+                    <div class="search-mode-toggle">
+                        <button class="search-mode-btn active" id="fileSearchBtn" onclick="setSearchMode('file')">📁 文件名</button>
+                        <button class="search-mode-btn" id="contentSearchBtn" onclick="setSearchMode('content')">📝 全文</button>
+                    </div>
+                    <div class="search-status" id="searchStatus"></div>
+                </div>
             </div>
             <div class="file-list" id="fileList"></div>
         </div>
@@ -484,11 +600,73 @@
 
         let currentFile = null;
         let wrapEnabled = true;
+        let searchMode = 'file';
+        let contentIndex = {};
+        let indexReady = false;
+        let currentSearchTerm = '';
 
         function init() {
             renderFileList();
             updateStats();
             document.getElementById('searchInput').addEventListener('input', handleSearch);
+            buildContentIndex();
+        }
+
+        async function buildContentIndex() {
+            const statusEl = document.getElementById('searchStatus');
+            statusEl.className = 'search-status loading';
+            statusEl.textContent = '正在建立搜索索引...';
+
+            const allFiles = [];
+            for (const category of Object.keys(files)) {
+                for (const file of files[category]) {
+                    allFiles.push({ ...file, category });
+                }
+            }
+
+            let loaded = 0;
+            const total = allFiles.length;
+
+            for (const file of allFiles) {
+                try {
+                    const response = await fetch(file.path);
+                    if (response.ok) {
+                        const content = await response.text();
+                        contentIndex[file.path] = {
+                            content: content,
+                            contentLower: content.toLowerCase(),
+                            name: file.name,
+                            category: file.category,
+                            path: file.path
+                        };
+                    }
+                } catch (e) {
+                    console.warn(`Failed to load ${file.path}:`, e);
+                }
+                loaded++;
+                statusEl.textContent = `正在建立索引... (${loaded}/${total})`;
+            }
+
+            indexReady = true;
+            statusEl.className = 'search-status ready';
+            statusEl.textContent = `✓ 索引就绪 (${Object.keys(contentIndex).length} 个文件)`;
+            
+            setTimeout(() => {
+                statusEl.textContent = '';
+            }, 3000);
+        }
+
+        function setSearchMode(mode) {
+            searchMode = mode;
+            document.getElementById('fileSearchBtn').classList.toggle('active', mode === 'file');
+            document.getElementById('contentSearchBtn').classList.toggle('active', mode === 'content');
+            
+            const searchInput = document.getElementById('searchInput');
+            searchInput.placeholder = mode === 'file' ? '搜索文件名...' : '搜索内容...';
+            
+            if (searchInput.value) {
+                handleSearch({ target: searchInput });
+            }
         }
 
         function renderFileList(filter = '') {
@@ -533,7 +711,120 @@
         }
 
         function handleSearch(e) {
-            renderFileList(e.target.value);
+            const query = e.target.value.trim();
+            currentSearchTerm = query;
+            
+            if (searchMode === 'file') {
+                renderFileList(query);
+            } else {
+                renderContentSearchResults(query);
+            }
+        }
+
+        function renderContentSearchResults(query) {
+            const fileList = document.getElementById('fileList');
+            
+            if (!query) {
+                renderFileList('');
+                return;
+            }
+
+            if (!indexReady) {
+                fileList.innerHTML = '<div class="search-results-header">索引尚未就绪，请稍候...</div>';
+                return;
+            }
+
+            const queryLower = query.toLowerCase();
+            const results = [];
+
+            for (const path in contentIndex) {
+                const file = contentIndex[path];
+                const index = file.contentLower.indexOf(queryLower);
+                
+                if (index !== -1) {
+                    const start = Math.max(0, index - 50);
+                    const end = Math.min(file.content.length, index + query.length + 100);
+                    let preview = file.content.substring(start, end);
+                    
+                    if (start > 0) preview = '...' + preview;
+                    if (end < file.content.length) preview = preview + '...';
+                    
+                    const matchCount = (file.contentLower.match(new RegExp(escapeRegExp(queryLower), 'g')) || []).length;
+                    
+                    results.push({
+                        ...file,
+                        preview,
+                        matchIndex: index,
+                        matchCount
+                    });
+                }
+            }
+
+            results.sort((a, b) => b.matchCount - a.matchCount);
+
+            fileList.innerHTML = '';
+
+            if (results.length === 0) {
+                fileList.innerHTML = '<div class="search-results-header">未找到匹配结果</div>';
+                return;
+            }
+
+            const header = document.createElement('div');
+            header.className = 'search-results-header';
+            header.textContent = `找到 ${results.length} 个匹配文件`;
+            fileList.appendChild(header);
+
+            for (const result of results) {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                
+                const highlightedPreview = highlightText(result.preview, query);
+                
+                item.innerHTML = `
+                    <div class="result-title">${result.category} / ${result.name}</div>
+                    <div class="result-path">${result.path} (${result.matchCount} 处匹配)</div>
+                    <div class="result-preview">${highlightedPreview}</div>
+                `;
+                
+                item.onclick = () => loadFileWithHighlight(result.path, result.name, result.category, query);
+                fileList.appendChild(item);
+            }
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function highlightText(text, query) {
+            if (!query) return escapeHtml(text);
+            
+            const escaped = escapeHtml(text);
+            const queryEscaped = escapeHtml(query);
+            const regex = new RegExp(`(${escapeRegExp(queryEscaped)})`, 'gi');
+            return escaped.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        async function loadFileWithHighlight(path, name, category, searchTerm) {
+            await loadFile(path, name, category);
+            
+            if (searchTerm && currentFile) {
+                const contentEl = document.getElementById('promptContent');
+                const highlightedContent = highlightText(currentFile.content, searchTerm);
+                contentEl.innerHTML = highlightedContent;
+                
+                setTimeout(() => {
+                    const firstHighlight = contentEl.querySelector('.highlight');
+                    if (firstHighlight) {
+                        firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 100);
+            }
         }
 
         async function loadFile(path, name, category) {
