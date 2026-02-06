@@ -404,6 +404,7 @@
                     <button class="btn" onclick="copyContent()">📋 复制</button>
                     <button class="btn" onclick="copyShareLink()">🔗 分享</button>
                     <button class="btn" onclick="toggleWrap()">↔️ 换行</button>
+                    <button class="btn" onclick="openInNewWindow()">🔲 新窗口</button>
                 </div>
             </div>
             <div class="content-body">
@@ -897,6 +898,11 @@
             const content = document.getElementById('promptContent');
             wrapEnabled = !wrapEnabled;
             content.style.whiteSpace = wrapEnabled ? 'pre-wrap' : 'pre';
+        }
+
+        function openInNewWindow() {
+            if (!currentFile) return;
+            window.open(currentFile.path, '_blank');
         }
 
         function updateStats() {
