@@ -402,6 +402,7 @@
                 </div>
                 <div class="content-actions">
                     <button class="btn" onclick="copyContent()">📋 复制</button>
+                    <button class="btn" onclick="copyShareLink()">🔗 分享</button>
                     <button class="btn" onclick="toggleWrap()">↔️ 换行</button>
                 </div>
             </div>
@@ -610,6 +611,29 @@
             updateStats();
             document.getElementById('searchInput').addEventListener('input', handleSearch);
             buildContentIndex();
+            loadFromHash();
+            window.addEventListener('hashchange', loadFromHash);
+        }
+
+        function loadFromHash() {
+            const hash = decodeURIComponent(window.location.hash.slice(1));
+            if (!hash) return;
+
+            for (const category of Object.keys(files)) {
+                for (const file of files[category]) {
+                    if (file.path === hash) {
+                        loadFile(file.path, file.name, category);
+                        return;
+                    }
+                }
+            }
+        }
+
+        function updateHash(path) {
+            const newHash = '#' + encodeURIComponent(path);
+            if (window.location.hash !== newHash) {
+                history.pushState(null, '', newHash);
+            }
         }
 
         async function buildContentIndex() {
@@ -837,12 +861,14 @@
             document.getElementById('fileName').textContent = `${category} / ${name}`;
             document.getElementById('filePath').textContent = path;
 
+            updateHash(path);
+
             try {
                 const response = await fetch(path);
                 if (!response.ok) throw new Error('File not found');
                 const content = await response.text();
                 document.getElementById('promptContent').textContent = content;
-                currentFile = { path, name, content };
+                currentFile = { path, name, category, content };
             } catch (error) {
                 document.getElementById('promptContent').textContent = `无法加载文件: ${error.message}\n\n请确保在本地服务器环境下运行此页面。\n\n可以使用以下命令启动本地服务器:\n  python -m http.server 8000\n  或\n  npx serve`;
             }
@@ -852,6 +878,15 @@
             if (currentFile) {
                 navigator.clipboard.writeText(currentFile.content).then(() => {
                     alert('已复制到剪贴板');
+                });
+            }
+        }
+
+        function copyShareLink() {
+            if (currentFile) {
+                const url = window.location.origin + window.location.pathname + '#' + encodeURIComponent(currentFile.path);
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('链接已复制到剪贴板');
                 });
             }
         }
