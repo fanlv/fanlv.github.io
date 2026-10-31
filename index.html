@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>一签 OneSlip · 隐私政策 / Privacy Policy</title>
-<meta name="description" content="一签 OneSlip 的隐私政策：不收集任何个人信息，全部数据保存在设备本地。">
+<title>隐私政策 · Privacy Policy</title>
+<meta name="description" content="适用于本开发者发布的所有 App 的通用隐私政策。">
 <style>
   :root {
     --paper: #F7F2E7;
@@ -25,55 +25,24 @@
     line-height: 1.85;
     font-size: 16px;
   }
-  .wrap {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 56px 24px 80px;
-  }
-  header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 36px;
-  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 80px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; }
   .seal {
-    width: 52px;
-    height: 52px;
-    border-radius: 12px;
-    background: var(--seal);
-    color: var(--paper);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    line-height: 1;
-    flex: none;
+    width: 52px; height: 52px; border-radius: 12px;
+    background: var(--seal); color: var(--paper);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; line-height: 1; flex: none;
     box-shadow: 0 6px 16px rgba(36, 31, 26, .12);
   }
-  .brand {
-    font-size: 20px;
-    letter-spacing: .08em;
-  }
+  .brand { font-size: 20px; letter-spacing: .08em; }
   .brand small {
-    display: block;
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px;
-    letter-spacing: .16em;
-    color: var(--ink-soft);
-    margin-top: 4px;
-    text-transform: uppercase;
+    display: block; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px; letter-spacing: .14em; color: var(--ink-soft); margin-top: 4px;
   }
-  h1 {
-    font-size: 28px;
-    font-weight: 600;
-    letter-spacing: .06em;
-    margin: 0 0 8px;
-  }
+  h1 { font-size: 28px; font-weight: 600; letter-spacing: .04em; margin: 0 0 8px; }
   .date {
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    font-size: 13px;
-    color: var(--ink-soft);
-    margin: 0 0 28px;
+    font-size: 13px; color: var(--ink-soft); margin: 0 0 28px;
   }
   .card {
     background: var(--card);
@@ -83,39 +52,37 @@
     box-shadow: 0 10px 30px rgba(36, 31, 26, .05);
   }
   h2 {
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: .04em;
-    margin: 30px 0 10px;
-    color: var(--seal);
+    font-size: 17px; font-weight: 600; letter-spacing: .03em;
+    margin: 30px 0 10px; color: var(--seal);
   }
   h2:first-of-type { margin-top: 0; }
   p { margin: 0 0 12px; }
   ul { margin: 0 0 12px; padding-left: 20px; }
   li { margin-bottom: 6px; }
   strong { font-weight: 600; }
+  .lang-switch {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px; margin-bottom: 24px;
+  }
+  .lang-switch a { margin-right: 16px; }
   .en {
-    margin-top: 48px;
-    padding-top: 32px;
+    margin-top: 48px; padding-top: 32px;
     border-top: 1px dashed rgba(176, 128, 64, .4);
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 15px;
-    line-height: 1.8;
+    font-size: 15px; line-height: 1.8;
   }
   .en h1 { font-size: 24px; }
-  .en h2 { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; font-size: 15px; letter-spacing: .02em; }
+  .en h2 {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; letter-spacing: .02em;
+  }
   footer {
     margin-top: 44px;
     font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-    font-size: 12px;
-    color: var(--ink-soft);
-    text-align: center;
+    font-size: 12px; color: var(--ink-soft); text-align: center;
   }
   a { color: var(--seal); text-decoration: none; border-bottom: 1px solid rgba(166, 58, 40, .3); }
   a:hover { border-bottom-color: var(--seal); }
-  @media (prefers-color-scheme: dark) {
-    /* 保持宣纸质感，不跟随系统深色 */
-  }
   @media (max-width: 480px) {
     .wrap { padding: 36px 18px 60px; }
     .card { padding: 24px 18px; border-radius: 14px; }
@@ -126,85 +93,93 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="seal">签</div>
-    <div class="brand">一签<small>OneSlip</small></div>
+    <div class="seal">印</div>
+    <div class="brand">开发者隐私政策<small>Privacy Policy</small></div>
   </header>
 
-  <h1>隐私政策</h1>
-  <p class="date">生效日期：2026 年 10 月 31 日</p>
+  <p class="lang-switch"><a href="#zh">中文</a><a href="#en">English</a></p>
 
-  <div class="card">
-    <p>一签（OneSlip，以下简称「本 App」）尊重并保护你的隐私。本政策说明本 App 如何处理与你有关的信息。</p>
+  <section id="zh" lang="zh-Hans">
+    <h1>隐私政策</h1>
+    <p class="date">生效日期：2026 年 10 月 31 日</p>
 
-    <h2>一、我们不收集个人信息</h2>
-    <p>本 App 无需注册或登录，不收集姓名、手机号、邮箱、精确位置、通讯录、相册、设备标识符等信息，也不包含第三方广告或数据分析 SDK。</p>
+    <div class="card">
+      <p><strong>适用范围。</strong>本政策适用于本开发者（下称「我们」）在 App Store 上发布的所有 App。部分 App 会在本政策基础上另有说明，如有冲突，以该 App 内的说明为准。</p>
 
-    <h2>二、保存在你设备上的数据</h2>
-    <p>你抽到的签文记录、每日提醒时间、真太阳时经度设置，仅保存在你设备的本地存储中（UserDefaults）。卸载 App 后这些数据随之删除，开发者无法访问。</p>
+      <h2>一、我们不建立用户画像</h2>
+      <p>我们的 App 不要求注册或登录，不出售、不出租、不交换任何用户信息，也不使用你的数据做广告投放或跨 App 追踪。</p>
 
-    <h2>三、通知</h2>
-    <p>若你开启「每日提醒」，本 App 会请求通知权限，并在本地按你设定的时间发送提醒。提醒内容由设备本地生成，不经过任何服务器。你可以随时在 App 设置或系统设置中关闭。</p>
+      <h2>二、我们收集的信息</h2>
+      <p>默认情况下，我们的 App 不收集可识别个人身份的信息，例如姓名、手机号、邮箱、精确位置、通讯录、相册或设备标识符。</p>
+      <p>如果某个 App 需要联网、需要访问系统权限（如相册、麦克风、通知、定位），或需要由你主动提交内容，我们会在该 App 首次使用相关功能时说明用途，并只在获得你同意后使用。该 App 的具体数据实践以其 App 内说明为准。</p>
 
-    <h2>四、网络与第三方</h2>
-    <p>当前版本不发起任何网络请求，不向任何第三方传输或共享数据。若未来引入需要联网的功能，我们会在本页面更新说明，并在 App 内征得你的同意。</p>
+      <h2>三、保存在你设备上的数据</h2>
+      <p>App 的设置、记录等通常保存在你设备的本地存储中。卸载 App 后这些数据会随之删除，我们无法远程读取或恢复。</p>
 
-    <h2>五、儿童隐私</h2>
-    <p>本 App 不面向 13 岁以下儿童收集任何信息。若你认为我们在未获同意的情况下接触了儿童信息，请联系我们，我们会尽快处理。</p>
+      <h2>四、通知</h2>
+      <p>若某个 App 提供提醒功能并要求通知权限，提醒由你的设备在本地生成和发送，不经过我们的服务器。你可以随时在 App 内或系统设置中关闭。</p>
 
-    <h2>六、内容性质说明</h2>
-    <p>本 App 的签文内容源于传统民俗整理，仅供娱乐与自省参考，不构成医疗、投资、法律或其他专业建议。</p>
+      <h2>五、第三方服务</h2>
+      <p>我们的 App 默认不集成第三方广告或数据分析 SDK。若某个 App 使用了第三方服务（如崩溃统计、云同步），我们会在该 App 的说明或 App Store 隐私标签中列明服务提供方及涉及的信息类型。</p>
 
-    <h2>七、政策更新</h2>
-    <p>如本政策发生变更，我们会在本页面更新内容并同步修改生效日期。重大变更会在 App 内提示。</p>
+      <h2>六、数据安全</h2>
+      <p>我们采取合理的技术措施保护数据。由于 App 默认不在服务器端保存你的个人信息，主要风险来自设备本身，建议你开启设备密码与备份。</p>
 
-    <h2>八、联系我们</h2>
-    <p>如对本政策有疑问，可通过 App Store 产品页上所列的开发者联系方式与我们联系。</p>
-  </div>
+      <h2>七、儿童隐私</h2>
+      <p>我们的 App 不面向 13 岁以下儿童收集个人信息。若你认为我们在未获监护人同意的情况下接触了儿童信息，请联系我们，我们会尽快删除。</p>
 
-  <section class="en" lang="en">
+      <h2>八、你的权利</h2>
+      <p>你可以随时卸载 App 以停止使用并删除本地数据。若你所在地区的法律赋予你访问、更正、删除或导出个人信息的权利，可通过下方方式联系我们。</p>
+
+      <h2>九、政策更新</h2>
+      <p>本政策如有变更，我们会在本页面更新并修改生效日期。重大变更会在相关 App 内提示。</p>
+
+      <h2>十、联系我们</h2>
+      <p>对本政策有疑问，或需要行使上述权利，请通过 <a href="https://github.com/fanlv/fanlv.github.io/issues" target="_blank" rel="noopener">GitHub Issues</a> 联系我们，我们通常在几个工作日内回复。</p>
+    </div>
+  </section>
+
+  <section id="en" class="en" lang="en">
     <h1>Privacy Policy</h1>
     <p class="date">Effective date: October 31, 2026</p>
 
     <div class="card">
-      <p>OneSlip ("the App") respects and protects your privacy. This policy explains how the App handles information related to you.</p>
+      <p><strong>Scope.</strong> This policy applies to all apps we publish on the App Store. Some apps may add their own notes on top of this policy; where they conflict, the in-app notice for that app controls.</p>
 
-      <h2>1. We do not collect personal information</h2>
-      <p>The App requires no account or sign-in. We do not collect your name, phone number, email address, precise location, contacts, photos, or device identifiers, and the App contains no third-party advertising or analytics SDKs.</p>
+      <h2>1. No profiling</h2>
+      <p>Our apps do not require an account. We do not sell, rent, or trade user information, and we do not use your data for advertising or cross-app tracking.</p>
 
-      <h2>2. Data stored on your device</h2>
-      <p>Your drawn slips, daily reminder time, and true-solar-time longitude setting are stored only in local storage on your device (UserDefaults). Uninstalling the App removes this data. The developer cannot access it.</p>
+      <h2>2. Information we collect</h2>
+      <p>By default our apps do not collect personally identifiable information such as your name, phone number, email address, precise location, contacts, photos, or device identifiers.</p>
+      <p>If an app needs a network connection, a system permission (photos, microphone, notifications, location), or content you choose to submit, we explain the purpose the first time you use that feature and only proceed with your consent. That app's in-app notice describes its specific practices.</p>
 
-      <h2>3. Notifications</h2>
-      <p>If you enable the daily reminder, the App requests notification permission and schedules reminders locally on your device. Reminder content is generated on-device and never passes through a server. You can turn it off at any time in the App or in system settings.</p>
+      <h2>3. Data stored on your device</h2>
+      <p>Settings and records are typically stored locally on your device. Uninstalling the app removes this data. We cannot read or restore it remotely.</p>
 
-      <h2>4. Network and third parties</h2>
-      <p>The current version makes no network requests and shares no data with third parties. If a future version introduces online features, we will update this page and ask for your consent in the App.</p>
+      <h2>4. Notifications</h2>
+      <p>If an app offers reminders and asks for notification permission, reminders are generated and delivered locally by your device and do not pass through our servers. You can turn them off at any time in the app or in system settings.</p>
 
-      <h2>5. Children's privacy</h2>
-      <p>The App does not knowingly collect information from children under 13. If you believe a child's information has reached us without consent, please contact us and we will address it promptly.</p>
+      <h2>5. Third-party services</h2>
+      <p>Our apps do not include third-party advertising or analytics SDKs by default. If an app uses a third-party service such as crash reporting or cloud sync, we list the provider and the data involved in that app's notes or in its App Store privacy details.</p>
 
-      <h2>6. Nature of the content</h2>
-      <p>Slip texts are compiled from traditional folk material and are provided for entertainment and self-reflection only. They are not medical, financial, legal, or other professional advice.</p>
+      <h2>6. Security</h2>
+      <p>We take reasonable technical measures to protect data. Because our apps do not store your personal information on our servers by default, the main risk sits with the device itself — please use a passcode and backups.</p>
 
-      <h2>7. Changes to this policy</h2>
-      <p>If this policy changes, we will update this page and revise the effective date above. Material changes will also be noted in the App.</p>
+      <h2>7. Children's privacy</h2>
+      <p>Our apps do not knowingly collect personal information from children under 13. If you believe a child's information reached us without a guardian's consent, contact us and we will delete it promptly.</p>
 
-      <h2>8. Contact</h2>
-      <p>For questions about this policy, please reach us through the developer contact information listed on our App Store product page.</p>
+      <h2>8. Your rights</h2>
+      <p>You can uninstall an app at any time to stop using it and delete local data. If your local law grants you rights to access, correct, delete, or export personal information, contact us using the method below.</p>
+
+      <h2>9. Changes</h2>
+      <p>If this policy changes, we will update this page and revise the effective date. Material changes will be noted in the affected apps.</p>
+
+      <h2>10. Contact</h2>
+      <p>For questions about this policy or to exercise the rights above, reach us through <a href="https://github.com/fanlv/fanlv.github.io/issues" target="_blank" rel="noopener">GitHub Issues</a>. We usually reply within a few business days.</p>
     </div>
   </section>
 
-  <section id="support" lang="zh-Hans" style="margin-top:40px;">
-    <h1 style="font-size:22px;">支持</h1>
-    <p>遇到问题、有建议，或想反馈签文内容，可以通过 <a href="https://github.com/fanlv/fanlv.github.io/issues" target="_blank" rel="noopener">GitHub Issues</a> 联系我们。我们会在几个工作日内回复。</p>
-    <p class="en" style="border:0; padding-top:8px; margin-top:8px; font-family:Georgia,serif;">
-      <strong>Support.</strong> For questions, bugs, or feedback about the app, please open an issue at
-      <a href="https://github.com/fanlv/fanlv.github.io/issues" target="_blank" rel="noopener">GitHub Issues</a>.
-      We usually reply within a few business days.
-    </p>
-  </section>
-
-  <footer>© 2026 OneSlip · 一签</footer>
+  <footer>© 2026 · 开发者隐私政策 / Developer Privacy Policy</footer>
 </div>
 </body>
 </html>
