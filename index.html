@@ -1,918 +1,200 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-Hans">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI System Prompts Browser</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #0d1117;
-            color: #c9d1d9;
-            min-height: 100vh;
-        }
-
-        .container {
-            display: flex;
-            height: 100vh;
-        }
-
-        .sidebar {
-            width: 320px;
-            background: #161b22;
-            border-right: 1px solid #30363d;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .sidebar-header {
-            padding: 20px;
-            border-bottom: 1px solid #30363d;
-        }
-
-        .sidebar-header h1 {
-            font-size: 18px;
-            color: #58a6ff;
-            margin-bottom: 12px;
-        }
-
-        .search-container {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .search-box {
-            width: 100%;
-            padding: 10px 12px;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: #c9d1d9;
-            font-size: 14px;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #58a6ff;
-        }
-
-        .search-mode-toggle {
-            display: flex;
-            gap: 4px;
-        }
-
-        .search-mode-btn {
-            flex: 1;
-            padding: 6px 10px;
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 4px;
-            color: #8b949e;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .search-mode-btn:hover {
-            background: #30363d;
-            color: #c9d1d9;
-        }
-
-        .search-mode-btn.active {
-            background: #1f6feb;
-            border-color: #1f6feb;
-            color: #fff;
-        }
-
-        .search-status {
-            font-size: 11px;
-            color: #8b949e;
-            padding: 4px 0;
-        }
-
-        .search-status.loading {
-            color: #f0883e;
-        }
-
-        .search-status.ready {
-            color: #3fb950;
-        }
-
-        .search-result-item {
-            padding: 10px 20px 10px 32px;
-            cursor: pointer;
-            font-size: 13px;
-            color: #8b949e;
-            transition: all 0.15s;
-            border-bottom: 1px solid #21262d;
-        }
-
-        .search-result-item:hover {
-            background: #21262d;
-            color: #c9d1d9;
-        }
-
-        .search-result-item .result-title {
-            color: #58a6ff;
-            font-size: 13px;
-            margin-bottom: 4px;
-        }
-
-        .search-result-item .result-path {
-            color: #8b949e;
-            font-size: 11px;
-            margin-bottom: 6px;
-        }
-
-        .search-result-item .result-preview {
-            font-size: 12px;
-            color: #c9d1d9;
-            background: #0d1117;
-            padding: 8px;
-            border-radius: 4px;
-            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 80px;
-            overflow: hidden;
-        }
-
-        .search-result-item .result-preview .highlight {
-            background: #f0883e;
-            color: #0d1117;
-            padding: 1px 2px;
-            border-radius: 2px;
-        }
-
-        .search-results-header {
-            padding: 8px 20px;
-            font-size: 12px;
-            color: #8b949e;
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
-        }
-
-        .prompt-content .highlight {
-            background: #f0883e;
-            color: #0d1117;
-            padding: 1px 2px;
-            border-radius: 2px;
-        }
-
-        .file-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px 0;
-        }
-
-        .category {
-            margin-bottom: 8px;
-        }
-
-        .category-header {
-            padding: 8px 20px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #8b949e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .category-header:hover {
-            color: #c9d1d9;
-        }
-
-        .category-header .arrow {
-            transition: transform 0.2s;
-        }
-
-        .category.collapsed .arrow {
-            transform: rotate(-90deg);
-        }
-
-        .category.collapsed .category-files {
-            display: none;
-        }
-
-        .file-item {
-            padding: 8px 20px 8px 32px;
-            cursor: pointer;
-            font-size: 14px;
-            color: #8b949e;
-            transition: all 0.15s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-item:hover {
-            background: #21262d;
-            color: #c9d1d9;
-        }
-
-        .file-item.active {
-            background: #1f6feb33;
-            color: #58a6ff;
-            border-left: 2px solid #58a6ff;
-            padding-left: 30px;
-        }
-
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .content-header {
-            padding: 16px 24px;
-            background: #161b22;
-            border-bottom: 1px solid #30363d;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .content-header h2 {
-            font-size: 16px;
-            color: #c9d1d9;
-            font-weight: 500;
-        }
-
-        .content-header .file-path {
-            font-size: 12px;
-            color: #8b949e;
-            margin-top: 4px;
-        }
-
-        .content-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            background: #21262d;
-            border: 1px solid #30363d;
-            border-radius: 6px;
-            color: #c9d1d9;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .btn:hover {
-            background: #30363d;
-        }
-
-        .content-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px;
-        }
-
-        .prompt-content {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 20px;
-            white-space: pre-wrap;
-            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            color: #c9d1d9;
-            max-width: 100%;
-            overflow-x: auto;
-        }
-
-        .welcome {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #8b949e;
-            text-align: center;
-        }
-
-        .welcome h2 {
-            font-size: 24px;
-            margin-bottom: 12px;
-            color: #c9d1d9;
-        }
-
-        .welcome p {
-            font-size: 14px;
-            max-width: 400px;
-        }
-
-        .stats {
-            margin-top: 24px;
-            display: flex;
-            gap: 24px;
-        }
-
-        .stat {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 600;
-            color: #58a6ff;
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #8b949e;
-            margin-top: 4px;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0d1117;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #30363d;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #484f58;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: 40vh;
-            }
-
-            .content {
-                height: 60vh;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>一签 OneSlip · 隐私政策 / Privacy Policy</title>
+<meta name="description" content="一签 OneSlip 的隐私政策：不收集任何个人信息，全部数据保存在设备本地。">
+<style>
+  :root {
+    --paper: #F7F2E7;
+    --paper-deep: #EDE4D3;
+    --card: #FFFDF8;
+    --ink: #241F1A;
+    --ink-soft: #6B6157;
+    --seal: #A63A28;
+    --gold: #B08040;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Songti SC", "Noto Serif SC", "Source Han Serif SC", Georgia, "Times New Roman", serif;
+    line-height: 1.85;
+    font-size: 16px;
+  }
+  .wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .seal {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background: var(--seal);
+    color: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    line-height: 1;
+    flex: none;
+    box-shadow: 0 6px 16px rgba(36, 31, 26, .12);
+  }
+  .brand {
+    font-size: 20px;
+    letter-spacing: .08em;
+  }
+  .brand small {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: .16em;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: .06em;
+    margin: 0 0 8px;
+  }
+  .date {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 28px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid rgba(176, 128, 64, .22);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 10px 30px rgba(36, 31, 26, .05);
+  }
+  h2 {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: .04em;
+    margin: 30px 0 10px;
+    color: var(--seal);
+  }
+  h2:first-of-type { margin-top: 0; }
+  p { margin: 0 0 12px; }
+  ul { margin: 0 0 12px; padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  strong { font-weight: 600; }
+  .en {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px dashed rgba(176, 128, 64, .4);
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+  .en h1 { font-size: 24px; }
+  .en h2 { font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; font-size: 15px; letter-spacing: .02em; }
+  footer {
+    margin-top: 44px;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  a { color: var(--seal); text-decoration: none; border-bottom: 1px solid rgba(166, 58, 40, .3); }
+  a:hover { border-bottom-color: var(--seal); }
+  @media (prefers-color-scheme: dark) {
+    /* 保持宣纸质感，不跟随系统深色 */
+  }
+  @media (max-width: 480px) {
+    .wrap { padding: 36px 18px 60px; }
+    .card { padding: 24px 18px; border-radius: 14px; }
+    h1 { font-size: 24px; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h1>🤖 AI System Prompts</h1>
-                <div class="search-container">
-                    <input type="text" class="search-box" placeholder="搜索..." id="searchInput">
-                    <div class="search-mode-toggle">
-                        <button class="search-mode-btn active" id="fileSearchBtn" onclick="setSearchMode('file')">📁 文件名</button>
-                        <button class="search-mode-btn" id="contentSearchBtn" onclick="setSearchMode('content')">📝 全文</button>
-                    </div>
-                    <div class="search-status" id="searchStatus"></div>
-                </div>
-            </div>
-            <div class="file-list" id="fileList"></div>
-        </div>
-        <div class="content">
-            <div class="content-header" id="contentHeader" style="display: none;">
-                <div>
-                    <h2 id="fileName"></h2>
-                    <div class="file-path" id="filePath"></div>
-                </div>
-                <div class="content-actions">
-                    <button class="btn" onclick="copyContent()">📋 复制</button>
-                    <button class="btn" onclick="copyShareLink()">🔗 分享</button>
-                    <button class="btn" onclick="toggleWrap()">↔️ 换行</button>
-                    <button class="btn" onclick="openInNewWindow()">🔲 新窗口</button>
-                </div>
-            </div>
-            <div class="content-body">
-                <div class="welcome" id="welcome">
-                    <h2>欢迎使用 Prompt 浏览器</h2>
-                    <p>从左侧列表选择一个文件来查看其内容。这里收集了各种 AI 工具的系统提示词。</p>
-                    <div class="stats">
-                        <div class="stat">
-                            <div class="stat-value" id="totalCategories">0</div>
-                            <div class="stat-label">分类</div>
-                        </div>
-                        <div class="stat">
-                            <div class="stat-value" id="totalFiles">0</div>
-                            <div class="stat-label">文件</div>
-                        </div>
-                    </div>
-                </div>
-                <pre class="prompt-content hidden" id="promptContent"></pre>
-            </div>
-        </div>
+<div class="wrap">
+  <header>
+    <div class="seal">签</div>
+    <div class="brand">一签<small>OneSlip</small></div>
+  </header>
+
+  <h1>隐私政策</h1>
+  <p class="date">生效日期：2026 年 10 月 31 日</p>
+
+  <div class="card">
+    <p>一签（OneSlip，以下简称「本 App」）尊重并保护你的隐私。本政策说明本 App 如何处理与你有关的信息。</p>
+
+    <h2>一、我们不收集个人信息</h2>
+    <p>本 App 无需注册或登录，不收集姓名、手机号、邮箱、精确位置、通讯录、相册、设备标识符等信息，也不包含第三方广告或数据分析 SDK。</p>
+
+    <h2>二、保存在你设备上的数据</h2>
+    <p>你抽到的签文记录、每日提醒时间、真太阳时经度设置，仅保存在你设备的本地存储中（UserDefaults）。卸载 App 后这些数据随之删除，开发者无法访问。</p>
+
+    <h2>三、通知</h2>
+    <p>若你开启「每日提醒」，本 App 会请求通知权限，并在本地按你设定的时间发送提醒。提醒内容由设备本地生成，不经过任何服务器。你可以随时在 App 设置或系统设置中关闭。</p>
+
+    <h2>四、网络与第三方</h2>
+    <p>当前版本不发起任何网络请求，不向任何第三方传输或共享数据。若未来引入需要联网的功能，我们会在本页面更新说明，并在 App 内征得你的同意。</p>
+
+    <h2>五、儿童隐私</h2>
+    <p>本 App 不面向 13 岁以下儿童收集任何信息。若你认为我们在未获同意的情况下接触了儿童信息，请联系我们，我们会尽快处理。</p>
+
+    <h2>六、内容性质说明</h2>
+    <p>本 App 的签文内容源于传统民俗整理，仅供娱乐与自省参考，不构成医疗、投资、法律或其他专业建议。</p>
+
+    <h2>七、政策更新</h2>
+    <p>如本政策发生变更，我们会在本页面更新内容并同步修改生效日期。重大变更会在 App 内提示。</p>
+
+    <h2>八、联系我们</h2>
+    <p>如对本政策有疑问，可通过 App Store 产品页上所列的开发者联系方式与我们联系。</p>
+  </div>
+
+  <section class="en" lang="en">
+    <h1>Privacy Policy</h1>
+    <p class="date">Effective date: October 31, 2026</p>
+
+    <div class="card">
+      <p>OneSlip ("the App") respects and protects your privacy. This policy explains how the App handles information related to you.</p>
+
+      <h2>1. We do not collect personal information</h2>
+      <p>The App requires no account or sign-in. We do not collect your name, phone number, email address, precise location, contacts, photos, or device identifiers, and the App contains no third-party advertising or analytics SDKs.</p>
+
+      <h2>2. Data stored on your device</h2>
+      <p>Your drawn slips, daily reminder time, and true-solar-time longitude setting are stored only in local storage on your device (UserDefaults). Uninstalling the App removes this data. The developer cannot access it.</p>
+
+      <h2>3. Notifications</h2>
+      <p>If you enable the daily reminder, the App requests notification permission and schedules reminders locally on your device. Reminder content is generated on-device and never passes through a server. You can turn it off at any time in the App or in system settings.</p>
+
+      <h2>4. Network and third parties</h2>
+      <p>The current version makes no network requests and shares no data with third parties. If a future version introduces online features, we will update this page and ask for your consent in the App.</p>
+
+      <h2>5. Children's privacy</h2>
+      <p>The App does not knowingly collect information from children under 13. If you believe a child's information has reached us without consent, please contact us and we will address it promptly.</p>
+
+      <h2>6. Nature of the content</h2>
+      <p>Slip texts are compiled from traditional folk material and are provided for entertainment and self-reflection only. They are not medical, financial, legal, or other professional advice.</p>
+
+      <h2>7. Changes to this policy</h2>
+      <p>If this policy changes, we will update this page and revise the effective date above. Material changes will also be noted in the App.</p>
+
+      <h2>8. Contact</h2>
+      <p>For questions about this policy, please reach us through the developer contact information listed on our App Store product page.</p>
     </div>
+  </section>
 
-    <script>
-        const files = {
-            "Anthropic": [
-                { name: "Claude Code/Prompt.txt", path: "Anthropic/Claude Code/Prompt.txt" },
-                { name: "Claude Code/Prompt-2026-01-21 copy.json", path: "Anthropic/Claude Code/Prompt-2026-01-21 copy.json" },
-                { name: "Claude Code/Tools.json", path: "Anthropic/Claude Code/Tools.json" },
-                { name: "Claude Code/Tools-2026-01-21.json", path: "Anthropic/Claude Code/Tools-2026-01-21.json" },
-                { name: "Claude for Chrome/Prompt.txt", path: "Anthropic/Claude for Chrome/Prompt.txt" },
-                { name: "Claude for Chrome/Tools.json", path: "Anthropic/Claude for Chrome/Tools.json" },
-                { name: "Claude Code 2.0.txt", path: "Anthropic/Claude Code 2.0.txt" },
-                { name: "Sonnet 4.5 Prompt.txt", path: "Anthropic/Sonnet 4.5 Prompt.txt" }
-            ],
-            "Amp": [
-                { name: "claude-4-sonnet.yaml", path: "Amp/claude-4-sonnet.yaml" },
-                { name: "gpt-5.yaml", path: "Amp/gpt-5.yaml" }
-            ],
-            "Augment Code": [
-                { name: "claude-4-sonnet-agent-prompts.txt", path: "Augment Code/claude-4-sonnet-agent-prompts.txt" },
-                { name: "claude-4-sonnet-tools.json", path: "Augment Code/claude-4-sonnet-tools.json" },
-                { name: "gpt-5-agent-prompts.txt", path: "Augment Code/gpt-5-agent-prompts.txt" },
-                { name: "gpt-5-tools.json", path: "Augment Code/gpt-5-tools.json" }
-            ],
-            "Cluely": [
-                { name: "Default Prompt.txt", path: "Cluely/Default Prompt.txt" },
-                { name: "Enterprise Prompt.txt", path: "Cluely/Enterprise Prompt.txt" }
-            ],
-            "CodeBuddy Prompts": [
-                { name: "Chat Prompt.txt", path: "CodeBuddy Prompts/Chat Prompt.txt" },
-                { name: "Craft Prompt.txt", path: "CodeBuddy Prompts/Craft Prompt.txt" }
-            ],
-            "Comet Assistant": [
-                { name: "System Prompt.txt", path: "Comet Assistant/System Prompt.txt" },
-                { name: "tools.json", path: "Comet Assistant/tools.json" }
-            ],
-            "Cursor Prompts": [
-                { name: "Agent CLI Prompt 2025-08-07.txt", path: "Cursor Prompts/Agent CLI Prompt 2025-08-07.txt" },
-                { name: "Agent Prompt 2.0.txt", path: "Cursor Prompts/Agent Prompt 2.0.txt" },
-                { name: "Agent Prompt 2025-09-03.txt", path: "Cursor Prompts/Agent Prompt 2025-09-03.txt" },
-                { name: "Agent Prompt 2026-01-21.txt", path: "Cursor Prompts/Agent Prompt 2026-01-21.txt" },
-                { name: "Agent Prompt v1.0.txt", path: "Cursor Prompts/Agent Prompt v1.0.txt" },
-                { name: "Agent Prompt v1.2.txt", path: "Cursor Prompts/Agent Prompt v1.2.txt" },
-                { name: "Agent Tools 2026-01-21.txt", path: "Cursor Prompts/Agent Tools 2026-01-21.txt" },
-                { name: "Agent Tools v1.0.json", path: "Cursor Prompts/Agent Tools v1.0.json" },
-                { name: "Chat Prompt.txt", path: "Cursor Prompts/Chat Prompt.txt" }
-            ],
-            "Devin AI": [
-                { name: "DeepWiki Prompt.txt", path: "Devin AI/DeepWiki Prompt.txt" },
-                { name: "Prompt.txt", path: "Devin AI/Prompt.txt" }
-            ],
-            "Emergent": [
-                { name: "Prompt.txt", path: "Emergent/Prompt.txt" },
-                { name: "Tools.json", path: "Emergent/Tools.json" }
-            ],
-            "Google": [
-                { name: "Antigravity/Fast Prompt.txt", path: "Google/Antigravity/Fast Prompt.txt" },
-                { name: "Antigravity/planning-mode.txt", path: "Google/Antigravity/planning-mode.txt" },
-                { name: "Gemini/AI Studio vibe-coder.txt", path: "Google/Gemini/AI Studio vibe-coder.txt" }
-            ],
-            "Junie": [
-                { name: "Prompt.txt", path: "Junie/Prompt.txt" }
-            ],
-            "Kiro": [
-                { name: "Mode_Clasifier_Prompt.txt", path: "Kiro/Mode_Clasifier_Prompt.txt" },
-                { name: "Spec_Prompt.txt", path: "Kiro/Spec_Prompt.txt" },
-                { name: "Vibe_Prompt.txt", path: "Kiro/Vibe_Prompt.txt" }
-            ],
-            "Leap.new": [
-                { name: "Prompts.txt", path: "Leap.new/Prompts.txt" },
-                { name: "tools.json", path: "Leap.new/tools.json" }
-            ],
-            "Lovable": [
-                { name: "Agent Prompt.txt", path: "Lovable/Agent Prompt.txt" },
-                { name: "Agent Tools.json", path: "Lovable/Agent Tools.json" }
-            ],
-            "Manus Agent": [
-                { name: "Agent loop.txt", path: "Manus Agent Tools & Prompt/Agent loop.txt" },
-                { name: "Modules.txt", path: "Manus Agent Tools & Prompt/Modules.txt" },
-                { name: "Prompt.txt", path: "Manus Agent Tools & Prompt/Prompt.txt" },
-                { name: "tools.json", path: "Manus Agent Tools & Prompt/tools.json" }
-            ],
-            "NotionAi": [
-                { name: "Prompt.txt", path: "NotionAi/Prompt.txt" },
-                { name: "tools.json", path: "NotionAi/tools.json" }
-            ],
-            "Open Source": [
-                { name: "Bolt/Prompt.txt", path: "Open Source prompts/Bolt/Prompt.txt" },
-                { name: "Cline/Prompt.txt", path: "Open Source prompts/Cline/Prompt.txt" },
-                { name: "Codex CLI/Prompt.txt", path: "Open Source prompts/Codex CLI/Prompt.txt" },
-                { name: "Codex CLI/openai-codex-cli-system-prompt-20250820.txt", path: "Open Source prompts/Codex CLI/openai-codex-cli-system-prompt-20250820.txt" },
-                { name: "Gemini CLI/google-gemini-cli-system-prompt.txt", path: "Open Source prompts/Gemini CLI/google-gemini-cli-system-prompt.txt" },
-                { name: "Lumo/Prompt.txt", path: "Open Source prompts/Lumo/Prompt.txt" },
-                { name: "RooCode/Prompt.txt", path: "Open Source prompts/RooCode/Prompt.txt" }
-            ],
-            "Orchids.app": [
-                { name: "Decision-making prompt.txt", path: "Orchids.app/Decision-making prompt.txt" },
-                { name: "System Prompt.txt", path: "Orchids.app/System Prompt.txt" }
-            ],
-            "Perplexity": [
-                { name: "Prompt.txt", path: "Perplexity/Prompt.txt" }
-            ],
-            "Poke": [
-                { name: "Poke agent.txt", path: "Poke/Poke agent.txt" },
-                { name: "Poke_p1.txt", path: "Poke/Poke_p1.txt" },
-                { name: "Poke_p2.txt", path: "Poke/Poke_p2.txt" },
-                { name: "Poke_p3.txt", path: "Poke/Poke_p3.txt" },
-                { name: "Poke_p4.txt", path: "Poke/Poke_p4.txt" },
-                { name: "Poke_p5.txt", path: "Poke/Poke_p5.txt" },
-                { name: "Poke_p6.txt", path: "Poke/Poke_p6.txt" }
-            ],
-            "Qoder": [
-                { name: "Quest Action.txt", path: "Qoder/Quest Action.txt" },
-                { name: "Quest Design.txt", path: "Qoder/Quest Design.txt" },
-                { name: "prompt.txt", path: "Qoder/prompt.txt" }
-            ],
-            "Replit": [
-                { name: "Prompt.txt", path: "Replit/Prompt.txt" },
-                { name: "Tools.json", path: "Replit/Tools.json" }
-            ],
-            "Same.dev": [
-                { name: "Prompt.txt", path: "Same.dev/Prompt.txt" },
-                { name: "Tools.json", path: "Same.dev/Tools.json" }
-            ],
-            "Trae": [
-                { name: "Builder Prompt.txt", path: "Trae/Builder Prompt.txt" },
-                { name: "Builder Prompt-2026-01-09.txt", path: "Trae/Builder Prompt-2026-01-09.txt" },
-                { name: "Builder Tools.json", path: "Trae/Builder Tools.json" },
-                { name: "Builder Tools-2026-02-05.txt", path: "Trae/Builder Tools-2026-02-05.txt" },
-                { name: "Chat Prompt.txt", path: "Trae/Chat Prompt.txt" },
-                { name: "Solo Prompt-2026-01-09.txt", path: "Trae/Solo Prompt-2026-01-09.txt" },
-                { name: "Solo Tools-2026-02-05.txt", path: "Trae/Solo Tools-2026-02-05.txt" }
-            ],
-            "Traycer AI": [
-                { name: "phase_mode_prompts.txt", path: "Traycer AI/phase_mode_prompts.txt" },
-                { name: "phase_mode_tools.json", path: "Traycer AI/phase_mode_tools.json" },
-                { name: "plan_mode_prompts", path: "Traycer AI/plan_mode_prompts" },
-                { name: "plan_mode_tools.json", path: "Traycer AI/plan_mode_tools.json" }
-            ],
-            "VSCode Agent": [
-                { name: "Prompt.txt", path: "VSCode Agent/Prompt.txt" },
-                { name: "chat-titles.txt", path: "VSCode Agent/chat-titles.txt" },
-                { name: "claude-sonnet-4.txt", path: "VSCode Agent/claude-sonnet-4.txt" },
-                { name: "gemini-2.5-pro.txt", path: "VSCode Agent/gemini-2.5-pro.txt" },
-                { name: "gpt-4.1.txt", path: "VSCode Agent/gpt-4.1.txt" },
-                { name: "gpt-4o.txt", path: "VSCode Agent/gpt-4o.txt" },
-                { name: "gpt-5-mini.txt", path: "VSCode Agent/gpt-5-mini.txt" },
-                { name: "gpt-5.txt", path: "VSCode Agent/gpt-5.txt" },
-                { name: "nes-tab-completion.txt", path: "VSCode Agent/nes-tab-completion.txt" }
-            ],
-            "Warp.dev": [
-                { name: "Prompt.txt", path: "Warp.dev/Prompt.txt" }
-            ],
-            "Windsurf": [
-                { name: "Prompt Wave 11.txt", path: "Windsurf/Prompt Wave 11.txt" },
-                { name: "Tools Wave 11.txt", path: "Windsurf/Tools Wave 11.txt" }
-            ],
-            "Xcode": [
-                { name: "DocumentAction.txt", path: "Xcode/DocumentAction.txt" },
-                { name: "ExplainAction.txt", path: "Xcode/ExplainAction.txt" },
-                { name: "MessageAction.txt", path: "Xcode/MessageAction.txt" },
-                { name: "PlaygroundAction.txt", path: "Xcode/PlaygroundAction.txt" },
-                { name: "PreviewAction.txt", path: "Xcode/PreviewAction.txt" },
-                { name: "System.txt", path: "Xcode/System.txt" }
-            ],
-            "Z.ai Code": [
-                { name: "prompt.txt", path: "Z.ai Code/prompt.txt" }
-            ],
-            "dia": [
-                { name: "Prompt.txt", path: "dia/Prompt.txt" }
-            ],
-            "v0 Prompts and Tools": [
-                { name: "Prompt.txt", path: "v0 Prompts and Tools/Prompt.txt" },
-                { name: "Tools.json", path: "v0 Prompts and Tools/Tools.json" }
-            ]
-        };
-
-        let currentFile = null;
-        let wrapEnabled = true;
-        let searchMode = 'file';
-        let contentIndex = {};
-        let indexReady = false;
-        let currentSearchTerm = '';
-
-        function init() {
-            renderFileList();
-            updateStats();
-            document.getElementById('searchInput').addEventListener('input', handleSearch);
-            buildContentIndex();
-            loadFromHash();
-            window.addEventListener('hashchange', loadFromHash);
-        }
-
-        function loadFromHash() {
-            const hash = decodeURIComponent(window.location.hash.slice(1));
-            if (!hash) return;
-
-            for (const category of Object.keys(files)) {
-                for (const file of files[category]) {
-                    if (file.path === hash) {
-                        loadFile(file.path, file.name, category);
-                        return;
-                    }
-                }
-            }
-        }
-
-        function updateHash(path) {
-            const newHash = '#' + encodeURIComponent(path);
-            if (window.location.hash !== newHash) {
-                history.pushState(null, '', newHash);
-            }
-        }
-
-        async function buildContentIndex() {
-            const statusEl = document.getElementById('searchStatus');
-            statusEl.className = 'search-status loading';
-            statusEl.textContent = '正在建立搜索索引...';
-
-            const allFiles = [];
-            for (const category of Object.keys(files)) {
-                for (const file of files[category]) {
-                    allFiles.push({ ...file, category });
-                }
-            }
-
-            let loaded = 0;
-            const total = allFiles.length;
-
-            for (const file of allFiles) {
-                try {
-                    const response = await fetch(file.path);
-                    if (response.ok) {
-                        const content = await response.text();
-                        contentIndex[file.path] = {
-                            content: content,
-                            contentLower: content.toLowerCase(),
-                            name: file.name,
-                            category: file.category,
-                            path: file.path
-                        };
-                    }
-                } catch (e) {
-                    console.warn(`Failed to load ${file.path}:`, e);
-                }
-                loaded++;
-                statusEl.textContent = `正在建立索引... (${loaded}/${total})`;
-            }
-
-            indexReady = true;
-            statusEl.className = 'search-status ready';
-            statusEl.textContent = `✓ 索引就绪 (${Object.keys(contentIndex).length} 个文件)`;
-            
-            setTimeout(() => {
-                statusEl.textContent = '';
-            }, 3000);
-        }
-
-        function setSearchMode(mode) {
-            searchMode = mode;
-            document.getElementById('fileSearchBtn').classList.toggle('active', mode === 'file');
-            document.getElementById('contentSearchBtn').classList.toggle('active', mode === 'content');
-            
-            const searchInput = document.getElementById('searchInput');
-            searchInput.placeholder = mode === 'file' ? '搜索文件名...' : '搜索内容...';
-            
-            if (searchInput.value) {
-                handleSearch({ target: searchInput });
-            }
-        }
-
-        function renderFileList(filter = '') {
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
-
-            const sortedCategories = Object.keys(files).sort();
-
-            for (const category of sortedCategories) {
-                const categoryFiles = files[category].filter(file => 
-                    filter === '' || 
-                    file.name.toLowerCase().includes(filter.toLowerCase()) ||
-                    category.toLowerCase().includes(filter.toLowerCase())
-                );
-
-                if (categoryFiles.length === 0) continue;
-
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'category';
-
-                const header = document.createElement('div');
-                header.className = 'category-header';
-                header.innerHTML = `<span class="arrow">▼</span> ${category} (${categoryFiles.length})`;
-                header.onclick = () => categoryDiv.classList.toggle('collapsed');
-
-                const filesDiv = document.createElement('div');
-                filesDiv.className = 'category-files';
-
-                for (const file of categoryFiles) {
-                    const fileDiv = document.createElement('div');
-                    fileDiv.className = 'file-item';
-                    fileDiv.textContent = file.name;
-                    fileDiv.onclick = () => loadFile(file.path, file.name, category);
-                    fileDiv.dataset.path = file.path;
-                    filesDiv.appendChild(fileDiv);
-                }
-
-                categoryDiv.appendChild(header);
-                categoryDiv.appendChild(filesDiv);
-                fileList.appendChild(categoryDiv);
-            }
-        }
-
-        function handleSearch(e) {
-            const query = e.target.value.trim();
-            currentSearchTerm = query;
-            
-            if (searchMode === 'file') {
-                renderFileList(query);
-            } else {
-                renderContentSearchResults(query);
-            }
-        }
-
-        function renderContentSearchResults(query) {
-            const fileList = document.getElementById('fileList');
-            
-            if (!query) {
-                renderFileList('');
-                return;
-            }
-
-            if (!indexReady) {
-                fileList.innerHTML = '<div class="search-results-header">索引尚未就绪，请稍候...</div>';
-                return;
-            }
-
-            const queryLower = query.toLowerCase();
-            const results = [];
-
-            for (const path in contentIndex) {
-                const file = contentIndex[path];
-                const index = file.contentLower.indexOf(queryLower);
-                
-                if (index !== -1) {
-                    const start = Math.max(0, index - 50);
-                    const end = Math.min(file.content.length, index + query.length + 100);
-                    let preview = file.content.substring(start, end);
-                    
-                    if (start > 0) preview = '...' + preview;
-                    if (end < file.content.length) preview = preview + '...';
-                    
-                    const matchCount = (file.contentLower.match(new RegExp(escapeRegExp(queryLower), 'g')) || []).length;
-                    
-                    results.push({
-                        ...file,
-                        preview,
-                        matchIndex: index,
-                        matchCount
-                    });
-                }
-            }
-
-            results.sort((a, b) => b.matchCount - a.matchCount);
-
-            fileList.innerHTML = '';
-
-            if (results.length === 0) {
-                fileList.innerHTML = '<div class="search-results-header">未找到匹配结果</div>';
-                return;
-            }
-
-            const header = document.createElement('div');
-            header.className = 'search-results-header';
-            header.textContent = `找到 ${results.length} 个匹配文件`;
-            fileList.appendChild(header);
-
-            for (const result of results) {
-                const item = document.createElement('div');
-                item.className = 'search-result-item';
-                
-                const highlightedPreview = highlightText(result.preview, query);
-                
-                item.innerHTML = `
-                    <div class="result-title">${result.category} / ${result.name}</div>
-                    <div class="result-path">${result.path} (${result.matchCount} 处匹配)</div>
-                    <div class="result-preview">${highlightedPreview}</div>
-                `;
-                
-                item.onclick = () => loadFileWithHighlight(result.path, result.name, result.category, query);
-                fileList.appendChild(item);
-            }
-        }
-
-        function escapeRegExp(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
-
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function highlightText(text, query) {
-            if (!query) return escapeHtml(text);
-            
-            const escaped = escapeHtml(text);
-            const queryEscaped = escapeHtml(query);
-            const regex = new RegExp(`(${escapeRegExp(queryEscaped)})`, 'gi');
-            return escaped.replace(regex, '<span class="highlight">$1</span>');
-        }
-
-        async function loadFileWithHighlight(path, name, category, searchTerm) {
-            await loadFile(path, name, category);
-            
-            if (searchTerm && currentFile) {
-                const contentEl = document.getElementById('promptContent');
-                const highlightedContent = highlightText(currentFile.content, searchTerm);
-                contentEl.innerHTML = highlightedContent;
-                
-                setTimeout(() => {
-                    const firstHighlight = contentEl.querySelector('.highlight');
-                    if (firstHighlight) {
-                        firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
-                }, 100);
-            }
-        }
-
-        async function loadFile(path, name, category) {
-            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-            document.querySelector(`[data-path="${path}"]`)?.classList.add('active');
-
-            document.getElementById('welcome').classList.add('hidden');
-            document.getElementById('promptContent').classList.remove('hidden');
-            document.getElementById('contentHeader').style.display = 'flex';
-            document.getElementById('fileName').textContent = `${category} / ${name}`;
-            document.getElementById('filePath').textContent = path;
-
-            updateHash(path);
-
-            try {
-                const response = await fetch(path);
-                if (!response.ok) throw new Error('File not found');
-                const content = await response.text();
-                document.getElementById('promptContent').textContent = content;
-                currentFile = { path, name, category, content };
-            } catch (error) {
-                document.getElementById('promptContent').textContent = `无法加载文件: ${error.message}\n\n请确保在本地服务器环境下运行此页面。\n\n可以使用以下命令启动本地服务器:\n  python -m http.server 8000\n  或\n  npx serve`;
-            }
-        }
-
-        function copyContent() {
-            if (currentFile) {
-                navigator.clipboard.writeText(currentFile.content).then(() => {
-                    alert('已复制到剪贴板');
-                });
-            }
-        }
-
-        function copyShareLink() {
-            if (currentFile) {
-                const url = window.location.origin + window.location.pathname + '#' + encodeURIComponent(currentFile.path);
-                navigator.clipboard.writeText(url).then(() => {
-                    alert('链接已复制到剪贴板');
-                });
-            }
-        }
-
-        function toggleWrap() {
-            const content = document.getElementById('promptContent');
-            wrapEnabled = !wrapEnabled;
-            content.style.whiteSpace = wrapEnabled ? 'pre-wrap' : 'pre';
-        }
-
-        function openInNewWindow() {
-            if (!currentFile) return;
-            window.open(currentFile.path, '_blank');
-        }
-
-        function updateStats() {
-            const categories = Object.keys(files).length;
-            const totalFiles = Object.values(files).reduce((sum, arr) => sum + arr.length, 0);
-            document.getElementById('totalCategories').textContent = categories;
-            document.getElementById('totalFiles').textContent = totalFiles;
-        }
-
-        init();
-    </script>
+  <footer>© 2026 OneSlip · 一签</footer>
+</div>
 </body>
 </html>
