@@ -1,0 +1,323 @@
+[
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?doubleclick\\.net[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?googlesyndication\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?googleadservices\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?adservice\\.google\\.[a-z.]+[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?amazon-adsystem\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?adsrvr\\.org[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?criteo\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?criteo\\.net[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?taboola\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?outbrain\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?scorecardresearch\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?quantserve\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?rubiconproject\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?pubmatic\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?openx\\.net[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?casalemedia\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?adnxs\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?33across\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?sharethrough\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?moatads\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?doubleverify\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?bat\\.bing\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?ads-twitter\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?ads\\.linkedin\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?hotjar\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?hotjar\\.io[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?fullstory\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?mouseflow\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?clarity\\.ms[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?segment\\.io/", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?segment\\.com/", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?mixpanel\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?amplitude\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?heapanalytics\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?branch\\.io[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?appsflyer\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?adjust\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?kochava\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?connect\\.facebook\\.net[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?platform\\.twitter\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?platform\\.linkedin\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?cdn\\.onesignal\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+  {
+    "trigger": { "url-filter": "^https?://([^/]+\\.)?pushengage\\.com[/:]", "load-type": ["third-party"] },
+    "action": { "type": "block" }
+  },
+
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#onetrust-banner-sdk" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#onetrust-consent-sdk" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".onetrust-pc-dark-filter" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#CybotCookiebotDialog" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#CybotCookiebotDialogBodyUnderlay" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".qc-cmp2-container" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#qc-cmp2-ui" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#didomi-host" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".didomi-popup-container" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".fc-consent-root" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#truste-consent-track" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".cc-window" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#cookie-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#cookie-notice" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#cookie-consent" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".cookie-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".cookie-notice" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".cookie-consent" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".cookie-consent-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".cookie-policy-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#gdpr-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".gdpr-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#sp_message_container_1" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".newsletter-modal" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".newsletter-popup" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".subscribe-modal" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".subscribe-popup" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".email-signup-modal" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".exit-intent-popup" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".push-notification-prompt" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#smartbanner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".smart-app-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".app-download-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".mobile-app-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".open-in-app-banner" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": "#onesignal-slidedown-container" }
+  },
+  {
+    "trigger": { "url-filter": ".*" },
+    "action": { "type": "css-display-none", "selector": ".onesignal-slidedown-container" }
+  }
+]

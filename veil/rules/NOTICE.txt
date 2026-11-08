@@ -1,0 +1,8 @@
+Veil Safari rule data
+
+Sources and authors are listed in every package-manifest.json.
+Converted for Safari 17 using SafariConverterLib 4.3.1 (build tool only).
+Unsupported advanced filters are omitted. No endorsement is implied.
+EasyList, EasyPrivacy, EasyList China, Liste FR, KoreanList and Veil additions: CC BY-SA 3.0.
+Fanboy Annoyance source: CC BY 3.0. Modified combined data: CC BY-SA 3.0.
+License copies: licenses/CC-BY-SA-3.0.txt and licenses/CC-BY-3.0.txt.

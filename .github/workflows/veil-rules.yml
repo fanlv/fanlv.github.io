@@ -1,0 +1,40 @@
+name: Update Veil rules
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '35 5 * * 2,5'
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: veil-rule-publisher
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Build, verify and sign data packages
+        env:
+          VEIL_RULE_SIGNING_KEY: ${{ secrets.VEIL_RULE_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$VEIL_RULE_SIGNING_KEY"
+          key_path="$RUNNER_TEMP/veil-rules.key"
+          trap 'rm -f "$key_path"' EXIT
+          printf '%s' "$VEIL_RULE_SIGNING_KEY" | base64 --decode > "$key_path"
+          chmod 600 "$key_path"
+          python3 veil/rules/build/publish.py --output veil/rules/v1 --key "$key_path"
+      - name: Commit verified rule changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git add veil/rules/v1
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name 'Veil rule publisher'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'Update verified Veil filtering data'
+          git push
+          gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
