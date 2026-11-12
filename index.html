@@ -116,6 +116,13 @@
       <h2>三、保存在你设备上的数据</h2>
       <p>App 的设置、记录等通常保存在你设备的本地存储中。卸载 App 后这些数据会随之删除，我们无法远程读取或恢复。</p>
 
+<h2>Clashrocket：代理连接与本机配置</h2>
+<p>Clashrocket 是使用自有节点的代理客户端，不提供服务器、账号或订阅。开发者不收集、出售、出租、使用或向第三方披露你的使用数据，不保存浏览历史、访问网址、流量内容或请求日志，也不使用统计、广告或追踪服务。</p>
+<p>节点凭据、订阅地址、套餐快照和设置保存在本机系统钥匙串中，不上传给开发者。钥匙串项目可能在卸载后继续保留；你可在 App 中删除节点和订阅。我们无法远程读取或恢复这些配置。</p>
+<p>启用 VPN 后，流量依照你选择的节点与规则直连、转发或拦截；你选择的代理及 DNS 提供方会处理提供连接所必需的流量与查询。默认 DNS 是 Cloudflare 1.1.1.1，可在设置中更改。开发者不运营代理服务；请自行选择可信提供方。</p>
+<p>只有你主动操作时，App 才会下载你指定的 HTTPS 订阅、从 GitHub 的 pexcn/daily 下载推荐 GFWList，或直接测试节点 TCP 连通性；对应服务会接收连接所需的 IP 地址等标准网络信息。二维码相机画面仅在本机处理，不保存、不上传。App 不安装根证书、不解密 HTTPS，也不自动读取剪贴板。</p>
+<p>这些用途会在连接所在的首页说明。<a href="/clashrocket/">使用帮助与支持</a>；邮箱：<a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>。</p>
+
       <h2 id="veil-privacy">Veil：规则更新与网页处理</h2>
       <p>Veil 的网页配色、元素隐藏、站点设置与自定义规则均在设备上处理，不上传访问过的网址、浏览历史、页面内容或自定义规则。内置规则离线可用。</p>
       <p>只有你主动检查更新或开启自动更新时，Veil 才会从 <code>apple.fanlv.fun/veil/rules/</code> 下载预编译规则包。自动检查在打开 App 或系统允许后台刷新时执行；可随时关闭。下载使用普通 HTTPS 请求，托管服务会接收连接所需的标准网络信息（例如 IP 地址），不会收到你的浏览记录。Veil 不将这些请求用于统计、广告或追踪。规则来源、日期、作者和许可证在 App 设置及<a href="/veil/rules/NOTICE.txt">规则署名文件</a>中列出。更新失败时保留原有规则。</p>
@@ -160,6 +167,13 @@
 
       <h2>3. Data stored on your device</h2>
       <p>Settings and records are typically stored locally on your device. Uninstalling the app removes this data. We cannot read or restore it remotely.</p>
+
+<h2>Clashrocket: proxy connections and local configuration</h2>
+<p>Clashrocket is a bring-your-own-server proxy client. It supplies no servers, accounts, or subscriptions. The developer does not collect, sell, rent, use, or disclose your usage data to third parties. We keep no browsing history, visited URLs, traffic contents, or request logs, and use no analytics, advertising, or tracking services.</p>
+<p>Server credentials, subscription addresses, plan snapshots, and settings are stored in the system keychain on your device and are not uploaded to the developer. Keychain items may remain after uninstalling the app. You can remove servers and subscriptions in the app. We cannot read or restore these configurations remotely.</p>
+<p>While VPN is enabled, traffic goes direct, through your chosen proxy, or is blocked according to your rules. Your chosen proxy and DNS operators process traffic and queries needed to provide their services. DNS defaults to Cloudflare 1.1.1.1 and can be changed in Settings. The developer does not operate the proxy service; choose providers you trust.</p>
+<p>Only your requested actions download your HTTPS subscriptions, fetch the recommended GFWList from pexcn/daily on GitHub, or test TCP connectivity directly to your servers. Those services receive standard connection information such as your IP address. Camera images used to scan QR codes are processed on-device, without saving or uploading. The app installs no root certificates, does not decrypt HTTPS, and does not read the clipboard automatically.</p>
+<p>The Home screen explains these purposes before connection. <a href="/clashrocket/">Help and support</a>; email: <a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>.</p>
 
       <h2 id="veil-privacy-en">Veil: rule updates and webpage processing</h2>
       <p>Veil processes webpage colors, element hiding, site settings, and custom rules on your device. It does not upload visited URLs, browsing history, page contents, or custom rules. Bundled rules work offline.</p>
