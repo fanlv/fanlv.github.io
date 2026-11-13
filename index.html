@@ -129,6 +129,11 @@
       <p>本地网络权限用于局域网探测、Bonjour/SSDP 服务发现和设备间测试。局域网发现会发送本地探测，结果只保存在本机。负载下延迟测试会通过您选定的 iperf3 服务端传输真实数据。内置服务端仅在 App 前台运行；本地 HTTP 测试服务不使用 TLS。网络唤醒向指定地址发送唤醒包，不代表目标已成功唤醒。</p>
       <p>二维码扫描的相机图像仅在设备上处理，不保存或上传。您可在 App 内删除历史记录，卸载 App 会删除其本地存储。联系邮箱：<a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>。</p>
 
+      <h2 id="summa-privacy">Summa：本机计算、历史记录与参考汇率</h2>
+      <p>Summa 的计算、函数绘图、单位换算、统计、方程和进制转换均在设备本机完成。计算历史、收藏、标题、备注、变量、设置及最近使用的货币保存在本机，不上传给开发者。只有您主动分享计算时，相应文本才会交给您选择的系统分享目标。没有账号、广告、统计或追踪服务。</p>
+      <p>打开货币换算或刷新汇率时，App 通过 HTTPS 从 <a href="https://www.exchangerate-api.com/">ExchangeRate-API</a>（<code>open.er-api.com</code>）获取公开参考汇率，失败时使用 <a href="https://www.frankfurter.dev/">Frankfurter</a>（<code>api.frankfurter.dev</code>）作为备用来源。请求不包含您输入的金额、算式、历史、标题、备注或变量；服务提供方会收到建立连接所需的 IP 地址等标准网络信息。开发者不接收这些请求数据。</p>
+      <p>最近成功取得的参考汇率保存在本机供离线换算，界面显示数据日期、更新失败和过期状态。首次获取和更新需要联网，报价范围与更新频率取决于数据源，不代表实时成交价。您可在 App 内删除计算记录；清空历史保留收藏，单条删除可移除收藏。卸载 App 会移除本地存储。联系邮箱：<a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>。</p>
+
       <h2 id="veil-privacy">Veil：规则更新与网页处理</h2>
       <p>Veil 的网页配色、元素隐藏、站点设置与自定义规则均在设备上处理，不上传访问过的网址、浏览历史、页面内容或自定义规则。内置规则离线可用。</p>
       <p>只有你主动检查更新或开启自动更新时，Veil 才会从 <code>apple.fanlv.fun/veil/rules/</code> 下载预编译规则包。自动检查在打开 App 或系统允许后台刷新时执行；可随时关闭。下载使用普通 HTTPS 请求，托管服务会接收连接所需的标准网络信息（例如 IP 地址），不会收到你的浏览记录。Veil 不将这些请求用于统计、广告或追踪。规则来源、日期、作者和许可证在 App 设置及<a href="/veil/rules/NOTICE.txt">规则署名文件</a>中列出。更新失败时保留原有规则。</p>
@@ -186,6 +191,11 @@
       <p>Network tests send traffic to the hosts, servers, resolvers and URLs you choose, including Ping, TCP/UDP, DNS, HTTP/HTTPS and iperf3. DNS-over-HTTPS presets contact Cloudflare or Google when selected. Optional public IP lookup contacts api.ipify.org only after you tap Reveal. Providers receive the IP address needed for the connection and the queries or requests you send. The developer receives no test data and operates no speed-test backend.</p>
       <p>Local Network permission supports LAN probes, Bonjour/SSDP service discovery and device-to-device tests. LAN discovery sends local probes and stores results only on your device. Loaded-latency tests transfer actual data through your chosen iperf3 server. Built-in servers run only in the foreground; the local HTTP test service does not use TLS. Wake on LAN sends a magic packet to the chosen address and does not confirm that the device woke.</p>
       <p>Camera images for QR pairing are processed on-device without saving or uploading. You can delete history in the app; uninstalling removes its local storage. Contact: <a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>.</p>
+
+      <h2 id="summa-privacy-en">Summa: local calculations, history and reference rates</h2>
+      <p>Summa processes calculations, function graphs, unit conversions, statistics, equations and number-base conversions on your device. History, favorites, titles, notes, variables, settings and recent currencies are stored locally and are not uploaded to the developer. Only an explicit share action passes calculation text to your chosen system share destination. There are no accounts, ads, analytics or tracking services.</p>
+      <p>When you open currency conversion or refresh rates, the app retrieves public reference rates over HTTPS from <a href="https://www.exchangerate-api.com/">ExchangeRate-API</a> (<code>open.er-api.com</code>), with <a href="https://www.frankfurter.dev/">Frankfurter</a> (<code>api.frankfurter.dev</code>) as a fallback. Requests do not contain entered amounts, expressions, history, titles, notes or variables. Providers receive standard connection information such as an IP address; the developer does not receive these requests.</p>
+      <p>The last successfully downloaded reference rates stay on the device for offline conversion. The app shows the data date, failed updates and stale data. Initial downloads and updates require internet; coverage and update frequency depend on the provider. Rates are informational rather than live transaction quotes. You can delete calculations in the app; clearing history preserves favorites, while individual deletion can remove them. Uninstalling removes local storage. Contact: <a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>.</p>
 
       <h2 id="veil-privacy-en">Veil: rule updates and webpage processing</h2>
       <p>Veil processes webpage colors, element hiding, site settings, and custom rules on your device. It does not upload visited URLs, browsing history, page contents, or custom rules. Bundled rules work offline.</p>
