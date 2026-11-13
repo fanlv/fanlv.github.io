@@ -101,7 +101,7 @@
 
   <section id="zh" lang="zh-Hans">
     <h1>隐私政策</h1>
-    <p class="date">生效日期：2026 年 10 月 31 日</p>
+    <p class="date">生效日期：2026 年 11 月 13 日</p>
 
     <div class="card">
       <p><strong>适用范围。</strong>本政策适用于本开发者（下称「我们」）在 App Store 上发布的所有 App。部分 App 会在本政策基础上另有说明，如有冲突，以该 App 内的说明为准。</p>
@@ -122,6 +122,12 @@
 <p>启用 VPN 后，流量依照你选择的节点与规则直连、转发或拦截；你选择的代理及 DNS 提供方会处理提供连接所必需的流量与查询。默认 DNS 是 Cloudflare 1.1.1.1，可在设置中更改。开发者不运营代理服务；请自行选择可信提供方。</p>
 <p>只有你主动操作时，App 才会下载你指定的 HTTPS 订阅、从 GitHub 的 pexcn/daily 下载推荐 GFWList，或直接测试节点 TCP 连通性；对应服务会接收连接所需的 IP 地址等标准网络信息。二维码相机画面仅在本机处理，不保存、不上传。App 不安装根证书、不解密 HTTPS，也不自动读取剪贴板。</p>
 <p>这些用途会在连接所在的首页说明。<a href="/clashverge/">使用帮助与支持</a>；邮箱：<a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>。</p>
+
+      <h2 id="wireprobe-privacy">WireProbe：网络测试与本机报告</h2>
+      <p>WireProbe 的设置、测试方案、历史记录与报告保存在设备本机，不上传给开发者。无账号、广告、统计或追踪服务。只有您主动分享时，报告才会交给您选择的系统分享目标；导出预览默认隐藏地址与名称，也可以由您关闭此选项。</p>
+      <p>网络测试会向您指定的主机、服务端、解析器或网址发送测试流量，包括 Ping、TCP/UDP、DNS、HTTP/HTTPS 和 iperf3。DNS-over-HTTPS 预设在您选择使用时访问 Cloudflare 或 Google；公网 IP 查询仅在点击显示时访问 api.ipify.org。服务提供方会接收建立连接所需的 IP 地址及您发送的查询或请求，开发者不接收这些测试数据，也不运营测速后台。</p>
+      <p>本地网络权限用于局域网探测、Bonjour/SSDP 服务发现和设备间测试。局域网发现会发送本地探测，结果只保存在本机。负载下延迟测试会通过您选定的 iperf3 服务端传输真实数据。内置服务端仅在 App 前台运行；本地 HTTP 测试服务不使用 TLS。网络唤醒向指定地址发送唤醒包，不代表目标已成功唤醒。</p>
+      <p>二维码扫描的相机图像仅在设备上处理，不保存或上传。您可在 App 内删除历史记录，卸载 App 会删除其本地存储。联系邮箱：<a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>。</p>
 
       <h2 id="veil-privacy">Veil：规则更新与网页处理</h2>
       <p>Veil 的网页配色、元素隐藏、站点设置与自定义规则均在设备上处理，不上传访问过的网址、浏览历史、页面内容或自定义规则。内置规则离线可用。</p>
@@ -153,7 +159,7 @@
 
   <section id="en" class="en" lang="en">
     <h1>Privacy Policy</h1>
-    <p class="date">Effective date: October 31, 2026</p>
+    <p class="date">Effective date: November 13, 2026</p>
 
     <div class="card">
       <p><strong>Scope.</strong> This policy applies to all apps we publish on the App Store. Some apps may add their own notes on top of this policy; where they conflict, the in-app notice for that app controls.</p>
@@ -174,6 +180,12 @@
 <p>While VPN is enabled, traffic goes direct, through your chosen proxy, or is blocked according to your rules. Your chosen proxy and DNS operators process traffic and queries needed to provide their services. DNS defaults to Cloudflare 1.1.1.1 and can be changed in Settings. The developer does not operate the proxy service; choose providers you trust.</p>
 <p>Only your requested actions download your HTTPS subscriptions, fetch the recommended GFWList from pexcn/daily on GitHub, or test TCP connectivity directly to your servers. Those services receive standard connection information such as your IP address. Camera images used to scan QR codes are processed on-device, without saving or uploading. The app installs no root certificates, does not decrypt HTTPS, and does not read the clipboard automatically.</p>
 <p>The Home screen explains these purposes before connection. <a href="/clashverge/">Help and support</a>; email: <a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>.</p>
+
+      <h2 id="wireprobe-privacy-en">WireProbe: network tests and local reports</h2>
+      <p>WireProbe stores settings, test profiles, history and reports on your device; it does not upload them to the developer. There are no accounts, ads, analytics or tracking services. Only an explicit share action passes an export to your chosen system share destination. Export previews hide addresses and names by default; you can turn this option off.</p>
+      <p>Network tests send traffic to the hosts, servers, resolvers and URLs you choose, including Ping, TCP/UDP, DNS, HTTP/HTTPS and iperf3. DNS-over-HTTPS presets contact Cloudflare or Google when selected. Optional public IP lookup contacts api.ipify.org only after you tap Reveal. Providers receive the IP address needed for the connection and the queries or requests you send. The developer receives no test data and operates no speed-test backend.</p>
+      <p>Local Network permission supports LAN probes, Bonjour/SSDP service discovery and device-to-device tests. LAN discovery sends local probes and stores results only on your device. Loaded-latency tests transfer actual data through your chosen iperf3 server. Built-in servers run only in the foreground; the local HTTP test service does not use TLS. Wake on LAN sends a magic packet to the chosen address and does not confirm that the device woke.</p>
+      <p>Camera images for QR pairing are processed on-device without saving or uploading. You can delete history in the app; uninstalling removes its local storage. Contact: <a href="mailto:feedback8app@gmail.com">feedback8app@gmail.com</a>.</p>
 
       <h2 id="veil-privacy-en">Veil: rule updates and webpage processing</h2>
       <p>Veil processes webpage colors, element hiding, site settings, and custom rules on your device. It does not upload visited URLs, browsing history, page contents, or custom rules. Bundled rules work offline.</p>
